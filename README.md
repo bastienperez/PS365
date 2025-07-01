@@ -3,12 +3,12 @@
 This project is based on the original [Posh365](https://github.com/kevinblumenfeld/Posh365) project created by Kevin Blumenfeld. Since the original project does not appear to be maintained anymore.
 The code has been restructured and enhanced to provide a more up-to-date and functional version.
 
-###### Install
-```powershell
-Set-ExecutionPolicy RemoteSigned
-[Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
-Install-Module Posh365 -Force
-```
+For now the project is still in its early stages so it is not available on PowerShell Gallery.
+
+Some functions still use Azure AD PowerShell cmdlets, so they need to be migrate to MSGraph.
+
+
+**All the documentations below are based on the original Posh365 documentation, so they may reference deprecated cmdlets or modules.**
 
 ###### Install without Admin Access
 ```powershell
