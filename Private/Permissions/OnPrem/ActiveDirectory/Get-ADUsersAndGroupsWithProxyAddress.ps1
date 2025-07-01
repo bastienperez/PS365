@@ -1,4 +1,4 @@
-﻿Function Get-ADUsersAndGroupsWithProxyAddress {
+﻿function GetADUsersAndGroupsWithProxyAddress {
     param (
         [Parameter()]
         [hashtable] $DomainNameHash

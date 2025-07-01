@@ -12,7 +12,7 @@ function Connect-IPPSSession {
         # Connection Uri for the Remote PowerShell endpoint
         [string] $ConnectionUri = 'https://ps.compliance.protection.outlook.com/PowerShell-LiveId',
 
-        # Azure AD Authorization endpoint Uri that can issue the OAuth2 access tokens
+        # Microsoft Entra ID Authorization endpoint Uri that can issue the OAuth2 access tokens
         [string] $AzureADAuthorizationEndpointUri = 'https://login.windows.net/common',
 
         # User Principal Name or email address of the user
@@ -30,7 +30,7 @@ function Connect-IPPSSession {
 
     [string]$newUri = $null;
 
-    if (![string]::IsNullOrWhiteSpace($DelegatedOrganization)) {
+    if (-not[string]::IsNullOrWhiteSpace($DelegatedOrganization)) {
         [UriBuilder] $uriBuilder = New-Object -TypeName UriBuilder -ArgumentList $ConnectionUri;
         [string] $queryToAppend = "DelegatedOrg={0}" -f $DelegatedOrganization;
         if ($uriBuilder.Query -ne $null -and $uriBuilder.Query.Length -gt 0) {

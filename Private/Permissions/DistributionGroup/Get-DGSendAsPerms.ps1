@@ -6,7 +6,7 @@
 
     .EXAMPLE
 
-    (Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname) | Get-SendAsPerms | Export-csv .\SA.csv -NoTypeInformation
+    (Get-Mailbox -ResultSize unlimited | Select-Object -expandproperty distinguishedname) | Get-SendAsPerms | Export-csv .\SA.csv -NoTypeInformation
 
     If not running from Exchange Management Shell (EMS), run this first:
 
@@ -25,10 +25,10 @@
         [hashtable] $ADHashDG
     )
     Begin {
-        Try {
+        try {
             import-module activedirectory -ErrorAction Stop -Verbose:$false
         }
-        Catch {
+        catch {
             Write-Host "This module depends on the ActiveDirectory module."
             Write-Host "Please download and install from https://www.microsoft.com/en-us/download/details.aspx?id=45520"
             throw

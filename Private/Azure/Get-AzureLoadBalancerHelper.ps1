@@ -27,7 +27,7 @@ function Get-AzureLoadBalancerHelper {
 
             foreach ( $Index in 0..($MaxBackendPools - 1) ) {
                 $CurBackendPool = $BackendPool[$Index]
-                $CurBackendIpConfig = ($CurBackendPool.BackendIpConfigurations.id | Where-Object {$_ -ne $null}) -join "`r`n"
+                $CurBackendIpConfig = ($CurBackendPool.BackendIpConfigurations.id | Where-Object { $_ -ne $null }) -join "`r`n"
                 $PoolName = "BackendPool" + $Index
                 $PoolId = "PoolId" + $Index
 
@@ -39,7 +39,7 @@ function Get-AzureLoadBalancerHelper {
 
             foreach ( $Index in 0..($MaxFrontendIpConfigs - 1) ) {
                 $CurFrontEndIpConfig = $FrontEndIpConfig[$Index]
-                $CurBackendIpConfig = ($CurFrontEndIpConfig.BackendIpConfigurations.id | Where-Object {$_ -ne $null}) -join "`r`n"
+                $CurBackendIpConfig = ($CurFrontEndIpConfig.BackendIpConfigurations.id | Where-Object { $_ -ne $null }) -join "`r`n"
                 $FEName = "FrontendIpConfigName" + $Index
                 $FEId = "FrontendIpConfigId" + $Index
                 $PrivateIp = "FrontEndPrivateIp" + $Index

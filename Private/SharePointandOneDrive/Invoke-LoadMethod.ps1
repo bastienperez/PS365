@@ -1,4 +1,4 @@
-Function Invoke-LoadMethod {
+function Invoke-LoadMethod {
     param(
         [Parameter(Mandatory)]
         [Microsoft.SharePoint.Client.ClientObject]$Object,

@@ -19,9 +19,9 @@ filter New-Password {
 
         # The character sets the password may contain. A password will contain at least one of each of the characters.
         [String[]]$CharacterSet = ('abcdefghijklmnopqrstuvwxyz',
-                                   'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-                                   '0123456789',
-                                   '!$%&^.#;'),
+            'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+            '0123456789',
+            '!$%&^.#;'),
 
         [Int32[]]$CharacterSetCount = (@(1) * $CharacterSet.Count)
     )
@@ -51,7 +51,8 @@ filter New-Password {
         }
 
         [String]::Concat(([Char[]]$password | Sort-Object { Get-Random }))
-    } catch {
+    }
+    catch {
         Write-Error -ErrorRecord $_
     }
 }

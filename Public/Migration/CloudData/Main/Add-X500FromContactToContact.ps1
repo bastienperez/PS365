@@ -41,7 +41,7 @@ function Add-X500FromContactToContact {
     $No = [ChoiceDescription]::new('&No', 'WriteX500: No')
     $Options = [ChoiceDescription[]]($Yes, $No)
     $Title = 'Please inspect the results comparing Source ExternalEmailAddress to Target ExternalEmailAddress'
-    $Question = 'Select ( Y ) to choose the mailboxes where x500 addresses will be added. The x500s will be added from the LegacyExchageDN column and x500 column (if present)'
+    $Question = 'Select ( Y ) to choose the mailboxes Where-Object x500 addresses will be added. The x500s will be added from the LegacyExchageDN column and x500 column (if present)'
     $YesNo = $host.ui.PromptForChoice($Title, $Question, $Options, 1)
     switch ($YesNo) {
         0 {

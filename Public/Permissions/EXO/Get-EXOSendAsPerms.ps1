@@ -1,4 +1,4 @@
-function Get-EXOSendAsPerms {
+function Get-PsExoSendAsPerms {
     <#
     .SYNOPSIS
     Outputs Send As permissions for each object that has permissions assigned.
@@ -6,7 +6,7 @@ function Get-EXOSendAsPerms {
 
     .EXAMPLE
 
-    (Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname) | Get-EXOSendAsPerms | Export-csv .\SA.csv -NoTypeInformation
+    (Get-Mailbox -ResultSize unlimited | Select-Object -expandproperty distinguishedname) | Get-PsExoSendAsPerms | Export-csv .\SA.csv -NoTypeInformation
 
     #>
     [CmdletBinding()]

@@ -54,33 +54,33 @@ function Connect-Exchange2 {
     $KeyPath = $Rootpath + "creds\"
     $User = $env:USERNAME
 
-    while (!(Test-Path ($RootPath + "$($user).EXCHServer"))) {
+    while (-not(Test-Path ($RootPath + "$($user).EXCHServer"))) {
         Select-ExchangeServer
     }
     $ExchangeServer = Get-Content ($RootPath + "$($user).EXCHServer")
 
     # Delete invalid or unwanted credentials
     if ($DeleteExchangeCreds) {
-        Try {
+        try {
             Remove-Item ($KeyPath + "$($user).ExchangeCred") -ErrorAction Stop
         }
-        Catch {
+        catch {
             $_
             Write-Host "Unable to Delete Exchange Password"
         }
-        Try {
+        try {
             Remove-Item ($KeyPath + "$($user).uExchangeCred") -ErrorAction Stop
         }
-        Catch {
+        catch {
             $_
             Write-Host "Unable to Delete Exchange Username"
         }
 
     }
     # Create KeyPath Directory
-    if (!(Test-Path $KeyPath)) {
+    if (-not(Test-Path $KeyPath)) {
         try {
-            New-Item -ItemType Directory -Path $KeyPath -ErrorAction Stop | Out-Null
+            $null = New-Item -ItemType Directory -Path $KeyPath -ErrorAction Stop
         }
         catch {
             throw $_.Exception.Message
@@ -89,10 +89,10 @@ function Connect-Exchange2 {
     if (Test-Path ($KeyPath + "$($user).ExchangeCred")) {
         $PwdSecureString = Get-Content ($KeyPath + "$($user).ExchangeCred") | ConvertTo-SecureString
         $UsernameString = Get-Content ($KeyPath + "$($user).uExchangeCred")
-        $Credential = Try {
+        $Credential = try {
             New-Object System.Management.Automation.PSCredential -ArgumentList $UsernameString, $PwdSecureString -ErrorAction Stop
         }
-        Catch {
+        catch {
             if ($_.exception.Message -match '"userName" is not valid. Change the value of the "userName" argument and run the operation again') {
                 Connect-Exchange2 -DeleteExchangeCreds
                 Write-Host "***************************************************************************** " -foregroundcolor "darkblue" -backgroundcolor "white"
@@ -105,7 +105,7 @@ function Connect-Exchange2 {
         }
     }
     else {
-        if (!$NoMessageForPS2) {
+        if (-not$NoMessageForPS2) {
             $Credential = Get-Credential -Message "Enter a username and password for ONPREM EXCHANGE"
         }
         else {
@@ -125,10 +125,10 @@ function Connect-Exchange2 {
         }
         $Credential.UserName | Out-File ($KeyPath + "$($user).uExchangeCred")
     }
-    Try {
+    try {
         $Session = New-PSSession -Name "OnPremExchange" -ConfigurationName Microsoft.Exchange -ConnectionUri ("http://" + $ExchangeServer + "/PowerShell/") -Authentication Kerberos -Credential $Credential -ErrorAction Stop
     }
-    Catch {
+    catch {
         If ($_.exception.Message -match 'user name or password') {
             Connect-Exchange2 -DeleteExchangeCreds
             Write-Host "***************************************************************************** " -foregroundcolor "darkblue" -backgroundcolor "white"
@@ -139,7 +139,7 @@ function Connect-Exchange2 {
             Break
         }
     }
-    If (!$NoPrefix) {
+    If (-not$NoPrefix) {
         $SessionModule = Import-PSSession -AllowClobber -DisableNameChecking -Prefix 'OnPrem' -Session $Session
         $Null = Import-Module $SessionModule -Global -Prefix "OnPrem" -DisableNameChecking -Force
         if ($ViewEntireForest) {

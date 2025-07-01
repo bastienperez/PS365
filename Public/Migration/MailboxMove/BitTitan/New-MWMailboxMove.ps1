@@ -21,7 +21,7 @@ function New-MWMailboxMove {
     Use the user@domain.onmicrosoft.com (tenant address) as the source email address
 
     .PARAMETER UseTargetPrimaryAsTarget
-    Use the primarysmtpaddress in the target tenant.  Primarily used for 365 to 365 where the domain name changes
+    Use the primarysmtpaddress in the target tenant.  Primarily used for 365 to 365 Where-Object the domain name changes
 
     .EXAMPLE
     New-MWMailboxMove -MailboxCSV C:\Scripts\testbatches.csv -TargetEmailSuffix fabrikam.com

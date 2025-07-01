@@ -47,13 +47,13 @@ function Import-AzureADProperty {
                 PostalCode      = $CurUser.PostalCode
 
             }
-            Try {
+            try {
 
                 Set-AzureAdUser @Splat -ErrorAction Stop
                 Write-Verbose "Successfully Set:`t$Upn"
 
             }
-            Catch {
+            catch {
 
                 $ErrorMessage = $_.exception.message
                 Add-Content -Path $Log -Value ($Upn + "," + $ErrorMessage)

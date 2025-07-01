@@ -1,4 +1,4 @@
-function Get-EXOGroup {
+function Get-PSExoGroup {
     <#
     .SYNOPSIS
     Export Office 365 Distribution Groups & Mail-Enabled Security Groups
@@ -11,19 +11,19 @@ function Get-EXOGroup {
     It is highly recommend to use a list of primarysmtpaddresses or GUIDs
 
     .EXAMPLE
-    Get-EXOGroup | Export-Csv c:\scripts\All365GroupExport.csv -notypeinformation -encoding UTF8
+    Get-PSExoGroup | Export-Csv c:\scripts\All365GroupExport.csv -notypeinformation -encoding UTF8
 
     .EXAMPLE
-    Get-DistributionGroup -Filter "IsDirSynced -eq '$false'" -ResultSize Unlimited | Select -ExpandProperty Name | Get-EXOGroup | Export-Csv c:\scripts\365GroupExport.csv -notypeinformation -encoding UTF8
+    Get-DistributionGroup -Filter "IsDirSynced -eq '$false'" -ResultSize Unlimited | Select-Object -ExpandProperty Name | Get-PSExoGroup | Export-Csv c:\scripts\365GroupExport.csv -notypeinformation -encoding UTF8
 
     .EXAMPLE
-    Get-DistributionGroup -Filter "emailaddresses -like '*contoso.com*'" -ResultSize Unlimited | Select -ExpandProperty Name | Get-EXOGroup | Export-Csv c:\scripts\365GroupExport.csv -notypeinformation -encoding UTF8
+    Get-DistributionGroup -Filter "emailaddresses -like '*contoso.com*'" -ResultSize Unlimited | Select-Object -ExpandProperty Name | Get-PSExoGroup | Export-Csv c:\scripts\365GroupExport.csv -notypeinformation -encoding UTF8
 
     .EXAMPLE
-    Get-Content "c:\scripts\groups.txt" | Get-EXOGroup | Export-Csv c:\scripts\365GroupExport.csv -notypeinformation -encoding UTF8
+    Get-Content "c:\scripts\groups.txt" | Get-PSExoGroup | Export-Csv c:\scripts\365GroupExport.csv -notypeinformation -encoding UTF8
 
     .EXAMPLE
-    (Get-DistributionGroup -Filter "IsDirSynced -eq '$false'" -ResultSize Unlimited).Guid | Get-EXOGroup -DetailedReport |
+    (Get-DistributionGroup -Filter "IsDirSynced -eq '$false'" -ResultSize Unlimited).Guid | Get-PSExoGroup -DetailedReport |
         Export-Csv c:\scripts\365GroupExport.csv -notypeinformation -encoding UTF8
 
     Example of groups.txt

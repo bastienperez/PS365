@@ -267,7 +267,7 @@
     Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_RetentionPolicySummary.csv')
 
     # Exchange Test UPN match PrimarySMTPAddress
-    Write-Verbose "Retrieving Exchange Mailboxes where UPN -ne PrimarySmtpAddress"
+    Write-Verbose "Retrieving Exchange Mailboxes Where-Object UPN -ne PrimarySmtpAddress"
     $Mailboxes.where{ $_.UserPrincipalName -ne $_.PrimarySmtpAddress } | Select-Object $UPNMatchProp | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_UpnNotMatch.csv')
 
     # Exchange Server
@@ -442,13 +442,13 @@
 
     Write-Verbose "Retrieving Exchange Resource Mailboxes and Calendar Processing"
     $ResourceMailboxes = $Mailboxes | Where-Object { $_.RecipientTypeDetails -in 'RoomMailbox', 'EquipmentMailbox' }
-    Get-EXOResourceMailbox -ResourceMailbox $ResourceMailboxes | Sort-Object DisplayName |
+    Get-PsExoResourceMailbox -ResourceMailbox $ResourceMailboxes | Sort-Object DisplayName |
     Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_ResourceMailboxes.csv')
 
     # Exchange Contacts
     Write-Verbose "Retrieving Exchange Mail Contacts"
     Get-MailContact -ResultSize unlimited | Select-Object * | Export-Clixml -Path (Join-Path -Path $Detailed -ChildPath 'ExchangeMailContacts.xml')
-    Get-EXOMailContact | Select-Object $ContactProp | Sort-Object DisplayName |
+    Get-PsExoMailContact | Select-Object $ContactProp | Sort-Object DisplayName |
     Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_MailContacts.csv')
 
     # Exchange DLP Policies

@@ -96,7 +96,7 @@
     Process {
         # Define Hashtables for lookup
         $u2fSku = @{
-            "ATA"                                = "Azure Advanced Threat Protection for Users"
+            "ATA"                                = "Microsoft Azure Advanced Threat Protection for Users"
             "ADALLOM_STANDALONE"                 = "Microsoft Cloud App Security"
             "RIGHTSMANAGEMENT"                   = "AZURE INFORMATION PROTECTION PLAN 1"
             "THREAT_INTELLIGENCE"                = "OFFICE 365 ADVANCED THREAT PROTECTION (PLAN 2)"
@@ -196,8 +196,8 @@
         }
 
         # Get a list of all Licenses that exist within the tenant
-        $licensetype = Get-MsolAccountSku # | Where {$_.SkuPartNumber -eq "STANDARDWOFFPACK_IW_STUDENT"}
-        # $licensetype = Get-MsolAccountSku | Where {$_.AccountSkuId -eq "TENANT:ENTERPRISEPACK"}
+        $licensetype = Get-MsolAccountSku # | Where-Object {$_.SkuPartNumber -eq "STANDARDWOFFPACK_IW_STUDENT"}
+        # $licensetype = Get-MsolAccountSku | Where-Object {$_.AccountSkuId -eq "TENANT:ENTERPRISEPACK"}
 
         # Loop through all License types found in the tenant
         foreach ($license in $licensetype) {

@@ -1,4 +1,4 @@
-﻿Function Get-ADHashDisplayName {
+﻿function GetADHashDisplayName {
 
     param (
         [parameter(ValueFromPipeline = $true)]

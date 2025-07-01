@@ -16,7 +16,7 @@ function Update-MWMailboxMoveBatchesReportWithTargetTenantAddress {
     ex. "Batches.xlsx"
 
     .PARAMETER ReportPath
-    Output path where a new and updated Batches.xlsx will be output
+    Output path Where-Object a new and updated Batches.xlsx will be output
 
     .PARAMETER OverrideTargetMailboxInUse
     Ignores column TargetMailboxInUse and always attempts to use onpremisesSecurityIdentifier to populate both target addresses.

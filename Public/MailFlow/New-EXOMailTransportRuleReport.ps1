@@ -1,4 +1,4 @@
-Function New-EXOMailTransportRuleReport {
+function New-EXOMailTransportRuleReport {
     <#
     .SYNOPSIS
     View the details of messages that matched the conditions defined by any transport rules
@@ -147,7 +147,7 @@ Function New-EXOMailTransportRuleReport {
             }
         }
         catch {
-            Write-Verbose "`tException gathering message trace data on page $counter. Trying again in 30 seconds."
+            Write-Verbose "`tException gathering message trace data on page $counter. trying again in 30 seconds."
             Start-Sleep -Seconds 30
         }
     } while ($continue)

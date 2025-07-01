@@ -1,7 +1,7 @@
 function Import-AzureADUser { 
     <#
     .SYNOPSIS
-    Add New Azure AD User to Office 365
+    Add New Microsoft Entra ID User to Office 365
     #>
     [CmdletBinding()]
     param (

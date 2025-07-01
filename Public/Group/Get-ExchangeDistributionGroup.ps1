@@ -13,7 +13,7 @@ function Get-ExchangeDistributionGroup {
     Get-ExchangeDistributionGroup | Export-Csv c:\scripts\All365GroupExport.csv -notypeinformation -encoding UTF8
 
     .EXAMPLE
-    Get-DistributionGroup -Filter "emailaddresses -like '*contoso.com*'" -ResultSize Unlimited | Select -ExpandProperty Name | Get-ExchangeDistributionGroup | Export-Csv c:\scripts\365GroupExport.csv -notypeinformation -encoding UTF8
+    Get-DistributionGroup -Filter "emailaddresses -like '*contoso.com*'" -ResultSize Unlimited | Select-Object -ExpandProperty Name | Get-ExchangeDistributionGroup | Export-Csv c:\scripts\365GroupExport.csv -notypeinformation -encoding UTF8
 
     .EXAMPLE
     Get-Content "c:\scripts\groups.txt" | Get-ExchangeDistributionGroup | Export-Csv c:\scripts\365GroupExport.csv -notypeinformation -encoding UTF8

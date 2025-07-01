@@ -1,4 +1,4 @@
-﻿Function Get-ADUsersAndGroups {
+﻿function GetADUsersAndGroups {
     param (
         [Parameter()]
         [hashtable] $DomainNameHash

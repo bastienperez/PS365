@@ -9,7 +9,7 @@ function Select-TargetAddressSuffix {
     $TargetAddressSuffix = $null
     
 
-    if (!(Test-Path $RootPath)) {
+    if (-not(Test-Path $RootPath)) {
         try {
             New-Item -ItemType Directory -Path $RootPath -ErrorAction STOP | Out-Null
         }
@@ -27,7 +27,7 @@ function Select-TargetAddressSuffix {
         Server     = $DomainFqdn
         Properties = "msExchAcceptedDomainName"
     }
-    while (! $TargetAddressSuffix) {
+    while (-not $TargetAddressSuffix) {
         $TargetAddressSuffix = Get-ADObject @ADObjectSplat | Select-Object -ExpandProperty msExchAcceptedDomainName| ? {$_ -like "*.mail.onmicrosoft.com"} | 
             Out-GridView -OutputMode Single -Title "SELECT THE TARGET ADDRESS SUFFIX"
     }

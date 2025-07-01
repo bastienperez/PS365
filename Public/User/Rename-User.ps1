@@ -1,4 +1,4 @@
-Function Rename-User {
+function Rename-User {
     <#
     .SYNOPSIS
     Test
@@ -18,17 +18,17 @@ Function Rename-User {
     )
 
     Begin {
-        Try {
+        try {
             import-module activedirectory -ErrorAction Stop -Verbose:$false
         }
-        Catch {
+        catch {
             Write-Host "This module depends on the ActiveDirectory module."
             Write-Host "Please download and install from https://www.microsoft.com/en-us/download/details.aspx?id=45520"
             throw
         }
         $RootPath = $env:USERPROFILE + "\ps\"
         $User = $env:USERNAME
-        if (!(Test-Path $RootPath)) {
+        if (-not(Test-Path $RootPath)) {
             try {
                 New-Item -ItemType Directory -Path $RootPath -ErrorAction STOP | Out-Null
             }
@@ -36,26 +36,26 @@ Function Rename-User {
                 throw $_.Exception.Message
             }
         }
-        While (!(Get-Content ($RootPath + "$($user).ADConnectServer") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
+        While (-not(Get-Content ($RootPath + "$($user).ADConnectServer") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
             Select-ADConnectServer
         }
 
-        While (!(Get-Content ($RootPath + "$($user).EXCHServer") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
+        While (-not(Get-Content ($RootPath + "$($user).EXCHServer") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
             Select-ExchangeServer
         }
         $ExchangeServer = Get-Content ($RootPath + "$($user).EXCHServer")
 
-        While (!(Get-Content ($RootPath + "$($user).TargetAddressSuffix") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
+        While (-not(Get-Content ($RootPath + "$($user).TargetAddressSuffix") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
             Select-TargetAddressSuffix
         }
         $targetAddressSuffix = Get-Content ($RootPath + "$($user).TargetAddressSuffix")
 
-        While (!(Get-Content ($RootPath + "$($user).DomainController") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
+        While (-not(Get-Content ($RootPath + "$($user).DomainController") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
             Select-DomainController
         }
         $DomainController = Get-Content ($RootPath + "$($user).DomainController")
 
-        While (!(Get-Content ($RootPath + "$($user).DisplayNameFormat") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
+        While (-not(Get-Content ($RootPath + "$($user).DisplayNameFormat") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
             Select-DisplayNameFormat
         }
         $DisplayNameFormat = Get-Content ($RootPath + "$($user).DisplayNameFormat")
@@ -73,16 +73,16 @@ Function Rename-User {
         ########################################
         #         Connect to Office 365        #
         ########################################
-        if (! $NoMail) {
+        if (-not $NoMail) {
             try {
                 Get-AzureADDomain -erroraction stop | Out-Null
             }
             catch {
-                Try {
+                try {
                     Connect-Cloud $targetAddressSuffix -MSOnline -AzureADver2 -erroraction stop
 
                 }
-                Catch {
+                catch {
                     Write-Output "Failed to Connect to Cloud.  Please try again."
                     Break
                 }
@@ -120,17 +120,17 @@ Function Rename-User {
         Set-ADUser -Identity $UsersSamAccount @params -Server $domainController
 
         # Purge old jobs
-        Get-Job | where {$_.State -ne 'Running'}| Remove-Job
+        Get-Job | Where-Object {$_.State -ne 'Running'}| Remove-Job
 
         Set-OnPremRemoteMailbox -Identity $UsersSamAccount -EmailAddressPolicyEnabled:$true
 
         # After Email Address Policy, Set UPN to same as PrimarySMTPAddress
-        $CurrentUser = Get-OnPremRemoteMailbox $UsersSamAccount | select DistinguishedName,primarysmtpaddress
+        $CurrentUser = Get-OnPremRemoteMailbox $UsersSamAccount | Select-Object DistinguishedName,primarysmtpaddress
         Set-ADUser -Identity $UsersSamAccount -Server $domainController -userprincipalname $CurrentUser.primarysmtpaddress
         Rename-ADObject $CurrentUser.DistinguishedName -NewName $DisplayName
 
         ########################################
-        #         Sync Azure AD Connect        #
+        #         Sync Microsoft Entra ID Connect Sync        #
         ########################################
         Sync-ADConnect
 

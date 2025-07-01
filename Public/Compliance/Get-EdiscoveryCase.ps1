@@ -11,7 +11,7 @@ function Get-EdiscoveryCase {
     To generate a report on all eDiscovery cases in your organization, you have to be an eDiscovery Administrator in your organization.
 
     .PARAMETER Path
-    The path where the report will be generated
+    The path Where-Object the report will be generated
 
     .EXAMPLE
     Connect-Cloud Contoso -compliance

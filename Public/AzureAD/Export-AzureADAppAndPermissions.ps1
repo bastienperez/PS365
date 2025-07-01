@@ -1,10 +1,10 @@
 function Export-AzureADAppAndPermissions {
     <#
     .SYNOPSIS
-    Export Azure AD App name & API permissions to an xml
+    Export Microsoft Entra ID App name & API permissions to an xml
 
     .DESCRIPTION
-    Export Azure AD App name & API permissions to an xml
+    Export Microsoft Entra ID App name & API permissions to an xml
     Can be used to create an app with the same permissions and settings
 
     .PARAMETER Name
@@ -16,7 +16,7 @@ function Export-AzureADAppAndPermissions {
     use either Name or ObjectId, not both
 
     .PARAMETER Path
-    Path where the script will save the XML of the exported App
+    Path Where-Object the script will save the XML of the exported App
 
     .EXAMPLE
     Export-AzureADAppAndPermissions -ObjectId f230aa0b-9832-431c-a879-a40e57b71d79 -Path C:\temp\apps
@@ -52,7 +52,7 @@ function Export-AzureADAppAndPermissions {
     }
 
     if (-not $SourceApp) {
-        Write-Host "Azure AD Application Name: $Name was not found " -ForegroundColor Red
+        Write-Host "Microsoft Entra ID Application Name: $Name was not found " -ForegroundColor Red
         continue
     }
     if (@($SourceApp).count -gt 1) {

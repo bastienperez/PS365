@@ -50,7 +50,7 @@ function Connect-Cloud {
     Connects to Exchange Online
 
     .PARAMETER MSOnline
-    Connects to Microsoft Online Service (Azure AD Version 1)
+    Connects to Microsoft Online Service (Microsoft Entra ID Version 1)
 
     .PARAMETER All365
     Connects to all Office 365 Services
@@ -74,7 +74,7 @@ function Connect-Cloud {
     Connects to Intue
 
     .PARAMETER AzureADver2
-    Connects to Azure AD Version 2
+    Connects to Microsoft Entra ID Version 2
 
     .PARAMETER MFA
     Parameter description
@@ -244,7 +244,7 @@ function Connect-Cloud {
             $Credential = [System.Management.Automation.PSCredential]::new($UsernameString, $PwdSecureString)
         }
         else {
-            $Credential = Get-Credential -Message "ENTER USERNAME & PASSWORD FOR OFFICE 365/AZURE AD"
+            $Credential = Get-Credential -Message "ENTER USERNAME & PASSWORD FOR OFFICE 365/Microsoft Entra ID"
             if ($Credential.Password) {
                 $Credential.Password | ConvertFrom-SecureString | Out-File ($KeyPath + "$($Tenant).cred") -Force
             }
@@ -331,7 +331,8 @@ function Connect-Cloud {
             catch {
                 $_
             }
-            Import-Module (Import-PSSession $sfboSession -AllowClobber) -Global | Out-Null
+            
+            $null = Import-Module (Import-PSSession $sfboSession -AllowClobber) -Global
         }
         else {
             try {
@@ -345,7 +346,8 @@ function Connect-Cloud {
             catch {
                 $_
             }
-            Import-Module (Import-PSSession $sfboSession -AllowClobber) -Global | Out-Null
+            
+            $null = Import-Module (Import-PSSession $sfboSession -AllowClobber) -Global
         }
     }
     # SharePoint Online
@@ -395,7 +397,7 @@ function Connect-Cloud {
         }
         Connect-PnPOnline -Url $PNPUrl -UseWebLogin
     }
-    # Azure AD
+    # Microsoft Entra ID
     If ($AzureAD -or $AzureADver2 -or $All365) {
         if (-not $MFA) {
             If (-not ($null = Get-Module -Name 'AzureAD', 'AzureADPreview' -ListAvailable)) {
@@ -425,7 +427,7 @@ function Connect-Cloud {
                     }
                     else {
                         $_
-                        Write-Warning "There was an error Connecting to Azure Ad - Ensure the module is installed"
+                        Write-Warning "There was an error Connecting to Microsoft Entra ID - Ensure the module is installed"
                         Write-Warning "Download PowerShell 5 or PowerShellGet"
                         Write-Warning "https://msdn.microsoft.com/en-us/powershell/wmf/5.1/install-configure"
                         Break
@@ -461,7 +463,7 @@ function Connect-Cloud {
                     }
                     else {
                         $error[0]
-                        Write-Warning "There was an error Connecting to Azure Ad - Ensure the module is installed"
+                        Write-Warning "There was an error Connecting to Microsoft Entra ID - Ensure the module is installed"
                         Write-Warning "Download PowerShell 5 or PowerShellGet"
                         Write-Warning "https://msdn.microsoft.com/en-us/powershell/wmf/5.1/install-configure"
                         Break

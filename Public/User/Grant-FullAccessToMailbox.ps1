@@ -1,4 +1,4 @@
-Function Grant-FullAccessToMailbox {
+function Grant-FullAccessToMailbox {
     <#
     .SYNOPSIS
     Grants Full Access mailbox permissions for one or more users over another mailbox
@@ -20,12 +20,12 @@ Function Grant-FullAccessToMailbox {
         $RootPath = $env:USERPROFILE + "\ps\"
         $User = $env:USERNAME
     
-        While (!(Get-Content ($RootPath + "$($user).DomainController") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
+        While (-not(Get-Content ($RootPath + "$($user).DomainController") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
             Select-DomainController
         }
         $DomainController = Get-Content ($RootPath + "$($user).DomainController")   
         
-        While (!(Get-Content ($RootPath + "$($user).TargetAddressSuffix") -ErrorAction SilentlyContinue | Where-Object {$_.count -gt 0})) {
+        While (-not(Get-Content ($RootPath + "$($user).TargetAddressSuffix") -ErrorAction SilentlyContinue | Where-Object {$_.count -gt 0})) {
             Select-TargetAddressSuffix
         }
         $targetAddressSuffix = Get-Content ($RootPath + "$($user).TargetAddressSuffix")

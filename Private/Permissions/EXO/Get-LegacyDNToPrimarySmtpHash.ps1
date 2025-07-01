@@ -1,4 +1,4 @@
-﻿Function Get-LegacyDNToPrimarySmtpHash {
+﻿function GetLegacyDNToPrimarySmtpHash {
     [CmdletBinding()]
     param (
         [Parameter()]

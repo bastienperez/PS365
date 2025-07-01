@@ -1,4 +1,4 @@
-Function Get-MailboxMoveReportData {
+function Get-MailboxMoveReportData {
 
     [CmdletBinding()]
     param (

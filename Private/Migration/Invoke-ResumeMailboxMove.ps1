@@ -1,4 +1,4 @@
-Function Invoke-ResumeMailboxMove {
+function Invoke-ResumeMailboxMove {
     [CmdletBinding()]
     param
     (

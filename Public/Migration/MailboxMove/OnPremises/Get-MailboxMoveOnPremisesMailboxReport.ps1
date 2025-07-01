@@ -1,4 +1,6 @@
-﻿Function Get-MailboxMoveOnPremisesMailboxReport {
+﻿# TODO: Add help  For Get-MailboxMoveOnPremisesReportHelper it uses Get-ExchangeMailboxStatistics. But, as far as I understand, the CMD calls Get-EXO CMDlet. It must be switch to Get-ExMailboxStatistics.
+
+function GetMailboxMoveOnPremisesMailboxReport {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]

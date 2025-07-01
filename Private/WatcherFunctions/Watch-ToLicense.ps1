@@ -1,4 +1,4 @@
-Function Watch-ToLicense {
+function Watch-ToLicense {
     <#
     .SYNOPSIS
     
@@ -28,11 +28,11 @@ Function Watch-ToLicense {
         while (Test-Path $GuidFolder) {
             Get-ChildItem -Path $GuidFolder -File -Verbose -ErrorAction SilentlyContinue | ForEach {
                 if ($_ -and !($_.name -eq 'ALLDONE')) {
-                    Try {
+                    try {
                         Get-Content $_.VersionInfo.filename | Set-CloudLicense -ExternalOptionsToAdd $optionsToAdd -ErrorAction Stop
                         Remove-Item $_.VersionInfo.filename -verbose
                     }
-                    Catch {
+                    catch {
                         Start-Sleep -Seconds 5
                     }
                 }

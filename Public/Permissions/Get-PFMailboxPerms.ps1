@@ -1,4 +1,4 @@
-﻿Function Get-PFMailboxPerms {
+﻿function GetPFMailboxPerms {
     ##
     <#
     .SYNOPSIS
@@ -51,10 +51,10 @@
         [string] $ExchangeServer
     )
 
-    Try {
+    try {
         import-module activedirectory -ErrorAction Stop -Verbose:$false
     }
-    Catch {
+    catch {
         Write-Host "This module depends on the ActiveDirectory module."
         Write-Host "Please download and install from https://www.microsoft.com/en-us/download/details.aspx?id=45520"
         throw
@@ -74,7 +74,7 @@
         Write-Warning "      Get-ChildItem -Path `"C:\scripts\PS365\`" -filter *.ps1 -Recurse | % { . `$_.fullname }   "
         Write-Warning "                    It is normal to see errors when running the above command                     "
         Write-Warning "**************************************************************************************************"
-        if (!$ExchangeServer) {
+        if (-not$ExchangeServer) {
             Write-Warning "********************************************************************************************"
             Write-Warning "               Re-Run the command specifying the -ExchangeServer parameter                  "
             Write-Warning "ex. Get-PFMailboxPerms -ReportPath C:\PermsReports -PowerShell2 -ExchangeServer `"ExServer01`""
@@ -88,7 +88,7 @@
         }
     }
     else {
-        while (!(Test-Path ($RootPath + "$($user).EXCHServer"))) {
+        while (-not(Test-Path ($RootPath + "$($user).EXCHServer"))) {
             Select-ExchangeServer
         }
         $ExchangeServer = Get-Content ($RootPath + "$($user).EXCHServer")
@@ -114,16 +114,16 @@
     $ADHashCN = $AllADUsers | Get-ADHashCN
 
     Write-Verbose "Retrieving distinguishedname's of all Exchange Mailboxes"
-    $AllMailPF = (Get-MailPublicFolder -ResultSize unlimited | Select -expandproperty distinguishedname)
+    $AllMailPF = (Get-MailPublicFolder -ResultSize unlimited | Select-Object -expandproperty distinguishedname)
 
-    if (! $SkipSendAs) {
+    if (-not $SkipSendAs) {
         Write-Verbose "Getting SendAs permissions for each mailbox and writing to file"
         $AllMailPF | Get-PFSendAsPerms -ADHashDN $ADHashDN -ADHash $ADHash  |
             Select Object, UserPrincipalName, PrimarySMTPAddress, Granted, GrantedUPN, GrantedSMTP, Checking, GroupMember, Type, Permission |
             Export-csv (Join-Path $ReportPath "PFSendAsPerms.csv") -NoTypeInformation
     }
 
-    if (! $SkipSendOnBehalf) {
+    if (-not $SkipSendOnBehalf) {
         Write-Verbose "Getting SendOnBehalf permissions for each mailbox and writing to file"
         $AllMailPF | Get-PFSendOnBehalfPerms -ADHashCN $ADHashCN -ADHashDN $ADHashDN|
             Select Object, UserPrincipalName, PrimarySMTPAddress, Granted, GrantedUPN, GrantedSMTP, Checking, GroupMember, Type, Permission |

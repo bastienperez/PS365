@@ -1,4 +1,4 @@
-function Get-EXOFullAccessRecursePerms {
+function Get-PsExoFullAccessRecursePerms {
     <#
     .SYNOPSIS
     Outputs Full Access permissions for each mailbox that has permissions assigned.
@@ -6,7 +6,7 @@ function Get-EXOFullAccessRecursePerms {
 
     .EXAMPLE
 
-    (Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname) | Get-EXOFullAccessRecursePerms | Export-csv .\FA.csv -NoTypeInformation
+    (Get-Mailbox -ResultSize unlimited | Select-Object -expandproperty distinguishedname) | Get-PsExoFullAccessRecursePerms | Export-csv .\FA.csv -NoTypeInformation
 
     If not running from Exchange Management Shell (EMS), run this first:
 
@@ -47,7 +47,7 @@ function Get-EXOFullAccessRecursePerms {
                     [void]$listGroupMembers.Add($_)
                 }
             }
-            elseif (!($GroupMemberHash.ContainsKey($_.User))) {
+            elseif (-not($GroupMemberHash.ContainsKey($_.User))) {
                 $User = $_.User
                 if ($RecipientMailHash.ContainsKey($_.User)) {
                     $User = $RecipientMailHash["$($_.User)"].Name

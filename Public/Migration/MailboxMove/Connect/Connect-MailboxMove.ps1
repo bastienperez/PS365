@@ -1,10 +1,10 @@
-Function Connect-MailboxMove {
+function Connect-MailboxMove {
     <#
     .SYNOPSIS
-    Connect to Exchange Online and Azure AD
+    Connect to Exchange Online and Microsoft Entra ID
 
     .DESCRIPTION
-    Connect to Exchange Online and Azure AD
+    Connect to Exchange Online and Microsoft Entra ID
 
     .PARAMETER Tenant
     if contoso.onmicrosoft.com use "Contoso"

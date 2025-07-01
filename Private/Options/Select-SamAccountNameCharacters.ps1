@@ -3,9 +3,9 @@ function Select-SamAccountNameCharacters {
     $RootPath = $env:USERPROFILE + "\ps\"
     $User = $env:USERNAME
 
-    if (!(Test-Path $RootPath)) {
+    if (-not(Test-Path $RootPath)) {
         try {
-            New-Item -ItemType Directory -Path $RootPath -ErrorAction STOP | Out-Null
+            $null = New-Item -ItemType Directory -Path $RootPath -ErrorAction Stop
         }
         catch {
             throw $_.Exception.Message

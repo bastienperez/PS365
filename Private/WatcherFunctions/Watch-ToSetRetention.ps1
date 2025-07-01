@@ -1,4 +1,4 @@
-Function Watch-ToSetRetention {
+function Watch-ToSetRetention {
     <#
     .SYNOPSIS
     

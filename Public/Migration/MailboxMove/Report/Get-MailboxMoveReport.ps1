@@ -1,4 +1,4 @@
-Function Get-MailboxMoveReport {
+function GetMailboxMoveReport {
     <#
     .SYNOPSIS
     Provides each user found in Get-MoveRequest in an Out-GridView.

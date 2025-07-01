@@ -37,7 +37,7 @@ function Get-AzureVMHelper {
                 OSDisk            = $CurVM.StorageProfile.OSDisk.OsType
                 OSImageType       = $CurVM.StorageProfile.ImageReference.sku
                 AdminUserName     = $CurVM.OSProfile.AdminUsername
-                NICId             = (($CurVM.NetworkProfile.NetworkInterfaces.id -replace '.*\/') | Where-Object {$_ -ne $null}) -join "`r`n"
+                NICId             = (($CurVM.NetworkProfile.NetworkInterfaces.id -replace '.*\/') | Where-Object { $_ -ne $null }) -join "`r`n"
                 OSVersion         = $CurVM.StorageProfile.ImageReference.Sku
                 PrivateIP         = $PrivateIP
 

@@ -1,4 +1,4 @@
-﻿Function Get-ADObjectsWithProxyAddress {
+﻿function GetADObjectsWithProxyAddress {
 
     param (
         [Parameter()]

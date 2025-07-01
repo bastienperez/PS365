@@ -1,4 +1,4 @@
-Function Get-MailboxMoveStatistics {
+function GetMailboxMoveStatistics {
     <#
     .SYNOPSIS
     Get Move Request Statistics and refresh by clicking OK

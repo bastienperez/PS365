@@ -1,4 +1,4 @@
-Function Get-DomainNameHash {
+function Get-DomainNameHash {
 
     param (
 
@@ -6,7 +6,7 @@ Function Get-DomainNameHash {
     end {
         $DomainNameHash = @{ }
 
-        $DomainList = ([System.DirectoryServices.ActiveDirectory.Forest]::GetCurrentForest().domains) | Select -ExpandProperty Name
+        $DomainList = ([System.DirectoryServices.ActiveDirectory.Forest]::GetCurrentForest().domains) | Select-Object -ExpandProperty Name
         foreach ($Domain in $DomainList) {
             $DomainNameHash[$Domain] = (ConvertTo-NetBios -domain $Domain)
         }

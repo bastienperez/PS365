@@ -1,4 +1,4 @@
-﻿Function Get-ExchangeListandPolicy {
+﻿function GetExchangeListandPolicy {
     <#
     .SYNOPSIS
     Short description

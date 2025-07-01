@@ -29,7 +29,7 @@ function Add-ConnectionFilterPolicyDetail {
         CIDR IP   You can use Classless InterDomain Routing (CIDR), for example, 192.168.0.1/25
 
     .PARAMETER OutputPath
-        Where to write the report files to.
+        Where-Object to write the report files to.
         By default it will write to the current path.
 
     .EXAMPLE
@@ -110,7 +110,7 @@ function Add-ConnectionFilterPolicyDetail {
             }
             $Params.Add("IPBlockList", $listIPBlockList)
         }
-        if (!(Get-HostedConnectionFilterPolicy -Identity $ConnectionFilterPolicy -ErrorAction SilentlyContinue)) {
+        if (-not(Get-HostedConnectionFilterPolicy -Identity $ConnectionFilterPolicy -ErrorAction SilentlyContinue)) {
             Write-Warning "Connection Filter Policy `"$ConnectionFilterPolicy`" does not exist.  Attempting to create..."
             try {
                 New-HostedConnectionFilterPolicy -Name $ConnectionFilterPolicy @Params -ErrorAction Stop

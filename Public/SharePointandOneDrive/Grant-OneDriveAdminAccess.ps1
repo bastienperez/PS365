@@ -48,7 +48,7 @@ function Grant-OneDriveAdminAccess {
                 Log  = "Success"
             }
         }
-        Catch {
+        catch {
             [PSCustomObject]@{
                 User = $User
                 Site = $site

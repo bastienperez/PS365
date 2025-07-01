@@ -1,4 +1,4 @@
-﻿Function Get-ADHashDisplayNameToGuid {
+﻿function GetADHashDisplayNameToGuid {
     <#
     .SYNOPSIS
 

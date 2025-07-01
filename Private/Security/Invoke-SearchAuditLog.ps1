@@ -1,4 +1,4 @@
-Function Invoke-SearchAuditLog {
+function Invoke-SearchAuditLog {
     [CmdletBinding()]
     param
     (

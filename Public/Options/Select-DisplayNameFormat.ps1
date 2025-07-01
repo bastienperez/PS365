@@ -4,7 +4,7 @@ function Select-DisplayNameFormat {
     $User = $env:USERNAME
     $DisplayNameFormat = $null
 
-    if (!(Test-Path $RootPath)) {
+    if (-not(Test-Path $RootPath)) {
         try {
             New-Item -ItemType Directory -Path $RootPath -ErrorAction STOP | Out-Null
         }
@@ -13,7 +13,7 @@ function Select-DisplayNameFormat {
         }           
     }
 
-    while (!$DisplayNameFormat) {
+    while (-not$DisplayNameFormat) {
         $DisplayNameFormat = "FirstName LastName", "LastName, FirstName" | Out-GridView -OutputMode Single -Title "SELECT `"DISPLAY NAME`" FORMAT"
     }
     if ($DisplayNameFormat -eq "FirstName LastName") {

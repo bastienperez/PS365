@@ -1,4 +1,4 @@
-function Get-EXOMailboxFolderPerms {
+function Get-PsExoMailboxFolderPerms {
     [CmdletBinding()]
     Param (
         [parameter(Mandatory)]

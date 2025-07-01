@@ -8,7 +8,7 @@ function Get-ActiveCasConnection {
     If you have mixed environment run from highest version
     For example, if you have Exchange 2010, 2013 and 2016 - Run from Exchange 2016 server
 
-    NOTE: This is designed to run against servers where the services are running.
+    NOTE: This is designed to run against servers Where-Object the services are running.
     You must verify POP and IMAP service is running on all the CAS servers prior to adding it to the list of servers
 
     For example, if the POP service is not running, add '#' to the POP object below, just like this:
@@ -16,12 +16,12 @@ function Get-ActiveCasConnection {
 
     To verify POP3 and/or IMAP4 service is running run these commands (once):
     ```
-    $CAS = Get-ClientAccessServer | Select -ExpandProperty name
-    $CAS |  % {write-host "`n`nServer: $($_)`nPOP3" -foregroundcolor "Green";Get-service -ComputerName $_ -ServiceName MSExchangePOP3 | Select -expandproperty status }
-    $CAS |  % {write-host "`n`nServer: $($_)`nIMAP4" -foregroundcolor "Cyan";Get-service -ComputerName $_ -ServiceName MSExchangeIMAP4 | Select -expandproperty status }
+    $CAS = Get-ClientAccessServer | Select-Object -ExpandProperty name
+    $CAS |  % {write-host "`n`nServer: $($_)`nPOP3" -foregroundcolor "Green";Get-service -ComputerName $_ -ServiceName MSExchangePOP3 | Select-Object -expandproperty status }
+    $CAS |  % {write-host "`n`nServer: $($_)`nIMAP4" -foregroundcolor "Cyan";Get-service -ComputerName $_ -ServiceName MSExchangeIMAP4 | Select-Object -expandproperty status }
     ```
     .PARAMETER LogPath
-    Where the log file will be automatically generated. Example c:\scripts
+    Where-Object the log file will be automatically generated. Example c:\scripts
 
     .PARAMETER SleepBetweenChecks
     After each server is checked, the script waits this amount of time (seconds) before proceeding to the next server
@@ -31,7 +31,7 @@ function Get-ActiveCasConnection {
     This should be passed via the pipeline as demonstrated in the examples below
 
     .EXAMPLE
-    $CAS = Get-ClientAccessServer | Select -ExpandProperty name
+    $CAS = Get-ClientAccessServer | Select-Object -ExpandProperty name
     for ($i=0 ; $i -lt 10 ; $i++) {$CAS | Get-ActiveCASConnection -LogPath C:\scripts -SleepBetweenChecks 10}
 
     This example runs the check 10 times against each server

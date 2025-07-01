@@ -1,4 +1,4 @@
-Function Rename-SamAccount {
+function Rename-SamAccount {
     <#
     .SYNOPSIS
 
@@ -15,17 +15,17 @@ Function Rename-SamAccount {
     )
     
     Begin {
-        Try {
+        try {
             import-module activedirectory -ErrorAction Stop -Verbose:$false
         }
-        Catch {
+        catch {
             Write-Host "This module depends on the ActiveDirectory module."
             Write-Host "Please download and install from https://www.microsoft.com/en-us/download/details.aspx?id=45520"
             throw
         }
         $RootPath = $env:USERPROFILE + "\ps\"
         $User = $env:USERNAME
-        if (!(Test-Path $RootPath)) {
+        if (-not(Test-Path $RootPath)) {
             try {
                 New-Item -ItemType Directory -Path $RootPath -ErrorAction STOP | Out-Null
             }
@@ -33,21 +33,21 @@ Function Rename-SamAccount {
                 throw $_.Exception.Message
             }           
         }        
-        While (!(Get-Content ($RootPath + "$($user).ADConnectServer") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
+        While (-not(Get-Content ($RootPath + "$($user).ADConnectServer") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
             Select-ADConnectServer
         }
         
-        While (!(Get-Content ($RootPath + "$($user).EXCHServer") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
+        While (-not(Get-Content ($RootPath + "$($user).EXCHServer") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
             Select-ExchangeServer
         }
         $ExchangeServer = Get-Content ($RootPath + "$($user).EXCHServer")
 
-        While (!(Get-Content ($RootPath + "$($user).TargetAddressSuffix") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
+        While (-not(Get-Content ($RootPath + "$($user).TargetAddressSuffix") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
             Select-TargetAddressSuffix
         }
         $targetAddressSuffix = Get-Content ($RootPath + "$($user).TargetAddressSuffix")
 
-        While (!(Get-Content ($RootPath + "$($user).DomainController") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
+        While (-not(Get-Content ($RootPath + "$($user).DomainController") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
             Select-DomainController
         }
         $domainController = Get-Content ($RootPath + "$($user).DomainController")     
@@ -82,7 +82,7 @@ Function Rename-SamAccount {
         Set-ADUser -Identity $CurrentSamAccountName -replace @{mailnickname = $samaccountname; targetaddress = ($samaccountname + "@" + $targetAddressSuffix)} -Server $domainController
         Set-ADUser -Identity $CurrentSamAccountName -SamAccountName $SamAccountName -Server $domainController
         ########################################
-        #         Sync Azure AD Connect        #
+        #         Sync Microsoft Entra ID Connect Sync        #
         ########################################
         Sync-ADConnect
 

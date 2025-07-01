@@ -84,7 +84,7 @@ function Connect-CloudMFA {
             $AzureAD {
                 Connect-CloudModuleImport -AzureAD
                 $ConnectAz = Connect-AzureAD
-                Write-Host ("Connected to Azure AD ({0})" -f $ConnectAz.TenantDomain) -ForegroundColor Green
+                Write-Host ("Connected to Microsoft Entra ID ({0})" -f $ConnectAz.TenantDomain) -ForegroundColor Green
             }
             $SharePoint {
                 Connect-CloudModuleImport -SharePoint

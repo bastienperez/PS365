@@ -1,4 +1,4 @@
-﻿Function Get-ADHashDN {
+﻿function GetADHashDN {
     param (
         [parameter(ValueFromPipeline = $true)]
         $MailboxList

@@ -1,4 +1,4 @@
-Function New-HybridMailbox {
+function New-HybridMailbox {
     <#
     .SYNOPSIS
         <#
@@ -13,7 +13,7 @@ Function New-HybridMailbox {
     The UserPrincipalName is created by copying the Primary SMTP Address (as created by the On-Premises Exchange Email Address Policies).
     Alternatively use the -PrimarySMTPAddress parameter)
     Can be run from any machine on the domain that has the module for ActiveDirectory installed.
-    The script will prompt once for the names of a Domain Controller, Exchange Server and the Azure AD Connect server.
+    The script will prompt once for the names of a Domain Controller, Exchange Server and the Microsoft Entra ID Connect Sync server.
     The script will also prompt once for DisplayName & SamAccountName Format.
     All of these prompts will only occur once per machine (per user).
     Should you wish to change any/all options just run: Select-Options
@@ -22,7 +22,7 @@ Function New-HybridMailbox {
 
     By default, the script creates an new Active Directory User & corresponding mailbox in Exchange Online.
 
-    You will be prompted for the OU where to place the user(s).
+    You will be prompted for the OU Where-Object to place the user(s).
     By default, you will be presented to choose from all OUs with the word "user" or "resource" in it.
     To add additional search criteria, use:  -OUSearch "SomeOtherSearchCriteria"
     You will also be prompted for which license options the user should receive.
@@ -257,7 +257,7 @@ Function New-HybridMailbox {
         # Create the dictionary
         $RuntimeParameterDictionary = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
         # Generate and set the ValidateSet
-        $arrSet = [adsi]([System.DirectoryServices.ActiveDirectory.Forest]::GetCurrentForest()).schema.name.replace("CN=Schema", "LDAP://CN=Partitions")| select -ExpandProperty upnsuffixes
+        $arrSet = [adsi]([System.DirectoryServices.ActiveDirectory.Forest]::GetCurrentForest()).schema.name.replace("CN=Schema", "LDAP://CN=Partitions")| Select-Object -ExpandProperty upnsuffixes
         $ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute($arrSet)
         # Add the ValidateSet to the attributes collection
         $AttributeCollection.Add($ValidateSetAttribute)
@@ -270,10 +270,10 @@ Function New-HybridMailbox {
     }
 
     Begin {
-        Try {
+        try {
             import-module activedirectory -ErrorAction Stop -Verbose:$false
         }
-        Catch {
+        catch {
             Write-Host "This module depends on the ActiveDirectory module."
             Write-Host "Please download and install from https://www.microsoft.com/en-us/download/details.aspx?id=45520"
             throw
@@ -282,7 +282,7 @@ Function New-HybridMailbox {
         $RootPath = $env:USERPROFILE + "\ps\"
         $User = $env:USERNAME
 
-        if (!(Test-Path $RootPath)) {
+        if (-not(Test-Path $RootPath)) {
             try {
                 New-Item -ItemType Directory -Path $RootPath -ErrorAction STOP | Out-Null
             }
@@ -290,49 +290,49 @@ Function New-HybridMailbox {
                 throw $_.Exception.Message
             }
         }
-        While (!(Get-Content ($RootPath + "$($user).ADConnectServer") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
+        While (-not(Get-Content ($RootPath + "$($user).ADConnectServer") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
             Select-ADConnectServer
         }
 
-        While (!(Get-Content ($RootPath + "$($user).EXCHServer") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
+        While (-not(Get-Content ($RootPath + "$($user).EXCHServer") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
             Select-ExchangeServer
         }
         $ExchangeServer = Get-Content ($RootPath + "$($user).EXCHServer")
 
-        While (!(Get-Content ($RootPath + "$($user).TargetAddressSuffix") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
+        While (-not(Get-Content ($RootPath + "$($user).TargetAddressSuffix") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
             Select-TargetAddressSuffix
         }
         $targetAddressSuffix = Get-Content ($RootPath + "$($user).TargetAddressSuffix")
 
-        While (!(Get-Content ($RootPath + "$($user).DomainController") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
+        While (-not(Get-Content ($RootPath + "$($user).DomainController") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
             Select-DomainController
         }
         $DomainController = Get-Content ($RootPath + "$($user).DomainController")
 
-        While (!(Get-Content ($RootPath + "$($user).DisplayNameFormat") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
+        While (-not(Get-Content ($RootPath + "$($user).DisplayNameFormat") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
             Select-DisplayNameFormat
         }
         $DisplayNameFormat = Get-Content ($RootPath + "$($user).DisplayNameFormat")
 
-        While (!(Get-Content ($RootPath + "$($user).SamAccountNameCharacters") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
+        While (-not(Get-Content ($RootPath + "$($user).SamAccountNameCharacters") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
             Select-SamAccountNameCharacters
         }
         [int]$SamAccountNameCharacters = Get-Content ($RootPath + "$($user).SamAccountNameCharacters")
 
-        While (!(Get-Content ($RootPath + "$($user).SamAccountNameOrder") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
+        While (-not(Get-Content ($RootPath + "$($user).SamAccountNameOrder") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
             Select-SamAccountNameOrder
         }
         $SamAccountNameOrder = Get-Content ($RootPath + "$($user).SamAccountNameOrder")
 
         if ($SamAccountNameOrder -eq "SamFirstFirst") {
 
-            While (!(Get-Content ($RootPath + "$($user).SamAccountNameNumberOfFirstNameCharacters") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
+            While (-not(Get-Content ($RootPath + "$($user).SamAccountNameNumberOfFirstNameCharacters") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
                 Select-SamAccountNameNumberOfFirstNameCharacters -SamAccountNameCharacters $SamAccountNameCharacters
             }
             [int]$SamAccountNameNumberOfFirstNameCharacters = Get-Content ($RootPath + "$($user).SamAccountNameNumberOfFirstNameCharacters")
         }
         else {
-            While (!(Get-Content ($RootPath + "$($user).SamAccountNameNumberOfLastNameCharacters") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
+            While (-not(Get-Content ($RootPath + "$($user).SamAccountNameNumberOfLastNameCharacters") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
                 Select-SamAccountNameNumberOfLastNameCharacters -SamAccountNameCharacters $SamAccountNameCharacters
             }
             [int]$SamAccountNameNumberOfLastNameCharacters = Get-Content ($RootPath + "$($user).SamAccountNameNumberOfLastNameCharacters")
@@ -357,14 +357,14 @@ Function New-HybridMailbox {
             try {
                 $null = Get-Command "Get-CloudMsolAccountSku" -ErrorAction Stop
             }
-            Catch {
+            catch {
                 Connect-Cloud $targetAddressSuffix -ExchangeOnline -EXOPrefix
             }
             Remove-Variable -Name RetentionPolicyToAdd -ErrorAction SilentlyContinue
             try {
                 $RetentionPolicyToAdd = ((Get-CloudRetentionPolicy -erroraction stop).name | Out-GridView -OutputMode Single -Title "Choose a single Retention Policy and Click OK")
             }
-            Catch {
+            catch {
                 Write-Output "Error running the command Get-CloudRetentionPolicy."
                 Write-Output "Please make sure you are connected to Exchange Online with the Prefix, Cloud, and try again"
                 Break
@@ -373,10 +373,10 @@ Function New-HybridMailbox {
 
         $OUSearch2 = "User"
         $ou = (Get-ADOrganizationalUnit -Server $domainController -filter * -SearchBase (Get-ADDomain -Server $domainController).distinguishedname -Properties canonicalname |
-                where {$_.canonicalname -match $OUSearch -or $_.canonicalname -match $OUSearch2
-            } | Select canonicalname, distinguishedname| sort canonicalname |
+                Where-Object {$_.canonicalname -match $OUSearch -or $_.canonicalname -match $OUSearch2
+            } | Select-Object canonicalname, distinguishedname| sort canonicalname |
                 Out-GridView -OutputMode Single -Title "Choose the OU in which to create the new user, then click OK").distinguishedname
-        if (!$NoMail) {
+        if (-not$NoMail) {
             $GuidFolder = Join-Path $env:TEMP ([Guid]::NewGuid().tostring())
             New-Item -Path $GuidFolder -ItemType Directory
             [string[]]$optionsToAdd = (Get-CloudSkuTable -all | Out-GridView -Title "Choose License Options, with Control + Click" -PassThru)
@@ -404,8 +404,8 @@ Function New-HybridMailbox {
                 $UserToCopy = (Get-ADUser -LDAPfilter "(userprincipalname=$UserToCopy)").samaccountname
             }
             $template = Get-ADUser -Identity $UserToCopy -Server $domainController -Properties Enabled, StreetAddress, City, State, PostalCode
-            $template = $template | Select Enabled, StreetAddress, City, State, PostalCode
-            $groupMembership = Get-ADUser -Identity $UserToCopy -Server $domainController -Properties memberof | select -ExpandProperty memberof
+            $template = $template | Select-Object Enabled, StreetAddress, City, State, PostalCode
+            $groupMembership = Get-ADUser -Identity $UserToCopy -Server $domainController -Properties memberof | Select-Object -ExpandProperty memberof
         }
         $Last = $LastName -replace (" ", "")
         $First = $FirstName -replace (" ", "")
@@ -413,14 +413,14 @@ Function New-HybridMailbox {
         ###############################################
         #     NOT SHARED  DisplayName & SamAccount    #
         ###############################################
-        if (!$Shared) {
+        if (-not$Shared) {
 
             $DisplayName = $ExecutionContext.InvokeCommand.ExpandString($DisplayNameFormat)
 
             ##############################################
             #              SamAccountName                #
             ##############################################
-            if (!$SAMPrefix) {
+            if (-not$SAMPrefix) {
                 if ($SamAccountNameOrder -eq "SamFirstFirst") {
                     # SamFIRSTFirst
                     $SamAccountName = (($First[0..($SamAccountNameNumberOfFirstNameCharacters - 1)] -join '') + $Last)[0..($SamAccountNameCharacters - 1)] -join ''
@@ -535,7 +535,7 @@ Function New-HybridMailbox {
         #          Create New ADUser            #
         #########################################
 
-        if (!$DontForceUserToChangePasswordAtLogon) {
+        if (-not$DontForceUserToChangePasswordAtLogon) {
             New-ADUser @params -Server $domainController -ChangePasswordAtLogon:$true -Enabled:$true
         }
         else {
@@ -561,9 +561,9 @@ Function New-HybridMailbox {
         }
 
         # Purge old jobs
-        Get-Job | where {$_.State -ne 'Running'}| Remove-Job
+        Get-Job | Where-Object {$_.State -ne 'Running'}| Remove-Job
 
-        if (!$NoMail) {
+        if (-not$NoMail) {
 
             ##################################################
             #      Enable Remote Mailbox in Office 365       #
@@ -580,7 +580,7 @@ Function New-HybridMailbox {
             # After Email Address Policy, Set UPN to same as PrimarySMTP #
             ##############################################################
 
-            $userprincipalname = (Get-ADUser -Server $domainController -Identity $SamAccountName -Properties proxyaddresses | Select @{
+            $userprincipalname = (Get-ADUser -Server $domainController -Identity $SamAccountName -Properties proxyaddresses | Select-Object @{
                     n = "PrimarySMTPAddress" ; e = {( $_.proxyAddresses | ? {$_ -cmatch "SMTP:*"}).Substring(5)}
                 }).primarysmtpaddress
             Set-ADUser -Server $domainController -Identity $SamAccountName -userprincipalname $userprincipalname
@@ -668,14 +668,14 @@ Function New-HybridMailbox {
 
     End {
         ########################################
-        #         Sync Azure AD Connect        #
+        #         Sync Microsoft Entra ID Connect Sync        #
         ########################################
         Sync-ADConnect -Sleep 5
 
         ########################################
-        # Stop the Licensing Watcher Function  #
+        # Stop the Licensing Watcher function #
         ########################################
-        if (!$NoMail) {
+        if (-not$NoMail) {
             Start-Job -Name DeleteGuidFolder {
                 $GuidFolder = $args[0]
                 New-Item -Path $GuidFolder -Name "ALLDONE" -Type File

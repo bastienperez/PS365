@@ -1,4 +1,4 @@
-Function Get-MailboxMove {
+function GetMailboxMove {
     <#
     .SYNOPSIS
     Get Mailbox Moves

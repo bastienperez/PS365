@@ -20,7 +20,7 @@ function Update-GoogleCalendarACL {
     Use this switch to add back the owner in the primaryemail column
 
     .PARAMETER OutputPath
-    Where to output the logs. Two logs are output. One with current state and one with future state
+    Where-Object to output the logs. Two logs are output. One with current state and one with future state
 
     .PARAMETER OwnedList
     Passed at the pipeline

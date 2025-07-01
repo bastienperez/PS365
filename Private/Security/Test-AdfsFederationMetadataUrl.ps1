@@ -12,7 +12,7 @@ function Test-AdfsFederationMetadataUrl {
         # Build up our attempted federation hostname
         $tempURL = "{0}.{1}" -f $prefix, $DomainName
 
-        # Try and resolve the hostname
+        # try and resolve the hostname
         $ResolveSplat = @{
             Name          = $tempURL
             ErrorAction   = 'SilentlyContinue'
@@ -27,7 +27,7 @@ function Test-AdfsFederationMetadataUrl {
         # Assuming the federation service is ADFS, build up a path to the metadata file
         $fedURL = "https://$tempURL/federationmetadata/2007-06/federationmetadata.xml"
 
-        # Try and retrieve the federation metadata XML file
+        # try and retrieve the federation metadata XML file
         $xmlData = $null
         try {
             $xmlData = Invoke-RestMethod -Method Get -Uri $fedURL -ErrorAction SilentlyContinue -WarningAction SilentlyContinue

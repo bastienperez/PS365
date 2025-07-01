@@ -88,7 +88,7 @@ function Switch-PrimarySmtp {
         try {
 
             $Mailbox = & "Get-$MailboxType" -identity $_ -ErrorAction Stop |
-                Where {$_.EmailAddresses -match "$ConvertToPrimaryWhenAddressContains"}
+                Where-Object {$_.EmailAddresses -match "$ConvertToPrimaryWhenAddressContains"}
 
         }
         
@@ -103,17 +103,17 @@ function Switch-PrimarySmtp {
 
         }
 
-        $Convert = $Mailbox | Select ($Props + $Calc)
+        $Convert = $Mailbox | Select-Object ($Props + $Calc)
 
         ForEach ($CurConvert in $Convert) {
 
-            $DisplayName = $CurConvert | Select -ExpandProperty DisplayName
-            $UserPrincipalName = $CurConvert | Select -ExpandProperty UserPrincipalName
+            $DisplayName = $CurConvert | Select-Object -ExpandProperty DisplayName
+            $UserPrincipalName = $CurConvert | Select-Object -ExpandProperty UserPrincipalName
 
-            $CurrentPrimaryRaw = $CurConvert | Select -ExpandProperty CurrentPrimary
+            $CurrentPrimaryRaw = $CurConvert | Select-Object -ExpandProperty CurrentPrimary
             $CurrentPrimary = $CurrentPrimaryRaw -replace ('smtp:', '')
 
-            $NewPrimaryRaw = $CurConvert | Select -ExpandProperty MakePrimary
+            $NewPrimaryRaw = $CurConvert | Select-Object -ExpandProperty MakePrimary
             $NewPrimary = $NewPrimaryRaw -replace ('smtp:', '')
             $NewPrimaryCount = ($NewPrimaryRaw -split ';').count
 

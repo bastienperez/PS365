@@ -1,7 +1,7 @@
-Function Update-RoleEntry {
+function Update-RoleEntry {
     <#
     .SYNOPSIS
-    Function to modify a role by removing or adding Role Entries
+    function to modify a role by removing or adding Role Entries
 
     .DESCRIPTION
 

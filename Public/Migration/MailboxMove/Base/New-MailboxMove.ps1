@@ -20,10 +20,10 @@ function New-MailboxMove {
     Path to csv of mailboxes. Minimum headers required are: BatchName, UserPrincipalName
 
     .PARAMETER RemoteHost
-    This is the on-premises endpoint where the source mailboxes reside ex. mail.contoso.com
+    This is the on-premises endpoint Where-Object the source mailboxes reside ex. mail.contoso.com
 
     .PARAMETER Tenant
-    This is the tenant domain - where you are migrating to. Ex. if tenant is contoso.mail.onmicrosoft.com use contoso
+    This is the tenant domain - Where-Object you are migrating to. Ex. if tenant is contoso.mail.onmicrosoft.com use contoso
 
     .PARAMETER GroupsToAddUserTo
     Provide one or more Active Directory Groups to add each user chosen to. -GroupsToAddUserTo "Human Resources", "Accounting"

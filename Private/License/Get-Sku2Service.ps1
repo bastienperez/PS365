@@ -11,7 +11,7 @@
     )
 
     $u2fSku = @{
-        "ATA"                                = "Azure Advanced Threat Protection for Users"
+        "ATA"                                = "Microsoft Azure Advanced Threat Protection for Users"
         "ADALLOM_STANDALONE"                 = "Microsoft Cloud App Security"
         "RIGHTSMANAGEMENT"                   = "AZURE INFORMATION PROTECTION PLAN 1"
         "THREAT_INTELLIGENCE"                = "OFFICE 365 ADVANCED THREAT PROTECTION (PLAN 2)"
@@ -104,7 +104,7 @@
     $u2fOpt = @{
         "FLOW_P2_VIRAL"                  = "Flow Free"
         "DYN365_CDS_VIRAL"               = "Common Data Service"
-        "ATA"                            = "Azure Advanced Threat Protection"
+        "ATA"                            = "Microsoft Azure Advanced Threat Protection"
         "AAD_PREMIUM"                    = "Azure Active Directory Premium Plan 1";
         "AAD_PREMIUM_P2"                 = "Azure Active Directory Premium P2";
         "IT_ACADEMY_AD"                  = "Microsoft Imagine Academy";

@@ -27,7 +27,7 @@
     $SkuFeaturesToDisable = @()
     $SkuOptsToDisable = @()
     $skuIdHash = @{}
-    Get-AzureADSubscribedSku | Select SkuPartNumber, SkuId | ForEach-Object {
+    Get-AzureADSubscribedSku | Select-Object SkuPartNumber, SkuId | ForEach-Object {
         $skuIdHash[$_.SkuPartNumber] = $_.SkuId
     }
     # Remove Sku
@@ -53,7 +53,7 @@
     if ($addAlready) {
         $licensesToAssign = New-Object -TypeName Microsoft.Open.AzureAD.Model.AssignedLicenses
         foreach ($sku in $skus) {
-            $StandardLicense = Get-AzureADSubscribedSku | Where {$_.SkuId -eq $skuIdHash.$sku}
+            $StandardLicense = Get-AzureADSubscribedSku | Where-Object { $_.SkuId -eq $skuIdHash.$sku }
             $license = New-Object -TypeName Microsoft.Open.AzureAD.Model.AssignedLicense
             $license.SkuId = $StandardLicense.SkuId
             $licensesToAssign.AddLicenses += $license
@@ -63,8 +63,8 @@
     if ($addTheOptions) {
         foreach ($sku in $skus) {
             $SkuFeaturesToEnable = $options
-            $StandardLicense = Get-AzureADSubscribedSku | Where {$_.SkuId -eq $skuIdHash.$sku}
-            $SkuFeaturesToDisable = $StandardLicense.ServicePlans | ForEach-Object { $_ | Where {$_.ServicePlanName -notin $SkuFeaturesToEnable }}
+            $StandardLicense = Get-AzureADSubscribedSku | Where-Object { $_.SkuId -eq $skuIdHash.$sku }
+            $SkuFeaturesToDisable = $StandardLicense.ServicePlans | ForEach-Object { $_ | Where-Object { $_.ServicePlanName -notin $SkuFeaturesToEnable } }
             $license = New-Object -TypeName Microsoft.Open.AzureAD.Model.AssignedLicense
             $license.SkuId = $StandardLicense.SkuId
             $license.DisabledPlans = $SkuFeaturesToDisable.ServicePlanId
@@ -78,8 +78,8 @@
         $licensesToAssign = New-Object -TypeName Microsoft.Open.AzureAD.Model.AssignedLicenses
         foreach ($sku in $skus) {
             $SkuOptsToDisable = $options
-            $StandardLicense = Get-AzureADSubscribedSku | Where {$_.SkuId -eq $skuIdHash.$sku}
-            $SkuFeaturesToDisable = $StandardLicense.ServicePlans | ForEach-Object { $_ | Where {$_.ServicePlanName -in $SkuOptsToDisable }}
+            $StandardLicense = Get-AzureADSubscribedSku | Where-Object { $_.SkuId -eq $skuIdHash.$sku }
+            $SkuFeaturesToDisable = $StandardLicense.ServicePlans | ForEach-Object { $_ | Where-Object { $_.ServicePlanName -in $SkuOptsToDisable } }
             $license = New-Object -TypeName Microsoft.Open.AzureAD.Model.AssignedLicense
             $License.DisabledPlans = $SkuFeaturesToDisable.ServicePlanId
             $license.SkuId = $StandardLicense.SkuId

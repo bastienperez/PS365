@@ -1,4 +1,4 @@
-Function Invoke-GetMailboxMovePassThru {
+function Invoke-GetMailboxMovePassThru {
     [CmdletBinding()]
     param
     (

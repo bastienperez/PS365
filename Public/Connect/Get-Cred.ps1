@@ -23,26 +23,26 @@ function Get-Cred {
     }
     process {
         if ($DeleteCreds) {
-            Try {
+            try {
                 Remove-Item ($KeyPath + $PassFileName) -ErrorAction Stop
             }
-            Catch {
+            catch {
                 Write-Warning "While the attempt to delete credentials failed, this may be normal. Please try to connect again."
             }
-            Try {
+            try {
                 Remove-Item ($KeyPath + $UserFileName) -ErrorAction Stop
             }
-            Catch {
+            catch {
                 break
             }
         }
         if (Test-Path ($KeyPath + $PassFileName)) {
             $Pass = Get-Content ($KeyPath + $PassFileName) | ConvertTo-SecureString
             $User = Get-Content ($KeyPath + $UserFileName)
-            $Cred = Try {
+            $Cred = try {
                 New-Object System.Management.Automation.PSCredential -ArgumentList $User, $Pass -ErrorAction Stop 
             }
-            Catch {
+            catch {
                 if ($_.exception.Message -match '"userName" is not valid. Change the value of the "userName" argument and run the operation again') {
                     Connect-Cloud $Tenant -DeleteCreds
                     Write-Warning "                    Bad Username                                    "
@@ -56,14 +56,14 @@ function Get-Cred {
             }
         }
         else {
-            $Cred = Get-Credential -Message "ENTER USERNAME & PASSWORD FOR OFFICE 365/AZURE AD"
+            $Cred = Get-Credential -Message "ENTER USERNAME & PASSWORD FOR OFFICE 365/Microsoft Entra ID"
             if ($Cred.Password) {
                 $Cred.Password | ConvertFrom-SecureString | Out-File ($KeyPath + $PassFileName) -Force
             }
             else {
                 Connect-Cloud $Tenant -DeleteCreds
                 Write-Warning "                 No Password Present                                "
-                Write-Warning "          Please Try your last command again...                     "
+                Write-Warning "          Please try your last command again...                     "
                 Write-Warning "...you will be prompted to enter your Office 365 credentials again. "
                 Break
             }

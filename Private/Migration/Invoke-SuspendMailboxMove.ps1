@@ -1,4 +1,4 @@
-Function Invoke-SuspendMailboxMove {
+function Invoke-SuspendMailboxMove {
     [CmdletBinding()]
     param
     (

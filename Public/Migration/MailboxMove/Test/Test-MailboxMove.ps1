@@ -1,4 +1,4 @@
-Function Test-MailboxMove {
+function Test-MailboxMove {
     <#
     .SYNOPSIS
     Test Mailbox Moves

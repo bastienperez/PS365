@@ -34,10 +34,10 @@ function Connect-PoshGraphOld {
     }
     # Create KeyPath Directory
     if (-not (Test-Path $KeyPath)) {
-        Try {
+        try {
             $null = New-Item -ItemType Directory -Path $KeyPath -ErrorAction STOP
         }
-        Catch {
+        catch {
             throw $_.Exception.Message
         }
     }

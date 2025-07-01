@@ -1,4 +1,4 @@
-Function Get-LegacyDNHash {
+function Get-LegacyDNHash {
     param (
         [Parameter(Mandatory)]
         $ADUserList

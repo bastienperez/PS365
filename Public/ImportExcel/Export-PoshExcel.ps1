@@ -14,7 +14,7 @@ function Export-PoshExcel {
     The directory that contains the csv's
 
     .PARAMETER Path
-    The full path and filename where the Excel file will be created.
+    The full path and filename Where-Object the Excel file will be created.
     Use .xlsx extension
 
     .PARAMETER Recurse

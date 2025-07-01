@@ -205,7 +205,7 @@
             ForEach ($CurMailUser in $MailUser) {
                 if ($CurMailUser.PrimarySmtpAddress -notlike $RoutingDomain) {
                     $MailUsrPrimary = '{0}@{1}' -f $CurMailUser.PrimarySmtpAddress.Split("@")[0], $DomainSuffix
-                    Try {
+                    try {
                         Set-MailUser -Identity $($CurMailUser.PrimarySmtpAddress) -WindowsEmailAddress $MailUsrPrimary -ErrorAction Stop
                         Write-HostProgress -Message "$($CurMailUser.PrimarySmtpAddress)" -Status "Success" -Total $Total -Count $i
                     }

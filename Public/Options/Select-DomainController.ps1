@@ -4,7 +4,7 @@ function Select-DomainController {
     $User = $env:USERNAME
     $DomainController = $null
 
-    if (!(Test-Path $RootPath)) {
+    if (-not(Test-Path $RootPath)) {
         try {
             New-Item -ItemType Directory -Path $RootPath -ErrorAction STOP | Out-Null
         }
@@ -13,7 +13,7 @@ function Select-DomainController {
         }           
     }
 
-    while (! $DomainController) {
+    while (-not $DomainController) {
         try {
             $DomainController = [System.DirectoryServices.ActiveDirectory.Forest]::GetCurrentForest().domains.DomainControllers.Name |  
             Out-GridView -OutputMode Single -Title "SELECT A DOMAIN CONTROLLER AND CLICK OK"

@@ -1,4 +1,4 @@
-function Get-EXOnlineMailbox {
+function Get-PsExoMailbox {
     <#
     .SYNOPSIS
     Export Office 365 Mailboxes
@@ -13,19 +13,19 @@ function Get-EXOnlineMailbox {
     Provides a full report of all attributes.  Otherwise, only a refined report will be given.
 
     .EXAMPLE
-    Get-EXOnlineMailbox | Export-Csv c:\scripts\All365Mailboxes.csv -notypeinformation -encoding UTF8
+    Get-PsExoMailbox | Export-Csv c:\scripts\All365Mailboxes.csv -notypeinformation -encoding UTF8
 
     .EXAMPLE
-    Get-EXOnlineMailbox -ArchivesOnly | Export-Csv c:\scripts\All365Mailboxes.csv -notypeinformation -encoding UTF8
+    Get-PsExoMailbox -ArchivesOnly | Export-Csv c:\scripts\All365Mailboxes.csv -notypeinformation -encoding UTF8
 
     .EXAMPLE
-    '{emailaddresses -like "*contoso.com"}' | Get-EXOnlineMailbox | Export-Csv c:\scripts\365Mailboxes.csv -notypeinformation -encoding UTF8
+    '{emailaddresses -like "*contoso.com"}' | Get-PsExoMailbox | Export-Csv c:\scripts\365Mailboxes.csv -notypeinformation -encoding UTF8
 
     .EXAMPLE
-    '{emailaddresses -like "*contoso.com"}' | Get-EXOnlineMailbox -ArchivesOnly | Export-Csv c:\scripts\365Mailboxes.csv -notypeinformation -encoding UTF8
+    '{emailaddresses -like "*contoso.com"}' | Get-PsExoMailbox -ArchivesOnly | Export-Csv c:\scripts\365Mailboxes.csv -notypeinformation -encoding UTF8
 
     .EXAMPLE
-    '{emailaddresses -like "*contoso.com"}' | Get-EXOnlineMailbox -DetailedReport | Export-Csv c:\scripts\365Mailboxes_Detailed.csv -notypeinformation -encoding UTF8
+    '{emailaddresses -like "*contoso.com"}' | Get-PsExoMailbox -DetailedReport | Export-Csv c:\scripts\365Mailboxes_Detailed.csv -notypeinformation -encoding UTF8
 
     #>
     [CmdletBinding()]

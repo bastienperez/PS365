@@ -38,7 +38,7 @@ Add Recipients Email Addresses and other functions
         $_.EmailAddresses -match "@Contosotechincgc.onmicrosoft.com"
     } 
     ForEach ($CurNewt in $Newt) {
-        Try {
+        try {
             ## Verify Case of domain.onmicrosoft.com address as case dependent command follows ##
             $Remove = $CurNewt.EmailAddresses -split ';' | Where-Object {
                 $_ -clike "SMTP:*@Contosotechincgc.onmicrosoft.com"
@@ -69,7 +69,7 @@ Add Recipients Email Addresses and other functions
                 }                
             }
         }
-        Catch {
+        catch {
             Write-Warning $_
             $DisplayName + "," + $Remove + "," + $RemovesmtptomakeSMTP + "," + $Add + "," + $("smtp:" + ($Remove.substring(5))) + "," + $CurPrimary + "," + $_ |
                 Out-file $FailLog -Encoding UTF8 -append

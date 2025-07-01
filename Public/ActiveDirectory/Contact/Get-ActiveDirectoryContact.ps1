@@ -7,7 +7,7 @@ function Get-ActiveDirectoryContact {
     Export Active Directory Contacts
 
     .PARAMETER SpecificOU
-    Provide specific OU(s) from where to pull.  Otherwise, all AD Contacts will be reported.  Please review the examples provided.
+    Provide specific OU(s) from Where-Object to pull.  Otherwise, all AD Contacts will be reported.  Please review the examples provided.
 
     .PARAMETER IncludeSubOUs
     Switch to include sub OU(s) if SpecificOU is specified.  Otherwise, just the single OU will be included.

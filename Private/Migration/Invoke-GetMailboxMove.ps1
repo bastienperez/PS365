@@ -1,4 +1,4 @@
-Function Invoke-GetMailboxMove {
+function Invoke-GetMailboxMove {
 
     [CmdletBinding()]
     param

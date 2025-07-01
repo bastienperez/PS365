@@ -12,7 +12,7 @@ function Clear-SFBAttribute {
     Use with caution as this removes attributes
     This is often use to prep
 
-    The process to move from On-Premises Skype to Skype for Business Online (where there is not hybrid or transition, contact lists are NOT preserved)
+    The process to move from On-Premises Skype to Skype for Business Online (Where-Object there is not hybrid or transition, contact lists are NOT preserved)
 
     1. Remove Skype for Business Licenses from user(s)
         Install-Module PS365 -Scope CurrentUser -Force

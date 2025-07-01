@@ -1,4 +1,4 @@
-Function Disable-Employee {
+function Disable-Employee {
     <#
     .SYNOPSIS
     Resets AD password to a random complex password, disables the AD User & Removes any Office 365 licenses.  Also converts mailbox to a Shared Mailbox.
@@ -30,12 +30,12 @@ Function Disable-Employee {
         $RootPath = $env:USERPROFILE + "\ps\"
         $User = $env:USERNAME
     
-        While (!(Get-Content ($RootPath + "$($user).DomainController") -ErrorAction SilentlyContinue | Where-Object {$_.count -gt 0})) {
+        While (-not(Get-Content ($RootPath + "$($user).DomainController") -ErrorAction SilentlyContinue | Where-Object {$_.count -gt 0})) {
             Select-DomainController
         }
         $DomainController = Get-Content ($RootPath + "$($user).DomainController")  
 
-        While (!(Get-Content ($RootPath + "$($user).TargetAddressSuffix") -ErrorAction SilentlyContinue | Where-Object {$_.count -gt 0})) {
+        While (-not(Get-Content ($RootPath + "$($user).TargetAddressSuffix") -ErrorAction SilentlyContinue | Where-Object {$_.count -gt 0})) {
             Select-TargetAddressSuffix
         }
         $targetAddressSuffix = Get-Content ($RootPath + "$($user).TargetAddressSuffix")
@@ -97,7 +97,7 @@ Function Disable-Employee {
         Revoke-AzureADUserAllRefreshToken -ObjectId $PrimarySMTP
 
         # Convert Cloud Mailbox to type, Shared.
-        if (!$DontConvertToShared) {
+        if (-not$DontConvertToShared) {
             Write-Output "Converting to Shared Mailbox"  
             ConvertTo-Shared -UserToConvert $UserToDisable
         
@@ -112,8 +112,8 @@ Function Disable-Employee {
         if ($DontConvertToShared) {
             $OUSearch = "Disabled"
             $ou = (Get-ADOrganizationalUnit -Server $domainController -filter * -SearchBase (Get-ADDomain -Server $domainController).distinguishedname -Properties canonicalname | 
-                    where {$_.canonicalname -match $OUSearch -or $_.canonicalname -match $OUSearch2
-                } | Select canonicalname, distinguishedname| sort canonicalname | 
+                    Where-Object {$_.canonicalname -match $OUSearch -or $_.canonicalname -match $OUSearch2
+                } | Select-Object canonicalname, distinguishedname| sort canonicalname | 
                     Out-GridView -OutputMode Single -Title "Choose the OU in which to Move the Disabled User, then click OK").distinguishedname 
             Write-Output "Disabling AD User and moving user to chosen OU"                 
             if ($UserToDisable -like "*@*") {

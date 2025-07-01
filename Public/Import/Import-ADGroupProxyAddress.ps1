@@ -170,11 +170,11 @@ function Import-ADGroupProxyAddress {
         $Row
     )
     Begin {
-        if ($Domain -and (! $NewDomain)) {
+        if ($Domain -and (-not $NewDomain)) {
             Write-Warning "Must use NewDomain parameter when specifying Domain parameter"
             break
         }
-        if ($NewDomain -and (! $Domain)) {
+        if ($NewDomain -and (-not $Domain)) {
             Write-Warning "Must use Domain parameter when specifying NewDomain parameter"
             break
         }
@@ -242,7 +242,7 @@ function Import-ADGroupProxyAddress {
             if ($PrimarySMTP) {
                 $MailAttribute = ($PrimarySMTP.Substring(5)).ToLower()
             }
-            if (! $LogOnly) {
+            if (-not $LogOnly) {
                 try {
                     $errorActionPreference = 'Stop'
                     switch ($FindADGroupBy) {

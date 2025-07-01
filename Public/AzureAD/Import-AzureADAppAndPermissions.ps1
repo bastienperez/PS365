@@ -1,10 +1,10 @@
 function Import-AzureADAppAndPermissions {
     <#
     .SYNOPSIS
-    Import Azure AD App name & API permissions from filesystem-based or GIST-based xml
+    Import Microsoft Entra ID App name & API permissions from filesystem-based or GIST-based xml
 
     .DESCRIPTION
-    Import Azure AD App name & API permissions from filesystem-based or GIST-based xml
+    Import Microsoft Entra ID App name & API permissions from filesystem-based or GIST-based xml
 
     .PARAMETER Owner
     The owner of the application. For convenience, should be the owner
@@ -15,7 +15,7 @@ function Import-AzureADAppAndPermissions {
     Choose this or the Github paramters to grab the xml from a GIST
 
     .PARAMETER GithubUsername
-    Github username where the GIST you wish to import lives
+    Github username Where-Object the GIST you wish to import lives
 
     .PARAMETER GistFilename
     filename of GIST, example: Test.xml
@@ -40,7 +40,7 @@ function Import-AzureADAppAndPermissions {
 
     Alternatively, and admin can simply login to the Azure portal then select the following:
 
-    Azure AD > App Registrations > find/click the App > API permissions > Grant Admin Consent for Tenant
+    Microsoft Entra ID > App Registrations > find/click the App > API permissions > Grant Admin Consent for Tenant
 
     .EXAMPLE
     Import-AzureADAppAndPermissions -Owner admin@contoso.onmicrosoft.com -GithubUsername kevinblumenfeld `
@@ -122,7 +122,7 @@ function Import-AzureADAppAndPermissions {
         $null = Get-AzureADApplication -filter "DisplayName eq '$Name'" -ErrorAction Stop
     }
     catch {
-        Write-Host "Azure AD Application Name: $Name already exists" -ForegroundColor Red
+        Write-Host "Microsoft Entra ID Application Name: $Name already exists" -ForegroundColor Red
         Write-Host "Choose a new name with the -Name parameter" -ForegroundColor Cyan
         continue
     }

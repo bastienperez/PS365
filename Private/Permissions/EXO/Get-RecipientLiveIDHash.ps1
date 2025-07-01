@@ -1,4 +1,4 @@
-﻿Function Get-RecipientLiveIDHash {
+﻿function GetRecipientLiveIDHash {
     <#
     .SYNOPSIS
 

@@ -1,4 +1,4 @@
-﻿Function Get-ADHashMailToGuid {
+﻿function GetADHashMailToGuid {
     param (
         [parameter(ValueFromPipeline = $true)]
         $row

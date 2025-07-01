@@ -52,7 +52,7 @@ function Update-GroupManagementRole {
 
     If (Get-ManagementRole $Name -erroraction silentlycontinue) {
         Write-Warning "Found a Role with Name: $Name"
-        Write-Warning "Trying to Modify Existing Role"
+        Write-Warning "trying to Modify Existing Role"
     }
     Else {
         Write-Host "Creating Management Role $Name"

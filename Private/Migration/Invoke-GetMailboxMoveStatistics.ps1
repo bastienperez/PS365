@@ -1,4 +1,4 @@
-Function Invoke-GetMailboxMoveStatistics {
+function Invoke-GetMailboxMoveStatistics {
     <#
 
     #>

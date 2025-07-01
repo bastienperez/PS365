@@ -10,7 +10,7 @@ function Invoke-NewMailboxMove {
     Passed via pipeline from public function
 
     .PARAMETER RemoteHost
-    This is the on-premises endpoint where the source mailboxes reside ex. cas2010.contoso.com
+    This is the on-premises endpoint Where-Object the source mailboxes reside ex. cas2010.contoso.com
 
     .PARAMETER Tenant
     This is the tenant domain ex. if tenant is contoso.mail.onmicrosoft.com use contoso

@@ -8,12 +8,12 @@ function New-ExoCBAConnection {
 
     Creates a connection to Exchange Online authenticated by a certificate
 
-        1. Creates Azure AD App
+        1. Creates Microsoft Entra ID App
         2. Adds needed API Permissions to App ( Exchange.ManageAsApp )
         3. Opens browser to grant admin consent
         4. Creates a self-signed certificate
         5. Adds certificate to Current User's personal store
-        6. Uploads certificate to Azure AD App
+        6. Uploads certificate to Microsoft Entra ID App
         7. Encrypts and saves AppID, thumbprint, and tenant domain with Export-Clixml
         8. Connecting to Exchange Online is as easy as running this command: Connect-Cloud -Tenant Contoso -EXOCBA
 
@@ -76,7 +76,7 @@ function New-ExoCBAConnection {
     }
     $CertInfo = New-PoshSelfSignedCert @SelfSignedSplat
 
-    # Register Azure AD Application
+    # Register Microsoft Entra ID Application
     $RegisterAppSplat = @{
         Tenant                    = $Tenant
         App                       = 'EXO'

@@ -102,12 +102,12 @@ function Get-MailboxMovePermission {
             { $BatchHash } { $PermissionResult.Add('BatchHash', $BatchHash) }
             $Remove { $PermissionResult.Add('Remove', $true) }
             $IncludeMigrated { $PermissionResult.Add('IncludeMigrated', $IncludeMigrated) }
-            $UseApplyFunction {
+            $UseApplyfunction{
                 Get-MailboxMoveApplyPermissionResult @PermissionResult | Out-GridView -Title "Choose which permissions to apply" -OutputMode Multiple
                 return
             }
             $PassThru { Get-MailboxMovePermissionResult @PermissionResult | Out-GridView -Title "Permission Results" -OutputMode Multiple }
-            { -not $PassThru -and -not $Link -and -not $UseApplyFunction } {
+            { -not $PassThru -and -not $Link -and -not $UseApplyfunction} {
                 Get-MailboxMovePermissionResult @PermissionResult | Out-GridView -Title "Permission Results"
             }
             Default { }

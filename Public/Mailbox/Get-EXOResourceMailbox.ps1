@@ -1,4 +1,4 @@
-function Get-EXOResourceMailbox {
+function Get-PsExoResourceMailbox {
     <#
     .SYNOPSIS
     Export Office 365 Resource Mailboxes and Calendar Processing
@@ -13,10 +13,10 @@ function Get-EXOResourceMailbox {
     Provides a full report of all attributes.  Otherwise, only a refined report will be given.
 
     .EXAMPLE
-    Get-EXOResourceMailbox | Export-Csv c:\scripts\All365Mailboxes.csv -notypeinformation -encoding UTF8
+    Get-PsExoResourceMailbox | Export-Csv c:\scripts\All365Mailboxes.csv -notypeinformation -encoding UTF8
 
     .EXAMPLE
-    '{emailaddresses -like "*contoso.com"}' | Get-EXOResourceMailbox | Export-Csv c:\scripts\365ResourceMailboxes.csv -notypeinformation -encoding UTF8
+    '{emailaddresses -like "*contoso.com"}' | Get-PsExoResourceMailbox | Export-Csv c:\scripts\365ResourceMailboxes.csv -notypeinformation -encoding UTF8
 
     #>
     [CmdletBinding()]

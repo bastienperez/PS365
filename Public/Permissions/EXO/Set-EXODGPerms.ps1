@@ -1,4 +1,4 @@
-﻿Function Set-EXODGPerms {
+﻿function Set-EXODGPerms {
     <#
     .SYNOPSIS
     Short description

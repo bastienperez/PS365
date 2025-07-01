@@ -370,20 +370,20 @@
     $html += "</tr>"
 
     foreach ($Server in $ServerList) {
-        Write-Host "Getting Outlook Anywhere information for server: " -NoNewLine
+        Write-Host "Getting Outlook AnyWhere-Object information for server: " -NoNewLine
         Write-Host "$($Server.name)" -ForegroundColor Cyan
         if ($ADProperties) {
-            $oaresult = Get-OutlookAnywhere -server $Server.name -ADPropertiesOnly | Select-Object Name, Server, InternalHostname, ExternalHostname, ExternalClientAuthenticationMethod, InternalClientAuthenticationMethod, IISAuthenticationMethods, WhenChanged
+            $oaresult = Get-OutlookAnyWhere-Object -server $Server.name -ADPropertiesOnly | Select-Object Name, Server, InternalHostname, ExternalHostname, ExternalClientAuthenticationMethod, InternalClientAuthenticationMethod, IISAuthenticationMethods, WhenChanged
         }
         else {
-            $oaresult = Get-OutlookAnywhere -server $Server.name | Select-Object Name, Server, InternalHostname, ExternalHostname, ExternalClientAuthenticationMethod, InternalClientAuthenticationMethod, IISAuthenticationMethods, WhenChanged
+            $oaresult = Get-OutlookAnyWhere-Object -server $Server.name | Select-Object Name, Server, InternalHostname, ExternalHostname, ExternalClientAuthenticationMethod, InternalClientAuthenticationMethod, IISAuthenticationMethods, WhenChanged
         }
 
         if ($null -eq $oaresult) {
             $oahtml += "<tr.color>"
             $oahtml += "<td>" + $Server.name + "</td>"
             $oahtml += "<td colspan='6'>"
-            $oahtml += "Outlook Anywhere isn't enabled."
+            $oahtml += "Outlook AnyWhere-Object isn't enabled."
             $oahtml += "</td>"
             $oahtml += "</tr>"
 

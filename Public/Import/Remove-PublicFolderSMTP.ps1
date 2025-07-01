@@ -72,7 +72,7 @@ $DomainNoMS = @(
     'orange.com', 'star.com'
 )
 
-$Smtp = (Get-MailPublicFolder -Identity $Pf | Select -ExpandProperty EmailAddresses |
+$Smtp = (Get-MailPublicFolder -Identity $Pf | Select-Object -ExpandProperty EmailAddresses |
         Where-Object {
         ($_ -split "@")[1] -in $Domain
     })

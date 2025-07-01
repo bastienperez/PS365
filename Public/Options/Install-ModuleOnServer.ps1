@@ -12,7 +12,7 @@ function Install-ModuleOnServer {
     Use this command from any other computer that has PS 5
 
     .PARAMETER Server
-    The server where you want to module installed from the PowerShell Gallery
+    The server Where-Object you want to module installed from the PowerShell Gallery
 
     .PARAMETER Module
     Specify the module from the PowerShell Gallery that you want to install

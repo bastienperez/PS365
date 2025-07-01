@@ -1,4 +1,4 @@
-﻿Function Get-DGPerms {
+﻿function GetDGPerms {
 
     <#
     .SYNOPSIS
@@ -34,10 +34,10 @@
         [string] $ExchangeServer
     )
 
-    Try {
+    try {
         import-module activedirectory -ErrorAction Stop -Verbose:$false
     }
-    Catch {
+    catch {
         Write-Host "This module depends on the ActiveDirectory module."
         Write-Host "Please download and install from https://www.microsoft.com/en-us/download/details.aspx?id=45520"
         throw
@@ -57,7 +57,7 @@
         Write-Warning "      Get-ChildItem -Path `"C:\scripts\PS365\`" -filter *.ps1 -Recurse | % { . `$_.fullname }   "
         Write-Warning "                    It is normal to see errors when running the above command                     "
         Write-Warning "**************************************************************************************************"
-        if (!$ExchangeServer) {
+        if (-not$ExchangeServer) {
             Write-Warning "********************************************************************************************"
             Write-Warning "               Re-Run the command specifying the -ExchangeServer parameter                  "
             Write-Warning "ex. Get-DGPerms -ReportPath C:\PermsReports -PowerShell2 -ExchangeServer `"ExServer01`""
@@ -71,7 +71,7 @@
         }
     }
     else {
-        while (!(Test-Path ($RootPath + "$($user).EXCHServer"))) {
+        while (-not(Test-Path ($RootPath + "$($user).EXCHServer"))) {
             Select-ExchangeServer
         }
         $ExchangeServer = Get-Content ($RootPath + "$($user).EXCHServer")
@@ -94,10 +94,10 @@
     $ADHashDGDN = $AllADObjects | Get-ADHashDGDN
 
     Write-Verbose "Retrieving distinguishedname's of all Exchange Distribution Groups"
-    $AllDGDNs = Get-Recipient -ResultSize Unlimited -RecipientTypeDetails 'MailUniversalDistributionGroup', 'MailUniversalSecurityGroup' | Select -ExpandProperty distinguishedname
+    $AllDGDNs = Get-Recipient -ResultSize Unlimited -RecipientTypeDetails 'MailUniversalDistributionGroup', 'MailUniversalSecurityGroup' | Select-Object -ExpandProperty distinguishedname
 
     Write-Verbose "Getting SendAs permissions for each mailbox and writing to file"
-    $AllDGDNs | Get-DGSendAsPerms -ADHashDGDN $ADHashDGDN -ADHashDG $ADHashDG  | Select Object, PrimarySMTPAddress, Granted, GrantedUPN, GrantedSMTP, Permission |
+    $AllDGDNs | Get-DGSendAsPerms -ADHashDGDN $ADHashDGDN -ADHashDG $ADHashDG  | Select-Object Object, PrimarySMTPAddress, Granted, GrantedUPN, GrantedSMTP, Permission |
         Export-csv (Join-Path $ReportPath "DGSendAsPerms.csv") -NoTypeInformation
 
     $AllPermissions = $null

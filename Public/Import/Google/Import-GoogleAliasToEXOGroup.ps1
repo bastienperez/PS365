@@ -1,7 +1,7 @@
 
 function Import-GoogleAliasToEXOGroup {
     $Group = Import-Csv .\Groups.csv
-    $GroupsWithAliases = $Group | Where Aliases
+    $GroupsWithAliases = $Group | Where-Object Aliases
     Add-Content -Path "C:\Scripts\AliasImportFailures.csv" -Value ("ERROR" + "," + "GROUP" + "," + "EMAIL")
     $GroupsWithAliases | ForEach-Object {
         $Name = $_.Name

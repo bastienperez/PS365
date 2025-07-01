@@ -6,7 +6,7 @@ function Select-ExchangeServer {
     $Ex = $null
     $EXCHServer = $null
 
-    if (!(Test-Path $RootPath)) {
+    if (-not(Test-Path $RootPath)) {
         try {
             New-Item -ItemType Directory -Path $RootPath -ErrorAction STOP | Out-Null
         }
@@ -17,7 +17,7 @@ function Select-ExchangeServer {
     $dn = "DC=$(($env:USERDNSDOMAIN).replace('.',',DC='))"
     $Ex = [adsi]"LDAP://CN=Exchange Install Domain Servers,CN=Microsoft Exchange System Objects,$($dn)" |
         Select -ExpandProperty member
-    while (! $EXCHServer) {
+    while (-not $EXCHServer) {
         $EXCHServer = ([regex]::Matches($Ex, '(?<=CN=).*?(?=\,)').groups.value) | 
             Out-GridView -OutputMode Single -Title "SELECT AN EXCHANGE SERVER AND CLICK OK"
     }

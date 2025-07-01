@@ -1,4 +1,4 @@
-Function Remove-MailboxMove {
+function Remove-MailboxMove {
     <#
     .SYNOPSIS
     Remove Mailbox Move

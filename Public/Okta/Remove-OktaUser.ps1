@@ -14,7 +14,7 @@ function Remove-OktaUser {
                 - Right click it and Select COPY > COPY RESPONSE
                 - You will then be able to use:
 
-                Get-Clipboard | ConvertFrom-Json|Select -expand personlist | ? {$_.status -eq 'Deactivated'} | % {Remove-OktaUser -Id $_.id}
+                Get-Clipboard | ConvertFrom-Json| Select-Object -expand personlist | ? {$_.status -eq 'Deactivated'} | % {Remove-OktaUser -Id $_.id}
 
                 WARNING!!! THIS WILL REMOVE EVERY SINGLE DEACTIVATED USER and IF YOU ARE NOT CAREFUL YOUR ENTIRE TENANT!!!!!!!!
                 BE SURE YOU HAVE TESTED THIS EXTENSIVELY!!!!
@@ -34,7 +34,7 @@ function Remove-OktaUser {
                 - Right click it and Select COPY > COPY RESPONSE
                 - You will then be able to use:
 
-                Get-Clipboard | ConvertFrom-Json|Select -expand personlist | ? {$_.status -eq 'Deactivated'} | % {Remove-OktaUser -Id $_.id}
+                Get-Clipboard | ConvertFrom-Json| Select-Object -expand personlist | ? {$_.status -eq 'Deactivated'} | % {Remove-OktaUser -Id $_.id}
 
                 WARNING!!! THIS WILL REMOVE EVERY SINGLE DEACTIVATED USER and IF YOU ARE NOT CAREFUL YOUR ENTIRE TENANT!!!!!!!!
                 BE SURE YOU HAVE TESTED THIS EXTENSIVELY!!!!

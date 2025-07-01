@@ -1,4 +1,4 @@
-Function ConvertTo-NetBios {
+function ConvertTo-NetBios {
 
     Param(
         $domainName

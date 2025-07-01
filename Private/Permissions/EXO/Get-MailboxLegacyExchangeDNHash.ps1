@@ -1,4 +1,4 @@
-﻿Function Get-MailboxLegacyExchangeDNHash {
+﻿function GetMailboxLegacyExchangeDNHash {
     <#
     .SYNOPSIS
 

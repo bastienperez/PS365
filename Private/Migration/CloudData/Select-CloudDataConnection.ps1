@@ -21,10 +21,10 @@ function Select-CloudDataConnection {
         if (-not ($null = Get-Module -Name 'AzureAD', 'AzureADPreview' -ListAvailable)) {
             Install-Module -Name AzureAD -Scope CurrentUser -Force -AllowClobber
         }
-        Write-Host "`r`nEnter credentials for $TenantLocation Azure AD`r`n" -ForegroundColor Cyan
+        Write-Host "`r`nEnter credentials for $TenantLocation Microsoft Entra ID`r`n" -ForegroundColor Cyan
         $null = Connect-AzureAD
         $InitialDomain = ((Get-AzureADDomain).where{ $_.IsInitial }).Name
-        Write-Host "`r`nConnected to Azure AD Tenant: $InitialDomain`r`n" -ForegroundColor Green
+        Write-Host "`r`nConnected to Microsoft Entra ID Tenant: $InitialDomain`r`n" -ForegroundColor Green
     }
     if ($Type -match 'Mailboxes|MailUsers' -or ($Type -eq 'AzureADUsers' -and $TenantLocation -eq 'Source')) {
         $Script:RestartConsole = $null

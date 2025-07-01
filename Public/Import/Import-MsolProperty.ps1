@@ -47,13 +47,13 @@ function Import-MsolProperty {
                 PostalCode        = $CurUser.PostalCode
 
             }
-            Try {
+            try {
 
                 Set-MsolUser @Splat -ErrorAction Stop
                 Write-Verbose "Successfully Set:`t$Upn"
 
             }
-            Catch {
+            catch {
 
                 $ErrorMessage = $_.exception.message
                 Add-Content -Path $Log -Value ($Upn + "," + $ErrorMessage)

@@ -1,4 +1,4 @@
-function Get-EXOSendOnBehalfPerms {
+function Get-PsExoSendOnBehalfPerms {
     <#
     .SYNOPSIS
     Outputs Send On Behalf permissions for each object that has permissions assigned.
@@ -6,7 +6,7 @@ function Get-EXOSendOnBehalfPerms {
 
     .EXAMPLE
 
-    (Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname) | Get-EXOSendOnBehalfPerms | Export-csv .\SendOB.csv -NoTypeInformation
+    (Get-Mailbox -ResultSize unlimited | Select-Object -expandproperty distinguishedname) | Get-PsExoSendOnBehalfPerms | Export-csv .\SendOB.csv -NoTypeInformation
 
     #>
     [CmdletBinding()]

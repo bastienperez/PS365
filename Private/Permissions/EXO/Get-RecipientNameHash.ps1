@@ -1,4 +1,4 @@
-﻿Function Get-RecipientNameHash {
+﻿function GetRecipientNameHash {
     <#
     .SYNOPSIS
 

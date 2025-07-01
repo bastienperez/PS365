@@ -59,7 +59,7 @@ function Set-CloudLicense {
         # Create hashtable from Name to SkuId lookup
         $skuIdHash = @{ }
         $licenses = Get-AzureADSubscribedSku
-        $licenses | Select SkuPartNumber, SkuId | ForEach-Object {
+        $licenses | Select-Object SkuPartNumber, SkuId | ForEach-Object {
             $skuIdHash[$_.SkuPartNumber] = $_.SkuId
         }
         $planId = @{ }
@@ -69,12 +69,12 @@ function Set-CloudLicense {
             }
         }
         # Assign Tenant and Location to a variable
-        $tenant = ((Get-AzureADTenantDetail).verifiedDomains | where { $_.initial -eq "$true" }).name.split(".")[0]
+        $tenant = ((Get-AzureADTenantDetail).verifiedDomains | Where-Object { $_.initial -eq "$true" }).name.split(".")[0]
         $location = "US"
 
         # Friendly 2 Ugly hashtable Lookups
         $f2uSku = @{
-            "Azure Advanced Threat Protection for Users"       = "ATA"
+            "Microsoft Azure Advanced Threat Protection for Users"       = "ATA"
             "Microsoft Cloud App Security"                     = "ADALLOM_STANDALONE"
             "AZURE INFORMATION PROTECTION PLAN 1"              = "RIGHTSMANAGEMENT"
             "OFFICE 365 ADVANCED THREAT PROTECTION (PLAN 2)"   = "THREAT_INTELLIGENCE"
@@ -168,7 +168,7 @@ function Set-CloudLicense {
         $f2uOpt = @{
             "Flow Free"                                                         = "FLOW_P2_VIRAL"
             "Common Data Service"                                               = "DYN365_CDS_VIRAL"
-            "Azure Advanced Threat Protection"                                  = "ATA"
+            "Microsoft Azure Advanced Threat Protection"                                  = "ATA"
             "Azure Active Directory Premium P2"                                 = "AAD_PREMIUM_P2";
             "Azure Active Directory Premium Plan 1"                             = "AAD_PREMIUM";
             "Azure Information Protection Plan 1"                               = "RMS_S_PREMIUM";
@@ -468,23 +468,23 @@ function Set-CloudLicense {
                 # User already has Sku
                 $sKey = $_.key
                 if ($sKey -in $userLicense.skupartnumber) {
-                    $disabled = $_.Value + ((($userLicense | Where { $_.skupartnumber -contains $sKey }).serviceplans | where { $_.provisioningStatus -eq 'Disabled' }).serviceplanname)
+                    $disabled = $_.Value + ((($userLicense | Where-Object { $_.skupartnumber -contains $sKey }).serviceplans | Where-Object { $_.provisioningStatus -eq 'Disabled' }).serviceplanname)
                     $completed = $false
                     $retry = 0
-                    While ((! $completed) -and ($retry -le 5)) {
-                        Try {
+                    While ((-not $completed) -and ($retry -le 5)) {
+                        try {
                             $retry++
                             $licensesToAssign = Set-SkuChange -removeTheOptions -skus $sKey -options $disabled
                             Set-AzureADUserLicense -ObjectId $user.ObjectId -AssignedLicenses $licensesToAssign
                             Write-Output "Options from Sku: $sKey to remove + options currently disabled: $disabled "
                             $completed = $true
                         }
-                        Catch {
-                            $_.exception.Message -match "\bplan\s+([-0-9a-f]{36})" | Out-Null
+                        catch {
+                            $null = $_.exception.Message -match "\bplan\s+([-0-9a-f]{36})"
                             $matches[1] -split (' ') | % { $disabled += ($planId[($_).trim()]) }
                         }
                     }
-                    if (! $completed) {
+                    if (-not $completed) {
                         Write-Output "$($user.UserPrincipalName) unable to remove options to Sku: $sKey "
                     }
                 }
@@ -552,23 +552,23 @@ function Set-CloudLicense {
                 # User already has Sku
                 $sKey = $_.key
                 if ($sKey -in $userLicense.skupartnumber) {
-                    $enabled = [pscustomobject]$_.Value + ((($userLicense | Where { $_.skupartnumber -contains $sKey }).serviceplans | Where { $_.provisioningstatus -ne 'Disabled' }).serviceplanname)
+                    $enabled = [pscustomobject]$_.Value + ((($userLicense | Where-Object { $_.skupartnumber -contains $sKey }).serviceplans | Where-Object { $_.provisioningstatus -ne 'Disabled' }).serviceplanname)
                     $completed = $false
                     $retry = 0
-                    While ((! $completed) -and ($retry -le 5)) {
-                        Try {
+                    While ((-not $completed) -and ($retry -le 5)) {
+                        try {
                             $retry++
                             $licensesToAssign = Set-SkuChange -addTheOptions -skus $sKey -options $enabled
                             Set-AzureADUserLicense -ObjectId $user.ObjectId -AssignedLicenses $licensesToAssign -ErrorAction Stop
                             Write-Output "Options from Sku: $sKey to add + options currently enabled: $enabled "
                             $completed = $true
                         }
-                        Catch {
+                        catch {
                             $_.exception.Message -match "\bplan\(s\)\s+([-0-9a-f]{36})" | Out-Null
                             $matches[1] -split (' ') | % { $enabled += ($planId[($_).trim()]) }
                         }
                     }
-                    if (! $completed) {
+                    if (-not $completed) {
                         Write-Output "$($user.UserPrincipalName) unable to apply options to Sku: $sKey "
                     }
                 }
@@ -577,20 +577,20 @@ function Set-CloudLicense {
                     $enabled = [pscustomobject]$_.Value
                     $completed = $false
                     $retry = 0
-                    While ((! $completed) -and ($retry -le 5)) {
-                        Try {
+                    While ((-not $completed) -and ($retry -le 5)) {
+                        try {
                             $retry++
                             $licensesToAssign = Set-SkuChange -addTheOptions -skus $sKey -options $enabled
                             Set-AzureADUserLicense -ObjectId $user.ObjectId -AssignedLicenses $licensesToAssign -ErrorAction Stop
                             Write-Output "User does not have SKU: $sKey, adding Sku with options: $enabled "
                             $completed = $true
                         }
-                        Catch {
-                            $_.exception.Message -match "\bplan\(s\)\s+([-0-9a-f]{36})" | Out-Null
+                        catch {
+                            $null = $_.exception.Message -match "\bplan\(s\)\s+([-0-9a-f]{36})"
                             $matches[1] -split (' ') | % { $enabled += ($planId[($_).trim()]) }
                         }
                     }
-                    if (! $completed) {
+                    if (-not $completed) {
                         Write-Output "$($user.UserPrincipalName) unable to apply options to Sku: $sKey "
                     }
                 }
@@ -605,19 +605,19 @@ function Set-CloudLicense {
                         Write-Output "Please choose a different Source or Destination Sku"
                         Break
                     }
-                    (Get-AzureADSubscribedSku | Where { $_.skupartnumber -eq $f2uSku.$swapDest }) | ForEach-Object {
+                    (Get-AzureADSubscribedSku | Where-Object { $_.skupartnumber -eq $f2uSku.$swapDest }) | ForEach-Object {
                         if (($_.prepaidunits.enabled - $_.consumedunits) -lt "1") {
                             Write-Output "Out of $($f2uSku.$swapDest) licenses.  Please allocate more then rerun."
                             Break
                         }
                         $dest = $_.serviceplans.serviceplanname
-                        $source = ((Get-AzureADUserLicenseDetail -ObjectId $user.UserPrincipalName | Where { $_.skupartnumber -eq $f2uSku.$swapSource }).serviceplans | Where { $_.provisioningstatus -ne 'Disabled' }).serviceplanname
+                        $source = ((Get-AzureADUserLicenseDetail -ObjectId $user.UserPrincipalName | Where-Object { $_.skupartnumber -eq $f2uSku.$swapSource }).serviceplans | Where-Object { $_.provisioningstatus -ne 'Disabled' }).serviceplanname
                         if ($source) {
-                            $source = $source | Where { $sourceIgnore -notcontains $_ }
+                            $source = $source | Where-Object { $sourceIgnore -notcontains $_ }
                         }
                         $destarray = Get-UniqueString $dest
                         $sourcearray = Get-UniqueString $source
-                        $options2swap = $sourcearray.keys | Where { $destarray.keys -contains $_ }
+                        $options2swap = $sourcearray.keys | Where-Object { $destarray.keys -contains $_ }
                         $options2swap = $options2swap | % { $destarray[$_] }
                         if ($destOptAdd) {
                             $doa = $destOptAdd | % {
@@ -632,8 +632,8 @@ function Set-CloudLicense {
                         }
                         $completed = $false
                         $retry = 0
-                        While ((! $completed) -and ($retry -le 5)) {
-                            Try {
+                        While ((-not $completed) -and ($retry -le 5)) {
+                            try {
                                 $retry++
                                 $licensesToAssign = Set-SkuChange -addTheOptions -skus $f2uSku.$swapDest -options $options2swap
                                 Set-AzureADUserLicense -ObjectId $user.ObjectId -AssignedLicenses $licensesToAssign -ErrorAction Stop
@@ -642,37 +642,37 @@ function Set-CloudLicense {
                                 Write-Output "$($user.UserPrincipalName) Source: $($f2uSku.$swapSource) Dest: $($f2uSku.$swapDest) Moved Options: $options2swap "
                                 $completed = $true
                             }
-                            Catch {
-                                $_.exception.Message -match "\bplan\(s\)\s+([-0-9a-f]{36})" | Out-Null
+                            catch {
+                                $null = $_.exception.Message -match "\bplan\(s\)\s+([-0-9a-f]{36})"
                                 $matches[1] -split (' ') | % { $options2swap += ($planId[($_).trim()]) }
                             }
                         }
-                        if (! $completed) {
+                        if (-not $completed) {
                             Write-Output "Unable to properly add some or all of Options for destination Sku: $($f2uSku.$swapDest) Did not remove Sku: $($f2uSku.$swapSource) "
                             Write-Output "FAILED: $($user.UserPrincipalName) Source: $($f2uSku.$swapSource) Dest: $($f2uSku.$swapDest) Options: $options2swap "
                         }
                     }
                 }
-                if ((!($f2uSku.$swapDest)) -and ($f2uSku.$swapSource)) {
+                if ((-not($f2uSku.$swapDest)) -and ($f2uSku.$swapSource)) {
                     if (($swapDest) -eq ($f2uSku.$swapSource)) {
                         Write-Output "Source and Destination Skus are identical"
                         Write-Output "Source Sku: $($f2uSku.$swapSource) and Destination Sku: $($swapDest) are identical."
                         Write-Output "Please choose a different Source or Destination Sku"
                         Break
                     }
-                    (Get-AzureADSubscribedSku | Where { $_.skupartnumber -eq $swapDest }) | ForEach-Object {
+                    (Get-AzureADSubscribedSku | Where-Object { $_.skupartnumber -eq $swapDest }) | ForEach-Object {
                         if (($_.prepaidunits.enabled - $_.consumedunits) -lt "1") {
                             Write-Output "Out of $swapDest licenses.  Please allocate more then rerun."
                             Break
                         }
                         $dest = $_.serviceplans.serviceplanname
-                        $source = ((Get-AzureADUserLicenseDetail -ObjectId $user.UserPrincipalName | Where { $_.skupartnumber -eq $f2uSku.$swapSource }).serviceplans | Where { $_.provisioningstatus -ne 'Disabled' }).serviceplanname
+                        $source = ((Get-AzureADUserLicenseDetail -ObjectId $user.UserPrincipalName | Where-Object { $_.skupartnumber -eq $f2uSku.$swapSource }).serviceplans | Where-Object { $_.provisioningstatus -ne 'Disabled' }).serviceplanname
                         if ($source) {
-                            $source = $source | Where { $sourceIgnore -notcontains $_ }
+                            $source = $source | Where-Object { $sourceIgnore -notcontains $_ }
                         }
                         $destarray = Get-UniqueString $dest
                         $sourcearray = Get-UniqueString $source
-                        $options2swap = $sourcearray.keys | Where { $destarray.keys -contains $_ }
+                        $options2swap = $sourcearray.keys | Where-Object { $destarray.keys -contains $_ }
                         $options2swap = $options2swap | % { $destarray[$_] }
                         if ($destOptAdd) {
                             $doa = $destOptAdd | % {
@@ -687,8 +687,8 @@ function Set-CloudLicense {
                         }
                         $completed = $false
                         $retry = 0
-                        While ((! $completed) -and ($retry -le 5)) {
-                            Try {
+                        While ((-not $completed) -and ($retry -le 5)) {
+                            try {
                                 $retry++
                                 $licensesToAssign = Set-SkuChange -addTheOptions -skus $swapDest -options $options2swap
                                 Set-AzureADUserLicense -ObjectId $user.ObjectId -AssignedLicenses $licensesToAssign -ErrorAction Stop
@@ -697,37 +697,37 @@ function Set-CloudLicense {
                                 Write-Output "$($user.UserPrincipalName) Source: $($f2uSku.$swapSource) Dest: $swapDest Moved Options: $options2swap "
                                 $completed = $true
                             }
-                            Catch {
+                            catch {
                                 $_.exception.Message -match "\bplan\(s\)\s+([-0-9a-f]{36})" | Out-Null
                                 $matches[1] -split (' ') | % { $options2swap += ($planId[($_).trim()]) }
                             }
                         }
-                        if (! $completed) {
+                        if (-not $completed) {
                             Write-Output "Unable to properly add some or all of Options for destination Sku: $swapDest Did not remove Sku: $($f2uSku.$swapSource) "
                             Write-Output "FAILED: $($user.UserPrincipalName) Source: $($f2uSku.$swapSource) Dest: $swapDest Options: $options2swap "
                         }
                     }
                 }
-                if (($f2uSku.$swapDest) -and (!($f2uSku.$swapSource))) {
+                if (($f2uSku.$swapDest) -and (-not($f2uSku.$swapSource))) {
                     if (($f2uSku.$swapDest) -eq ($swapSource)) {
                         Write-Output "Source and Destination Skus are identical"
                         Write-Output "Source Sku: $swapSource and Destination Sku: $($f2uSku.$swapDest) are identical."
                         Write-Output "Please choose a different Source or Destination Sku"
                         Break
                     }
-                    (Get-AzureADSubscribedSku | Where { $_.skupartnumber -eq $f2uSku.$swapDest }) | ForEach-Object {
+                    (Get-AzureADSubscribedSku | Where-Object { $_.skupartnumber -eq $f2uSku.$swapDest }) | ForEach-Object {
                         if (($_.prepaidunits.enabled - $_.consumedunits) -lt "1") {
                             Write-Output "Out of $($f2uSku.$swapDest) licenses.  Please allocate more then rerun."
                             Break
                         }
                         $dest = $_.serviceplans.serviceplanname
-                        $source = ((Get-AzureADUserLicenseDetail -ObjectId $user.UserPrincipalName | Where { $_.skupartnumber -eq $swapSource }).serviceplans | Where { $_.provisioningstatus -ne 'Disabled' }).serviceplanname
+                        $source = ((Get-AzureADUserLicenseDetail -ObjectId $user.UserPrincipalName | Where-Object { $_.skupartnumber -eq $swapSource }).serviceplans | Where-Object { $_.provisioningstatus -ne 'Disabled' }).serviceplanname
                         if ($source) {
-                            $source = $source | Where { $sourceIgnore -notcontains $_ }
+                            $source = $source | Where-Object { $sourceIgnore -notcontains $_ }
                         }
                         $destarray = Get-UniqueString $dest
                         $sourcearray = Get-UniqueString $source
-                        $options2swap = $sourcearray.keys | Where { $destarray.keys -contains $_ }
+                        $options2swap = $sourcearray.keys | Where-Object { $destarray.keys -contains $_ }
                         $options2swap = $options2swap | % { $destarray[$_] }
                         if ($destOptAdd) {
                             $doa = $destOptAdd | % {
@@ -742,8 +742,8 @@ function Set-CloudLicense {
                         }
                         $completed = $false
                         $retry = 0
-                        While ((! $completed) -and ($retry -le 5)) {
-                            Try {
+                        While ((-not $completed) -and ($retry -le 5)) {
+                            try {
                                 $retry++
                                 $licensesToAssign = Set-SkuChange -addTheOptions -skus $f2uSku.$swapDest -options $options2swap
                                 Set-AzureADUserLicense -ObjectId $user.ObjectId -AssignedLicenses $licensesToAssign -ErrorAction Stop
@@ -752,37 +752,37 @@ function Set-CloudLicense {
                                 Write-Output "$($user.UserPrincipalName) Source: $swapSource Dest: $($f2uSku.$swapDest) Moved Options: $options2swap "
                                 $completed = $true
                             }
-                            Catch {
+                            catch {
                                 $_.exception.Message -match "\bplan\(s\)\s+([-0-9a-f]{36})" | Out-Null
                                 $matches[1] -split (' ') | % { $options2swap += ($planId[($_).trim()]) }
                             }
                         }
-                        if (! $completed) {
+                        if (-not $completed) {
                             Write-Output "Unable to properly add some or all of Options for destination Sku: $($f2uSku.$swapDest) Did not remove Sku: $swapSource "
                             Write-Output "FAILED: $($user.UserPrincipalName) Source: $swapSource Dest: $($f2uSku.$swapDest) Options: $options2swap "
                         }
                     }
                 }
-                if ((!($f2uSku.$swapDest)) -and (!($f2uSku.$swapSource))) {
+                if ((-not($f2uSku.$swapDest)) -and (-not($f2uSku.$swapSource))) {
                     if (($swapDest) -eq ($swapSource)) {
                         Write-Output "Source and Destination Skus are identical"
                         Write-Output "Source Sku: $swapSource and Destination Sku: $swapDest are identical."
                         Write-Output "Please choose a different Source or Destination Sku"
                         Break
                     }
-                    (Get-AzureADSubscribedSku | Where { $_.skupartnumber -eq $swapDest }) | ForEach-Object {
+                    (Get-AzureADSubscribedSku | Where-Object { $_.skupartnumber -eq $swapDest }) | ForEach-Object {
                         if (($_.prepaidunits.enabled - $_.consumedunits) -lt "1") {
                             Write-Output "Out of $swapDest licenses.  Please allocate more then rerun."
                             Break
                         }
                         $dest = $_.serviceplans.serviceplanname
-                        $source = ((Get-AzureADUserLicenseDetail -ObjectId $user.UserPrincipalName | Where { $_.skupartnumber -eq $swapSource }).serviceplans | Where { $_.provisioningstatus -ne 'Disabled' }).serviceplanname
+                        $source = ((Get-AzureADUserLicenseDetail -ObjectId $user.UserPrincipalName | Where-Object { $_.skupartnumber -eq $swapSource }).serviceplans | Where-Object { $_.provisioningstatus -ne 'Disabled' }).serviceplanname
                         if ($source) {
-                            $source = $source | Where { $sourceIgnore -notcontains $_ }
+                            $source = $source | Where-Object { $sourceIgnore -notcontains $_ }
                         }
                         $destarray = Get-UniqueString $dest
                         $sourcearray = Get-UniqueString $source
-                        $options2swap = $sourcearray.keys | Where { $destarray.keys -contains $_ }
+                        $options2swap = $sourcearray.keys | Where-Object { $destarray.keys -contains $_ }
                         $options2swap = $options2swap | % { $destarray[$_] }
                         if ($destOptAdd) {
                             $doa = $destOptAdd | % {
@@ -797,8 +797,8 @@ function Set-CloudLicense {
                         }
                         $completed = $false
                         $retry = 0
-                        While ((! $completed) -and ($retry -le 5)) {
-                            Try {
+                        While ((-not $completed) -and ($retry -le 5)) {
+                            try {
                                 $retry++
                                 $licensesToAssign = Set-SkuChange -addTheOptions -skus $swapDest -options $options2swap
                                 Set-AzureADUserLicense -ObjectId $user.ObjectId -AssignedLicenses $licensesToAssign -ErrorAction Stop
@@ -807,12 +807,12 @@ function Set-CloudLicense {
                                 Write-Output "$($user.UserPrincipalName) Source: $swapSource Dest: $swapDest Moved Options: $options2swap "
                                 $completed = $true
                             }
-                            Catch {
+                            catch {
                                 $_.exception.Message -match "\bplan\(s\)\s+([-0-9a-f]{36})" | Out-Null
                                 $matches[1] -split (' ') | % { $options2swap += ($planId[($_).trim()]) }
                             }
                         }
-                        if (! $completed) {
+                        if (-not $completed) {
                             Write-Output "Unable to properly add some or all of Options for destination Sku: $swapDest Did not remove Sku: $swapSource "
                             Write-Output "FAILED: $($user.UserPrincipalName) Source: $swapSource Dest: $swapDest Options: $options2swap "
                         }
@@ -884,20 +884,20 @@ function Set-CloudLicense {
                     $enabled = [pscustomobject]$_.Value
                     $completed = $false
                     $retry = 0
-                    While ((! $completed) -and ($retry -le 5)) {
-                        Try {
+                    While ((-not $completed) -and ($retry -le 5)) {
+                        try {
                             $retry++
                             $licensesToAssign = Set-SkuChange -addTheOptions -skus $sKey -options $enabled
                             Set-AzureADUserLicense -ObjectId $user.ObjectId -AssignedLicenses $licensesToAssign -ErrorAction Stop
                             Write-Output "User has Sku $sKey all options will be disabled except: $enabled "
                             $completed = $true
                         }
-                        Catch {
+                        catch {
                             $_.exception.Message -match "\bplan\(s\)\s+([-0-9a-f]{36})" | Out-Null
                             $matches[1] -split (' ') | % { $enabled += ($planId[($_).trim()]) }
                         }
                     }
-                    if (! $completed) {
+                    if (-not $completed) {
                         Write-Output "$($user.UserPrincipalName) unable to apply options to Sku: $sKey "
                     }
                 }
@@ -906,20 +906,20 @@ function Set-CloudLicense {
                     $enabled = [pscustomobject]$_.Value
                     $completed = $false
                     $retry = 0
-                    While ((! $completed) -and ($retry -le 5)) {
-                        Try {
+                    While ((-not $completed) -and ($retry -le 5)) {
+                        try {
                             $retry++
                             $licensesToAssign = Set-SkuChange -addTheOptions -skus $sKey -options $enabled
                             Set-AzureADUserLicense -ObjectId $user.ObjectId -AssignedLicenses $licensesToAssign -ErrorAction Stop
                             Write-Output "User does not have SKU: $sKey, adding Sku with options: $enabled "
                             $completed = $true
                         }
-                        Catch {
+                        catch {
                             $_.exception.Message -match "\bplan\(s\)\s+([-0-9a-f]{36})" | Out-Null
                             $matches[1] -split (' ') | % { $enabled += ($planId[($_).trim()]) }
                         }
                     }
-                    if (! $completed) {
+                    if (-not $completed) {
                         Write-Output "$($user.UserPrincipalName) unable to apply options to Sku: $sKey "
                     }
                 }

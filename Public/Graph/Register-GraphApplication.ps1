@@ -6,7 +6,7 @@ function Register-GraphApplication {
     .DESCRIPTION
     Register Apps with preset permissions for quick access to graph endpoints
     Use those permissions with the connection script, Connect-PoshGraph
-    Please check the Azure AD app that this app creates to understand the permissions you have prior to running any commands.
+    Please check the Microsoft Entra ID app that this app creates to understand the permissions you have prior to running any commands.
 
     Make sure you that clearly understand and inspect any script before you run them!!!
     I am not responsible for any data in your tenant.  Please test thoroughly.
@@ -25,7 +25,7 @@ function Register-GraphApplication {
     .PARAMETER App
     Currently just Intune and Teams to choose from, but more to follow.
 
-    Note: The name of the app in Azure AD will be named Intune + the date/time it was added (but you won't need this information to connect)
+    Note: The name of the app in Microsoft Entra ID will be named Intune + the date/time it was added (but you won't need this information to connect)
 
     .PARAMETER AddDelegateCredentials
     A GUI will appear, type username and password and click "Export Tenant Credentials"
@@ -103,7 +103,7 @@ function Register-GraphApplication {
     if (-not (Test-Path $TenantPath)) { $null = New-Item $TenantPath @ItemSplat }
 
     if ($AlsoCreateGraphConnection -or $PSCmdlet.ParameterSetName -notcontains 'ExchangeCBA') {
-        Write-Host "`r`nWe will create an Azure AD Application with the " -ForegroundColor Cyan -NoNewline
+        Write-Host "`r`nWe will create an Microsoft Entra ID Application with the " -ForegroundColor Cyan -NoNewline
         Write-Host "$App" -ForegroundColor Green -NoNewline
 
         Write-Host " API permission set. Credentials will be encrypted to $TenantPath. Once complete, connect to Graph with: `r`n" -ForegroundColor Cyan
@@ -127,21 +127,21 @@ function Register-GraphApplication {
         Import-Module -Name CloneApp -Force
     }
 
-    Write-Host "Disconnecting any possible connections to Azure AD" -ForegroundColor White
+    Write-Host "Disconnecting any possible connections to Microsoft Entra ID" -ForegroundColor White
 
     try { $null = Disconnect-AzureAD -ErrorAction Stop } catch { }
     try {
-        Write-Host "In the window that appears, please enter your credentials to login to Azure AD . . . " -ForegroundColor White -NoNewline
+        Write-Host "In the window that appears, please enter your credentials to login to Microsoft Entra ID . . . " -ForegroundColor White -NoNewline
         $AzureAD = Connect-AzureAD -ErrorAction Stop
         Write-Host "Connected" -ForegroundColor Green
-        Write-Host "Azure AD Tenant: " -ForegroundColor Green -NoNewline
+        Write-Host "Microsoft Entra ID Tenant: " -ForegroundColor Green -NoNewline
         Write-Host "$($AzureAD.TenantId)" -ForegroundColor White
-        Write-Host "Azure AD Account: " -ForegroundColor Green -NoNewline
+        Write-Host "Microsoft Entra ID Account: " -ForegroundColor Green -NoNewline
         Write-Host "$($AzureAD.Account)" -ForegroundColor White
     }
     catch {
-        Write-Host "Not connected to Azure AD. " -ForegroundColor Yellow -NoNewline
-        Write-Host "Please run the same command again and connect to Azure AD." -ForegroundColor Cyan
+        Write-Host "Not connected to Microsoft Entra ID. " -ForegroundColor Yellow -NoNewline
+        Write-Host "Please run the same command again and connect to Microsoft Entra ID." -ForegroundColor Cyan
         return
     }
 

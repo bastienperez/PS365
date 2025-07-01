@@ -35,7 +35,7 @@ function Add-TransportRuleDetail {
         The ExceptIfFromAddressContainsWords parameter specifies an exception that looks for words in the sender's email address.
         You can specify multiple words separated by commas.
 
-        You can use SenderAddressLocation parameter to specify where to look for the sender's email address (message header(default), message envelope, or both).
+        You can use SenderAddressLocation parameter to specify Where-Object to look for the sender's email address (message header(default), message envelope, or both).
 
     .PARAMETER SubjectOrBodyContainsWords
         This parameter specifies a condition or part of a condition for the rule. The name of the corresponding exception parameter starts with ExceptIf.
@@ -114,7 +114,7 @@ function Add-TransportRuleDetail {
         When using this switch parameter, if the Transport Rule already exists, it disables it.
 
     .PARAMETER OutputPath
-        Where to write the report files to.
+        Where-Object to write the report files to.
         By default it will write to the current path.
 
     .EXAMPLE
@@ -366,16 +366,16 @@ function Add-TransportRuleDetail {
         if ($Action01 -eq "BypassSpamFiltering") {
             $Params.Add("SetSCL", "-1")
         }
-        if (!(Get-TransportRule -Identity $TransportRule -ErrorAction SilentlyContinue)) {
+        if (-not(Get-TransportRule -Identity $TransportRule -ErrorAction SilentlyContinue)) {
             if ($Disabled) {
                 $Params.Add("Enabled", $false)
             }
-            Try {
+            try {
                 New-TransportRule -Name $TransportRule @Params -ErrorAction Stop
                 Write-Verbose "Transport Rule `"$TransportRule`" has been created."
                 Write-Verbose "Parameters: `t $($Params.values | % { $_ -join " "})"
             }
-            Catch {
+            catch {
                 Write-Warning $_
                 Write-Warning "Rerun the same command using the -Action01 parameter"
                 Write-Warning "Currently the -Action01 parameter accepts, DeleteMessage & BypassSpamFiltering"

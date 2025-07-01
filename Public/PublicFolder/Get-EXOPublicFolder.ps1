@@ -1,4 +1,4 @@
-function Get-EXOPublicFolder {
+function Get-PsExoPublicFolder {
     param (
 
     )

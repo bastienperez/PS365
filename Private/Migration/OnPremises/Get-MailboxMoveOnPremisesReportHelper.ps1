@@ -1,4 +1,4 @@
-﻿Function Get-MailboxMoveOnPremisesReportHelper {
+﻿function Get-MailboxMoveOnPremisesReportHelper {
     [CmdletBinding()]
     param (
 

@@ -1,4 +1,4 @@
-﻿Function Get-RecipientMailHash {
+﻿function GetRecipientMailHash {
     <#
     .SYNOPSIS
 

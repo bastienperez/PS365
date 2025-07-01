@@ -1,4 +1,4 @@
-function Get-EXODGSendOnBehalfPerms {
+function Get-PSExoDGSendOnBehalfPerms {
     [CmdletBinding()]
     Param (
         [parameter(ValueFromPipeline)]

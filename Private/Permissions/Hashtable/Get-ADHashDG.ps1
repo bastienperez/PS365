@@ -1,4 +1,4 @@
-﻿Function Get-ADHashDG {
+﻿function GetADHashDG {
     <#
     .SYNOPSIS
     .EXAMPLE

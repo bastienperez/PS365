@@ -1,4 +1,4 @@
-Function Get-EXOMigrationStatistics {
+function GetPsExoMigrationStatistics {
     <#
     .SYNOPSIS
     Provides each user found in Get-MigrationUser in an Out-GridView.  The user can select one or more users for the report provided by Get-MigrationUserStatistics -Include report
@@ -8,7 +8,7 @@ Function Get-EXOMigrationStatistics {
     Each report will open in a seperate Out-GridView
 
     .EXAMPLE
-    Get-EXOMigrationStatistics
+    Get-PsExoMigrationStatistics
 
     #>
     [CmdletBinding()]

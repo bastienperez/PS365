@@ -64,11 +64,11 @@ SystemMailbox
             Write-Warning "Please choose either -AddPrefix and/or -AddSuffix to Join data to what is found in -FindInColumn"
             break
         }
-        if ($Filter -and (! $Exclude)) {
+        if ($Filter -and (-not $Exclude)) {
             Write-Warning "Must use Exclude parameter when specifying Filter parameter"
             break
         }
-        if ($Exclude -and (! $Filter)) {
+        if ($Exclude -and (-not $Filter)) {
             Write-Warning "Must use Filter parameter when specifying Exclude parameter"
             break
         }

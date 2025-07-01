@@ -117,7 +117,7 @@ function Get-ActiveDirectoryObject {
     Process {
         if ($ADObjectFilter) {
             foreach ($CurADObjectFilter in $ADObjectFilter) {
-                if (! $DetailedReport) {
+                if (-not $DetailedReport) {
                     Get-ADObject -Filter $CurADObjectFilter -Properties $Props -ResultSetSize $null | Select-Object ($Selectproperties + $CalculatedProps)
                 }
                 else {
@@ -126,7 +126,7 @@ function Get-ActiveDirectoryObject {
             }
         }
         else {
-            if (! $DetailedReport) {
+            if (-not $DetailedReport) {
                 Get-ADObject -Filter * -Properties $Props -ResultSetSize $null | Select-Object ($Selectproperties + $CalculatedProps)
             }
             else {

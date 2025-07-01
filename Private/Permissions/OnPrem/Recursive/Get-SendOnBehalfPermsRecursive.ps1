@@ -37,7 +37,7 @@ function Get-SendOnBehalfPermsRecursive {
                         }
                     }
                 }
-                Catch {
+                catch {
                     New-Object -TypeName psobject -property @{
                         Object             = $Mailbox.DisplayName
                         UserPrincipalName  = $Mailbox.UserPrincipalName

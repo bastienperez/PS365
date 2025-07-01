@@ -16,7 +16,7 @@ function Connect-EXOPSSession {
         # Connection Uri for the Remote PowerShell endpoint
         [string] $ConnectionUri = 'https://outlook.office365.com/PowerShell-LiveId',
 
-        # Azure AD Authorization endpoint Uri that can issue the OAuth2 access tokens
+        # Microsoft Entra ID Authorization endpoint Uri that can issue the OAuth2 access tokens
         [string] $AzureADAuthorizationEndpointUri = 'https://login.windows.net/common',
 
         # User Principal Name or email address of the user

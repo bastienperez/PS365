@@ -1,4 +1,4 @@
-Function Get-UniqueString {
+function Get-UniqueString {
     param(
         [Parameter(Mandatory = $true)]
         $searchStrings
@@ -27,10 +27,10 @@ _O365" -split "`r`n"
             $searchString = $searchString -replace "$suffix$", "REPLACED"
         }
         $uniques += $searchString -replace "REPLACED"
-        if (!($sthash.ContainsKey($uniques[(($uniques.count) - 1)]))) {
+        if (-not($sthash.ContainsKey($uniques[(($uniques.count) - 1)]))) {
             $sthash.($uniques[(($uniques.count) - 1)]) = $ss
         }
     }
-    # $uniques | Select -Unique
+    # $uniques | Select-Object -Unique
     $sthash
 }

@@ -1,4 +1,4 @@
-﻿Function Get-RecipientDNHash {
+﻿function GetRecipientDNHash {
     <#
     .SYNOPSIS
 

@@ -1,4 +1,4 @@
-Function ConvertTo-Shared {
+function ConvertTo-Shared {
     <#
     .SYNOPSIS
     Converts a Cloud User Mailbox to a Shared Mailbox, Disables the AD User & Removes any licenses
@@ -18,7 +18,7 @@ Function ConvertTo-Shared {
 
     Begin {
         $f2uSku = @{
-            "Azure Advanced Threat Protection for Users"       = "ATA"
+            "Microsoft Azure Advanced Threat Protection for Users"       = "ATA"
             "Microsoft Cloud App Security"                     = "ADALLOM_STANDALONE"
             "AZURE INFORMATION PROTECTION PLAN 1"              = "RIGHTSMANAGEMENT"
             "OFFICE 365 ADVANCED THREAT PROTECTION (PLAN 2)"   = "THREAT_INTELLIGENCE"
@@ -112,7 +112,7 @@ Function ConvertTo-Shared {
         $f2uOpt = @{
             "Flow Free"                                                         = "FLOW_P2_VIRAL"
             "Common Data Service"                                               = "DYN365_CDS_VIRAL"
-            "Azure Advanced Threat Protection"                                  = "ATA"
+            "Microsoft Azure Advanced Threat Protection"                                  = "ATA"
             "Azure Active Directory Premium P2"                                 = "AAD_PREMIUM_P2";
             "Azure Active Directory Premium Plan 1"                             = "AAD_PREMIUM";
             "Azure Information Protection Plan 1"                               = "RMS_S_PREMIUM";
@@ -225,7 +225,7 @@ Function ConvertTo-Shared {
         $RootPath = $env:USERPROFILE + "\ps\"
         $User = $env:USERNAME
 
-        if (!(Test-Path $RootPath)) {
+        if (-not(Test-Path $RootPath)) {
             try {
                 New-Item -ItemType Directory -Path $RootPath -ErrorAction STOP | Out-Null
             }
@@ -233,21 +233,21 @@ Function ConvertTo-Shared {
                 throw $_.Exception.Message
             }
         }
-        While (!(Get-Content ($RootPath + "$($user).ADConnectServer") -ErrorAction SilentlyContinue | ? { $_.count -gt 0 })) {
+        While (-not(Get-Content ($RootPath + "$($user).ADConnectServer") -ErrorAction SilentlyContinue | ? { $_.count -gt 0 })) {
             Select-ADConnectServer
         }
 
-        While (!(Get-Content ($RootPath + "$($user).EXCHServer") -ErrorAction SilentlyContinue | ? { $_.count -gt 0 })) {
+        While (-not(Get-Content ($RootPath + "$($user).EXCHServer") -ErrorAction SilentlyContinue | ? { $_.count -gt 0 })) {
             Select-ExchangeServer
         }
         $ExchangeServer = Get-Content ($RootPath + "$($user).EXCHServer")
 
-        While (!(Get-Content ($RootPath + "$($user).TargetAddressSuffix") -ErrorAction SilentlyContinue | ? { $_.count -gt 0 })) {
+        While (-not(Get-Content ($RootPath + "$($user).TargetAddressSuffix") -ErrorAction SilentlyContinue | ? { $_.count -gt 0 })) {
             Select-TargetAddressSuffix
         }
         $targetAddressSuffix = Get-Content ($RootPath + "$($user).TargetAddressSuffix")
 
-        While (!(Get-Content ($RootPath + "$($user).DomainController") -ErrorAction SilentlyContinue | ? { $_.count -gt 0 })) {
+        While (-not(Get-Content ($RootPath + "$($user).DomainController") -ErrorAction SilentlyContinue | ? { $_.count -gt 0 })) {
             Select-DomainController
         }
         $DomainController = Get-Content ($RootPath + "$($user).DomainController")

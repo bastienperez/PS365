@@ -1,4 +1,4 @@
-Function Invoke-RemoveMailboxMove {
+function Invoke-RemoveMailboxMove {
     [CmdletBinding()]
     param (
         [Parameter()]

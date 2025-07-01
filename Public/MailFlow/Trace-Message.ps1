@@ -1,4 +1,4 @@
-Function Trace-Message {
+function Trace-Message {
     <#
     .SYNOPSIS
     Search message trace logs in Exchange Online by hour or partial hour start and end times
@@ -47,7 +47,7 @@ Function Trace-Message {
     .EXAMPLE
     Trace-Message -StartSearchHoursAgo 10 -EndSearchHoursAgo 5 -Subject "arizona"
 
-    This will find all messages with the word "arizona" somewhere in the subject, that were sent or received anywhere from 10 hours ago till 5 hours ago
+    This will find all messages with the word "arizona" someWhere-Object in the subject, that were sent or received anyWhere-Object from 10 hours ago till 5 hours ago
 
     .EXAMPLE
     Trace-Message -StartSearchHoursAgo 10 -EndSearchHoursAgo 5 -Subject "Letter from the CEO"
@@ -178,7 +178,7 @@ Function Trace-Message {
             }
         }
         catch {
-            Write-Verbose "`tException gathering message trace data on page $counter. Trying again in 30 seconds."
+            Write-Verbose "`tException gathering message trace data on page $counter. trying again in 30 seconds."
             Start-Sleep -Seconds 30
         }
     } while ($continue -eq $false)

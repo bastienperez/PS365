@@ -5,7 +5,7 @@ function Import-EXOMailboxPermissions {
 
     .DESCRIPTION
     Applies permissions to Exchange Online Mailboxes Full Access will automap the mailbox
-    In other words, Outlook automatically opens the mailbox where the user is assigned Full Access permission.
+    In other words, Outlook automatically opens the mailbox Where-Object the user is assigned Full Access permission.
 
     .EXAMPLE
     Import-Csv .\contoso-EXOPermissions_All.csv | Import-EXOMailboxPermissions

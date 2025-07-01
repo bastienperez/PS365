@@ -17,7 +17,7 @@ function Get-AzureVNetHelper {
                 ResourceGroupName = $CurVNet.ResourceGroupName
                 Location          = $CurVNet.Location
                 VNetName          = $CurVNet.Name
-                AddressSpace      = ($CurVNet.AddressSpace.AddressPrefixes | Where-Object {$_ -ne $null}) -join ','
+                AddressSpace      = ($CurVNet.AddressSpace.AddressPrefixes | Where-Object { $_ -ne $null }) -join ','
             }
 
             $SubnetVNet = $CurVNet.Subnets

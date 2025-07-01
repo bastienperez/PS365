@@ -1,4 +1,4 @@
-Function Resume-MailboxMove {
+function Resume-MailboxMove {
     <#
     .SYNOPSIS
     Resume Mailbox Move

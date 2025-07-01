@@ -9,7 +9,7 @@ function Remove-MailboxMoveCredential {
     These are the on-premises Exchange endpoint credentials.
 
     .PARAMETER Tenant
-    This is the tenant domain - where you are/were migrating to
+    This is the tenant domain - Where-Object you are/were migrating to
     Example: If target tenant is contoso.mail.onmicrosoft.com use contoso
 
     .EXAMPLE

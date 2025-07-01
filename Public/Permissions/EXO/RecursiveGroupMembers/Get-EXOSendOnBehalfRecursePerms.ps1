@@ -1,4 +1,4 @@
-function Get-EXOSendOnBehalfRecursePerms {
+function Get-PSExoSendOnBehalfRecursePerms {
     <#
     .SYNOPSIS
     Outputs Send On Behalf permissions for each mailbox that has permissions assigned.
@@ -6,7 +6,7 @@ function Get-EXOSendOnBehalfRecursePerms {
 
     .EXAMPLE
 
-    (Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname) | Get-EXOSendOnBehalfRecursePerms | Export-csv .\SendOB.csv -NoTypeInformation
+    (Get-Mailbox -ResultSize unlimited | Select-Object -expandproperty distinguishedname) | Get-PSExoSendOnBehalfRecursePerms | Export-csv .\SendOB.csv -NoTypeInformation
 
     #>
     [CmdletBinding()]
@@ -41,7 +41,7 @@ function Get-EXOSendOnBehalfRecursePerms {
                     [void]$listGroupMembers.Add($_)
                 }
             }
-            elseif (!($GroupMemberHash.ContainsKey($CurGranted))) {
+            elseif (-not($GroupMemberHash.ContainsKey($CurGranted))) {
                 if ($RecipientMailHash.ContainsKey($CurGranted)) {
                     $CurGranted = $RecipientMailHash["$CurGranted"].Name
                     $Type = $RecipientMailHash["$CurGranted"].RecipientTypeDetails

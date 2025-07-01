@@ -7,7 +7,7 @@ function Get-OneDriveReport {
     Report on OneDrive usage, storage available, storage used, percentage used, bytes used
     
     .PARAMETER Tenant
-    You must use Connect-Cloud without MFA as the creds are retrieved from where Connect-Cloud stores them (by TENANT)
+    You must use Connect-Cloud without MFA as the creds are retrieved from Where-Object Connect-Cloud stores them (by TENANT)
     Connect-Cloud -Tenant CONTOSO -SharePoint
     
     .EXAMPLE

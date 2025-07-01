@@ -41,6 +41,6 @@ function Export-GoogleAddress {
         foreach ($Prop in $PropList) {
             $PropArray.Add($Prop)
         }
-        $Csv | Select $PropArray
+        $Csv | Select-Object $PropArray
     }
 }

@@ -140,7 +140,7 @@ function Get-ExchangeMailbox {
     Process {
         if ($MailboxFilter) {
             foreach ($CurMailboxFilter in $MailboxFilter) {
-                if (! $ArchivesOnly) {
+                if (-not $ArchivesOnly) {
                     Get-Mailbox -Filter $CurMailboxFilter -ResultSize unlimited | Select-Object ($Selectproperties + $CalculatedProps)
                     Get-RemoteMailbox -Filter $CurMailboxFilter -ResultSize unlimited | Select-Object ($Selectproperties + $CalculatedProps)
                 }
@@ -151,7 +151,7 @@ function Get-ExchangeMailbox {
             }
         }
         else {
-            if (! $ArchivesOnly) {
+            if (-not $ArchivesOnly) {
                 Get-Mailbox -ResultSize unlimited | Select-Object ($Selectproperties + $CalculatedProps)
                 Get-RemoteMailbox -ResultSize unlimited | Select-Object ($Selectproperties + $CalculatedProps)
             }

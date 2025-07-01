@@ -1,4 +1,4 @@
-﻿Function Get-MailboxMoveRecipientHash {
+﻿function Get-MailboxMoveRecipientHash {
     [CmdletBinding()]
     param
     (

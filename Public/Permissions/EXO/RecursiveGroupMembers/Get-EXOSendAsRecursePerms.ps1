@@ -1,4 +1,4 @@
-function Get-EXOSendAsRecursePerms {
+function Get-PsExoSendAsRecursePerms {
     <#
     .SYNOPSIS
     Outputs Send As permissions for each mailbox that has permissions assigned.
@@ -6,7 +6,7 @@ function Get-EXOSendAsRecursePerms {
 
     .EXAMPLE
 
-    (Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname) | Get-EXOSendAsRecursePerms | Export-csv .\SA.csv -NoTypeInformation
+    (Get-Mailbox -ResultSize unlimited | Select-Object -expandproperty distinguishedname) | Get-PsExoSendAsRecursePerms | Export-csv .\SA.csv -NoTypeInformation
 
     #>
     [CmdletBinding()]
@@ -46,7 +46,7 @@ function Get-EXOSendAsRecursePerms {
                     [void]$listGroupMembers.Add($_)
                 }
             }
-            elseif (!($GroupMemberHash.ContainsKey($Trustee))) {
+            elseif (-not($GroupMemberHash.ContainsKey($Trustee))) {
                 if ($RecipientMailHash.ContainsKey($Trustee)) {
                     $Trustee = $RecipientMailHash["$Trustee"].Name
                     $Type = $RecipientMailHash["$Trustee"].RecipientTypeDetails

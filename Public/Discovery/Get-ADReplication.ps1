@@ -12,19 +12,19 @@ function Get-ADReplication {
     $domain = (Get-ADForest).Domains
 
     $server = ForEach ($curDomain in $domain) {
-        Try {
+        try {
             Get-ADDomainController -Discover -DomainName $curDomain -erroraction stop
         }
-        Catch {
+        catch {
             Write-Warning "Error Discovering Server in Domain: $curDomain"
         }
     }
 
     $dc = ForEach ($curServer in $Server) {
-        Try {
+        try {
             Get-ADDomainController -Filter * -Server $curServer.name -erroraction stop
         }
-        Catch {
+        catch {
             Write-Warning "Error Discovering DCs with Server: $curServer"
         }
     }

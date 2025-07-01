@@ -30,7 +30,7 @@ function Add-ContentFilterPolicyDetail {
         Valid values are one or more SMTP email addresses.
 
     .PARAMETER OutputPath
-        Where to write the report files to.
+        Where-Object to write the report files to.
         By default it will write to the current path.
 
     .EXAMPLE
@@ -146,7 +146,7 @@ function Add-ContentFilterPolicyDetail {
             }
             $Params.Add("BlockedSenders", $listBlockedSenders)
         }
-        if (!(Get-HostedContentFilterPolicy -Identity $ContentFilterPolicy -ErrorAction SilentlyContinue)) {
+        if (-not(Get-HostedContentFilterPolicy -Identity $ContentFilterPolicy -ErrorAction SilentlyContinue)) {
             Write-Warning "Content Filter Policy `"$ContentFilterPolicy`" does not exist."
             Write-Warning "First create Content Filter Policy in GUI: `"$ContentFilterPolicy`" and then rerun this function."
             Throw

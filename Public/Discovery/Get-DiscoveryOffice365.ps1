@@ -319,7 +319,7 @@ function Get-DiscoveryOffice365 {
         #endregion
         switch ($true) {
             { $menu.DiscoveryItems -contains 'MSOnline' -or $MSOnline } {
-                Write-Verbose "Gathering Internal Domains Matching Azure AD Service Principal Names"
+                Write-Verbose "Gathering Internal Domains Matching Microsoft Entra ID Service Principal Names"
                 Get-DomainMatchingServicePrincipal | Export-Csv $MSOL_Spn @ExportCSVSplat
 
                 Write-Verbose "Gathering MsolUsers"
@@ -492,7 +492,7 @@ function Get-DiscoveryOffice365 {
                 Sort-Object Id | Export-Csv $EXO_OrganizationRelationship @ExportCSVSplat
 
                 Write-Verbose "Gathering Mail Contacts"
-                Get-EXOMailContact | Select-Object $EXOContactsProperties |
+                Get-PsExoMailContact | Select-Object $EXOContactsProperties |
                 Sort-Object DisplayName | Export-Csv $EXO_Contacts @ExportCSVSplat
 
                 $ContactDetails = Import-Csv $EXO_Contacts
@@ -501,7 +501,7 @@ function Get-DiscoveryOffice365 {
 
                 if (-not $SkipDistributionGroupReport) {
                     Write-Verbose "Gathering Distribution & Mail-Enabled Security Groups"
-                    Get-EXOGroup -DetailedReport | Export-Csv $EXO_Groups_Detailed @ExportCSVSplat
+                    Get-PSExoGroup -DetailedReport | Export-Csv $EXO_Groups_Detailed @ExportCSVSplat
                 }
                 $EXOGroupsDetails = Import-Csv $EXO_Groups_Detailed
                 $EXOGroupsDetails | Select-Object $EXOGroupProperties | Sort-Object DisplayName | Export-Csv $EXO_Groups @ExportCSVSplat
@@ -511,7 +511,7 @@ function Get-DiscoveryOffice365 {
 
                 if (-not $SkipMailboxReport) {
                     Write-Verbose "Gathering Exchange Online Mailboxes"
-                    Get-EXOnlineMailbox -DetailedReport | Export-Csv $EXO_Mailboxes_Detailed @ExportCSVSplat
+                    Get-PsExoMailbox -DetailedReport | Export-Csv $EXO_Mailboxes_Detailed @ExportCSVSplat
                 }
                 $MailboxDetails = Import-Csv $EXO_Mailboxes_Detailed | Where-Object { $_.RecipientTypeDetails -ne 'DiscoveryMailbox' }
                 $MailboxDetails | Select-Object $EXOMailboxProperties | Sort-Object DisplayName | Export-Csv $EXO_Mailboxes @ExportCSVSplat
@@ -524,7 +524,7 @@ function Get-DiscoveryOffice365 {
 
                 Write-Verbose "Gathering Exchange Online Resource Mailboxes and Calendar Processing"
                 $ResourceMailbox = $MailboxDetails | Where-Object { $_.RecipientTypeDetails -in 'RoomMailbox', 'EquipmentMailbox' }
-                Get-EXOResourceMailbox -ResourceMailbox $ResourceMailbox | Sort-Object DisplayName | Export-Csv $EXO_ResourceMailboxes @ExportCSVSplat
+                Get-PsExoResourceMailbox -ResourceMailbox $ResourceMailbox | Sort-Object DisplayName | Export-Csv $EXO_ResourceMailboxes @ExportCSVSplat
 
                 Import-Csv $EXO_Groups | Export-MembersOnePerLine -FindInColumn MembersName |
                 Sort-Object DisplayName | Export-Csv $EXO_GroupMembers @ExportCSVSplat
@@ -643,14 +643,14 @@ function Get-DiscoveryOffice365 {
             }
             { $menu.DiscoveryItems -contains 'PermissionsReport' -or $PermissionsReport } {
                 Write-Verbose "Gathering Mailbox Delegate Permissions"
-                Get-EXOMailboxPerms -Path $Detailed
+                Get-PsExoMailboxPerms -Path $Detailed
 
                 'EXO_FullAccess.csv', 'EXO_SendOnBehalf.csv', 'EXO_SendAs.csv' | ForEach-Object {
                     Import-Csv (Join-Path $Detailed $_) -ErrorAction SilentlyContinue | Where-Object { $_ } |
                     Export-Csv $EXO_Permissions -NoTypeInformation -Append }
                 <#
                Write-Verbose "Gathering Distribution Group Delegate Permissions"
-                 Get-EXODGPerms $Detailed
+                 Get-PSExoDGPerms $Detailed
 
                 'EXO_DGSendOnBehalf.csv', 'EXO_DGSendAs.csv' | ForEach-Object {
                     Import-Csv (Join-Path $Detailed $_) -ErrorAction SilentlyContinue | Where-Object { $_ } |
@@ -681,7 +681,7 @@ function Get-DiscoveryOffice365 {
                 }
                 if ($ConfirmCount -eq 'n' -or $ConfirmCount -eq 'y') {
                     $AllRecipients = Get-Recipient -ResultSize Unlimited
-                    Get-EXOMailboxFolderPerms -MailboxList $MailboxDetails -AllRecipients $AllRecipients |
+                    Get-PsExoMailboxFolderPerms -MailboxList $MailboxDetails -AllRecipients $AllRecipients |
                     Export-Csv $EXO_FolderPermissions @ExportCSVSplat
                 }
             }

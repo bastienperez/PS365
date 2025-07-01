@@ -1,4 +1,4 @@
-function Get-EXOMailContact {
+function Get-PsExoMailContact {
     <#
     .SYNOPSIS
     Export Office 365 Mail Contacts
@@ -10,10 +10,10 @@ function Get-EXOMailContact {
     Provide specific Mail Contacts to report on.  Otherwise, all Mail Contacts will be reported.  Please review the examples provided.
 
     .EXAMPLE
-    Get-EXOMailContact | Export-Csv c:\scripts\All365MailContacts.csv -notypeinformation -encoding UTF8
+    Get-PsExoMailContact | Export-Csv c:\scripts\All365MailContacts.csv -notypeinformation -encoding UTF8
 
     .EXAMPLE
-    '{emailaddresses -like "*contoso.com"}' | Get-EXOMailContact | Export-Csv c:\scripts\365MailContacts.csv -notypeinformation -encoding UTF8
+    '{emailaddresses -like "*contoso.com"}' | Get-PsExoMailContact | Export-Csv c:\scripts\365MailContacts.csv -notypeinformation -encoding UTF8
 
     #>
     [CmdletBinding()]

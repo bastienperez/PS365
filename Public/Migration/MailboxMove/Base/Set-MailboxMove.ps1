@@ -1,4 +1,4 @@
-Function Set-MailboxMove {
+function Set-MailboxMove {
     <#
     .SYNOPSIS
     Set Mailbox Move

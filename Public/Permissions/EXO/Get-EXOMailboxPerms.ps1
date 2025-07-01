@@ -1,4 +1,4 @@
-﻿Function Get-EXOMailboxPerms {
+﻿function GetPsExoMailboxPerms {
     <#
     .SYNOPSIS
     By default, creates permissions reports for all mailboxes with SendAs, SendOnBehalf and FullAccess delegates.
@@ -28,19 +28,19 @@
     Parameter description
 
     .EXAMPLE
-    Get-EXOMailboxPerms -Tenant Contoso -Path C:\PermsReports -Verbose
+    Get-PsExoMailboxPerms -Tenant Contoso -Path C:\PermsReports -Verbose
 
     .EXAMPLE
-    Get-Recipient -Filter {EmailAddresses -like "*contoso.com"}  | Select -ExpandProperty name | Get-EXOMailboxPerms -Tenant Contoso -Path C:\PermsReports
+    Get-Recipient -Filter {EmailAddresses -like "*contoso.com"}  | Select-Object -ExpandProperty name | Get-PsExoMailboxPerms -Tenant Contoso -Path C:\PermsReports
 
     .EXAMPLE
-    Get-EXOMailboxPerms -Tenant Contoso -Path C:\PermsReports -SkipFullAccess -Verbose
+    Get-PsExoMailboxPerms -Tenant Contoso -Path C:\PermsReports -SkipFullAccess -Verbose
 
     .EXAMPLE
-    Get-EXOMailboxPerms -Tenant Contoso -Path C:\PermsReports -SkipSendOnBehalf -Verbose
+    Get-PsExoMailboxPerms -Tenant Contoso -Path C:\PermsReports -SkipSendOnBehalf -Verbose
 
     .EXAMPLE
-    Get-EXOMailboxPerms -Tenant Contoso -Path C:\PermsReports -SkipSendAs -SkipFullAccess -Verbose
+    Get-PsExoMailboxPerms -Tenant Contoso -Path C:\PermsReports -SkipSendAs -SkipFullAccess -Verbose
     #>
     [CmdletBinding()]
     param (
@@ -100,17 +100,17 @@
 
         if (-not $SkipSendAs) {
             Write-Verbose "Fetching SendAs permissions for each mailbox and writing to file"
-            $allMailboxDNs | Get-EXOSendAsPerms -RecipientHash $RecipientHash -RecipientMailHash $RecipientMailHash -RecipientLiveIDHash $RecipientLiveIDHash |
+            $allMailboxDNs | Get-PsExoSendAsPerms -RecipientHash $RecipientHash -RecipientMailHash $RecipientMailHash -RecipientLiveIDHash $RecipientLiveIDHash |
             Export-csv (Join-Path $Path "EXO_SendAs.csv") -NoTypeInformation
         }
         if (-not $SkipSendOnBehalf) {
             Write-Verbose "Fetching SendOnBehalf permissions for each mailbox and writing to file"
-            $AllMailboxDNs | Get-EXOSendOnBehalfPerms -RecipientHash $RecipientHash -RecipientMailHash $RecipientMailHash -RecipientDNHash $RecipientDNHash |
+            $AllMailboxDNs | Get-PsExoSendOnBehalfPerms -RecipientHash $RecipientHash -RecipientMailHash $RecipientMailHash -RecipientDNHash $RecipientDNHash |
             Export-csv (Join-Path $Path "EXO_SendOnBehalf.csv") -NoTypeInformation
         }
         if (-not $SkipFullAccess) {
             Write-Verbose "Fetching FullAccess permissions for each mailbox and writing to file"
-            $AllMailboxDNs | Get-EXOFullAccessPerms -RecipientHash $RecipientHash -RecipientMailHash $RecipientMailHash -RecipientLiveIDHash $RecipientLiveIDHash |
+            $AllMailboxDNs | Get-PsExoFullAccessPerms -RecipientHash $RecipientHash -RecipientMailHash $RecipientMailHash -RecipientLiveIDHash $RecipientLiveIDHash |
             Export-Csv (Join-Path $Path "EXO_FullAccess.csv") -NoTypeInformation
         }
     }

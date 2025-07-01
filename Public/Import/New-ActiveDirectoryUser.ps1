@@ -47,12 +47,12 @@ function New-ActiveDirectoryUser {
     Process {
         ForEach ($CurRow in $Row) {
             $Display = $CurRow.Displayname
-            $Name = -join ([char[]]$display | select -first 15)
+            $Name = -join ([char[]]$display | Select-Object -first 15)
             $i = 2
             Write-Verbose "Display Name: $Display"
             while (Get-ADUser -filter {samaccountname -eq $name}) {
                 $charsForIteration = ([string]$i).Length
-                $name = -join ([char[]]$display | select -first (15 - $charsForIteration)) + $i
+                $name = -join ([char[]]$display | Select-Object -first (15 - $charsForIteration)) + $i
                 $i++
             }
             Write-Verbose "Name: $Name"
@@ -62,7 +62,7 @@ function New-ActiveDirectoryUser {
                 $UPNandMail = ($PrimarySMTP.Substring(5)).ToLower()
                 Write-Verbose "UPNandMail: $UPNandMail"
             }
-            if (! $LogOnly) {
+            if (-not $LogOnly) {
                 try {
                     $errorActionPreference = 'Stop'
                     $NewADUser = @{

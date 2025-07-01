@@ -1,4 +1,4 @@
-﻿Function Get-MailboxMoveFolderPermission {
+﻿function GetMailboxMoveFolderPermission {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]

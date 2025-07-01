@@ -1,4 +1,4 @@
-﻿Function Get-MailboxMoveOnPremisesPermissionReport {
+﻿function GetMailboxMoveOnPremisesPermissionReport {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]

@@ -143,7 +143,7 @@ function Import-365UnifiedGroup {
                 }
             }
             if ($CurGroup.EmailAddresses) {
-                $CurGroup.EmailAddresses -Split "," | Where-Object {(!($_ -clike "SMTP:*")) -and ($_ -notlike "SPO:*" )} | ForEach-Object {
+                $CurGroup.EmailAddresses -Split "," | Where-Object {(-not($_ -clike "SMTP:*")) -and ($_ -notlike "SPO:*" )} | ForEach-Object {
                     Set-UnifiedGroup -Identity $CurGroup.Identity -emailaddresses @{Add = "$_"}
                 }
             }
