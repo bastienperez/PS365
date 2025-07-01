@@ -5,7 +5,7 @@ function Test-Uri {
     #>
     [CmdletBinding()]
     [OutputType([bool])]
-    Param
+    param
     (
         # Uri to be validated
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, Position = 0)]

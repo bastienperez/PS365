@@ -42,7 +42,7 @@ function Connect-PoshGraphRefresh {
                 Username      = $Credential.UserName
                 Password      = $Password
                 refresh_token = $RefreshToken
-                Scope         = "offline_access https://graph.microsoft.com/.default"
+                Scope         = 'offline_access https://graph.microsoft.com/.default'
             }
             Uri    = 'https://login.microsoftonline.com/{0}/oauth2/v2.0/token' -f $Configuration.Username
         }

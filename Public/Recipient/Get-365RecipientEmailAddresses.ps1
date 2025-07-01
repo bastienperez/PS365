@@ -27,16 +27,16 @@ function Get-365RecipientEmailAddresses {
         [Parameter(ValueFromPipeline = $true, Mandatory = $false)]
         [string[]] $RecipientFilter
     )
-    Begin {
+    begin {
         $Selectproperties = @(
             'RecipientTypeDetails', 'DisplayName', 'Alias', 'Identity', 'PrimarySmtpAddress'
         )
 
         $CalculatedProps = @(
-            @{n = "EmailAddresses" ; e = {($_.EmailAddresses | Where-Object {$_ -ne $null}) -join '|' }}
+            @{n = 'EmailAddresses' ; e = { ($_.EmailAddresses | Where-Object { $_ -ne $null }) -join '|' } }
         )
     }
-    Process {
+    process {
         if ($RecipientFilter) {
             foreach ($CurRecipientFilter in $RecipientFilter) {
                 Get-Recipient -Filter $CurRecipientFilter | Select-Object ($Selectproperties + $CalculatedProps)
@@ -64,7 +64,7 @@ function Get-365RecipientEmailAddresses {
             }
         }
     }
-    End {
+    end {
 
     }
 }

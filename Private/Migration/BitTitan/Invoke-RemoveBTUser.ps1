@@ -1,6 +1,6 @@
 function Invoke-RemoveBTUser {
     [CmdletBinding()]
-    Param
+    param
     (
 
     )
@@ -22,7 +22,7 @@ function Invoke-RemoveBTUser {
             'FirstName'
             'LastName'
             'Id'
-        ) | Out-GridView -Title "BitTitan Users" -OutputMode Multiple
+        ) | Out-GridView -Title 'BitTitan Users' -OutputMode Multiple
         $ContinueDecision = Get-ContinueDecision
         if ($ContinueDecision) {
             foreach ($Remove in $RemoveChoice) {

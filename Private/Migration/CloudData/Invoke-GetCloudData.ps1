@@ -34,13 +34,13 @@ function Invoke-GetCloudData {
                 LegacyExchangeDN          = $Mailbox.LegacyExchangeDN
                 MicrosoftOnlineServicesID = $Mailbox.MicrosoftOnlineServicesID
                 InitialAddress            = @($Mailbox.EmailAddresses -like "smtp:*@$InitialDomain")[0] -replace 'smtp:', ''
-                EmailAddresses            = @($Mailbox.EmailAddresses) -notmatch "SPO:|SIP:|onmicrosoft\.com" -join '|'
+                EmailAddresses            = @($Mailbox.EmailAddresses) -notmatch 'SPO:|SIP:|onmicrosoft\.com' -join '|'
                 ExternalDirectoryObjectId = $Mailbox.ExternalDirectoryObjectId
             }
         }
     }
     if ($Type -eq 'MailUsers') {
-        $MailUserList = (Get-MailUser -Filter "IsDirSynced -eq '$false'" -ResultSize $ResultSize).where{ $_.UserPrincipalName -notlike "*#EXT#*" }
+        $MailUserList = (Get-MailUser -Filter "IsDirSynced -eq '$false'" -ResultSize $ResultSize).where{ $_.UserPrincipalName -notlike '*#EXT#*' }
         $Count = @($MailUserList).Count
         foreach ($MailUser in $MailUserList) {
             $iUP++
@@ -63,7 +63,7 @@ function Invoke-GetCloudData {
                     $InitialAddress
                 }
                 else { '{0}@{1}' -f ($MailUser.UserPrincipalName -split '@')[0], $InitialDomain }
-                EmailAddresses            = @($MailUser.EmailAddresses) -notmatch "SPO:|SIP:" -join '|'
+                EmailAddresses            = @($MailUser.EmailAddresses) -notmatch 'SPO:|SIP:' -join '|'
                 ExternalDirectoryObjectId = $MailUser.ExternalDirectoryObjectId
             }
         }
@@ -73,7 +73,7 @@ function Invoke-GetCloudData {
         $RecipientList = Get-Recipient -ResultSize unlimited
         $RecipientList | ForEach-Object { $null = $RecipientGuidSet.Add(($_.ExternalDirectoryObjectId).ToString()) }
         $AzureADUserList = Get-AzureADUser -All:$True | Where-Object { $_.DisplayName -ne 'On-Premises Directory Synchronization Service Account' -and
-            (-not $_.ImmutableId) -and $_.UserPrincipalName -notlike "*#EXT#*" -and -not $RecipientGuidSet.Contains($_.ObjectId.ToString())
+            (-not $_.ImmutableId) -and $_.UserPrincipalName -notlike '*#EXT#*' -and -not $RecipientGuidSet.Contains($_.ObjectId.ToString())
         }
         $Count = @($AzureADUserList).Count
         foreach ($AzureADUser in $AzureADUserList) {
@@ -86,7 +86,7 @@ function Invoke-GetCloudData {
                 UserPrincipalName  = $AzureADUser.UserPrincipalName
                 PrimarySmtpAddress = @(@($AzureADUser.ProxyAddresses ) -cmatch 'SMTP:') -ne '' -join '|'
                 InitialAddress     = ($AzureADUser.ProxyAddresses -like "smtp:*@$InitialDomain")[0] -replace 'smtp:', ''
-                EmailAddresses     = @(@($AzureADUser.ProxyAddresses) -notmatch "SPO:|SIP:") -ne '' -join '|'
+                EmailAddresses     = @(@($AzureADUser.ProxyAddresses) -notmatch 'SPO:|SIP:') -ne '' -join '|'
                 ObjectId           = $AzureADUser.ObjectId
             }
         }

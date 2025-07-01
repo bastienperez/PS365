@@ -32,7 +32,7 @@ function Get-EXPublicFolderRights {
                             Created      = $StatHash[$Folder.EntryID]['Created']
                             ItemCount    = $StatHash[$Folder.EntryID]['ItemCount']
                             SizeMB       = $StatHash[$Folder.EntryID]['SizeMB']
-                            User         = [regex]::Matches("$($Perm.User)", "[^/]*$").value[0]
+                            User         = [regex]::Matches("$($Perm.User)", '[^/]*$').value[0]
                             AccessRights = @($Perm.AccessRights) -ne '' -join '|'
                             MailEnabled  = $Folder.MailEnabled
                         }
@@ -46,7 +46,7 @@ function Get-EXPublicFolderRights {
                             Created      = ''
                             ItemCount    = ''
                             SizeMB       = ''
-                            User         = [regex]::Matches("$($Perm.User)", "[^/]*$").value[0]
+                            User         = [regex]::Matches("$($Perm.User)", '[^/]*$').value[0]
                             AccessRights = @($Perm.AccessRights) -ne '' -join '|'
                             MailEnabled  = $Folder.MailEnabled
                         }

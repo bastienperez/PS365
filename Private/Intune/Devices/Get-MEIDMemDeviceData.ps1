@@ -1,4 +1,4 @@
-function Get-AADMemDeviceData {
+function Get-EIDMemDeviceData {
     [cmdletbinding(DefaultParameterSetName = 'PlaceHolder')]
     param (
         [Parameter(Mandatory, ParameterSetName = 'SearchString')]
@@ -41,8 +41,8 @@ function Get-AADMemDeviceData {
     }
 
     $RestSplat = @{
-        Uri     = "https://graph.microsoft.com/beta/devices/{0}" -f $filter
-        Headers = @{ "Authorization" = "Bearer $Token" }
+        Uri     = 'https://graph.microsoft.com/beta/devices/{0}' -f $filter
+        Headers = @{ 'Authorization' = "Bearer $Token" }
         Method  = 'Get'
     }
     Invoke-RestMethod @RestSplat -Verbose:$false

@@ -1,6 +1,6 @@
 function Invoke-SetMWMailboxMoveForward {
     [CmdletBinding()]
-    Param
+    param
     (
         [Parameter()]
         [switch]
@@ -18,11 +18,11 @@ function Invoke-SetMWMailboxMoveForward {
             }
             @{
                 Name       = 'Categories'
-                Expression = { If ($_.Categories) { $StarColor[$_.Categories] } else { "" } }
+                Expression = { if ($_.Categories) { $StarColor[$_.Categories] } else { '' } }
             }
             'CreateDate'
             'Id'
-        ) | Out-GridView -Title "MigrationWiz Mailbox Moves" -OutputMode Multiple
+        ) | Out-GridView -Title 'MigrationWiz Mailbox Moves' -OutputMode Multiple
         if ($DecisionObject) {
             foreach ($Object in $DecisionObject) {
                 $ForwardParams = @{ }
@@ -30,7 +30,7 @@ function Invoke-SetMWMailboxMoveForward {
                     { $Object.Source } { $ForwardParams.Add('Identity', $Object.Source) }
                     { $Object.Target } { $ForwardParams.Add('ForwardingSmtpAddress', $Object.Target) }
                     { $DeliverAndForward } { $ForwardParams.Add('DeliverToMailboxAndForward', $true) }
-                    Default {
+                    default {
                         $ForwardParams.Add('DeliverToMailboxAndForward', $false )
                         $ForwardParams.Add('ErrorAction', 'stop')
                     }

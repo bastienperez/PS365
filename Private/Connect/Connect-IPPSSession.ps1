@@ -28,23 +28,23 @@ function Connect-IPPSSession {
         [System.Management.Automation.PSCredential] $Credential = $null
     )
 
-    [string]$newUri = $null;
+    [string]$newUri = $null
 
     if (-not[string]::IsNullOrWhiteSpace($DelegatedOrganization)) {
-        [UriBuilder] $uriBuilder = New-Object -TypeName UriBuilder -ArgumentList $ConnectionUri;
-        [string] $queryToAppend = "DelegatedOrg={0}" -f $DelegatedOrganization;
+        [UriBuilder] $uriBuilder = New-Object -TypeName UriBuilder -ArgumentList $ConnectionUri
+        [string] $queryToAppend = 'DelegatedOrg={0}' -f $DelegatedOrganization
         if ($uriBuilder.Query -ne $null -and $uriBuilder.Query.Length -gt 0) {
-            [string] $existingQuery = $uriBuilder.Query.Substring(1);
-            $uriBuilder.Query = $existingQuery + "&" + $queryToAppend;
+            [string] $existingQuery = $uriBuilder.Query.Substring(1)
+            $uriBuilder.Query = $existingQuery + '&' + $queryToAppend
         }
         else {
-            $uriBuilder.Query = $queryToAppend;
+            $uriBuilder.Query = $queryToAppend
         }
 
-        $newUri = $uriBuilder.ToString();
+        $newUri = $uriBuilder.ToString()
     }
     else {
-        $newUri = $ConnectionUri;
+        $newUri = $ConnectionUri
     }
     $EXOPSSplat = @{
         ConnectionUri                   = $newUri

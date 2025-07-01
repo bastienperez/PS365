@@ -143,90 +143,90 @@ function New-HybridMailbox {
 
     #>
     [CmdletBinding()]
-    Param (
-        [parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = "Copy")]
+    param (
+        [parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'Copy')]
         [string] $UserToCopy,
-        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Shared")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'Shared')]
         [switch] $Shared,
-        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "New")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'New')]
         [switch] $New,
-        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = "Copy")]
-        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = "New")]
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'Copy')]
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'New')]
         [string] $FirstName,
-        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = "Copy")]
-        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = "New")]
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'Copy')]
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'New')]
         [string] $LastName,
-        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Copy")]
-        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "New")]
-        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Shared")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'Copy')]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'New')]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'Shared')]
         [switch] $SpecifyRetentionPolicy,
-        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Copy")]
-        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "New")]
-        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Shared")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'Copy')]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'New')]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'Shared')]
         [string] $PrimarySMTPAddress,
-        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Copy")]
-        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "New")]
-        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Shared")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'Copy')]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'New')]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'Shared')]
         [string] $SecondarySMTPAddress,
-        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Copy")]
-        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "New")]
-        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Shared")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'Copy')]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'New')]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'Shared')]
         [switch] $DontForceUserToChangePasswordAtLogon,
-        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = "Shared")]
-        [ValidateScript( {if ($_ -notlike "* *") {Return $True} else {Write-Host "Please choose an SharedMailboxEmailAlias without spaces"}})]
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'Shared')]
+        [ValidateScript( { if ($_ -notlike '* *') { return $True } else { Write-Host 'Please choose an SharedMailboxEmailAlias without spaces' } })]
         [string] $SharedMailboxEmailAlias,
-        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = "Shared")]
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'Shared')]
         [string] $DisplayName,
-        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Copy")]
-        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "New")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'Copy')]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'New')]
         [string] $OfficePhone,
-        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Copy")]
-        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "New")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'Copy')]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'New')]
         [string] $MobilePhone,
-        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Copy")]
-        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "New")]
-        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Shared")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'Copy')]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'New')]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'Shared')]
         [string] $Description,
-        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Copy")]
-        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "New")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'Copy')]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'New')]
         [string] $StreetAddress,
-        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Copy")]
-        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "New")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'Copy')]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'New')]
         [string] $City,
-        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Copy")]
-        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "New")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'Copy')]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'New')]
         [string] $State,
-        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Copy")]
-        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "New")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'Copy')]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'New')]
         [string] $Zip,
-        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Copy")]
-        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "New")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'Copy')]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'New')]
         [string] $SAMPrefix,
-        [parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Copy")]
-        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "New")]
-        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = "UPN")]
+        [parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'Copy')]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'New')]
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'UPN')]
         [switch] $NoMail,
-        [parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Copy")]
-        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "New")]
+        [parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'Copy')]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'New')]
         [string] $Country,
-        [parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Copy")]
-        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "New")]
+        [parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'Copy')]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'New')]
         [string] $Office,
-        [parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Copy")]
-        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "New")]
+        [parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'Copy')]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'New')]
         [string] $Title,
-        [parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Copy")]
-        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "New")]
+        [parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'Copy')]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'New')]
         [string] $Department,
-        [parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Copy")]
-        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "New")]
+        [parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'Copy')]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'New')]
         [string] $Company,
-        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Copy")]
-        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "New")]
-        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Shared")]
-        [string] $OUSearch = "Resource"
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'Copy')]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'New')]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'Shared')]
+        [string] $OUSearch = 'Resource'
     )
-    DynamicParam {
+    dynamicparam {
 
 
         # Set the dynamic parameters' name
@@ -257,7 +257,7 @@ function New-HybridMailbox {
         # Create the dictionary
         $RuntimeParameterDictionary = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
         # Generate and set the ValidateSet
-        $arrSet = [adsi]([System.DirectoryServices.ActiveDirectory.Forest]::GetCurrentForest()).schema.name.replace("CN=Schema", "LDAP://CN=Partitions")| Select-Object -ExpandProperty upnsuffixes
+        $arrSet = [adsi]([System.DirectoryServices.ActiveDirectory.Forest]::GetCurrentForest()).schema.name.replace('CN=Schema', 'LDAP://CN=Partitions') | Select-Object -ExpandProperty upnsuffixes
         $ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute($arrSet)
         # Add the ValidateSet to the attributes collection
         $AttributeCollection.Add($ValidateSetAttribute)
@@ -269,17 +269,17 @@ function New-HybridMailbox {
 
     }
 
-    Begin {
+    begin {
         try {
-            import-module activedirectory -ErrorAction Stop -Verbose:$false
+            Import-Module activedirectory -ErrorAction Stop -Verbose:$false
         }
         catch {
-            Write-Host "This module depends on the ActiveDirectory module."
-            Write-Host "Please download and install from https://www.microsoft.com/en-us/download/details.aspx?id=45520"
+            Write-Host 'This module depends on the ActiveDirectory module.'
+            Write-Host 'Please download and install from https://www.microsoft.com/en-us/download/details.aspx?id=45520'
             throw
         }
-        $password_ss = Read-Host "Enter a Password for the User(s) " -AsSecureString
-        $RootPath = $env:USERPROFILE + "\ps\"
+        $password_ss = Read-Host 'Enter a Password for the User(s) ' -AsSecureString
+        $RootPath = $env:USERPROFILE + '\ps\'
         $User = $env:USERNAME
 
         if (-not(Test-Path $RootPath)) {
@@ -290,49 +290,49 @@ function New-HybridMailbox {
                 throw $_.Exception.Message
             }
         }
-        While (-not(Get-Content ($RootPath + "$($user).ADConnectServer") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
+        while (-not(Get-Content ($RootPath + "$($user).ADConnectServer") -ErrorAction SilentlyContinue | Where-Object { $_.count -gt 0 })) {
             Select-ADConnectServer
         }
 
-        While (-not(Get-Content ($RootPath + "$($user).EXCHServer") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
+        while (-not(Get-Content ($RootPath + "$($user).EXCHServer") -ErrorAction SilentlyContinue | Where-Object { $_.count -gt 0 })) {
             Select-ExchangeServer
         }
         $ExchangeServer = Get-Content ($RootPath + "$($user).EXCHServer")
 
-        While (-not(Get-Content ($RootPath + "$($user).TargetAddressSuffix") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
+        while (-not(Get-Content ($RootPath + "$($user).TargetAddressSuffix") -ErrorAction SilentlyContinue | Where-Object { $_.count -gt 0 })) {
             Select-TargetAddressSuffix
         }
         $targetAddressSuffix = Get-Content ($RootPath + "$($user).TargetAddressSuffix")
 
-        While (-not(Get-Content ($RootPath + "$($user).DomainController") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
+        while (-not(Get-Content ($RootPath + "$($user).DomainController") -ErrorAction SilentlyContinue | Where-Object { $_.count -gt 0 })) {
             Select-DomainController
         }
         $DomainController = Get-Content ($RootPath + "$($user).DomainController")
 
-        While (-not(Get-Content ($RootPath + "$($user).DisplayNameFormat") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
+        while (-not(Get-Content ($RootPath + "$($user).DisplayNameFormat") -ErrorAction SilentlyContinue | Where-Object { $_.count -gt 0 })) {
             Select-DisplayNameFormat
         }
         $DisplayNameFormat = Get-Content ($RootPath + "$($user).DisplayNameFormat")
 
-        While (-not(Get-Content ($RootPath + "$($user).SamAccountNameCharacters") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
+        while (-not(Get-Content ($RootPath + "$($user).SamAccountNameCharacters") -ErrorAction SilentlyContinue | Where-Object { $_.count -gt 0 })) {
             Select-SamAccountNameCharacters
         }
         [int]$SamAccountNameCharacters = Get-Content ($RootPath + "$($user).SamAccountNameCharacters")
 
-        While (-not(Get-Content ($RootPath + "$($user).SamAccountNameOrder") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
+        while (-not(Get-Content ($RootPath + "$($user).SamAccountNameOrder") -ErrorAction SilentlyContinue | Where-Object { $_.count -gt 0 })) {
             Select-SamAccountNameOrder
         }
         $SamAccountNameOrder = Get-Content ($RootPath + "$($user).SamAccountNameOrder")
 
-        if ($SamAccountNameOrder -eq "SamFirstFirst") {
+        if ($SamAccountNameOrder -eq 'SamFirstFirst') {
 
-            While (-not(Get-Content ($RootPath + "$($user).SamAccountNameNumberOfFirstNameCharacters") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
+            while (-not(Get-Content ($RootPath + "$($user).SamAccountNameNumberOfFirstNameCharacters") -ErrorAction SilentlyContinue | Where-Object { $_.count -gt 0 })) {
                 Select-SamAccountNameNumberOfFirstNameCharacters -SamAccountNameCharacters $SamAccountNameCharacters
             }
             [int]$SamAccountNameNumberOfFirstNameCharacters = Get-Content ($RootPath + "$($user).SamAccountNameNumberOfFirstNameCharacters")
         }
         else {
-            While (-not(Get-Content ($RootPath + "$($user).SamAccountNameNumberOfLastNameCharacters") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
+            while (-not(Get-Content ($RootPath + "$($user).SamAccountNameNumberOfLastNameCharacters") -ErrorAction SilentlyContinue | Where-Object { $_.count -gt 0 })) {
                 Select-SamAccountNameNumberOfLastNameCharacters -SamAccountNameCharacters $SamAccountNameCharacters
             }
             [int]$SamAccountNameNumberOfLastNameCharacters = Get-Content ($RootPath + "$($user).SamAccountNameNumberOfLastNameCharacters")
@@ -342,7 +342,7 @@ function New-HybridMailbox {
         #              Connect                #
         #######################################
         try {
-            $null = Get-Command "Get-OnPremExchangeServer" -ErrorAction Stop
+            $null = Get-Command 'Get-OnPremExchangeServer' -ErrorAction Stop
         }
         catch {
             Connect-Exchange2 -ExchangeServer $ExchangeServer -ViewEntireForest
@@ -353,35 +353,35 @@ function New-HybridMailbox {
         catch {
             Connect-Cloud $targetAddressSuffix -AzureADver2
         }
-        If ($SpecifyRetentionPolicy) {
+        if ($SpecifyRetentionPolicy) {
             try {
-                $null = Get-Command "Get-CloudMsolAccountSku" -ErrorAction Stop
+                $null = Get-Command 'Get-CloudMsolAccountSku' -ErrorAction Stop
             }
             catch {
                 Connect-Cloud $targetAddressSuffix -ExchangeOnline -EXOPrefix
             }
             Remove-Variable -Name RetentionPolicyToAdd -ErrorAction SilentlyContinue
             try {
-                $RetentionPolicyToAdd = ((Get-CloudRetentionPolicy -erroraction stop).name | Out-GridView -OutputMode Single -Title "Choose a single Retention Policy and Click OK")
+                $RetentionPolicyToAdd = ((Get-CloudRetentionPolicy -erroraction stop).name | Out-GridView -OutputMode Single -Title 'Choose a single Retention Policy and Click OK')
             }
             catch {
-                Write-Output "Error running the command Get-CloudRetentionPolicy."
-                Write-Output "Please make sure you are connected to Exchange Online with the Prefix, Cloud, and try again"
-                Break
+                Write-Output 'Error running the command Get-CloudRetentionPolicy.'
+                Write-Output 'Please make sure you are connected to Exchange Online with the Prefix, Cloud, and try again'
+                break
             }
         }
 
-        $OUSearch2 = "User"
-        $ou = (Get-ADOrganizationalUnit -Server $domainController -filter * -SearchBase (Get-ADDomain -Server $domainController).distinguishedname -Properties canonicalname |
-                Where-Object {$_.canonicalname -match $OUSearch -or $_.canonicalname -match $OUSearch2
-            } | Select-Object canonicalname, distinguishedname| sort canonicalname |
-                Out-GridView -OutputMode Single -Title "Choose the OU in which to create the new user, then click OK").distinguishedname
-        if (-not$NoMail) {
+        $OUSearch2 = 'User'
+        $ou = (Get-ADOrganizationalUnit -Server $domainController -Filter * -SearchBase (Get-ADDomain -Server $domainController).distinguishedname -Properties canonicalname |
+            Where-Object { $_.canonicalname -match $OUSearch -or $_.canonicalname -match $OUSearch2
+            } | Select-Object canonicalname, distinguishedname | Sort-Object canonicalname |
+            Out-GridView -OutputMode Single -Title 'Choose the OU in which to create the new user, then click OK').distinguishedname
+        if (-not $NoMail) {
             $GuidFolder = Join-Path $env:TEMP ([Guid]::NewGuid().tostring())
             New-Item -Path $GuidFolder -ItemType Directory
-            [string[]]$optionsToAdd = (Get-CloudSkuTable -all | Out-GridView -Title "Choose License Options, with Control + Click" -PassThru)
+            [string[]]$optionsToAdd = (Get-CloudSkuTable -all | Out-GridView -Title 'Choose License Options, with Control + Click' -PassThru)
             Watch-ToLicense -GuidFolder $GuidFolder -optionsToAdd $optionsToAdd
-            If ($SpecifyRetentionPolicy) {
+            if ($SpecifyRetentionPolicy) {
                 $GuidFolderRetention = Join-Path $env:TEMP ([Guid]::NewGuid().tostring())
                 New-Item -Path $GuidFolderRetention -ItemType Directory
                 Watch-ToSetRetention -GuidFolderRetention $GuidFolderRetention -RetentionPolicyToAdd $RetentionPolicyToAdd
@@ -389,7 +389,7 @@ function New-HybridMailbox {
         }
     }
 
-    Process {
+    process {
 
         #######################################
         # Copy ADUser (Template) & Create New #
@@ -400,32 +400,32 @@ function New-HybridMailbox {
         }
 
         if ($UserToCopy) {
-            if ($UserToCopy -like "*@*") {
-                $UserToCopy = (Get-ADUser -LDAPfilter "(userprincipalname=$UserToCopy)").samaccountname
+            if ($UserToCopy -like '*@*') {
+                $UserToCopy = (Get-ADUser -LDAPFilter "(userprincipalname=$UserToCopy)").samaccountname
             }
             $template = Get-ADUser -Identity $UserToCopy -Server $domainController -Properties Enabled, StreetAddress, City, State, PostalCode
             $template = $template | Select-Object Enabled, StreetAddress, City, State, PostalCode
             $groupMembership = Get-ADUser -Identity $UserToCopy -Server $domainController -Properties memberof | Select-Object -ExpandProperty memberof
         }
-        $Last = $LastName -replace (" ", "")
-        $First = $FirstName -replace (" ", "")
+        $Last = $LastName -replace (' ', '')
+        $First = $FirstName -replace (' ', '')
 
         ###############################################
         #     NOT SHARED  DisplayName & SamAccount    #
         ###############################################
-        if (-not$Shared) {
+        if (-not $Shared) {
 
             $DisplayName = $ExecutionContext.InvokeCommand.ExpandString($DisplayNameFormat)
 
             ##############################################
             #              SamAccountName                #
             ##############################################
-            if (-not$SAMPrefix) {
-                if ($SamAccountNameOrder -eq "SamFirstFirst") {
+            if (-not $SAMPrefix) {
+                if ($SamAccountNameOrder -eq 'SamFirstFirst') {
                     # SamFIRSTFirst
                     $SamAccountName = (($First[0..($SamAccountNameNumberOfFirstNameCharacters - 1)] -join '') + $Last)[0..($SamAccountNameCharacters - 1)] -join ''
                     $i = 2
-                    while (Get-ADUser -Server $domainController -LDAPfilter "(samaccountname=$samaccountname)") {
+                    while (Get-ADUser -Server $domainController -LDAPFilter "(samaccountname=$samaccountname)") {
                         $CharactersUsedForIteration = ([string]$i).Length
                         $SamAccountName = $SamAccountName = ((($First[0..($SamAccountNameNumberOfFirstNameCharacters - 1)] -join '') + $Last)[0..($SamAccountNameCharacters - ($CharactersUsedForIteration + 1))] -join '') + $i
                         $i++
@@ -435,7 +435,7 @@ function New-HybridMailbox {
                     # SamLASTFirst
                     $SamAccountName = (($Last[0..($SamAccountNameNumberOfLastNameCharacters - 1)] -join '') + $First)[0..($SamAccountNameCharacters - 1)] -join ''
                     $i = 2
-                    while (Get-ADUser -Server $domainController -LDAPfilter "(samaccountname=$samaccountname)") {
+                    while (Get-ADUser -Server $domainController -LDAPFilter "(samaccountname=$samaccountname)") {
                         $CharactersUsedForIteration = ([string]$i).Length
                         $SamAccountName = ((($Last[0..($SamAccountNameNumberOfLastNameCharacters - 1)] -join '') + $First)[0..($SamAccountNameCharacters - ($CharactersUsedForIteration + 1))] -join '') + $i
                         $i++
@@ -445,11 +445,11 @@ function New-HybridMailbox {
 
             else {
                 [int]$SAMPrefixNumberOfCharacters = ([string]$SAMPrefix).Length
-                if ($SamAccountNameOrder -eq "SamFirstFirst") {
+                if ($SamAccountNameOrder -eq 'SamFirstFirst') {
                     # SamFIRSTFirst WITH PREFIX
                     $SamAccountName = ($SAMPrefix + (($First[0..($SamAccountNameNumberOfFirstNameCharacters - 1)] -join '') + $Last))[0..($SamAccountNameCharacters - 1)] -join ''
                     $i = 2
-                    while (Get-ADUser -Server $domainController -LDAPfilter "(samaccountname=$samaccountname)") {
+                    while (Get-ADUser -Server $domainController -LDAPFilter "(samaccountname=$samaccountname)") {
                         $CharactersUsedForIteration = ([string]$i).Length
                         $SamAccountName = $SamAccountName = ($SAMPrefix + (($First[0..($SamAccountNameNumberOfFirstNameCharacters - 1)] -join '') + $Last))[0..($SamAccountNameCharacters - ($CharactersUsedForIteration + 1))] -join '' + $i
                         $i++
@@ -459,7 +459,7 @@ function New-HybridMailbox {
                     # SamLASTFirst WITH PREFIX
                     $SamAccountName = ($SAMPrefix + (($Last[0..($SamAccountNameNumberOfLastNameCharacters - 1)] -join '') + $First))[0..($SamAccountNameCharacters - 1)] -join ''
                     $i = 2
-                    while (Get-ADUser -Server $domainController -LDAPfilter "(samaccountname=$samaccountname)") {
+                    while (Get-ADUser -Server $domainController -LDAPFilter "(samaccountname=$samaccountname)") {
                         $CharactersUsedForIteration = ([string]$i).Length
                         $SamAccountName = (($SAMPrefix + (($Last[0..($SamAccountNameNumberOfLastNameCharacters - 1)] -join '') + $First))[0..($SamAccountNameCharacters - ($CharactersUsedForIteration + 1))] -join '') + $i
                         $i++
@@ -472,12 +472,12 @@ function New-HybridMailbox {
         #  SHARED  SamAccountName   #
         #############################
 
-        Else {
-            $LastName = $LastName.replace(" ", "")
+        else {
+            $LastName = $LastName.replace(' ', '')
 
             $SamAccountName = $LastName[0..($SamAccountNameCharacters - 1)] -join ''
             $i = 2
-            while (Get-ADUser -Server $domainController -LDAPfilter "(samaccountname=$samaccountname)") {
+            while (Get-ADUser -Server $domainController -LDAPFilter "(samaccountname=$samaccountname)") {
                 $CharactersUsedForIteration = ([string]$i).Length
                 $SamAccountName = ($LastName[0..($SamAccountNameCharacters - ($CharactersUsedForIteration + 1))] -join '') + $i
                 $i++
@@ -502,30 +502,30 @@ function New-HybridMailbox {
         #########################################
 
         $hash = @{
-            "Instance"          = $template
-            "Name"              = $name
-            "DisplayName"       = $DisplayName
-            "GivenName"         = $FirstName
-            "SurName"           = $LastName
-            "OfficePhone"       = $OfficePhone
-            "mobile"            = $MobilePhone
-            "description"       = $Description
-            "streetaddress"     = $StreetAddress
-            "city"              = $City
-            "state"             = $State
-            "postalcode"        = $Zip
-            "country"           = $Country
-            "office"            = $Office
-            "title"             = $Title
-            "department"        = $Department
-            "company"           = $Company
-            "SamAccountName"    = $samaccountname
-            "UserPrincipalName" = $userprincipalname
-            "AccountPassword"   = $password_ss
-            "Path"              = $ou
+            'Instance'          = $template
+            'Name'              = $name
+            'DisplayName'       = $DisplayName
+            'GivenName'         = $FirstName
+            'SurName'           = $LastName
+            'OfficePhone'       = $OfficePhone
+            'mobile'            = $MobilePhone
+            'description'       = $Description
+            'streetaddress'     = $StreetAddress
+            'city'              = $City
+            'state'             = $State
+            'postalcode'        = $Zip
+            'country'           = $Country
+            'office'            = $Office
+            'title'             = $Title
+            'department'        = $Department
+            'company'           = $Company
+            'SamAccountName'    = $samaccountname
+            'UserPrincipalName' = $userprincipalname
+            'AccountPassword'   = $password_ss
+            'Path'              = $ou
         }
         $params = @{}
-        ForEach ($key in $hash.keys) {
+        foreach ($key in $hash.keys) {
             if ($($hash.item($key))) {
                 $params.add($key, $($hash.item($key)))
             }
@@ -535,7 +535,7 @@ function New-HybridMailbox {
         #          Create New ADUser            #
         #########################################
 
-        if (-not$DontForceUserToChangePasswordAtLogon) {
+        if (-not $DontForceUserToChangePasswordAtLogon) {
             New-ADUser @params -Server $domainController -ChangePasswordAtLogon:$true -Enabled:$true
         }
         else {
@@ -547,32 +547,32 @@ function New-HybridMailbox {
         }
 
         if ($PrimarySMTPAddress) {
-            $PrimaryProxy = ("SMTP:" + $PrimarySMTPAddress)
-            $SIP = ("SIP:" + $PrimarySMTPAddress)
-            $Target = ("smtp:" + $samaccountname + "@" + $targetAddressSuffix)
-            Set-ADUser -Identity $SamAccountName -Add @{proxyaddresses = $PrimaryProxy}
-            Set-ADUser -Identity $SamAccountName -Add @{proxyaddresses = $SIP}
-            Set-ADUser -Identity $SamAccountName -Add @{proxyaddresses = $Target}
+            $PrimaryProxy = ('SMTP:' + $PrimarySMTPAddress)
+            $SIP = ('SIP:' + $PrimarySMTPAddress)
+            $Target = ('smtp:' + $samaccountname + '@' + $targetAddressSuffix)
+            Set-ADUser -Identity $SamAccountName -Add @{proxyaddresses = $PrimaryProxy }
+            Set-ADUser -Identity $SamAccountName -Add @{proxyaddresses = $SIP }
+            Set-ADUser -Identity $SamAccountName -Add @{proxyaddresses = $Target }
         }
 
         if ($SecondarySMTPAddress) {
-            $SecondaryProxy = ("smtp:" + $SecondarySMTPAddress)
-            Set-ADUser -Identity $SamAccountName -Add @{proxyaddresses = $SecondaryProxy}
+            $SecondaryProxy = ('smtp:' + $SecondarySMTPAddress)
+            Set-ADUser -Identity $SamAccountName -Add @{proxyaddresses = $SecondaryProxy }
         }
 
         # Purge old jobs
-        Get-Job | Where-Object {$_.State -ne 'Running'}| Remove-Job
+        Get-Job | Where-Object { $_.State -ne 'Running' } | Remove-Job
 
-        if (-not$NoMail) {
+        if (-not $NoMail) {
 
             ##################################################
             #      Enable Remote Mailbox in Office 365       #
             ##################################################
             if ($PrimarySMTPAddress) {
-                Enable-OnPremRemoteMailbox -DomainController $domainController -Identity $samaccountname -PrimarySmtpAddress $PrimarySMTPAddress -RemoteRoutingAddress ($samaccountname + "@" + $targetAddressSuffix) -Alias $samaccountname
+                Enable-OnPremRemoteMailbox -DomainController $domainController -Identity $samaccountname -PrimarySmtpAddress $PrimarySMTPAddress -RemoteRoutingAddress ($samaccountname + '@' + $targetAddressSuffix) -Alias $samaccountname
             }
             else {
-                Enable-OnPremRemoteMailbox -DomainController $domainController -Identity $samaccountname -RemoteRoutingAddress ($samaccountname + "@" + $targetAddressSuffix) -Alias $samaccountname
+                Enable-OnPremRemoteMailbox -DomainController $domainController -Identity $samaccountname -RemoteRoutingAddress ($samaccountname + '@' + $targetAddressSuffix) -Alias $samaccountname
             }
 
             ##############################################################
@@ -581,9 +581,9 @@ function New-HybridMailbox {
             ##############################################################
 
             $userprincipalname = (Get-ADUser -Server $domainController -Identity $SamAccountName -Properties proxyaddresses | Select-Object @{
-                    n = "PrimarySMTPAddress" ; e = {( $_.proxyAddresses | ? {$_ -cmatch "SMTP:*"}).Substring(5)}
+                    n = 'PrimarySMTPAddress' ; e = { ( $_.proxyAddresses | Where-Object { $_ -cmatch 'SMTP:*' }).Substring(5) }
                 }).primarysmtpaddress
-            Set-ADUser -Server $domainController -Identity $SamAccountName -userprincipalname $userprincipalname
+            Set-ADUser -Server $domainController -Identity $SamAccountName -UserPrincipalName $userprincipalname
 
             ########################################
             #          Convert To Shared           #
@@ -593,7 +593,7 @@ function New-HybridMailbox {
                     Start-Sleep -Seconds 300
                     $userprincipalname = $args[0]
                     ConvertTo-Shared -UserToConvert $userprincipalname
-                } -ArgumentList  $userprincipalname | Out-Null
+                } -ArgumentList $userprincipalname | Out-Null
             }
 
             ########################################
@@ -602,7 +602,7 @@ function New-HybridMailbox {
 
             $tempfile = Join-Path $GuidFolder ([Guid]::NewGuid().tostring())
             $UserPrincipalName | Set-Content $tempfile
-            If ($SpecifyRetentionPolicy) {
+            if ($SpecifyRetentionPolicy) {
                 $tempfileRetention = Join-Path $GuidFolderRetention ([Guid]::NewGuid().tostring())
                 $UserPrincipalName | Set-Content $tempfileRetention
             }
@@ -610,25 +610,25 @@ function New-HybridMailbox {
         } # End of IF MAIL (ABOVE)
 
         # IF "NO MAIL" FOR THIS USER (BELOW)
-        Else {
-            $LastName = $LastName.replace(" ", "")
-            $FirstName = $FirstName.replace(" ", "")
-            $userprincipalname = $LastName + "-" + $FirstName + "@" + $PsBoundParameters[$ParamName_UPNSuffix]
+        else {
+            $LastName = $LastName.replace(' ', '')
+            $FirstName = $FirstName.replace(' ', '')
+            $userprincipalname = $LastName + '-' + $FirstName + '@' + $PsBoundParameters[$ParamName_UPNSuffix]
 
             $i = 2
             $F = $null
-            while (Get-ADUser -LDAPfilter "(userprincipalname=$userprincipalname)") {
+            while (Get-ADUser -LDAPFilter "(userprincipalname=$userprincipalname)") {
                 $F = $FirstName + $i
-                $userprincipalname = $LastName + "-" + $F + "@" + $PsBoundParameters[$ParamName_UPNSuffix]
+                $userprincipalname = $LastName + '-' + $F + '@' + $PsBoundParameters[$ParamName_UPNSuffix]
                 $i++
             }
             if ($F) {
-                $name = $LastName + ", " + $F
+                $name = $LastName + ', ' + $F
             }
             else {
-                $name = $LastName + ", " + $FirstName
+                $name = $LastName + ', ' + $FirstName
             }
-            Set-ADUser -Server $domainController -Identity $SamAccountName -userprincipalname $userprincipalname
+            Set-ADUser -Server $domainController -Identity $SamAccountName -UserPrincipalName $userprincipalname
         }
 
         ########################################
@@ -655,18 +655,18 @@ function New-HybridMailbox {
         )
 
         $CalculatedProps = @(
-            @{n = "OU" ; e = {$_.Distinguishedname | ForEach-Object {($_ -split '(OU=)', 2)[1, 2] -join ''}}},
-            @{n = "PrimarySMTPAddress" ; e = {( $_.proxyAddresses | ? {$_ -cmatch "SMTP:*"}).Substring(5) -join ";" }},
-            @{n = "smtp" ; e = {( $_.proxyAddresses | ? {$_ -cmatch "smtp:*"}).Substring(5) -join ";" }},
-            @{n = "x500" ; e = {( $_.proxyAddresses | ? {$_ -match "x500:*"}).Substring(0) -join ";" }},
-            @{n = "SIP" ; e = {( $_.proxyAddresses | ? {$_ -match "SIP:*"}).Substring(4) -join ";" }}
+            @{n = 'OU' ; e = { $_.Distinguishedname | ForEach-Object { ($_ -split '(OU=)', 2)[1, 2] -join '' } } },
+            @{n = 'PrimarySMTPAddress' ; e = { ( $_.proxyAddresses | Where-Object { $_ -cmatch 'SMTP:*' }).Substring(5) -join ';' } },
+            @{n = 'smtp' ; e = { ( $_.proxyAddresses | Where-Object { $_ -cmatch 'smtp:*' }).Substring(5) -join ';' } },
+            @{n = 'x500' ; e = { ( $_.proxyAddresses | Where-Object { $_ -match 'x500:*' }).Substring(0) -join ';' } },
+            @{n = 'SIP' ; e = { ( $_.proxyAddresses | Where-Object { $_ -match 'SIP:*' }).Substring(4) -join ';' } }
         )
 
-        Get-ADUser -Server $domainController -LDAPfilter "(samaccountname=$samaccountname)" -Properties $Properties -searchBase (Get-ADDomain -Server $domainController).distinguishedname -SearchScope SubTree |
-            select ($Selectproperties + $CalculatedProps) | FL
+        Get-ADUser -Server $domainController -LDAPFilter "(samaccountname=$samaccountname)" -Properties $Properties -SearchBase (Get-ADDomain -Server $domainController).distinguishedname -SearchScope SubTree |
+        Select-Object ($Selectproperties + $CalculatedProps) | Format-List
     }
 
-    End {
+    end {
         ########################################
         #         Sync Microsoft Entra ID Connect Sync        #
         ########################################
@@ -675,23 +675,23 @@ function New-HybridMailbox {
         ########################################
         # Stop the Licensing Watcher function #
         ########################################
-        if (-not$NoMail) {
+        if (-not $NoMail) {
             Start-Job -Name DeleteGuidFolder {
                 $GuidFolder = $args[0]
-                New-Item -Path $GuidFolder -Name "ALLDONE" -Type File
+                New-Item -Path $GuidFolder -Name 'ALLDONE' -Type File
                 while ((Get-ChildItem -Path $GuidFolder).count -gt 0) {
                     Start-Sleep -Seconds 5
                 }
-                Remove-Item -Path $GuidFolder -Confirm:$False -force -verbose
+                Remove-Item -Path $GuidFolder -Confirm:$False -Force -Verbose
             } -ArgumentList $GuidFolder
             if ($RetentionPolicyToAdd) {
                 Start-Job -Name DeleteGuidFolderRetention {
                     $GuidFolderRetention = $args[0]
-                    New-Item -Path $GuidFolderRetention -Name "ALLDONE" -Type File
+                    New-Item -Path $GuidFolderRetention -Name 'ALLDONE' -Type File
                     while ((Get-ChildItem -Path $GuidFolderRetention).count -gt 0) {
                     }
-                    Remove-Item -Path $GuidFolderRetention -Confirm:$False -force -verbose
-                } -ArgumentList  $GuidFolderRetention
+                    Remove-Item -Path $GuidFolderRetention -Confirm:$False -Force -Verbose
+                } -ArgumentList $GuidFolderRetention
             }
         }
     }

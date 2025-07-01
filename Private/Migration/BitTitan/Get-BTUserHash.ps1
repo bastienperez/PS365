@@ -1,6 +1,6 @@
 function Get-BTUserHash {
     [CmdletBinding()]
-    Param
+    param
     (
 
     )

@@ -14,7 +14,7 @@ function Convert-TransportXMLtoCSV {
                 Priority    = $TransportHash[$Rule.Name].Priority
                 State       = $TransportHash[$Rule.Name].State
                 Description = $TransportHash[$Rule.Name].Description
-                Command     = $Rule.version.commandblock."#cdata-section"
+                Command     = $Rule.version.commandblock.'#cdata-section'
             }
         }
     }

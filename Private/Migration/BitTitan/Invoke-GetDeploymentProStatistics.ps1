@@ -1,6 +1,6 @@
 function Invoke-GetDeploymentProStatistics {
     [CmdletBinding()]
-    Param
+    param
     (
         [Parameter(Mandatory, ValueFromPipeline)]
         $UserList,

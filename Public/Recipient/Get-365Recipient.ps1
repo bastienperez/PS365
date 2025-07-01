@@ -22,7 +22,6 @@ function Get-365Recipient {
         PrimarySmtpAddress -like "*contoso.com"}' | Get-365Recipient | Export-Csv .\RecipientReport.csv -notypeinformation -encoding UTF8
     .EXAMPLE
 
-
     #>
     [CmdletBinding()]
     param (
@@ -32,7 +31,7 @@ function Get-365Recipient {
         [Parameter(ValueFromPipeline = $true, Mandatory = $false)]
         [string[]] $RecipientFilter
     )
-    Begin {
+    begin {
         if ($DetailedReport) {
             $Selectproperties = @(
                 'DisplayName', 'Identity', 'RecipientType', 'RecipientTypeDetails', 'PrimarySmtpAddress', 'WindowsLiveID', 'Name', 'Alias', 'AddressBookPolicy'
@@ -70,45 +69,45 @@ function Get-365Recipient {
             )
 
             $CalculatedProps = @(
-                @{n = "AcceptMessagesOnlyFrom" ; e = { @($_.AcceptMessagesOnlyFrom) -ne '' -join '|' } },
-                @{n = "AcceptMessagesOnlyFromDLMembers" ; e = { @($_.AcceptMessagesOnlyFromDLMembers) -ne '' -join '|' } },
-                @{n = "AcceptMessagesOnlyFromSendersOrMembers" ; e = { @($_.AcceptMessagesOnlyFromSendersOrMembers) -ne '' -join '|' } },
-                @{n = "AddressListMembership" ; e = { @($_.AddressListMembership) -ne '' -join '|' } },
-                @{n = "AdministrativeUnits" ; e = { @($_.AdministrativeUnits) -ne '' -join '|' } },
-                @{n = "BypassModerationFromSendersOrMembers" ; e = { @($_.BypassModerationFromSendersOrMembers) -ne '' -join '|' } },
-                @{n = "GrantSendOnBehalfTo" ; e = { @($_.GrantSendOnBehalfTo) -ne '' -join '|' } },
-                @{n = "ModeratedBy" ; e = { @($_.ModeratedBy) -ne '' -join '|' } },
-                @{n = "RejectMessagesFrom" ; e = { @($_.RejectMessagesFrom) -ne '' -join '|' } },
-                @{n = "RejectMessagesFromDLMembers" ; e = { @($_.RejectMessagesFromSendersOrMembers) -ne '' -join '|' } },
-                @{n = "RejectMessagesFromSendersOrMembers" ; e = { @($_.RejectMessagesFromSendersOrMembers) -ne '' -join '|' } },
-                @{n = "PersistedCapabilities" ; e = { @($_.PersistedCapabilities) -ne '' -join '|' } },
-                @{n = "AuditAdmin" ; e = { @($_.AuditAdmin) -ne '' -join '|' } },
-                @{n = "AuditDelegate" ; e = { @($_.AuditDelegate) -ne '' -join '|' } },
-                @{n = "AuditOwner" ; e = { @($_.AuditOwner) -ne '' -join '|' } },
-                @{n = "MailboxProvisioningPreferences" ; e = { @($_.MailboxProvisioningPreferences) -ne '' -join '|' } },
-                @{n = "UserCertificate" ; e = { @($_.UserCertificate) -ne '' -join '|' } },
-                @{n = "UserSMimeCertificate" ; e = { @($_.UserSMimeCertificate) -ne '' -join '|' } },
-                @{n = "Languages" ; e = { @($_.Languages) -ne '' -join '|' } },
-                @{n = "AggregatedMailboxGuids" ; e = { @($_.AggregatedMailboxGuids) -ne '' -join '|' } },
-                @{n = "ArchiveName" ; e = { @($_.ArchiveName) -ne '' -join '|' } },
-                @{n = "ExtensionCustomAttribute1" ; e = { @($_.ExtensionCustomAttribute1) -ne '' -join '|' } },
-                @{n = "ExtensionCustomAttribute2" ; e = { @($_.ExtensionCustomAttribute2) -ne '' -join '|' } },
-                @{n = "ExtensionCustomAttribute3" ; e = { @($_.ExtensionCustomAttribute3) -ne '' -join '|' } },
-                @{n = "ExtensionCustomAttribute4" ; e = { @($_.ExtensionCustomAttribute4) -ne '' -join '|' } },
-                @{n = "ExtensionCustomAttribute5" ; e = { @($_.ExtensionCustomAttribute5) -ne '' -join '|' } },
-                @{n = "Extensions" ; e = { @($_.Extensions) -ne '' -join '|' } },
-                @{n = "InPlaceHolds" ; e = { @($_.InPlaceHolds) -ne '' -join '|' } },
-                @{n = "MailTipTranslations" ; e = { @($_.MailTipTranslations) -ne '' -join '|' } },
-                @{n = "ObjectClass" ; e = { @($_.ObjectClass) -ne '' -join '|' } },
-                @{n = "PoliciesExcluded" ; e = { @($_.PoliciesExcluded) -ne '' -join '|' } },
-                @{n = "PoliciesIncluded" ; e = { @($_.PoliciesIncluded) -ne '' -join '|' } },
-                @{n = "ProtocolSettings" ; e = { @($_.ProtocolSettings) -ne '' -join '|' } },
-                @{n = "ResourceCustom" ; e = { @($_.ResourceCustom) -ne '' -join '|' } },
-                @{n = "UMDtmfMap" ; e = { @($_.UMDtmfMap) -ne '' -join '|' } },
-                @{n = "EmailAddresses" ; e = { @($_.EmailAddresses) -ne '' -join '|' } },
-                @{n = "x500" ; e = { "x500:" + $_.LegacyExchangeDN } },
-                @{n = "MailboxLocations" ; e = { @($_.MailboxLocations) -ne '' -join '|' } },
-                @{n = "ExchangeObjectId" ; e = { ($_.ExchangeObjectId).Guid } }
+                @{n = 'AcceptMessagesOnlyFrom' ; e = { @($_.AcceptMessagesOnlyFrom) -ne '' -join '|' } },
+                @{n = 'AcceptMessagesOnlyFromDLMembers' ; e = { @($_.AcceptMessagesOnlyFromDLMembers) -ne '' -join '|' } },
+                @{n = 'AcceptMessagesOnlyFromSendersOrMembers' ; e = { @($_.AcceptMessagesOnlyFromSendersOrMembers) -ne '' -join '|' } },
+                @{n = 'AddressListMembership' ; e = { @($_.AddressListMembership) -ne '' -join '|' } },
+                @{n = 'AdministrativeUnits' ; e = { @($_.AdministrativeUnits) -ne '' -join '|' } },
+                @{n = 'BypassModerationFromSendersOrMembers' ; e = { @($_.BypassModerationFromSendersOrMembers) -ne '' -join '|' } },
+                @{n = 'GrantSendOnBehalfTo' ; e = { @($_.GrantSendOnBehalfTo) -ne '' -join '|' } },
+                @{n = 'ModeratedBy' ; e = { @($_.ModeratedBy) -ne '' -join '|' } },
+                @{n = 'RejectMessagesFrom' ; e = { @($_.RejectMessagesFrom) -ne '' -join '|' } },
+                @{n = 'RejectMessagesFromDLMembers' ; e = { @($_.RejectMessagesFromSendersOrMembers) -ne '' -join '|' } },
+                @{n = 'RejectMessagesFromSendersOrMembers' ; e = { @($_.RejectMessagesFromSendersOrMembers) -ne '' -join '|' } },
+                @{n = 'PersistedCapabilities' ; e = { @($_.PersistedCapabilities) -ne '' -join '|' } },
+                @{n = 'AuditAdmin' ; e = { @($_.AuditAdmin) -ne '' -join '|' } },
+                @{n = 'AuditDelegate' ; e = { @($_.AuditDelegate) -ne '' -join '|' } },
+                @{n = 'AuditOwner' ; e = { @($_.AuditOwner) -ne '' -join '|' } },
+                @{n = 'MailboxProvisioningPreferences' ; e = { @($_.MailboxProvisioningPreferences) -ne '' -join '|' } },
+                @{n = 'UserCertificate' ; e = { @($_.UserCertificate) -ne '' -join '|' } },
+                @{n = 'UserSMimeCertificate' ; e = { @($_.UserSMimeCertificate) -ne '' -join '|' } },
+                @{n = 'Languages' ; e = { @($_.Languages) -ne '' -join '|' } },
+                @{n = 'AggregatedMailboxGuids' ; e = { @($_.AggregatedMailboxGuids) -ne '' -join '|' } },
+                @{n = 'ArchiveName' ; e = { @($_.ArchiveName) -ne '' -join '|' } },
+                @{n = 'ExtensionCustomAttribute1' ; e = { @($_.ExtensionCustomAttribute1) -ne '' -join '|' } },
+                @{n = 'ExtensionCustomAttribute2' ; e = { @($_.ExtensionCustomAttribute2) -ne '' -join '|' } },
+                @{n = 'ExtensionCustomAttribute3' ; e = { @($_.ExtensionCustomAttribute3) -ne '' -join '|' } },
+                @{n = 'ExtensionCustomAttribute4' ; e = { @($_.ExtensionCustomAttribute4) -ne '' -join '|' } },
+                @{n = 'ExtensionCustomAttribute5' ; e = { @($_.ExtensionCustomAttribute5) -ne '' -join '|' } },
+                @{n = 'Extensions' ; e = { @($_.Extensions) -ne '' -join '|' } },
+                @{n = 'InPlaceHolds' ; e = { @($_.InPlaceHolds) -ne '' -join '|' } },
+                @{n = 'MailTipTranslations' ; e = { @($_.MailTipTranslations) -ne '' -join '|' } },
+                @{n = 'ObjectClass' ; e = { @($_.ObjectClass) -ne '' -join '|' } },
+                @{n = 'PoliciesExcluded' ; e = { @($_.PoliciesExcluded) -ne '' -join '|' } },
+                @{n = 'PoliciesIncluded' ; e = { @($_.PoliciesIncluded) -ne '' -join '|' } },
+                @{n = 'ProtocolSettings' ; e = { @($_.ProtocolSettings) -ne '' -join '|' } },
+                @{n = 'ResourceCustom' ; e = { @($_.ResourceCustom) -ne '' -join '|' } },
+                @{n = 'UMDtmfMap' ; e = { @($_.UMDtmfMap) -ne '' -join '|' } },
+                @{n = 'EmailAddresses' ; e = { @($_.EmailAddresses) -ne '' -join '|' } },
+                @{n = 'x500' ; e = { 'x500:' + $_.LegacyExchangeDN } },
+                @{n = 'MailboxLocations' ; e = { @($_.MailboxLocations) -ne '' -join '|' } },
+                @{n = 'ExchangeObjectId' ; e = { ($_.ExchangeObjectId).Guid } }
             )
         }
         else {
@@ -120,15 +119,15 @@ function Get-365Recipient {
             )
 
             $CalculatedProps = @(
-                @{n = "EmailAddresses" ; e = { @($_.EmailAddresses) -ne '' -join '|' } },
-                @{n = "AcceptMessagesOnlyFromSendersOrMembers" ; e = { @($_.AcceptMessagesOnlyFromSendersOrMembers) -ne '' -join '|' } },
-                @{n = "RejectMessagesFromSendersOrMembers" ; e = { @($_.RejectMessagesFromSendersOrMembers) -ne '' -join '|' } },
-                @{n = "ArchiveName" ; e = { @($_.ArchiveName) -ne '' -join '|' } }
-                @{n = "InPlaceHolds" ; e = { @($_.InPlaceHolds) -ne '' -join '|' } }
+                @{n = 'EmailAddresses' ; e = { @($_.EmailAddresses) -ne '' -join '|' } },
+                @{n = 'AcceptMessagesOnlyFromSendersOrMembers' ; e = { @($_.AcceptMessagesOnlyFromSendersOrMembers) -ne '' -join '|' } },
+                @{n = 'RejectMessagesFromSendersOrMembers' ; e = { @($_.RejectMessagesFromSendersOrMembers) -ne '' -join '|' } },
+                @{n = 'ArchiveName' ; e = { @($_.ArchiveName) -ne '' -join '|' } }
+                @{n = 'InPlaceHolds' ; e = { @($_.InPlaceHolds) -ne '' -join '|' } }
             )
         }
     }
-    Process {
+    process {
         if ($RecipientFilter) {
             foreach ($CurRecipientFilter in $RecipientFilter) {
                 Get-Recipient -Filter $CurRecipientFilter | Select-Object ($Selectproperties + $CalculatedProps)
@@ -138,7 +137,7 @@ function Get-365Recipient {
             Get-Recipient -ResultSize unlimited | Select-Object ($Selectproperties + $CalculatedProps)
         }
     }
-    End {
+    end {
 
     }
 }

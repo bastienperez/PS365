@@ -1,6 +1,6 @@
 function Invoke-SetDeploymentProSchedule {
     [CmdletBinding()]
-    Param
+    param
     (
 
     )
@@ -22,10 +22,10 @@ function Invoke-SetDeploymentProSchedule {
             'FirstName'
             'LastName'
             'Id'
-        ) | Out-GridView -Title "DeploymentPro Users" -OutputMode Multiple
+        ) | Out-GridView -Title 'DeploymentPro Users' -OutputMode Multiple
         $DateTimeUTC = Get-ScheduleDecision
         $ContinueDecision = Get-ContinueDecision
-        Write-Host "Company:" -ForegroundColor Magenta -NoNewline
+        Write-Host 'Company:' -ForegroundColor Magenta -NoNewline
         Write-Host " $($CustomerId.CompanyName)" -ForegroundColor White
         if ($ContinueDecision) {
             foreach ($Schedule in $ScheduleChoice) {

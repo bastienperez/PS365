@@ -1,6 +1,6 @@
 function Invoke-GetBTUserTrimmed {
     [CmdletBinding()]
-    Param
+    param
     (
 
     )

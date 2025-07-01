@@ -12,7 +12,7 @@ function Connect-OnPremExchange {
     [System.Management.Automation.PSCredential]$Credential = Get-Credential -Message 'Enter on-premises Exchange username and password'
     if (-not $Basic) {
         $SessionSplat = @{
-            Name              = "OnPremExchange"
+            Name              = 'OnPremExchange'
             ConfigurationName = 'Microsoft.Exchange'
             ConnectionUri     = 'http://{0}/PowerShell/' -f $Server
             Authentication    = 'Kerberos'
@@ -21,7 +21,7 @@ function Connect-OnPremExchange {
     }
     else {
         $SessionSplat = @{
-            Name              = "OnPremExchange"
+            Name              = 'OnPremExchange'
             ConfigurationName = 'Microsoft.Exchange'
             ConnectionUri     = 'http://{0}/PowerShell/' -f $Server
             Authentication    = 'Basic'
@@ -29,7 +29,7 @@ function Connect-OnPremExchange {
             AllowRedirection  = $true
         }
     }
-    write-host "Server: $Server" -ForegroundColor Yellow
+    Write-Host "Server: $Server" -ForegroundColor Yellow
     $Session = New-PSSession @SessionSplat
     $SessionModule = Import-PSSession -AllowClobber -DisableNameChecking -Session $Session
     $null = Import-Module $SessionModule -Global -DisableNameChecking -Force

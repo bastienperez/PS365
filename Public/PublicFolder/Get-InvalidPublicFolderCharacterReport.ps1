@@ -20,12 +20,12 @@ function Get-InvalidPublicFolderCharacterReport {
 
     $PFDBList = Get-PublicFolderDatabase
     $BadNamePFList = New-Object System.Collections.Generic.List[PSObject]
-    ForEach ($PFDB in $PFDBList)	{
+    foreach ($PFDB in $PFDBList)	{
         Write-Host "INFO: Checking against... $($PFDB.Server)"
         $FolderList = Get-PublicFolderStatistics -ResultSize Unlimited -Server $PFDB.Server
         foreach ($Folder in $FolderList) {
             if ($Folder.Name -like '*\*' -or
-                $Folder.Name -like "*/*" -or
+                $Folder.Name -like '*/*' -or
                 $Folder.Name -like '*<*' -or
                 $Folder.Name -like '*>*' -or
                 $Folder.Name.ToString() -match '\u2013' -or
@@ -40,28 +40,28 @@ function Get-InvalidPublicFolderCharacterReport {
     Write-Host "Number of PFs with Offending Characters: $($BadNamePFList.count)"
     foreach ($BadNamePF in $BadNamePFList) {
         $OffendingChar = New-Object System.Collections.Generic.List[string]
-        if ($BadNamePF.Name -like "*\*") {
+        if ($BadNamePF.Name -like '*\*') {
             $OffendingChar.Add('\')
         }
-        if ($BadNamePF.Name -like "*/*") {
+        if ($BadNamePF.Name -like '*/*') {
             $OffendingChar.Add('/')
         }
-        if ($BadNamePF.Name -like "*<*") {
+        if ($BadNamePF.Name -like '*<*') {
             $OffendingChar.Add('<')
         }
-        if ($BadNamePF.Name -like "*>*") {
+        if ($BadNamePF.Name -like '*>*') {
             $OffendingChar.Add('>')
         }
-        if ($BadNamePF.Name -like "*_-*") {
+        if ($BadNamePF.Name -like '*_-*') {
             $OffendingChar.Add('_-')
         }
         if ($BadNamePF.Name -match '\u2013') {
             $OffendingChar.Add('EnDash')
         }
-        if ($BadNamePF.Name -like " *") {
+        if ($BadNamePF.Name -like ' *') {
             $OffendingChar.Add('Lead-Whitespace')
         }
-        if ($BadNamePF.Name -like "* ") {
+        if ($BadNamePF.Name -like '* ') {
             $OffendingChar.Add('Trail-Whitespace')
         }
 
@@ -72,10 +72,10 @@ function Get-InvalidPublicFolderCharacterReport {
         $NewFolder = $NewFolder.Replace('_-', '-')
         $NewFolder = $NewFolder -replace '\u2013|\u2014', '-'
 
-        Write-Host "Old Folder Name:`t$($BadNamePF.Name)" -ForegroundColor "Cyan"
-        Write-Host "New Folder Name:`t$NewFolder" -ForegroundColor "Green"
-        Write-Host ""
-        Write-Host ""
+        Write-Host "Old Folder Name:`t$($BadNamePF.Name)" -ForegroundColor 'Cyan'
+        Write-Host "New Folder Name:`t$NewFolder" -ForegroundColor 'Green'
+        Write-Host ''
+        Write-Host ''
 
 
         $CorrectedPF = New-Object -TypeName PSObject -Property @{

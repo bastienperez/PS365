@@ -1,6 +1,6 @@
 function Get-MWTicket {
     [CmdletBinding()]
-    Param
+    param
     (
         [Parameter()]
         $CredFile

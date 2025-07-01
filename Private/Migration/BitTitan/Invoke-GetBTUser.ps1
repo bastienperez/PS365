@@ -1,6 +1,6 @@
 function Invoke-GetBTUser {
     [CmdletBinding()]
-    Param
+    param
     (
 
     )

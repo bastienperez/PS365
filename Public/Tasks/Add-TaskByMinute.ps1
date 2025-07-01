@@ -33,7 +33,7 @@ function Add-TaskByMinute {
         Add-TaskByMinute -TaskName "Audit Log Collection" -User "ComputerName\Logs" -RepeatInMinutes 60 -Executable "PowerShell.exe" -Argument '-ExecutionPolicy RemoteSigned -Command "Get-AuditLog -Tenant LAPCM -Path C:\Logs\ -FileName 365Log -TimeFrameInMinutes 60"'
 #>
     [CmdletBinding()]
-    Param
+    param
     (
         [Parameter(Mandatory = $true)]
         [string] $TaskName,
@@ -59,7 +59,7 @@ function Add-TaskByMinute {
 
     $TaskStartTime = (Get-Date).DateTime
     $Repeat = (New-TimeSpan -Minutes $RepeatInMinutes)
-    $SchedTaskCred = Get-Credential $User -Message "Scheduled Task Service Account Credentials"
+    $SchedTaskCred = Get-Credential $User -Message 'Scheduled Task Service Account Credentials'
     $SchedTaskCredUser = $SchedTaskCred.UserName
     $SchedTaskCredPwd = $SchedTaskCred.GetNetworkCredential().Password
 
@@ -76,7 +76,7 @@ function Add-TaskByMinute {
 
     if ($RepetitionDuration) {
         $RepDuration = (New-TimeSpan -Minutes $RepetitionDuration)
-        $TriggerSplat.Add("RepetitionDuration", $RepDuration)
+        $TriggerSplat.Add('RepetitionDuration', $RepDuration)
     }
 
     $SettingsSplat = @{
@@ -86,7 +86,7 @@ function Add-TaskByMinute {
     }
 
     if ($Disabled) {
-        $SettingsSplat.Add("Disable", $true)
+        $SettingsSplat.Add('Disable', $true)
     }
 
     $Action = New-ScheduledTaskAction @ActionSplat
@@ -109,5 +109,4 @@ function Add-TaskByMinute {
     }
 
     Register-ScheduledTask @RegisterSplat
-
 }

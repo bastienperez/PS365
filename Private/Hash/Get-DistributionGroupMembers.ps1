@@ -47,10 +47,10 @@ function Get-DistributionGroupMembers {
             if (-not $Recurse) {
                 continue
             }
-            Foreach ($Result in $Results) {
+            foreach ($Result in $Results) {
                 #Skip "Office 365 Groups" as they fail recipient checks and cannot be members of other groups
                 if ($Result.RecipientTypeDetails -in 'NonUniversalGroup', 'GroupMailbox', 'RoleGroup', 'UserMailbox') {
-                    Continue
+                    continue
                 }
                 Write-Verbose "Start recursing for '$($Result.PrimarySmtpAddress)'."
                 Get-DistributionGroupMembers -Identity $Result.Guid.ToString() -Recurse -Processed $Processed

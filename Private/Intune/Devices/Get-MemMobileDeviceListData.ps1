@@ -5,8 +5,8 @@ function Get-MemMobileDeviceListData {
     )
     if ([datetime]::UtcNow -ge $TimeToRefresh) { Connect-PoshGraphRefresh }
     $RestSplat = @{
-        Uri     = "https://graph.microsoft.com/beta/deviceManagement/managedDevices"
-        Headers = @{ "Authorization" = "Bearer $Token" }
+        Uri     = 'https://graph.microsoft.com/beta/deviceManagement/managedDevices'
+        Headers = @{ 'Authorization' = "Bearer $Token" }
         Method  = 'Get'
     }
     do {
@@ -17,7 +17,7 @@ function Get-MemMobileDeviceListData {
         else { $Next = $null }
         $RestSplat = @{
             Uri     = $Next
-            Headers = @{ "Authorization" = "Bearer $Token" }
+            Headers = @{ 'Authorization' = "Bearer $Token" }
             Method  = 'Get'
         }
     } until (-not $next)

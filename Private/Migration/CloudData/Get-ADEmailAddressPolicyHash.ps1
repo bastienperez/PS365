@@ -6,11 +6,11 @@ function Get-ADEmailAddressPolicyHash {
         $DomainController
     )
     if (-not (Get-Module -Name 'ActiveDirectory' -ListAvailable)) {
-        Write-Host "ActiveDirectory Module not present. Halting." -ForegroundColor Red
+        Write-Host 'ActiveDirectory Module not present. Halting.' -ForegroundColor Red
         continue
     }
     $BadEAPHash = @{ }
-    $ADUserList = Get-ADUser -server $DomainController -Filter * -Properties msExchPoliciesIncluded, msExchPoliciesExcluded, DisplayName
+    $ADUserList = Get-ADUser -Server $DomainController -Filter * -Properties msExchPoliciesIncluded, msExchPoliciesExcluded, DisplayName
     foreach ($ADUser in $ADUserList) {
         if ($ADUser.msExchPoliciesIncluded -or
             $ADUser.msExchPoliciesExcluded.Count -ne 1 -or

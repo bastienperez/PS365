@@ -1,6 +1,6 @@
 function Get-BTTicket {
     [CmdletBinding()]
-    Param
+    param
     (
         [Parameter()]
         $CredFile,
@@ -13,7 +13,7 @@ function Get-BTTicket {
             { $OrganizationId } {
                 $Script:BitTic = Get-BT_Ticket -Ticket $BitTic -OrganizationId $OrganizationId -SetDefault
             }
-            Default {
+            default {
                 [System.Management.Automation.PSCredential]$Credential = Import-Clixml -Path $CredFile
                 $Script:BitTic = Get-BT_Ticket -Credentials $Credential -ServiceType BitTitan -SetDefault
             }

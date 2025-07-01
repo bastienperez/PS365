@@ -25,7 +25,7 @@ function Invoke-DisableMailboxEmailAddressPolicy {
                 Set-RemoteMailbox -DomainController $DomainController -Identity $Item.Guid.ToString() -EmailAddressPolicyEnabled:$false -ErrorAction Stop
                 Write-Host ('[{0} of {1}] {2} Success Disabling EAP - All emails unchanged? ' -f $i, $Count, $item.DisplayName) -ForegroundColor Green -NoNewline
                 $AfterSuccess = Get-RemoteMailbox -DomainController $DomainController -Identity $Item.Guid.ToString() -ErrorAction Stop
-                $ADAfter = Get-ADUser -server $DomainController -Identity $Item.Guid.ToString() -Properties msExchPoliciesIncluded, msExchPoliciesExcluded
+                $ADAfter = Get-ADUser -Server $DomainController -Identity $Item.Guid.ToString() -Properties msExchPoliciesIncluded, msExchPoliciesExcluded
                 $AllAddressesUnchanged = $Hash[$Item.Guid.ToString()]['AllEmailAddresses'] -eq (@($AfterSuccess.EmailAddresses) -ne '' -join '|')
                 if ($AllAddressesUnchanged) {
                     Write-Host $AllAddressesUnchanged -ForegroundColor White -BackgroundColor DarkMagenta

@@ -27,7 +27,7 @@ function Get-InvalidModernPublicFolderCharacterReport {
     process {
         foreach ($Folder in $PublicFolderList) {
             if ($Folder.FolderName.ToString() -like '*\*' -or
-                $Folder.FolderName.ToString() -like "*/*" -or
+                $Folder.FolderName.ToString() -like '*/*' -or
                 $Folder.FolderName.ToString() -like '*<*' -or
                 $Folder.FolderName.ToString() -like '*>*' -or
                 $Folder.FolderName.ToString() -match '\u2013' -or
@@ -40,32 +40,32 @@ function Get-InvalidModernPublicFolderCharacterReport {
         }
     }
     end {
-        Write-Host "Number of PFs with Offending Characters: " -NoNewline -ForegroundColor Cyan
+        Write-Host 'Number of PFs with Offending Characters: ' -NoNewline -ForegroundColor Cyan
         Write-Host "$($BadNamePFList.count)" -ForegroundColor Red
         foreach ($BadNamePF in $BadNamePFList) {
             $OffendingChar = [System.Collections.Generic.List[string]]::New()
-            if ($BadNamePF.FolderName -like "*\*") {
+            if ($BadNamePF.FolderName -like '*\*') {
                 $OffendingChar.Add('\')
             }
-            if ($BadNamePF.FolderName -like "*/*") {
+            if ($BadNamePF.FolderName -like '*/*') {
                 $OffendingChar.Add('/')
             }
-            if ($BadNamePF.FolderName -like "*<*") {
+            if ($BadNamePF.FolderName -like '*<*') {
                 $OffendingChar.Add('<')
             }
-            if ($BadNamePF.FolderName -like "*>*") {
+            if ($BadNamePF.FolderName -like '*>*') {
                 $OffendingChar.Add('>')
             }
-            if ($BadNamePF.FolderName -like "*_-*") {
+            if ($BadNamePF.FolderName -like '*_-*') {
                 $OffendingChar.Add('_-')
             }
             if ($BadNamePF.FolderName -match '\u2013') {
                 $OffendingChar.Add('EnDash')
             }
-            if ($BadNamePF.FolderName -like " *") {
+            if ($BadNamePF.FolderName -like ' *') {
                 $OffendingChar.Add('Lead-Whitespace')
             }
-            if ($BadNamePF.FolderName -like "* ") {
+            if ($BadNamePF.FolderName -like '* ') {
                 $OffendingChar.Add('Trail-Whitespace')
             }
             $NewFolder = $BadNamePF.FolderName.Replace('\', '-')
@@ -75,9 +75,9 @@ function Get-InvalidModernPublicFolderCharacterReport {
             $NewFolder = $NewFolder.Replace('_-', '-')
             $NewFolder = $NewFolder -replace '\u2013|\u2014', '-'
 
-            Write-Host "Old Folder Name:`t$($BadNamePF.FolderName)" -ForegroundColor "Cyan"
-            Write-Host "New Folder Name:`t$NewFolder" -ForegroundColor "Green"
-            Write-Host ""
+            Write-Host "Old Folder Name:`t$($BadNamePF.FolderName)" -ForegroundColor 'Cyan'
+            Write-Host "New Folder Name:`t$NewFolder" -ForegroundColor 'Green'
+            Write-Host ''
             [PSCustomObject]@{
                 CurrentPFName     = $BadNamePF.FolderName
                 RecommendedPFName = $NewFolder

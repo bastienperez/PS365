@@ -2,7 +2,7 @@
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
-        [ValidateSet("ProxyAddresses", "EmailAddresses", "EmailAddress", "AddressOrMember", "x500", "ExternalEmailAddress", "UserPrincipalName", "PrimarySmtpAddress", "Mail", "OtherMails", "MembersName", "Member", "Members", "MemberOf", "Aliases", "Owners", "Managers", "Subscribers")]
+        [ValidateSet('ProxyAddresses', 'EmailAddresses', 'EmailAddress', 'AddressOrMember', 'x500', 'ExternalEmailAddress', 'UserPrincipalName', 'PrimarySmtpAddress', 'Mail', 'OtherMails', 'MembersName', 'Member', 'Members', 'MemberOf', 'Aliases', 'Owners', 'Managers', 'Subscribers')]
         [String]
         $FindInColumn,
 

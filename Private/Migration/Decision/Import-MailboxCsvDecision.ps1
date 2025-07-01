@@ -17,7 +17,7 @@ function Import-MailboxCsvDecision {
         $NoBatch
     )
 
-    if ($MailboxCSV){
+    if ($MailboxCSV) {
         $DecisionObject = Import-Csv -Path $MailboxCSV
     }
     else {

@@ -7,13 +7,13 @@ function Test-SPFRecord {
     $Message = Invoke-TestSPFRecord -Domain $DomainName
     $ResultHash = [ordered]@{ }
 
-    if ($message -like "*pass*") {
+    if ($message -like '*pass*') {
         $ResultHash.Add('Result', 'PASS')
     }
     else {
         $ResultHash.Add('Result', 'FAIL')
     }
-    $Detail = [regex]::Matches($Message, "(?<=Results - )[^<]*").value
+    $Detail = [regex]::Matches($Message, '(?<=Results - )[^<]*').value
     if ($Detail) {
         $ResultHash.Add('Detail', $Detail)
     }

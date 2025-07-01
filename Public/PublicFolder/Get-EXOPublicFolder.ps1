@@ -17,7 +17,7 @@ function Get-PsExoPublicFolder {
                         SizeMB             = [Math]::Round([Double]($FolderStats.TotalItemSize -replace '^.*\(| .+$|,') / 1MB, 4)
                         MailEnabled        = $Folder.MailEnabled
                         PrimarySmtpAddress = (Get-Recipient $Folder.MailRecipientGuid.ToString()).PrimarySmtpAddress
-                        Owner              = @((Get-PublicFolderClientPermission $Folder.Identity | Where-Object { $_.accessrights -like "*owner*" }).User.ADRecipient.PrimarySmtpAddress) -ne '' -join '|'
+                        Owner              = @((Get-PublicFolderClientPermission $Folder.Identity | Where-Object { $_.accessrights -like '*owner*' }).User.ADRecipient.PrimarySmtpAddress) -ne '' -join '|'
                     }
                 }
                 else {
@@ -29,8 +29,8 @@ function Get-PsExoPublicFolder {
                         ItemCount          = $FolderStats.ItemCount
                         SizeMB             = [Math]::Round([Double]($FolderStats.TotalItemSize -replace '^.*\(| .+$|,') / 1MB, 4)
                         MailEnabled        = $Folder.MailEnabled
-                        PrimarySmtpAddress = ""
-                        Owner              = @((Get-PublicFolderClientPermission $Folder.Identity | Where-Object { $_.accessrights -like "*owner*" }).User.ADRecipient.PrimarySmtpAddress) -ne '' -join '|'
+                        PrimarySmtpAddress = ''
+                        Owner              = @((Get-PublicFolderClientPermission $Folder.Identity | Where-Object { $_.accessrights -like '*owner*' }).User.ADRecipient.PrimarySmtpAddress) -ne '' -join '|'
                     }
                 }
             }

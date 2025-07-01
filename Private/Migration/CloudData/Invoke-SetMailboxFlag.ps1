@@ -5,7 +5,7 @@ function Invoke-SetMailboxFlag {
     )
 
     if (-not ($null = Get-Module ActiveDirectory -ListAvailable)) {
-        Write-Host "ActiveDirectory module for PowerShell not found! Please run from a computer with the ActiveDirectory module" -ForegroundColor Red
+        Write-Host 'ActiveDirectory module for PowerShell not found! Please run from a computer with the ActiveDirectory module' -ForegroundColor Red
         return
     }
     Import-Module ActiveDirectory -Force
@@ -36,13 +36,13 @@ function Invoke-SetMailboxFlag {
     foreach ($Mailbox in $Choice.'msDS-ExternalDirectoryObjectId') {
         $iUP++
         $ADUser = $null
-        $ADUser = Get-ADUser -LdapFilter "(msDS-ExternalDirectoryObjectId=$Mailbox)" -Properties $Props
+        $ADUser = Get-ADUser -LDAPFilter "(msDS-ExternalDirectoryObjectId=$Mailbox)" -Properties $Props
         if ($ADUser) {
             try {
                 Write-Host "$($ADUser.DisplayName) Setting msExchELCMailboxFlags to $ELCMailboxFlags   -   " -ForegroundColor White -NoNewline
-                $ADUser | Set-ADUser -replace @{ msExchELCMailboxFlags = $ELCMailboxFlags } -ErrorAction Stop
+                $ADUser | Set-ADUser -Replace @{ msExchELCMailboxFlags = $ELCMailboxFlags } -ErrorAction Stop
                 Write-Host 'SUCCESS' -ForegroundColor Green
-                $Post = Get-ADUser -LdapFilter "(msDS-ExternalDirectoryObjectId=$Mailbox)" -Properties $Props
+                $Post = Get-ADUser -LDAPFilter "(msDS-ExternalDirectoryObjectId=$Mailbox)" -Properties $Props
                 [PSCustomObject]@{
                     'Num'                            = "[$iUP of $Total]"
                     'DisplayName'                    = $ADUser.DisplayName

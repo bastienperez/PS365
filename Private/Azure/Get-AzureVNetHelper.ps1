@@ -24,8 +24,8 @@ function Get-AzureVNetHelper {
 
             foreach ( $Index in 0..($MaxSubnets - 1) ) {
                 $CurSubnetVNet = $SubnetVNet[$Index]
-                $SubnetName = "Subnet" + $Index
-                $SubnetAddressSpace = "SubnetAddressSpace" + $Index
+                $SubnetName = 'Subnet' + $Index
+                $SubnetAddressSpace = 'SubnetAddressSpace' + $Index
 
                 $VNetObj.Add($SubnetName, $CurSubnetVNet.Name)
                 $VNetObj.Add($SubnetAddressSpace, $CurSubnetVNet.AddressPrefix)

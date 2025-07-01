@@ -25,7 +25,7 @@ function Invoke-SetBTUser {
                 { $_.LastName } { $Set.Add('LastName', $User.LastName) }
                 { $_.DisplayName } { $Set.Add('DisplayName', $User.DisplayName) }
                 # { $_.UserPrincipalName } { $Set.Add('UserPrincipalName', $User.UserPrincipalName) }
-                Default { }
+                default { }
             }
             if ($Get.PrimaryEmailAddress) {
                 try {

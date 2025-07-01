@@ -22,10 +22,9 @@ function Get-AzureADRoleReport {
                         'RoleDescription'   = $AzureADRole.Description
                     }
                 }
-
             }
         }
-        Default {
+        default {
             foreach ($AzureADRole in $AzureADRoleList) {
                 Write-Verbose "Processing $($AzureADRole.DisplayName)"
                 try {
@@ -37,7 +36,7 @@ function Get-AzureADRoleReport {
                             'UserPrincipalName' = $RoleMember.UserPrincipalName
                             'UserType'          = $RoleMember.UserType
                             'LastDirSyncTime'   = $RoleMember.LastDirSyncTime
-                            'MFA_State'         = ""
+                            'MFA_State'         = ''
                             'RoleDescription'   = $AzureADRole.Description
                         }
                     }
@@ -49,4 +48,3 @@ function Get-AzureADRoleReport {
         }
     }
 }
-

@@ -1,6 +1,6 @@
 function Get-AzureLoadBalancerHelper {
 
-    Param(
+    param(
         [Parameter(Mandatory, ValueFromPipeline, ValueFromPipelineByPropertyName)]
         $LoadBalancer,
 
@@ -28,8 +28,8 @@ function Get-AzureLoadBalancerHelper {
             foreach ( $Index in 0..($MaxBackendPools - 1) ) {
                 $CurBackendPool = $BackendPool[$Index]
                 $CurBackendIpConfig = ($CurBackendPool.BackendIpConfigurations.id | Where-Object { $_ -ne $null }) -join "`r`n"
-                $PoolName = "BackendPool" + $Index
-                $PoolId = "PoolId" + $Index
+                $PoolName = 'BackendPool' + $Index
+                $PoolId = 'PoolId' + $Index
 
                 $LBObj.Add($PoolName, $CurBackendPool.Name)
                 $LBObj.Add($PoolId, $CurBackendPool.Id -replace '.*\/')
@@ -40,12 +40,12 @@ function Get-AzureLoadBalancerHelper {
             foreach ( $Index in 0..($MaxFrontendIpConfigs - 1) ) {
                 $CurFrontEndIpConfig = $FrontEndIpConfig[$Index]
                 $CurBackendIpConfig = ($CurFrontEndIpConfig.BackendIpConfigurations.id | Where-Object { $_ -ne $null }) -join "`r`n"
-                $FEName = "FrontendIpConfigName" + $Index
-                $FEId = "FrontendIpConfigId" + $Index
-                $PrivateIp = "FrontEndPrivateIp" + $Index
-                $PublicIp = "FrontEndPublicIp" + $Index
-                $PublicIpId = "FrontEndPublicIpID" + $Index
-                $SubnetId = "FrontEndSubnetId" + $Index
+                $FEName = 'FrontendIpConfigName' + $Index
+                $FEId = 'FrontendIpConfigId' + $Index
+                $PrivateIp = 'FrontEndPrivateIp' + $Index
+                $PublicIp = 'FrontEndPublicIp' + $Index
+                $PublicIpId = 'FrontEndPublicIpID' + $Index
+                $SubnetId = 'FrontEndSubnetId' + $Index
 
                 $LBObj.Add($FEName, $CurFrontEndIpConfig.Name)
                 $LBObj.Add($PrivateIp, $CurFrontEndIpConfig.PrivateIpAddress)

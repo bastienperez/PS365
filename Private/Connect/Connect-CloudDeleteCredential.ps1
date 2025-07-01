@@ -8,7 +8,7 @@ function Connect-CloudDeleteCredential {
     )
     end {
         try {
-            Remove-Item $CredFile -force -ErrorAction Stop
+            Remove-Item $CredFile -Force -ErrorAction Stop
         }
         catch {
             $_.Exception.Message

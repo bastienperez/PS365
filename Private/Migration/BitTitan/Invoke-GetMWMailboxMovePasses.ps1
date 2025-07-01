@@ -1,6 +1,6 @@
 function Invoke-GetMWMailboxMovePasses {
     [CmdletBinding()]
-    Param
+    param
     (
         [Parameter(ValueFromPipeline)]
         $MailboxList

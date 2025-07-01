@@ -35,7 +35,7 @@ function Add-TaskDaily {
         General notes
     #>
     [CmdletBinding()]
-    Param
+    param
     (
         [Parameter(Mandatory = $true)]
         [string] $TaskName,
@@ -59,7 +59,7 @@ function Add-TaskDaily {
         [string] $Argument
     )
 
-    $SchedTaskCred = Get-Credential $User -Message "Scheduled Task Service Account Credentials"
+    $SchedTaskCred = Get-Credential $User -Message 'Scheduled Task Service Account Credentials'
     $SchedTaskCredUser = $SchedTaskCred.UserName
     $SchedTaskCredPwd = $SchedTaskCred.GetNetworkCredential().Password
 
@@ -81,7 +81,7 @@ function Add-TaskDaily {
     }
 
     if ($Disabled) {
-        $SettingsSplat.Add("Disable", $true)
+        $SettingsSplat.Add('Disable', $true)
     }
 
     $Action = New-ScheduledTaskAction @ActionSplat
@@ -104,5 +104,4 @@ function Add-TaskDaily {
     }
 
     Register-ScheduledTask @RegisterSplat
-
 }

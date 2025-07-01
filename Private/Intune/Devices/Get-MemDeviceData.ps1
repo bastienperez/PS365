@@ -23,8 +23,8 @@ function Get-MemDeviceData {
         $filter = "?`$filter=managementState eq '$ManagementState'"
     }
     $RestSplat = @{
-        Uri     = "https://graph.microsoft.com/beta/deviceManagement/managedDevices/{0}" -f $filter
-        Headers = @{ "Authorization" = "Bearer $Token" }
+        Uri     = 'https://graph.microsoft.com/beta/deviceManagement/managedDevices/{0}' -f $filter
+        Headers = @{ 'Authorization' = "Bearer $Token" }
         Method  = 'Get'
     }
     Invoke-RestMethod @RestSplat -Verbose:$false | Select-Object -ExpandProperty Value

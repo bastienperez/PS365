@@ -13,7 +13,7 @@ function Select-DisplayNameFormat {
         }           
     }
 
-    while (-not$DisplayNameFormat) {
+    while (-not $DisplayNameFormat) {
         $DisplayNameFormat = "FirstName LastName", "LastName, FirstName" | Out-GridView -OutputMode Single -Title "SELECT `"DISPLAY NAME`" FORMAT"
     }
     if ($DisplayNameFormat -eq "FirstName LastName") {

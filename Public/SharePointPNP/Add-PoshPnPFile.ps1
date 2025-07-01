@@ -18,12 +18,12 @@ function Add-PoshPnPFile {
     )
     end {
         Connect-SharePointPNP -Url $SharePointURL
-        $SPFolder = "Shared Documents/{0}" -f $SubURL
+        $SPFolder = 'Shared Documents/{0}' -f $SubURL
         try {
             Add-PnPFile -Path $FilePath -Folder $SPFolder -ErrorAction Stop
         }
         catch {
-            Write-Host "Error getting file from SharePoint"
+            Write-Host 'Error getting file from SharePoint'
             $_
         }
     }

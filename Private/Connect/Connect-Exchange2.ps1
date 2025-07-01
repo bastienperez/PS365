@@ -50,8 +50,8 @@ function Connect-Exchange2 {
 
     )
 
-    $RootPath = $env:USERPROFILE + "\ps\"
-    $KeyPath = $Rootpath + "creds\"
+    $RootPath = $env:USERPROFILE + '\ps\'
+    $KeyPath = $Rootpath + 'creds\'
     $User = $env:USERNAME
 
     while (-not(Test-Path ($RootPath + "$($user).EXCHServer"))) {
@@ -66,14 +66,14 @@ function Connect-Exchange2 {
         }
         catch {
             $_
-            Write-Host "Unable to Delete Exchange Password"
+            Write-Host 'Unable to Delete Exchange Password'
         }
         try {
             Remove-Item ($KeyPath + "$($user).uExchangeCred") -ErrorAction Stop
         }
         catch {
             $_
-            Write-Host "Unable to Delete Exchange Username"
+            Write-Host 'Unable to Delete Exchange Username'
         }
 
     }
@@ -95,18 +95,18 @@ function Connect-Exchange2 {
         catch {
             if ($_.exception.Message -match '"userName" is not valid. Change the value of the "userName" argument and run the operation again') {
                 Connect-Exchange2 -DeleteExchangeCreds
-                Write-Host "***************************************************************************** " -foregroundcolor "darkblue" -backgroundcolor "white"
-                Write-Host "                    Bad Username.                                             " -foregroundcolor "darkblue" -backgroundcolor "white"
-                Write-Host "          Please try your last command again...                               " -foregroundcolor "darkblue" -backgroundcolor "white"
-                Write-Host "...you will be prompted to enter your on-premises Exchange credentials again. " -foregroundcolor "darkblue" -backgroundcolor "white"
-                Write-Host "***************************************************************************** " -foregroundcolor "darkblue" -backgroundcolor "white"
-                Break
+                Write-Host '***************************************************************************** ' -ForegroundColor 'darkblue' -BackgroundColor 'white'
+                Write-Host '                    Bad Username.                                             ' -ForegroundColor 'darkblue' -BackgroundColor 'white'
+                Write-Host '          Please try your last command again...                               ' -ForegroundColor 'darkblue' -BackgroundColor 'white'
+                Write-Host '...you will be prompted to enter your on-premises Exchange credentials again. ' -ForegroundColor 'darkblue' -BackgroundColor 'white'
+                Write-Host '***************************************************************************** ' -ForegroundColor 'darkblue' -BackgroundColor 'white'
+                break
             }
         }
     }
     else {
-        if (-not$NoMessageForPS2) {
-            $Credential = Get-Credential -Message "Enter a username and password for ONPREM EXCHANGE"
+        if (-not $NoMessageForPS2) {
+            $Credential = Get-Credential -Message 'Enter a username and password for ONPREM EXCHANGE'
         }
         else {
             $Credential = Get-Credential
@@ -116,41 +116,41 @@ function Connect-Exchange2 {
         }
         else {
             Connect-Exchange2 -DeleteExchangeCreds
-            Write-Host "***************************************************************************** " -foregroundcolor "darkblue" -backgroundcolor "white"
-            Write-Host "                    No Password Present.                                      " -foregroundcolor "darkblue" -backgroundcolor "white"
-            Write-Host "          Please try your last command again...                               " -foregroundcolor "darkblue" -backgroundcolor "white"
-            Write-Host "...you will be prompted to enter your on-premises Exchange credentials again. " -foregroundcolor "darkblue" -backgroundcolor "white"
-            Write-Host "***************************************************************************** " -foregroundcolor "darkblue" -backgroundcolor "white"
-            Break
+            Write-Host '***************************************************************************** ' -ForegroundColor 'darkblue' -BackgroundColor 'white'
+            Write-Host '                    No Password Present.                                      ' -ForegroundColor 'darkblue' -BackgroundColor 'white'
+            Write-Host '          Please try your last command again...                               ' -ForegroundColor 'darkblue' -BackgroundColor 'white'
+            Write-Host '...you will be prompted to enter your on-premises Exchange credentials again. ' -ForegroundColor 'darkblue' -BackgroundColor 'white'
+            Write-Host '***************************************************************************** ' -ForegroundColor 'darkblue' -BackgroundColor 'white'
+            break
         }
         $Credential.UserName | Out-File ($KeyPath + "$($user).uExchangeCred")
     }
     try {
-        $Session = New-PSSession -Name "OnPremExchange" -ConfigurationName Microsoft.Exchange -ConnectionUri ("http://" + $ExchangeServer + "/PowerShell/") -Authentication Kerberos -Credential $Credential -ErrorAction Stop
+        $Session = New-PSSession -Name 'OnPremExchange' -ConfigurationName Microsoft.Exchange -ConnectionUri ('http://' + $ExchangeServer + '/PowerShell/') -Authentication Kerberos -Credential $Credential -ErrorAction Stop
     }
     catch {
-        If ($_.exception.Message -match 'user name or password') {
+        if ($_.exception.Message -match 'user name or password') {
             Connect-Exchange2 -DeleteExchangeCreds
-            Write-Host "***************************************************************************** " -foregroundcolor "darkblue" -backgroundcolor "white"
-            Write-Host "                    Bad Credentials.                                          " -foregroundcolor "darkblue" -backgroundcolor "white"
-            Write-Host "          Please try your last command again...                               " -foregroundcolor "darkblue" -backgroundcolor "white"
-            Write-Host "...you will be prompted to enter your on-premises Exchange credentials again. " -foregroundcolor "darkblue" -backgroundcolor "white"
-            Write-Host "***************************************************************************** " -foregroundcolor "darkblue" -backgroundcolor "white"
-            Break
+            Write-Host '***************************************************************************** ' -ForegroundColor 'darkblue' -BackgroundColor 'white'
+            Write-Host '                    Bad Credentials.                                          ' -ForegroundColor 'darkblue' -BackgroundColor 'white'
+            Write-Host '          Please try your last command again...                               ' -ForegroundColor 'darkblue' -BackgroundColor 'white'
+            Write-Host '...you will be prompted to enter your on-premises Exchange credentials again. ' -ForegroundColor 'darkblue' -BackgroundColor 'white'
+            Write-Host '***************************************************************************** ' -ForegroundColor 'darkblue' -BackgroundColor 'white'
+            break
         }
     }
-    If (-not$NoPrefix) {
+    if (-not $NoPrefix) {
         $SessionModule = Import-PSSession -AllowClobber -DisableNameChecking -Prefix 'OnPrem' -Session $Session
-        $Null = Import-Module $SessionModule -Global -Prefix "OnPrem" -DisableNameChecking -Force
+        $Null = Import-Module $SessionModule -Global -Prefix 'OnPrem' -DisableNameChecking -Force
         if ($ViewEntireForest) {
             Set-OnPremADServerSettings -ViewEntireForest:$True
         }
-        Write-Host "********************************************************************" -foregroundcolor "darkgreen" -backgroundcolor "white"
-        Write-Host "        You are now connected to On-Premises Exchange               " -foregroundcolor "darkgreen" -backgroundcolor "white"
-        Write-Host "          All commands are pre-pended with OnPrem, for example:     " -foregroundcolor "darkgreen" -backgroundcolor "white"
-        Write-Host "               Get-Mailbox       is      Get-OnPremMailbox          " -foregroundcolor "darkgreen" -backgroundcolor "white"
-        Write-Host " This is to prevent overlap of commands between Office 365 and EXO  " -foregroundcolor "darkgreen" -backgroundcolor "white"
-        Write-Host "********************************************************************" -foregroundcolor "darkgreen" -backgroundcolor "white"
+        Write-Host '********************************************************************' -ForegroundColor 'darkgreen' -BackgroundColor 'white'
+        Write-Host '        You are now connected to On-Premises Exchange               ' -ForegroundColor 'darkgreen' -BackgroundColor 'white'
+        Write-Host '          All commands are pre-pended with OnPrem, for example:     ' -ForegroundColor 'darkgreen' -BackgroundColor 'white'
+        Write-Host '               Get-Mailbox       is      Get-OnPremMailbox          ' -ForegroundColor 'darkgreen' -BackgroundColor 'white'
+        Write-Host ' This is to prevent overlap of commands between Office 365 and EXO  ' -ForegroundColor 'darkgreen' -BackgroundColor 'white'
+        Write-Host '********************************************************************' -ForegroundColor 'darkgreen' -BackgroundColor 'white'
     }
     else {
         $SessionModule = Import-PSSession -AllowClobber -DisableNameChecking -Session $Session
@@ -158,8 +158,8 @@ function Connect-Exchange2 {
         if ($ViewEntireForest) {
             Set-ADServerSettings -ViewEntireForest:$True
         }
-        Write-Host "********************************************************************" -foregroundcolor "darkgreen" -backgroundcolor "white"
-        Write-Host "        You are now connected to On-Premises Exchange               " -foregroundcolor "darkgreen" -backgroundcolor "white"
-        Write-Host "********************************************************************" -foregroundcolor "darkgreen" -backgroundcolor "white"
+        Write-Host '********************************************************************' -ForegroundColor 'darkgreen' -BackgroundColor 'white'
+        Write-Host '        You are now connected to On-Premises Exchange               ' -ForegroundColor 'darkgreen' -BackgroundColor 'white'
+        Write-Host '********************************************************************' -ForegroundColor 'darkgreen' -BackgroundColor 'white'
     }
 }

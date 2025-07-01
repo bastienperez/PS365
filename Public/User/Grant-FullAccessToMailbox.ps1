@@ -8,24 +8,24 @@ function Grant-FullAccessToMailbox {
    
     #>
     [CmdletBinding()]
-    Param (
+    param (
         [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
         [string] $Mailbox,
         [Parameter(Mandatory = $false, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
         [string] $UserNeedingAccess
     )
     
-    Begin {
+    begin {
 
-        $RootPath = $env:USERPROFILE + "\ps\"
+        $RootPath = $env:USERPROFILE + '\ps\'
         $User = $env:USERNAME
     
-        While (-not(Get-Content ($RootPath + "$($user).DomainController") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
+        while (-not(Get-Content ($RootPath + "$($user).DomainController") -ErrorAction SilentlyContinue | Where-Object { $_.count -gt 0 })) {
             Select-DomainController
         }
         $DomainController = Get-Content ($RootPath + "$($user).DomainController")   
         
-        While (-not(Get-Content ($RootPath + "$($user).TargetAddressSuffix") -ErrorAction SilentlyContinue | Where-Object {$_.count -gt 0})) {
+        while (-not(Get-Content ($RootPath + "$($user).TargetAddressSuffix") -ErrorAction SilentlyContinue | Where-Object { $_.count -gt 0 })) {
             Select-TargetAddressSuffix
         }
         $targetAddressSuffix = Get-Content ($RootPath + "$($user).TargetAddressSuffix")
@@ -38,11 +38,11 @@ function Grant-FullAccessToMailbox {
         }
 
     }
-    Process {
+    process {
         
         Add-CloudMailboxPermission -AccessRights FullAccess -Identity $Mailbox -User $UserNeedingAccess
     }
-    End {
+    end {
     
     }
-}    
+}

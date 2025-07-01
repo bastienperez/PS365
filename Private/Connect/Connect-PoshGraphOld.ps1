@@ -2,7 +2,7 @@ function Connect-PoshGraphOld {
     [CmdletBinding()]
     param(
 
-        [Parameter(Mandatory, HelpMessage = "Use either format, tenant or tenant.onmicrosoft.com")]
+        [Parameter(Mandatory, HelpMessage = 'Use either format, tenant or tenant.onmicrosoft.com')]
         [ValidateNotNullOrEmpty()]
         [string] $Tenant,
 
@@ -13,12 +13,12 @@ function Connect-PoshGraphOld {
         [switch] $DeleteCreds
 
     )
-    if ($Tenant -notmatch ".onmicrosoft.com") {
-        $Tenant = $Tenant + ".onmicrosoft.com"
+    if ($Tenant -notmatch '.onmicrosoft.com') {
+        $Tenant = $Tenant + '.onmicrosoft.com'
     }
     $host.ui.RawUI.WindowTitle = "Azure Tenant: $($Tenant.ToUpper())"
-    $RootPath = $env:USERPROFILE + "\ps\"
-    $KeyPath = $Rootpath + "creds\"
+    $RootPath = $env:USERPROFILE + '\ps\'
+    $KeyPath = $Rootpath + 'creds\'
 
     if ($Identifier) {
         $TenantAndID = $Tenant + $Identifier
@@ -47,7 +47,7 @@ function Connect-PoshGraphOld {
         $Secret = $AzureCredential.GetNetworkCredential().Password
     }
     else {
-        [System.Management.Automation.PSCredential]$Script:AzureCredential = Get-Credential -Message "Enter Application ID (client id) as Username and API Secret as Password"
+        [System.Management.Automation.PSCredential]$Script:AzureCredential = Get-Credential -Message 'Enter Application ID (client id) as Username and API Secret as Password'
         $AzureCredential | Export-Clixml ($KeyPath + "$($TenantAndID).AzureXml")
         $ClientID = $AzureCredential.GetNetworkCredential().username
         $Secret = $AzureCredential.GetNetworkCredential().Password

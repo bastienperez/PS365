@@ -21,7 +21,7 @@ function Update-RoleEntry {
     General notes
     #>
 
-    Param(
+    param(
         [Parameter()]
         $RoleEntry,
 
@@ -29,9 +29,17 @@ function Update-RoleEntry {
         $Action
     )
 
-    Switch ($Action) {
-        Add {Add-ManagementRoleEntry $RoleEntry -confirm:$false}
-        Remove {Remove-ManagementRoleEntry $RoleEntry -confirm:$false}
-        Default {Remove-ManagementRoleEntry $RoleEntry -confirm:$false}
+    switch ($Action) {
+        Add {
+            Add-ManagementRoleEntry $RoleEntry -Confirm:$false
+            break
+        }
+        Remove {
+            Remove-ManagementRoleEntry $RoleEntry -Confirm:$false
+            break
+        }
+        default {
+            Remove-ManagementRoleEntry $RoleEntry -Confirm:$false
+        }
     }
 }

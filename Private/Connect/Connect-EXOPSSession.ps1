@@ -38,16 +38,16 @@ function Connect-EXOPSSession {
     }
 
     try {
-        $modules = @(Get-ChildItem -Path "$($env:LOCALAPPDATA)\Apps\2.0" -Filter "Microsoft.Exchange.Management.ExoPowershellModule.manifest" -Recurse )
-        $ModulePath = Join-Path $modules[0].Directory.FullName "Microsoft.Exchange.Management.ExoPowershellModule.dll"
+        $modules = @(Get-ChildItem -Path "$($env:LOCALAPPDATA)\Apps\2.0" -Filter 'Microsoft.Exchange.Management.ExoPowershellModule.manifest' -Recurse )
+        $ModulePath = Join-Path $modules[0].Directory.FullName 'Microsoft.Exchange.Management.ExoPowershellModule.dll'
         # $ExoPowershellModule = "Microsoft.Exchange.Management.ExoPowershellModule.dll";
         # $ModulePath = [System.IO.Path]::Combine($PSScriptRoot, $ExoPowershellModule);
 
-        $global:ConnectionUri = $ConnectionUri;
-        $global:AzureADAuthorizationEndpointUri = $AzureADAuthorizationEndpointUri;
-        $global:UserPrincipalName = $UserPrincipalName;
-        $global:PSSessionOption = $PSSessionOption;
-        $global:Credential = $Credential;
+        $global:ConnectionUri = $ConnectionUri
+        $global:AzureADAuthorizationEndpointUri = $AzureADAuthorizationEndpointUri
+        $global:UserPrincipalName = $UserPrincipalName
+        $global:PSSessionOption = $PSSessionOption
+        $global:Credential = $Credential
 
         Import-Module $ModulePath -DisableNameChecking -WarningAction SilentlyContinue
         $PSSplat = @{
@@ -60,13 +60,13 @@ function Connect-EXOPSSession {
         }
         $PSSession = New-ExoPSSession @PSSplat
 
-        if ($PSSession -ne $null) {
+        if ($null -ne $PSSession) {
             Import-PSSession $PSSession -AllowClobber -DisableNameChecking -WarningAction SilentlyContinue
             Get-RemotingHandler
         }
     }
     catch {
         Write-Error -Message "Error: $($_.Exception.Message)"
-        throw "IF INITIAL SETUP, YOU CAN SAFELY IGNORE THIS ERROR"
+        throw 'IF INITIAL SETUP, YOU CAN SAFELY IGNORE THIS ERROR'
     }
 }

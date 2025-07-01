@@ -57,7 +57,7 @@
         Write-Warning "      Get-ChildItem -Path `"C:\scripts\PS365\`" -filter *.ps1 -Recurse | % { . `$_.fullname }   "
         Write-Warning "                    It is normal to see errors when running the above command                     "
         Write-Warning "**************************************************************************************************"
-        if (-not$ExchangeServer) {
+        if (-not $ExchangeServer) {
             Write-Warning "********************************************************************************************"
             Write-Warning "               Re-Run the command specifying the -ExchangeServer parameter                  "
             Write-Warning "ex. Get-DGPerms -ReportPath C:\PermsReports -PowerShell2 -ExchangeServer `"ExServer01`""

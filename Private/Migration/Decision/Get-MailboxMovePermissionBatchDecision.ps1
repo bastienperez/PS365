@@ -49,7 +49,7 @@ function Get-MailboxMovePermissionBatchDecision {
                     -not $PermissionChoice.Options.Contains('AddToBatch') -and $PermissionChoice.Options.Count -gt 0)
             }
             if ($PermissionChoice.Options.Contains('AddToBatch') -and $PermissionChoice.Options.Count -eq 1) {
-                $ReportPath = [Environment]::GetFolderPath("Desktop")
+                $ReportPath = [Environment]::GetFolderPath('Desktop')
                 Update-MailboxMovePermissionBatchHelper -UserChoice $UserChoice -BatchLink $BatchLink -UserInputBatch $UserInputBatch |
                 Export-Csv -Path (Join-Path $ReportPath Batches.csv) -NoTypeInformation
 
@@ -92,10 +92,10 @@ function Get-MailboxMovePermissionBatchDecision {
         $LinkResults = Get-MailboxMovePermissionLinkResult @PermissionResult
 
         $UCSet = [System.Collections.Generic.HashSet[string]]::new()
-        ($LinkResults | Out-GridView -OutputMode Multiple -Title "Choose Objects (Left Side)") | Select-Object PrimarySMTPAddress | ForEach-Object {
+        ($LinkResults | Out-GridView -OutputMode Multiple -Title 'Choose Objects (Left Side)') | Select-Object PrimarySMTPAddress | ForEach-Object {
             $Null = $UCSet.Add($_.PrimarySmtpAddress)
         }
-        ($LinkResults | Out-GridView -OutputMode Multiple -Title "Choose Granted (Right Side)") | Select-Object GrantedSMTP | ForEach-Object {
+        ($LinkResults | Out-GridView -OutputMode Multiple -Title 'Choose Granted (Right Side)') | Select-Object GrantedSMTP | ForEach-Object {
             $Null = $UCSet.Add($_.GrantedSMTP)
         }
         $UCSet | ForEach-Object {

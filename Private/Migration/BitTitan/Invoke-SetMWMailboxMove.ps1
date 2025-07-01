@@ -33,7 +33,7 @@ function Invoke-SetMWMailboxMove {
                     $GetParam.Add('ExportEmailAddress', $User.SourceTenantAddress)
                     $SetParam.Add('ExportEmailAddress', $User.PrimarySmtpAddress)
                 }
-                Default { }
+                default { }
             }
             if ($GetParam.ExportEmailAddress) {
                 try {

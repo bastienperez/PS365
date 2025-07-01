@@ -1,6 +1,6 @@
 function Connect-CloudModuleImport {
     [CmdletBinding()]
-    Param
+    param
     (
         [Parameter()]
         [switch]
@@ -40,9 +40,9 @@ function Connect-CloudModuleImport {
         { $Az } {
             if (-not ($null = Get-Module Az.Accounts -ListAvailable)) {
                 try {
-                    Write-Host "Installing AZ.Resources Module..." -ForegroundColor White
+                    Write-Host 'Installing AZ.Resources Module...' -ForegroundColor White
                     Install-Module -Name Az.Resources -Scope CurrentUser -Force -ErrorAction Stop
-                    Write-Host "Succesfully installed AZ.Resources Module..." -ForegroundColor Green
+                    Write-Host 'Succesfully installed AZ.Resources Module...' -ForegroundColor Green
                 }
                 catch {
                     Write-Warning "Unable to install the latest version of Az.Resources. Error: $($Exception.Message)"
@@ -53,13 +53,13 @@ function Connect-CloudModuleImport {
             if (((Get-Module PowerShellGet -ListAvailable).Version.Major | Sort-Object -Descending | Select-Object -First 1) -lt 2) {
                 try {
                     Install-Module -Name PowerShellGet -Scope CurrentUser -Force -ErrorAction Stop -AllowClobber -SkipPublisherCheck
-                    Write-Warning "Exchange Online v.2 module requires PowerShellGet v.2"
-                    Write-Warning "PowerShellGet v.2 was just installed"
-                    Write-Warning "Please restart this PowerShell console and rerun the same command"
+                    Write-Warning 'Exchange Online v.2 module requires PowerShellGet v.2'
+                    Write-Warning 'PowerShellGet v.2 was just installed'
+                    Write-Warning 'Please restart this PowerShell console and rerun the same command'
                 }
                 catch {
-                    Write-Warning "Unable to install the latest version of PowerShellGet"
-                    Write-Warning "and thus unable to install the Exchange Online v.2 module"
+                    Write-Warning 'Unable to install the latest version of PowerShellGet'
+                    Write-Warning 'and thus unable to install the Exchange Online v.2 module'
                 }
                 $Script:RestartConsole = $true
                 return
@@ -95,7 +95,7 @@ function Connect-CloudModuleImport {
             if (-not ($null = Get-Module -Name Microsoft.Graph.Intune -ListAvailable)) {
                 Install-Module -Name Microsoft.Graph.Intune -Scope CurrentUser -Force -AllowClobber
             }
-            Import-Module -Name Microsoft.Graph.Intune -force
+            Import-Module -Name Microsoft.Graph.Intune -Force
         }
         $SharePoint {
             if (-not ($null = Get-Module -Name Microsoft.Online.SharePoint.PowerShell -ListAvailable)) {

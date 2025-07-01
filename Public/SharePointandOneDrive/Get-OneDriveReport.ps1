@@ -28,12 +28,12 @@ function Get-OneDriveReport {
         $mysiteHost = (Get-SPOSite -Limit all -Template SPSMSITEHOST -ErrorAction stop).url
     }
     catch {
-        Write-Host "You are not connected to SharePoint Online" -ForegroundColor Red
+        Write-Host 'You are not connected to SharePoint Online' -ForegroundColor Red
         continue
     }
 
-    $RootPath = $env:USERPROFILE + "\ps\"
-    $KeyPath = $Rootpath + "creds\"
+    $RootPath = $env:USERPROFILE + '\ps\'
+    $KeyPath = $Rootpath + 'creds\'
     $PwdSecureString = Get-Content ($KeyPath + "$($Tenant).cred") | ConvertTo-SecureString
     $UsernameString = Get-Content ($KeyPath + "$($Tenant).ucred")
 
@@ -41,10 +41,10 @@ function Get-OneDriveReport {
 
     foreach ($User in $UserList) {
 
-        $User = ($User.LoginName).Replace(".", "_").Replace("@", "_")
+        $User = ($User.LoginName).Replace('.', '_').Replace('@', '_')
         Write-Verbose "User: $User"
-        $site = $mysiteHost + "personal/" + $User
-        if ($site.Contains("ylo00")) {
+        $site = $mysiteHost + 'personal/' + $User
+        if ($site.Contains('ylo00')) {
             continue
         }
         Write-Verbose "Processing: $site"

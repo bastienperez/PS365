@@ -24,7 +24,7 @@ function Get-InvalidMailPublicFolderAliasReport {
     )
 
     $PFDBList = Get-PublicFolderDatabase
-    ForEach ($PFDB in $PFDBList)	{
+    foreach ($PFDB in $PFDBList)	{
         Write-Host "INFO: Checking against... $($PFDB.Server)"
         $FolderList = Get-MailPublicFolder -ResultSize Unlimited -Server $PFDB.Server | Where-Object {
             $_.alias -match '[\s,]+|^\.+|\.+$'
@@ -36,10 +36,10 @@ function Get-InvalidMailPublicFolderAliasReport {
             if ($NewAlias.Length -gt 31) {
                 $NewAlias = $NewAlias.Substring(0, 31)
             }
-            Write-Host "Old Alias:`t$($Folder.Alias)" -ForegroundColor "Cyan"
-            Write-Host "New Alias:`t$NewAlias" -ForegroundColor "Green"
-            Write-Host ""
-            Write-Host ""
+            Write-Host "Old Alias:`t$($Folder.Alias)" -ForegroundColor 'Cyan'
+            Write-Host "New Alias:`t$NewAlias" -ForegroundColor 'Green'
+            Write-Host ''
+            Write-Host ''
             $CorrectedPF = New-Object -TypeName PSObject -Property @{
                 Name                      = $Folder.Name
                 OldAlias                  = $Folder.Alias

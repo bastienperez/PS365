@@ -24,7 +24,7 @@ function Get-ExchangeRoleReport {
                 }
             }
         }
-        Default {
+        default {
             foreach ($ExchangeRole in $ExchangeRoleList) {
                 Write-Verbose "Processing $($ExchangeRole.Name)"
                 $RoleMemberList = Get-RoleGroupMember -Identity $ExchangeRole.Identity -ResultSize Unlimited
@@ -32,10 +32,10 @@ function Get-ExchangeRoleReport {
                     [PSCustomObject]@{
                         'Role'              = $ExchangeRole.Name
                         'DisplayName'       = $RoleMember.DisplayName
-                        'UserPrincipalName' = ""
-                        'IsLicensed'        = ""
-                        'LastDirSyncTime'   = ""
-                        'MFA_State'         = ""
+                        'UserPrincipalName' = ''
+                        'IsLicensed'        = ''
+                        'LastDirSyncTime'   = ''
+                        'MFA_State'         = ''
                         'RoleDescription'   = $ExchangeRole.Description
                     }
                 }

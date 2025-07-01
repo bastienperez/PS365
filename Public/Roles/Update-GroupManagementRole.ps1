@@ -32,15 +32,15 @@ function Update-GroupManagementRole {
     General notes
     #>
 
-    Param(
+    param(
         [Parameter()]
-        [string] $Name = "MyDistributionGroupsManagement",
+        [string] $Name = 'MyDistributionGroupsManagement',
 
         [Parameter()]
-        [string] $Policy = "Default Role Assignment Policy",
+        [string] $Policy = 'Default Role Assignment Policy',
 
         [Parameter()]
-        [string] $Parent = "MyDistributionGroups",
+        [string] $Parent = 'MyDistributionGroups',
 
         [Parameter()]
         [switch] $PreventAbilityToCreateGroups,
@@ -50,11 +50,11 @@ function Update-GroupManagementRole {
 
     )
 
-    If (Get-ManagementRole $Name -erroraction silentlycontinue) {
+    if (Get-ManagementRole $Name -erroraction silentlycontinue) {
         Write-Warning "Found a Role with Name: $Name"
-        Write-Warning "trying to Modify Existing Role"
+        Write-Warning 'trying to Modify Existing Role'
     }
-    Else {
+    else {
         Write-Host "Creating Management Role $Name"
         New-ManagementRole -Name $Name -Parent $Parent
     }
@@ -62,8 +62,8 @@ function Update-GroupManagementRole {
     $AbilityToCreateExists = Get-ManagementRoleEntry $Name\New-DistributionGroup -erroraction silentlycontinue
     $AbilityToDeleteExists = Get-ManagementRoleEntry $Name\Remove-DistributionGroup -erroraction silentlycontinue
 
-    If ($PreventAbilityToCreateGroups) {
-        If ($AbilityToCreateExists) {
+    if ($PreventAbilityToCreateGroups) {
+        if ($AbilityToCreateExists) {
             Update-RoleEntry $Name\New-DistributionGroup Remove
             Write-Host "Removing ability to create Distribution Groups from $Name"
         }
@@ -73,8 +73,8 @@ function Update-GroupManagementRole {
         Write-Host "Adding ability to create Distribution Groups to $name"
     }
 
-    If ($PreventAbilityToDeleteGroups) {
-        If ($AbilityToDeleteExists) {
+    if ($PreventAbilityToDeleteGroups) {
+        if ($AbilityToDeleteExists) {
             Update-RoleEntry $name\Remove-DistributionGroup Remove
             Write-Host "Removing ability to delete Distribution Groups from $name"
         }
@@ -84,14 +84,13 @@ function Update-GroupManagementRole {
         Write-Host "Adding ability to delete Distribution Groups to $name"
     }
 
-    If (Get-ManagementRoleAssignment $Name-$Policy -erroraction silentlycontinue) {
+    if (Get-ManagementRoleAssignment $Name-$Policy -erroraction silentlycontinue) {
         Write-Warning "Found Existing Role Assignment: $Name-$Policy"
-        Write-Warning "Making no modifications to Role Assignments"
+        Write-Warning 'Making no modifications to Role Assignments'
     }
-    Else {
+    else {
         Write-Host "Creating Management Role Assignment $Name-$Policy"
-        New-ManagementRoleAssignment -name ($Name + "-" + $Policy) -Role $Name -Policy $Policy
+        New-ManagementRoleAssignment -name ($Name + '-' + $Policy) -Role $Name -Policy $Policy
     }
 
 }
-

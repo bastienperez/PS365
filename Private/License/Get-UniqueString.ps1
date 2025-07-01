@@ -4,7 +4,7 @@ function Get-UniqueString {
         $searchStrings
     )
 
-    $suffixes = " .*
+    $suffixes = ' .*
 _E3
 _E5
 _P1
@@ -18,15 +18,15 @@ _MIDMARKET
 _STUDENT
 _FACULTY
 _A
-_O365" -split "`r`n"
+_O365' -split "`r`n"
     $sthash = @{}
     $uniques = @()
     foreach ($searchString in $searchStrings) {
         $ss = $searchString
         foreach ($suffix in $suffixes) {
-            $searchString = $searchString -replace "$suffix$", "REPLACED"
+            $searchString = $searchString -replace "$suffix$", 'REPLACED'
         }
-        $uniques += $searchString -replace "REPLACED"
+        $uniques += $searchString -replace 'REPLACED'
         if (-not($sthash.ContainsKey($uniques[(($uniques.count) - 1)]))) {
             $sthash.($uniques[(($uniques.count) - 1)]) = $ss
         }

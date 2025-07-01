@@ -13,5 +13,4 @@ function Get-RecipientCNHash {
     }
 
     $RecipientHash
-
 }

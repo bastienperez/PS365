@@ -13,21 +13,21 @@ function Get-GraphGroupData {
         'Name' {
             $RestSplat = @{
                 Uri     = "https://graph.microsoft.com/beta/groups/?`$filter=displayName eq '$Name'"
-                Headers = @{ "Authorization" = "Bearer $Token" }
+                Headers = @{ 'Authorization' = "Bearer $Token" }
                 Method  = 'Get'
             }
         }
         'GroupID' {
             $RestSplat = @{
                 Uri     = 'https://graph.microsoft.com/beta/groups/{0}' -f $GroupId
-                Headers = @{ "Authorization" = "Bearer $Token" }
+                Headers = @{ 'Authorization' = "Bearer $Token" }
                 Method  = 'Get'
             }
         }
         default {
             $RestSplat = @{
                 Uri     = 'https://graph.microsoft.com/beta/groups/'
-                Headers = @{ "Authorization" = "Bearer $Token" }
+                Headers = @{ 'Authorization' = "Bearer $Token" }
                 Method  = 'Get'
             }
         }

@@ -1,6 +1,6 @@
 function Get-BTDeviceHash {
     [CmdletBinding()]
-    Param
+    param
     (
 
     )

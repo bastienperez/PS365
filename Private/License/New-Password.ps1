@@ -28,13 +28,13 @@ filter New-Password {
 
     try {
         if ($CharacterSet.Count -ne $CharacterSetCount.Count) {
-            throw "The number of items in -CharacterSet needs to match the number of items in -CharacterSetCount"
+            throw 'The number of items in -CharacterSet needs to match the number of items in -CharacterSetCount'
         }
 
         $requiredCharLength = ($CharacterSetCount | Measure-Object -Sum).Sum
 
         if ($requiredCharLength -gt $Length) {
-            throw "The sum of characters specified by CharacterSetCount is higher than the desired password length"
+            throw 'The sum of characters specified by CharacterSetCount is higher than the desired password length'
         }
 
         $password = ''

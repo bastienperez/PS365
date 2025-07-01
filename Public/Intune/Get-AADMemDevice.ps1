@@ -22,21 +22,21 @@ function Get-AADMemDevice {
     )
 
     if ($SearchString) {
-        Get-AADMemDeviceData -SearchString $SearchString | Select-Object -ExpandProperty Value
+        Get-EIDMemDeviceData -SearchString $SearchString | Select-Object -ExpandProperty Value
     }
     elseif ($Id) {
-        Get-AADMemDeviceData -Id $ID
+        Get-EIDMemDeviceData -Id $ID
     }
     elseif ($OS) {
-        Get-AADMemDeviceData -OS $OS | Select-Object -ExpandProperty Value
+        Get-EIDMemDeviceData -OS $OS | Select-Object -ExpandProperty Value
     }
     elseif ($CompliantOnly) {
-        Get-AADMemDeviceData -CompliantOnly | Select-Object -ExpandProperty Value
+        Get-EIDMemDeviceData -CompliantOnly | Select-Object -ExpandProperty Value
     }
     elseif ($NonCompliantOnly) {
-        Get-AADMemDeviceData -NonCompliantOnly | Select-Object -ExpandProperty Value
+        Get-EIDMemDeviceData -NonCompliantOnly | Select-Object -ExpandProperty Value
     }
     else {
-        Get-AADMemDeviceData | Select-Object -ExpandProperty Value
+        Get-EIDMemDeviceData | Select-Object -ExpandProperty Value
     }
 }

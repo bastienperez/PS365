@@ -1,6 +1,6 @@
 function Invoke-NewMWMailboxStatsandNoStats {
     [CmdletBinding()]
-    Param
+    param
     (
         [Parameter(ValueFromPipeline)]
         $MailboxList

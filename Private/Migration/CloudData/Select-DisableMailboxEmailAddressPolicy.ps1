@@ -18,8 +18,8 @@ function Select-DisableMailboxEmailAddressPolicy {
                     Num                       = '[{0} of {1}]' -f $i, $Count
                     DisplayName               = $RemoteMailbox.DisplayName
                     EmailAddressPolicyEnabled = $RemoteMailbox.EmailAddressPolicyEnabled
-                    msExchPoliciesIncluded    = if ($In = $BadPolicyHash[$RemoteMailbox.Guid.ToString()]['msExchPoliciesIncluded']) {$In} else {''}
-                    msExchPoliciesExcluded    = if ($Ex = $BadPolicyHash[$RemoteMailbox.Guid.ToString()]['msExchPoliciesExcluded']) {$Ex} else {''}
+                    msExchPoliciesIncluded    = if ($In = $BadPolicyHash[$RemoteMailbox.Guid.ToString()]['msExchPoliciesIncluded']) { $In } else { '' }
+                    msExchPoliciesExcluded    = if ($Ex = $BadPolicyHash[$RemoteMailbox.Guid.ToString()]['msExchPoliciesExcluded']) { $Ex } else { '' }
                     OrganizationalUnit        = $RemoteMailbox.OnPremisesOrganizationalUnit
                     Alias                     = $RemoteMailbox.Alias
                     PrimarySmtpAddress        = $RemoteMailbox.PrimarySmtpAddress

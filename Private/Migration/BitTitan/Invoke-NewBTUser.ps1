@@ -18,7 +18,7 @@ function Invoke-NewBTUser {
                 { $_.LastName } { $Param.Add('LastName', $User.LastName) }
                 { $_.DisplayName } { $Param.Add('DisplayName', $User.DisplayName) }
                 { $_.UserPrincipalName } { $Param.Add('UserPrincipalName', $User.UserPrincipalName) }
-                Default { }
+                default { }
             }
             if ($Param.PrimaryEmailAddress) {
                 try {

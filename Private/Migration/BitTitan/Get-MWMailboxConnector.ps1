@@ -1,6 +1,6 @@
 function Get-MWMailboxConnector {
     [CmdletBinding()]
-    Param
+    param
     (
 
     )

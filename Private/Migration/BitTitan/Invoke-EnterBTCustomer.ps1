@@ -1,6 +1,6 @@
 function Invoke-EnterBTCustomer {
     [CmdletBinding()]
-    Param
+    param
     (
 
     )

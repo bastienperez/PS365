@@ -28,7 +28,7 @@ function Clear-ADEmailAddressPolicyAttributes {
             }
             Set-ADUser @UserParams
             Write-Host ('[{0} of {1}] {2} Success clearing msExchPoliciesIncluded and msExchPoliciesExcluded - All emails unchanged? ' -f $i, $Count, $Item.DisplayName) -ForegroundColor Cyan -NoNewline
-            $ADAfter = Get-ADUser -server $DomainController -Identity $Item.Guid.ToString() -Properties msExchPoliciesIncluded, msExchPoliciesExcluded
+            $ADAfter = Get-ADUser -Server $DomainController -Identity $Item.Guid.ToString() -Properties msExchPoliciesIncluded, msExchPoliciesExcluded
             $RMAfter = Get-RemoteMailbox -DomainController $DomainController -Identity $Item.Guid.ToString()
 
             $AllAddressesUnchanged = $Hash[$Item.Guid.ToString()]['AllEmailAddresses'] -eq (@($RMAfter.EmailAddresses) -ne '' -join '|')

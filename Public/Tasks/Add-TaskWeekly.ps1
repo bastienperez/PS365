@@ -54,7 +54,7 @@ function Add-TaskWeekly {
         General notes
     #>
     [CmdletBinding()]
-    Param
+    param
     (
         [Parameter(Mandatory = $true)]
         [string] $TaskName,
@@ -81,7 +81,7 @@ function Add-TaskWeekly {
         [string] $Argument
     )
     
-    $SchedTaskCred = Get-Credential $User -Message "Scheduled Task Service Account Credentials"
+    $SchedTaskCred = Get-Credential $User -Message 'Scheduled Task Service Account Credentials'
     $SchedTaskCredUser = $SchedTaskCred.UserName
     $SchedTaskCredPwd = $SchedTaskCred.GetNetworkCredential().Password
 
@@ -104,7 +104,7 @@ function Add-TaskWeekly {
     }
 
     if ($Disabled) {
-        $SettingsSplat.Add("Disable", $true)
+        $SettingsSplat.Add('Disable', $true)
     }
 
     $Action = New-ScheduledTaskAction @ActionSplat
@@ -127,5 +127,4 @@ function Add-TaskWeekly {
     }
 
     Register-ScheduledTask @RegisterSplat
-
 }

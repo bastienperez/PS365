@@ -1,6 +1,6 @@
 function Get-AzureVMHelper {
     [CmdletBinding()]
-    Param(
+    param(
         [Parameter(Mandatory, ValueFromPipeline, ValueFromPipelineByPropertyName)]
         [Microsoft.Azure.Commands.Compute.Models.PSVirtualMachineList[]] $VM,
 
@@ -44,15 +44,15 @@ function Get-AzureVMHelper {
             }
             foreach ( $Index in 0..($MaxDataDisks - 1) ) {
                 $CurDataDisk = $DataDisk[$Index]
-                $DiskName = "DiskName" + $Index
-                $DiskSizeGB = "DiskSizeGB" + $Index
-                $DiskLun = "DiskLun" + $Index
-                $DiskCaching = "DiskCaching" + $Index
-                $CreateOption = "DiskCreateOption" + $Index
-                $StorageAccountType = "DiskStorageAccountType" + $Index
-                $ManagedDisk = "ManagedDisk" + $Index
-                $SourceImage = "DiskSourceImage" + $Index
-                $VHD = "DiskVHD" + $Index
+                $DiskName = 'DiskName' + $Index
+                $DiskSizeGB = 'DiskSizeGB' + $Index
+                $DiskLun = 'DiskLun' + $Index
+                $DiskCaching = 'DiskCaching' + $Index
+                $CreateOption = 'DiskCreateOption' + $Index
+                $StorageAccountType = 'DiskStorageAccountType' + $Index
+                $ManagedDisk = 'ManagedDisk' + $Index
+                $SourceImage = 'DiskSourceImage' + $Index
+                $VHD = 'DiskVHD' + $Index
 
                 $VMObj.Add($DiskName, $CurDataDisk.Name)
                 $VMObj.Add($DiskSizeGB, $CurDataDisk.DiskSizeGB)
@@ -67,14 +67,14 @@ function Get-AzureVMHelper {
             }
             foreach ( $Index in 0..($MaxOSDisks - 1) ) {
                 $CurOsDisk = $OsDisk[$Index]
-                $OsDiskName = "OsDiskName" + $Index
-                $OsDiskSizeGB = "OsDiskSizeGB" + $Index
-                $OsDiskOSType = "OsOSType" + $Index
-                $OsDiskCaching = "OsDiskCaching" + $Index
-                $OsCreateOption = "OsDiskCreateOption" + $Index
-                $OsStorageAccountType = "OsDiskStorageAccountType" + $Index
-                $OsManagedDisk = "OsManagedDisk" + $Index
-                $OsVHD = "OsDiskVHD" + $Index
+                $OsDiskName = 'OsDiskName' + $Index
+                $OsDiskSizeGB = 'OsDiskSizeGB' + $Index
+                $OsDiskOSType = 'OsOSType' + $Index
+                $OsDiskCaching = 'OsDiskCaching' + $Index
+                $OsCreateOption = 'OsDiskCreateOption' + $Index
+                $OsStorageAccountType = 'OsDiskStorageAccountType' + $Index
+                $OsManagedDisk = 'OsManagedDisk' + $Index
+                $OsVHD = 'OsDiskVHD' + $Index
 
                 $VMObj.Add($OsDiskName, $CurOsDisk.Name)
                 $VMObj.Add($OsDiskSizeGB, $CurOsDisk.DiskSizeGB)

@@ -1,6 +1,6 @@
 function Invoke-EntraConnectSync {
     [Alias('Sync-AADConnect')]
-    Param (
+    param (
         [Parameter(Mandatory = $False)]    
         [switch] $Initial,
         [Parameter(Mandatory = $False)]
@@ -30,7 +30,7 @@ function Invoke-EntraConnectSync {
     Invoke-EntraConnectSync -Initial -Sleep 240
 
     #>
-    $RootPath = $env:USERPROFILE + "\ps\"
+    $RootPath = $env:USERPROFILE + '\ps\'
     $User = $env:USERNAME
     
     while (-not(Test-Path ($RootPath + "$($user).ADConnectServer"))) {
@@ -48,9 +48,9 @@ function Invoke-EntraConnectSync {
             Invoke-Command -Session $session -ScriptBlock {
                 $Sleep = $args[0]
                 $Synced = $False
-                while (-not$Synced) {
+                while (-not $Synced) {
                     try {
-                        Start-ADSyncSyncCycle -PolicyType Initial -erroraction Stop
+                        Start-ADSyncSyncCycle -PolicyType Initial -ErrorAction Stop
                         $Synced = $True
                     }
                     catch {
@@ -72,9 +72,9 @@ function Invoke-EntraConnectSync {
             Invoke-Command -Session $session -ScriptBlock {
                 $Sleep = $args[0]
                 $Synced = $False
-                while (-not$Synced) {
+                while (-not $Synced) {
                     try {
-                        Start-ADSyncSyncCycle -PolicyType Delta -erroraction Stop
+                        Start-ADSyncSyncCycle -PolicyType Delta -ErrorAction Stop
                         $Synced = $True
                     }
                     catch {

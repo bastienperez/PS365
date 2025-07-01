@@ -73,7 +73,7 @@ function Remove-BadProxyAddress {
 
                 Set-Mailbox -Identity $Remove.PrimarySmtpAddress -EmailAddresses @{remove = '{0}' -f $Remove.PrefixedAddress } -erroraction stop
 
-                Write-Host  ('{0}' -f $Remove.PrefixedAddress) -ForegroundColor Green
+                Write-Host ('{0}' -f $Remove.PrefixedAddress) -ForegroundColor Green
 
                 [PSCustomObject]@{
                     DisplayName          = $Remove.DisplayName
@@ -85,7 +85,7 @@ function Remove-BadProxyAddress {
             }
             catch {
 
-                Write-Host  ('{0} - FAILED !' -f $Remove.PrefixedAddress) -ForegroundColor Red
+                Write-Host ('{0} - FAILED !' -f $Remove.PrefixedAddress) -ForegroundColor Red
 
                 [PSCustomObject]@{
                     DisplayName          = $Remove.DisplayName
@@ -102,7 +102,7 @@ function Remove-BadProxyAddress {
 
                 Set-DistributionGroup -Identity $Remove.PrimarySmtpAddress -EmailAddresses @{remove = '{0}' -f $Remove.PrefixedAddress } -erroraction stop
 
-                Write-Host  ('{0}' -f $Remove.PrefixedAddress) -ForegroundColor Green
+                Write-Host ('{0}' -f $Remove.PrefixedAddress) -ForegroundColor Green
 
                 [PSCustomObject]@{
                     DisplayName          = $Remove.DisplayName
@@ -113,7 +113,7 @@ function Remove-BadProxyAddress {
                 }
             }
             catch {
-                Write-Host  ('{0} - FAILED !' -f $Remove.PrefixedAddress) -ForegroundColor Red
+                Write-Host ('{0} - FAILED !' -f $Remove.PrefixedAddress) -ForegroundColor Red
 
                 [PSCustomObject]@{
                     DisplayName          = $Remove.DisplayName
@@ -130,7 +130,7 @@ function Remove-BadProxyAddress {
 
                 Set-MailContact -Identity $Remove.PrimarySmtpAddress -EmailAddresses @{remove = '{0}' -f $Remove.PrefixedAddress } -erroraction stop
 
-                Write-Host  ('{0}' -f $Remove.PrefixedAddress) -ForegroundColor Green
+                Write-Host ('{0}' -f $Remove.PrefixedAddress) -ForegroundColor Green
 
                 [PSCustomObject]@{
                     DisplayName          = $Remove.DisplayName
@@ -141,7 +141,7 @@ function Remove-BadProxyAddress {
                 }
             }
             catch {
-                Write-Host  ('{0} - FAILED !' -f $Remove.PrefixedAddress) -ForegroundColor Red
+                Write-Host ('{0} - FAILED !' -f $Remove.PrefixedAddress) -ForegroundColor Red
 
                 [PSCustomObject]@{
                     DisplayName          = $Remove.DisplayName
@@ -153,7 +153,7 @@ function Remove-BadProxyAddress {
             }
         }
         else {
-            Write-Host  ('{0} - We wont touch.' -f $Remove.RecipientTypeDetails) -ForegroundColor Yellow
+            Write-Host ('{0} - We wont touch.' -f $Remove.RecipientTypeDetails) -ForegroundColor Yellow
         }
     }
 }
