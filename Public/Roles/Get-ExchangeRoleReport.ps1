@@ -12,11 +12,9 @@ The report is output to an array contained all the audit logs found.
 To export in a csv, do Get-ExchangeRoleReport | Export-CSV -NoTypeInformation "$(Get-Date -Format yyyyMMdd)_adminRoles.csv" -Encoding UTF8
 
 .EXAMPLE
-Get-RBACReport
-
+Get-ExchangeRoleReport
 
 .LINK
-
 
 .NOTES
 Written by Bastien Perez (ITPro-Tips.com)
@@ -25,46 +23,63 @@ Version history:
 V1.0, 14 april 2022 - Initial version
 v2.0 22 november 2024 - Add option to see permission graph - not work by now
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
-FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
-DEALINGS IN THE SOFTWARE.
+Version History:
+## [2.1] - 2025-07-03
+### Added
+- Add OnPrem switch to use Get-RoleGroup instead
+
+### Changed
+- Use another method to detect if we are connected to Exchange Online or not
+
+## [2.0] - 2024-11-22
+### Added
+- Add option to see permissions graph - not work by now
+
+## [1.0] - 2024-11-22
+### Initial Release
 
 #>
 function Get-ExchangeRoleReport {
     [CmdletBinding()]
     param (
-        [switch]$ShowGraph
+        [switch]$OnPrem
     )
 
-    try {
-        Import-Module ExchangeOnlineManagement -ErrorAction stop
-    }
-    catch {
-        Write-Warning 'First, install the official Microsoft Import-Module ExchangeOnlineManagement module : Install-Module ExchangeOnlineManagement'
-        return
+    if (-not $OnPrem) {
+        try {
+            Import-Module ExchangeOnlineManagement -ErrorAction stop
+        }
+        catch {
+            Write-Warning 'First, install the official Microsoft Import-Module ExchangeOnlineManagement module : Install-Module ExchangeOnlineManagement'
+            return
+        }
+
+        if (-not (Get-ConnectionInformation | Where-Object { $_.ConnectionUri -eq 'https://outlook.office365.com' })) {
+            Connect-ExchangeOnline
+        }
     }
 
     try {
-        # -ShowPartnerLinked : 
-        # This ShowPartnerLinked switch specifies whether to return built-in role groups that are of type PartnerRoleGroup. You don't need to specify a value with this switch.
-        # This type of role group is used in the cloud-based service to allow partner service providers to manage their customer organizations.
-        # These types of role groups can't be edited and are not shown by default.
-        $exchangeRoles = Get-RoleGroup -ShowPartnerLinked -ErrorAction Stop
+        if ($OnPrem) {
+            $exchangeRoles = Get-RoleGroup -ErrorAction Stop
+        }
+        else {
+            # -ShowPartnerLinked (only for Exchange Online)
+            # This `-ShowPartnerLinked` switch specifies whether to return built-in role groups that are of type PartnerRoleGroup. You don't need to specify a value with this switch.
+            # This type of role group is used in the cloud-based service to allow partner service providers to manage their customer organizations.
+            # These types of role groups can't be edited and are not shown by default.
+            $exchangeRoles = Get-RoleGroup -ShowPartnerLinked -ErrorAction Stop
+        }
+
     }
     catch {
-        Connect-ExchangeOnline
-        $exchangeRoles = Get-RoleGroup -ShowPartnerLinked -ErrorAction Stop
+        Write-Warning "Unable to retrieve Exchange RBAC roles. $($_.Exception.Message)"
     }
    
-    $exchangeRolesMembership = New-Object 'System.Collections.Generic.List[System.Object]'
-
+    [System.Collections.Generic.List[Object]]$exchangeRolesMembership = @()
     foreach ($exchangeRole in $exchangeRoles) {        
         try {
-            $roleMembers = @(Get-RoleGroupMember -Identity $exchangeRole.Identity -ResultSize Unlimited)
+            $roleMembers = @(Get-RoleGroupMember -Identity $exchangeRole.ExchangeObjectId -ResultSize Unlimited)
 
             # Add green color if member found into the role
             if ($roleMembers.count -gt 0) {
@@ -90,7 +105,6 @@ function Get-ExchangeRoleReport {
                     'MemberIsDirSynced'          = '-'
                     'MemberObjectID'             = '-'
                     'MemberRecipientTypeDetails' = '-'
-                    # si descriptin vide et si nom like ISVMailboxUsers_* on donne une description 'Third-party application developer mailbox role'
                     'RoleDescription'            = $roleDescription
                 }
                 
@@ -100,8 +114,6 @@ function Get-ExchangeRoleReport {
             else {         
 
                 foreach ($roleMember in $roleMembers) {                
-                    # if user already exist in the arraylist, we look for to prevent a new Get-MsolUser (time consuming)
-                    # Select only the first if user already exists in multiple roles
                    
                     $object = [PSCustomObject][ordered]@{
                         'Role'                       = $exchangeRole.Name
@@ -116,7 +128,6 @@ function Get-ExchangeRoleReport {
 
                     $exchangeRolesMembership.Add($object)
                 }
-
             }
         }
         catch {
