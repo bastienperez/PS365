@@ -1,5 +1,4 @@
-function Invoke-EntraConnectSync {
-    [Alias('Sync-AADConnect')]
+function Sync-ADConnect {
     param (
         [Parameter(Mandatory = $False)]    
         [switch] $Initial,
@@ -13,21 +12,21 @@ function Invoke-EntraConnectSync {
     .EXAMPLE
     # Delta Sync - This should be used unless there are extenuating circumstances
 
-    Invoke-EntraConnectSync
+    Sync-ADConnect
 
     # Initial Sync
     # Typically used if an OU is added or removed from list of OUs to be synced
     # Can also be used when a normal Delta sync is not syncing a particular change
     
-    Invoke-EntraConnectSync -Initial
+    Sync-ADConnect -Initial
 
     # Use the -Sleep switch to add a longer delay to sync if AD Connect is already in the midst of syncing
     # This only comes into play if the initial sync errors out...
     # ...at that point, the script will wait the number of seconds you specify and attempt sync again
     
-    Invoke-EntraConnectSync -Sleep 240
+    Sync-ADConnect -Sleep 240
 
-    Invoke-EntraConnectSync -Initial -Sleep 240
+    Sync-ADConnect -Initial -Sleep 240
 
     #>
     $RootPath = $env:USERPROFILE + '\ps\'

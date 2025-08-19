@@ -27,7 +27,7 @@ function Get-MailboxMoveLicense {
         $OneSkuPerLine
     )
     if ($ExportToExcel) {
-        $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath("Desktop")) -ChildPath PS365 )
+        $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath("Desktop")) -ChildPath PS365)
 
         $ItemSplat = @{
             Type        = 'Directory'

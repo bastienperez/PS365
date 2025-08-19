@@ -9,7 +9,7 @@ function Complete-CloudDataSync {
         [ValidateScript( { Test-Path $_ } )]
         $AlternateCSVFilePath
     )
-    $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath PS365 )
+    $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath PS365)
     if (-not ($null = Test-Path $PoshPath)) {
         $null = New-Item $PoshPath -Type Directory -Force -ErrorAction SilentlyContinue
     }

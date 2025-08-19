@@ -21,7 +21,7 @@ function Sync-Guid {
     }
     Connect-Exchange -DontViewEntireForest:$DontViewEntireForest -PromptConfirm -Server $Server
 
-    $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath PS365 )
+    $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath PS365)
     $RemoteMailboxXML = Join-Path -Path $PoshPath -ChildPath ('RemoteMailboxSyncGuid_{0}.xml' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
     Write-Host "Fetching Remote Mailboxes..." -ForegroundColor Cyan
 

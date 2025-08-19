@@ -96,7 +96,7 @@
     Process {
         # Define Hashtables for lookup
         $u2fSku = @{
-            "ATA"                                = "Microsoft Azure Advanced Threat Protection for Users"
+            "ATA"                                = "Microsoft Entra IDvanced Threat Protection for Users"
             "ADALLOM_STANDALONE"                 = "Microsoft Cloud App Security"
             "RIGHTSMANAGEMENT"                   = "AZURE INFORMATION PROTECTION PLAN 1"
             "THREAT_INTELLIGENCE"                = "OFFICE 365 ADVANCED THREAT PROTECTION (PLAN 2)"

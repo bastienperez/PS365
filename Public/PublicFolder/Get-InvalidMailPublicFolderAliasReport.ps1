@@ -38,8 +38,7 @@ function Get-InvalidMailPublicFolderAliasReport {
             }
             Write-Host "Old Alias:`t$($Folder.Alias)" -ForegroundColor 'Cyan'
             Write-Host "New Alias:`t$NewAlias" -ForegroundColor 'Green'
-            Write-Host ''
-            Write-Host ''
+
             $CorrectedPF = New-Object -TypeName PSObject -Property @{
                 Name                      = $Folder.Name
                 OldAlias                  = $Folder.Alias
@@ -57,5 +56,4 @@ function Get-InvalidMailPublicFolderAliasReport {
             $CorrectedPF | Select-Object Name, OldAlias, NewAlias, DisplayName, Identity, WindowsEmailAddress, Guid, PrimarySmtpAddress, EmailAddressPolicyEnabled, WhenCreated, WhenChanged
         }
     }
-
 }

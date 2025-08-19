@@ -17,15 +17,15 @@ Add Recipients Email Addresses and other functions
     $currentErrorActionPrefs = $ErrorActionPreference
     $ErrorActionPreference = 'Stop'
     $OutputPath = 'C:\Scripts\ContosoOLD'
-    $LogFile = ($(get-date -Format yyyy-MM-dd_HH-mm-ss) + "-Failed.csv")
+    $LogFile = ($(Get-Date -Format yyyy-MM-dd_HH-mm-ss) + '-Failed.csv')
 
     $NewTenantFile = 'C:\Scripts\ContosoNEW\ContosoTECHINCGCmbx.csv'
     $OldTenantFile = 'C:\Scripts\ContosoOLD\FINAL.csv'
     $AllOldFile = 'C:\Scripts\ContosoOLD\ContosoMBXOLD.csv'
 
     $FailLog = Join-Path $OutputPath $LogFile
-    $errheaderstring = "DisplayName,RemovePrimary,RemoveSecondaryToMakePrimary,AddPrimary,AddBackonMicrosoft,RemoveCurPrimary,Error"
-    Out-File -FilePath $FailLog -InputObject $errheaderstring -Encoding UTF8 -append
+    $errheaderstring = 'DisplayName,RemovePrimary,RemoveSecondaryToMakePrimary,AddPrimary,AddBackonMicrosoft,RemoveCurPrimary,Error'
+    Out-File -FilePath $FailLog -InputObject $errheaderstring -Encoding UTF8 -Append
 
     $hashold = @{}
     Import-Csv $OldTenantFile | ForEach-Object {
@@ -35,58 +35,58 @@ Add Recipients Email Addresses and other functions
     $Newt = Import-Csv $NewTenantFile | Where-Object {
         $_.RecipientTypeDetails -eq 'UserMailbox' -and
         $_.EmailAddresses -cmatch 'SMTP:' -and
-        $_.EmailAddresses -match "@Contosotechincgc.onmicrosoft.com"
+        $_.EmailAddresses -match '@Contosotechincgc.onmicrosoft.com'
     } 
-    ForEach ($CurNewt in $Newt) {
+    foreach ($CurNewt in $Newt) {
         try {
             ## Verify Case of domain.onmicrosoft.com address as case dependent command follows ##
             $Remove = $CurNewt.EmailAddresses -split ';' | Where-Object {
-                $_ -clike "SMTP:*@Contosotechincgc.onmicrosoft.com"
+                $_ -clike 'SMTP:*@Contosotechincgc.onmicrosoft.com'
             }
 
             $DisplayName = $CurNewt.DisplayName
-            $RemovesmtptomakeSMTP = $("smtp:" + ($hashold[$DisplayName]))
-            $Add = $("SMTP:" + ($hashold[$DisplayName]))
+            $RemovesmtptomakeSMTP = $('smtp:' + ($hashold[$DisplayName]))
+            $Add = $('SMTP:' + ($hashold[$DisplayName]))
 
             [ARRAY]$Remove = $Remove
 
             $CurPrimary = (Get-Mailbox $Displayname).primarysmtpaddress
-            $CurPrimary = "SMTP:" + $CurPrimary
+            $CurPrimary = 'SMTP:' + $CurPrimary
 
-            Write-Verbose "----------"
+            Write-Verbose '----------'
             Write-Verbose "Display Name            : `t $DisplayName"
             Write-Verbose "Remove Primary onMicro  : `t $Remove"
             Write-Verbose "Remove2ndaryMakeSMTP    : `t $RemovesmtptomakeSMTP"
             Write-Verbose "Add Desired Primary     : `t $Add"
-            Write-Verbose "AddBackonMicrosoft      : `t $("smtp:" + ($Remove.substring(5)))"
+            Write-Verbose "AddBackonMicrosoft      : `t $('smtp:' + ($Remove.substring(5)))"
             Write-Verbose "CurPrimary              : `t $CurPrimary"
-            Write-Verbose "----------"
+            Write-Verbose '----------'
 
             if ($Remove) {
                 Set-Mailbox -Identity $DisplayName -EmailAddresses @{
                     Remove = "$Remove", "$RemovesmtptomakeSMTP", "$CurPrimary"
-                    Add    = "$Add", $(("smtp:" + $($Remove.substring(5))))
+                    Add    = "$Add", $(('smtp:' + $($Remove.substring(5))))
                 }                
             }
         }
         catch {
             Write-Warning $_
-            $DisplayName + "," + $Remove + "," + $RemovesmtptomakeSMTP + "," + $Add + "," + $("smtp:" + ($Remove.substring(5))) + "," + $CurPrimary + "," + $_ |
-                Out-file $FailLog -Encoding UTF8 -append
+            $DisplayName + ',' + $Remove + ',' + $RemovesmtptomakeSMTP + ',' + $Add + ',' + $('smtp:' + ($Remove.substring(5))) + ',' + $CurPrimary + ',' + $_ |
+            Out-File $FailLog -Encoding UTF8 -Append
         }
     }
     $AllOld = Import-Csv $AllOldFile
-    Foreach ($CurAllOld in $AllOld) {
-        $Secondary = $CurAllOld.EmailAddresses -split ';' |  Where-Object {
-            $_ -clike "smtp:*" -and
-            $_ -notlike "*onmicrosoft.com"
+    foreach ($CurAllOld in $AllOld) {
+        $Secondary = $CurAllOld.EmailAddresses -split ';' | Where-Object {
+            $_ -clike 'smtp:*' -and
+            $_ -notlike '*onmicrosoft.com'
         }
         [ARRAY]$Secondary = $Secondary
         foreach ($CurSecondary in $Secondary) {
-            Write-Verbose "----------"
+            Write-Verbose '----------'
             Write-Verbose "DisplayName      : $($CurAllOld.DisplayName)"
             Write-Verbose "Secondary        : $CurSecondary"
-            Write-Verbose "----------"
+            Write-Verbose '----------'
             Set-Mailbox -Identity $CurAllOld.DisplayName -EmailAddresses @{
                 Add = "$CurSecondary"
             }        
@@ -94,17 +94,17 @@ Add Recipients Email Addresses and other functions
     }
 
     $SIP = Get-365RecipientEmailAddresses | Where-Object {
-        $_.emailaddress -like "SIP:*"
+        $_.emailaddress -like 'SIP:*'
     }
-    Foreach ($CurSIP in $SIP) {
-        Write-Host "----------"
+    foreach ($CurSIP in $SIP) {
+        Write-Host '----------'
         Write-Host "DisplayName      : $($CurSIP.DisplayName)"
         Write-Host "Remove SIP       : $($CurSIP.EmailAddress)"
-        Write-Host "Add SIP          : $("SIP:" + $CurSIP.PrimarySMTPAddress)"
-        Write-Host "----------"
+        Write-Host "Add SIP          : $('SIP:' + $CurSIP.PrimarySMTPAddress)"
+        Write-Host '----------'
         Set-Mailbox -Identity $CurSIP.DisplayName -EmailAddresses @{
             Remove = $CurSIP.EmailAddress
-            Add    = "SIP:" + $CurSIP.PrimarySMTPAddress
+            Add    = 'SIP:' + $CurSIP.PrimarySMTPAddress
         }
     }
 

@@ -58,7 +58,7 @@ function Copy-SharePointFile {
     end {
         Connect-SharePointPNP -Url $SharePointURL
         $TrimmedSPFile = ($SPFile).TrimStart('/')
-        $FileURL = 'Shared Documents/{0}' -f $TrimmedSPFile
+        $FileURL = "Shared Documents/{0}" -f $TrimmedSPFile
         switch ($PSCmdlet.ParameterSetName) {
             'AsGuid' {
                 $NewFileName = '{0}.xlsx' -f [guid]::NewGuid().GUID
@@ -76,8 +76,9 @@ function Copy-SharePointFile {
             $TempExcelPath
         }
         catch {
-            Write-Host 'Error getting file from SharePoint'
+            Write-Host "Error getting file from SharePoint"
             $_
         }
     }
 }
+

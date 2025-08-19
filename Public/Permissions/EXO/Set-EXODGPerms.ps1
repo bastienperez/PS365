@@ -23,7 +23,7 @@
         $IncludeSendOnBehalf
     )
 
-    $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath PS365 )
+    $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath PS365)
     $SendAsList = Import-Csv (Join-Path $PoshPath "EXO_DGSendAs.csv")
     $SAChoice = $SendAsList | Out-GridView -OutputMode Multiple -Title 'Choose Distribution Groups to which we will apply SEND AS permissions'
     if ($IncludeSendOnBehalf) {

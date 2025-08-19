@@ -51,7 +51,7 @@ function Disable-MailboxEmailAddressPolicy {
         Connect-Exchange -DontViewEntireForest:$DontViewEntireForest -PromptConfirm
     }
 
-    $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath PS365 )
+    $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath PS365)
 
     if (-not (Test-Path $PoshPath)) {
         $null = New-Item $PoshPath -type Directory -Force:$true -ErrorAction SilentlyContinue

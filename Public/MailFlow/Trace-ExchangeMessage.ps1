@@ -63,10 +63,10 @@ function Trace-ExchangeMessage {
         [string] $Recipients,
 
         [Parameter()]
-        [Double] $StartSearchHoursAgo = ".1",
+        [Double] $StartSearchHoursAgo = '.1',
 
         [Parameter()]
-        [Double] $EndSearchHoursAgo = "0",
+        [Double] $EndSearchHoursAgo = '0',
 
         [Parameter()]
         [string] $Subject,
@@ -78,7 +78,7 @@ function Trace-ExchangeMessage {
         [string] $MessageID,
 
         [Parameter()]
-        [string] $ResultSize = "Unlimited",
+        [string] $ResultSize = 'Unlimited',
 
         [Parameter()]
         [string] $Status,
@@ -118,7 +118,7 @@ function Trace-ExchangeMessage {
     $params.Add('End', $EndSearchHoursAgo)
     $params.Add('MessageSubject', $Subject)
 
-    $allMessageTrackResults = New-Object "System.Collections.Generic.List[PSObject]"
+    $allMessageTrackResults = New-Object 'System.Collections.Generic.List[PSObject]'
 
     try {
         $messageTrack = $Servers.name | Get-MessageTrackingLog @params -ResultSize $ResultSize
@@ -155,7 +155,7 @@ function Trace-ExchangeMessage {
 
     if ($allMessageTrackResults.count -gt 0) {
         if ($ExportToExcel -or $ExportToCSV) {
-            $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath PS365 )
+            $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath PS365)
             $null = New-Item $PoshPath -type Directory -Force -ErrorAction SilentlyContinue
 
             if ($ExportToExcel) {
@@ -169,7 +169,7 @@ function Trace-ExchangeMessage {
                     ClearSheet              = $true
                 }
                 if ($SkipHealthMessages) {
-                    $allMessageTrackResults.where{ $_.sender -notmatch "contoso|MicrosoftExchange|HealthMailbox|maildeliveryprobe" -and $_.recipients -notmatch "healthmailbox" } | Export-Excel @ExcelSplat
+                    $allMessageTrackResults.where{ $_.sender -notmatch 'contoso|MicrosoftExchange|HealthMailbox|maildeliveryprobe' -and $_.recipients -notmatch 'healthmailbox' } | Export-Excel @ExcelSplat
                 }
                 else {
                     $allMessageTrackResults | Export-Excel @ExcelSplat
@@ -184,7 +184,7 @@ function Trace-ExchangeMessage {
                     Encoding          = 'UTF8'
                 }
                 if ($SkipHealthMessages) {
-                    $allMessageTrackResults.where{ $_.sender -notmatch "contoso|MicrosoftExchange|HealthMailbox|maildeliveryprobe" -and $_.recipients -notmatch "healthmailbox" } | Export-Csv @CsvSplat
+                    $allMessageTrackResults.where{ $_.sender -notmatch 'contoso|MicrosoftExchange|HealthMailbox|maildeliveryprobe' -and $_.recipients -notmatch 'healthmailbox' } | Export-Csv @CsvSplat
 
                 }
                 else {
@@ -196,17 +196,17 @@ function Trace-ExchangeMessage {
 
         Write-Verbose "`n$($allMessageTrackResults.count) results returned."
         if ($SkipHealthMessages) {
-            $WantsToTrackMoreSpecifically = $allMessageTrackResults.where{ $_.sender -notmatch "contoso|MicrosoftExchange|HealthMailbox|maildeliveryprobe" -and $_.recipients -notmatch "healthmailbox" } |
-            Out-GridView -PassThru -Title "Message Tracking Log. Select one or more then click OK to track by only those Message IDs."
+            $WantsToTrackMoreSpecifically = $allMessageTrackResults.where{ $_.sender -notmatch 'contoso|MicrosoftExchange|HealthMailbox|maildeliveryprobe' -and $_.recipients -notmatch 'healthmailbox' } |
+            Out-GridView -PassThru -Title 'Message Tracking Log. Select one or more then click OK to track by only those Message IDs.'
         }
         else {
             $WantsToTrackMoreSpecifically = $allMessageTrackResults |
-            Out-GridView -PassThru -Title "Message Tracking Log. Select one or more then click OK to track by only those Message IDs."
+            Out-GridView -PassThru -Title 'Message Tracking Log. Select one or more then click OK to track by only those Message IDs.'
         }
 
         if ($WantsToTrackMoreSpecifically) {
-            Foreach ($Wants in $WantsToTrackMoreSpecifically) {
-                $allMessageTrackResults = New-Object "System.Collections.Generic.List[PSObject]"
+            foreach ($Wants in $WantsToTrackMoreSpecifically) {
+                $allMessageTrackResults = New-Object 'System.Collections.Generic.List[PSObject]'
                 try {
                     $messageTrack = $Servers.name | Get-MessageTrackingLog -MessageID $wants.MessageId -ResultSize $ResultSize
                     if ($messageTrack) {

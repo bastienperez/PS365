@@ -26,7 +26,7 @@ function Set-msExchVersion {
         Write-Host 'Active Directory PowerShell Module not found.  Halting Script.' -ForegroundColor Red
         continue
     }
-    $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath PS365 )
+    $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath PS365)
     if (-not (Test-Path $PoshPath)) {
         $null = New-Item $PoshPath -type Directory -Force:$true -ErrorAction SilentlyContinue
     }

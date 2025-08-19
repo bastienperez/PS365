@@ -22,6 +22,7 @@ function Get-365Recipient {
         PrimarySmtpAddress -like "*contoso.com"}' | Get-365Recipient | Export-Csv .\RecipientReport.csv -notypeinformation -encoding UTF8
     .EXAMPLE
 
+
     #>
     [CmdletBinding()]
     param (

@@ -33,22 +33,22 @@ function New-GroupManagementRoleWithECPAccess {
     General notes
     #>
 
-    param(
+    Param(
         [Parameter()]
-        [string] $Name = 'ManageDG',
+        [string] $Name = "ManageDG",
 
         [Parameter()]
-        [string] $Parent = 'Distribution Groups'
+        [string] $Parent = "Distribution Groups"
 
     )
 
-    if (Get-ManagementRole $Name -erroraction silentlycontinue) {
+    If (Get-ManagementRole $Name -erroraction silentlycontinue) {
         Write-Warning "Found a Role with Name: $Name"
-        Write-Warning 'Check why this Role is already in place'
-        Write-Warning 'If necessary, rerun with different name parameter'
+        Write-Warning "Check why this Role is already in place"
+        Write-Warning "If necessary, rerun with different name parameter"
         break
     }
-    else {
+    Else {
         try {
             New-ManagementRole -Name $Name -Parent $Parent -erroraction stop
             Write-Host "Created Management Role $Name" -ForegroundColor Green
@@ -70,7 +70,7 @@ function New-GroupManagementRoleWithECPAccess {
     foreach ($CurRole in $Role) {
         $RoleEntry = '{0}\{1}' -f $CurRole.Role, $CurRole.Name
         try {
-            Update-RoleEntry -RoleEntry $RoleEntry Remove -ErrorAction stop
+            Update-RoleEntry -RoleEntry $RoleEntry Remove -erroraction stop
             Write-Host "Successfully Updated Management Role Entry by Removing: $RoleEntry" -ForegroundColor Green
         }
         catch {
@@ -84,7 +84,7 @@ function New-GroupManagementRoleWithECPAccess {
 
     $RoleGroupSplat = @{
         Name        = $RoleGroupName
-        Description = 'Members in this management role group can update the membership of the groups they own'
+        Description = "Members in this management role group can update the membership of the groups they own"
         Roles       = $Roles
     }
     try {

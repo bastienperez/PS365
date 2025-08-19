@@ -18,7 +18,7 @@ function ConvertTo-Shared {
 
     begin {
         $f2uSku = @{
-            'Microsoft Azure Advanced Threat Protection for Users' = 'ATA'
+            'Microsoft Entra IDvanced Threat Protection for Users' = 'ATA'
             'Microsoft Cloud App Security'                         = 'ADALLOM_STANDALONE'
             'AZURE INFORMATION PROTECTION PLAN 1'                  = 'RIGHTSMANAGEMENT'
             'OFFICE 365 ADVANCED THREAT PROTECTION (PLAN 2)'       = 'THREAT_INTELLIGENCE'
@@ -112,7 +112,7 @@ function ConvertTo-Shared {
         $f2uOpt = @{
             'Flow Free'                                                         = 'FLOW_P2_VIRAL'
             'Common Data Service'                                               = 'DYN365_CDS_VIRAL'
-            'Microsoft Azure Advanced Threat Protection'                        = 'ATA'
+            'Microsoft Entra IDvanced Threat Protection'                        = 'ATA'
             'Azure Active Directory Premium P2'                                 = 'AAD_PREMIUM_P2'
             'Azure Active Directory Premium Plan 1'                             = 'AAD_PREMIUM'
             'Azure Information Protection Plan 1'                               = 'RMS_S_PREMIUM'

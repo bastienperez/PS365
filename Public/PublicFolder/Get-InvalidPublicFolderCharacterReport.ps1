@@ -74,9 +74,6 @@ function Get-InvalidPublicFolderCharacterReport {
 
         Write-Host "Old Folder Name:`t$($BadNamePF.Name)" -ForegroundColor 'Cyan'
         Write-Host "New Folder Name:`t$NewFolder" -ForegroundColor 'Green'
-        Write-Host ''
-        Write-Host ''
-
 
         $CorrectedPF = New-Object -TypeName PSObject -Property @{
             FolderPath    = $BadNamePF.FolderPath

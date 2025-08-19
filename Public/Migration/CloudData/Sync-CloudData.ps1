@@ -6,7 +6,7 @@ function Sync-CloudData {
         $ResultSize = 'Unlimited'
     )
     #Region Paths
-    $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath PS365 )
+    $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath PS365)
     $SourcePath = Join-Path -Path $PoshPath -ChildPath $InitialDomain
     if (-not ($null = Test-Path $SourcePath)) {
         $null = New-Item $PoshPath -Type Directory -Force -ErrorAction SilentlyContinue
