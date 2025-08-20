@@ -25,7 +25,7 @@ function Export-GooglePhysicalAddress {
         $NumMatch = $Number.where{ $_ -match "(?<=\.)\d+(?=\.)" }
         if ($NumMatch) {
             $Num = $Matches[0]
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 DisplayName        = $Mbx."name.fullName"
                 FirstName          = $Mbx."name.GivenName"
                 LastName           = $Mbx."name.familyName"

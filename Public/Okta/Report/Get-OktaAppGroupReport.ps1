@@ -63,7 +63,7 @@ function Get-OktaAppGroupReport {
             }
 
             foreach ($App in $AppsInGroup) {
-                [pscustomobject]@{
+                [PSCustomObject][ordered]@{
                     GroupName     = $GName
                     GroupDesc     = $GDescription
                     GroupId       = $Id

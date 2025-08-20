@@ -14,7 +14,7 @@
             { $_ -in @('ProxyAddresses', 'OtherMails', 'Mail') } {
                 foreach ($Row in $RowList) {
                     foreach ($Expand in $Row.$FindInColumn.split('|')) {
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             DisplayName          = $Row.DisplayName
                             RecipientTypeDetails = $Row.UserType
                             Protocol             = $Expand.split(':')[0]

@@ -80,7 +80,7 @@ function Convert-MWMailboxMovePermissionAddresses {
             Mailbox {
                 Import-SharePointExcel @SharePointMailboxPerm | ForEach-Object {
                     if ($_.PrimarySmtpAddress -and $_.GrantedSMTP -and $BatchHash.ContainsKey($_.PrimarySmtpAddress) -and $BatchHash.ContainsKey($_.GrantedSMTP) ) {
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             Object               = $_.Object
                             PrimarySmtpAddress   = $BatchHash.($_.PrimarySmtpAddress)
                             Granted              = $_.Granted
@@ -94,7 +94,7 @@ function Convert-MWMailboxMovePermissionAddresses {
             Folder {
                 Import-SharePointExcel @SharePointMailboxPerm | ForEach-Object {
                     if ($_.PrimarySmtpAddress -and $_.GrantedSMTP -and $BatchHash.ContainsKey($_.PrimarySmtpAddress) -and $BatchHash.ContainsKey($_.GrantedSMTP) ) {
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             Object             = $_.Object
                             UserPrincipalName  = $_.UserPrincipalName
                             PrimarySmtpAddress = $BatchHash.($_.PrimarySmtpAddress)

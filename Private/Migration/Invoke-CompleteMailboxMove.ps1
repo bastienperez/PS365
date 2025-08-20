@@ -34,7 +34,7 @@ function Invoke-CompleteMailboxMove {
                     ErrorAction                = 'Stop'
                 }
                 Set-MoveRequest @Param
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     DisplayName      = $User.DisplayName
                     CompleteAfter    = $LocalTime
                     CompleteAfterUTC = $UTCTime
@@ -44,7 +44,7 @@ function Invoke-CompleteMailboxMove {
                 }
             }
             catch {
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     DisplayName      = $User.DisplayName
                     CompleteAfter    = $LocalTime
                     CompleteAfterUTC = $UTCTime
@@ -55,7 +55,7 @@ function Invoke-CompleteMailboxMove {
             }
             try {
                 Resume-MoveRequest $User.Guid
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     DisplayName      = $User.DisplayName
                     CompleteAfter    = ""
                     CompleteAfterUTC = ""
@@ -65,7 +65,7 @@ function Invoke-CompleteMailboxMove {
                 }
             }
             catch {
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     DisplayName      = $User.DisplayName
                     CompleteAfter    = ""
                     CompleteAfterUTC = ""

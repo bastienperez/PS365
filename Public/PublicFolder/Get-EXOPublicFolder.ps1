@@ -8,7 +8,7 @@ function Get-PsExoPublicFolder {
             $FolderStatsList = Get-PublicFolderStatistics $Folder.Identity
             foreach ($FolderStats in $FolderStatsList) {
                 if ($Folder.MailEnabled) {
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         FolderName         = $Folder.name
                         Identity           = $Folder.Identity
                         LastModified       = $FolderStats.LastModificationTime
@@ -21,7 +21,7 @@ function Get-PsExoPublicFolder {
                     }
                 }
                 else {
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         FolderName         = $Folder.name
                         Identity           = $Folder.Identity
                         LastModified       = $FolderStats.LastModificationTime

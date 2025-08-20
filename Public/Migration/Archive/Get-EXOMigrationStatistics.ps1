@@ -19,7 +19,7 @@ function GetPsExoMigrationStatistics {
 
     $MigrationUser = Get-MigrationUser -ResultSize Unlimited
     $MigrationUserDetails = foreach ($User in $MigrationUser) {
-        [PSCustomObject]@{
+        [PSCustomObject][ordered]@{
             Identity            = $User.Identity
             MailboxEmailAddress = $User.MailboxEmailAddress
             SkippedItemCount    = $User.SkippedItemCount

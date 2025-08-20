@@ -50,7 +50,7 @@ function Get-OktaGroupMembership {
 
         foreach ($CurGroupMember in $GroupMember) {
 
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 Login     = $CurGroupMember.Profile.login
                 FirstName = $CurGroupMember.Profile.firstName
                 LastName  = $CurGroupMember.Profile.lastName

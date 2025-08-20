@@ -63,7 +63,7 @@ function Get-DynamicGroupsInM365 {
         'ipPhone'
         'city'
         'mobile'
-        'MobilePhone' # ajoutmanuel
+        'MobilePhone'
         'otherFaxNumbers'
         'otherHomePhones'
         'otherIpPhones'
@@ -100,7 +100,7 @@ function Get-DynamicGroupsInM365 {
             $exchangeGroups = Get-DynamicDistributionGroup -ErrorAction Stop
 
             foreach ($group in $exchangeGroups) {
-                $object = [PSCustomObject]@{
+                $object = [PSCustomObject][ordered]@{
                     Name             = $group.Name
                     Type             = 'Exchange Dynamic Distribution Group'
                     Email            = $group.PrimarySmtpAddress
@@ -164,13 +164,13 @@ function Get-DynamicGroupsInM365 {
         }
     }
 
-    # foreach attribute, check if it's in the property set attribute
-    # if it's, add a warning to the object "the attribute XX is in the property set, the user can modify it and add himself to the group"
+    # foreach attribute, check if it's in the `Personal-Information` property set attribute
+    # if it's, add a warning to the object 
     foreach ($group in $dynGroupArray) {
         $group | Add-Member -MemberType NoteProperty -Name Warning -Value $null
         foreach ($attribute in $group.UserAttributes.Split('|')) {
             if ($propertySetsAttribute -contains $attribute) {
-                $group.Warning = "'$attribute' is in the property set, the user can modify it and add himself to the group"
+                $group.Warning = "'$attribute' is in the `Personal-Information` property set, the user can modify it and add himself to the group. See https://itpro-tips.com/property-set-personal-information-and-active-directory-security-and-governance/"
             }
         }
     }

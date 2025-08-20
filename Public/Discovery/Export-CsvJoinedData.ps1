@@ -118,7 +118,7 @@ SystemMailbox
             }
             if ($Address) {
                 foreach ($CurAddress in $Address) {
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         DisplayName                = $Display
                         UserPrincipalName          = $UserPrincipalName
                         Found                      = $found
@@ -132,7 +132,7 @@ SystemMailbox
                 } 
             }
             else {
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     DisplayName                = $Display
                     UserPrincipalName          = $UserPrincipalName
                     Found                      = $found

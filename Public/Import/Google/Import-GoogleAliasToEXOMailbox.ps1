@@ -49,7 +49,7 @@ General notes
 
                 Set-Mailbox @AliasSplat
 
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Time               = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                     Result             = 'SUCCESS'
                     Action             = 'ADDINGALIAS'
@@ -64,7 +64,7 @@ General notes
                 Write-HostLog -Message "Adding Mailbox Alias`t$($Alias.PrimarySmtpAddress)`t$($Alias.Alias)" -Status "Success"
             }
             catch {
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Time               = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                     Result             = 'FAILED'
                     Action             = 'ADDINGALIAS'

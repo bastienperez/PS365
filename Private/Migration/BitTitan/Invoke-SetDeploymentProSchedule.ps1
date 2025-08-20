@@ -41,7 +41,7 @@ function Invoke-SetDeploymentProSchedule {
                         ErrorAction             = 'Stop'
                     }
                     Start-BT_DpUser @ScheduleSplat
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         'DisplayName'         = $Schedule.DisplayName
                         'DateTimeUTC'         = $DateTimeUTC
                         'DateTimeLOCAL'       = $DateTimeUTC.ToLocalTime()
@@ -56,7 +56,7 @@ function Invoke-SetDeploymentProSchedule {
                     }
                 }
                 catch {
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         'DisplayName'         = $Schedule.DisplayName
                         'DateTimeUTC'         = $DateTimeUTC
                         'DateTimeLOCAL'       = $DateTimeUTC.ToLocalTime()

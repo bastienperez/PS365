@@ -124,7 +124,7 @@ function Trace-ExchangeMessage {
         $messageTrack = $Servers.name | Get-MessageTrackingLog @params -ResultSize $ResultSize
         if ($messageTrack) {
             $messageTrack | ForEach-Object {
-                $messageTrackResults = [PSCustomObject]@{
+                $messageTrackResults = [PSCustomObject][ordered]@{
                     Time             = $_.TimeStamp
                     Directionality   = $_.Directionality
                     EventID          = $_.EventID
@@ -211,7 +211,7 @@ function Trace-ExchangeMessage {
                     $messageTrack = $Servers.name | Get-MessageTrackingLog -MessageID $wants.MessageId -ResultSize $ResultSize
                     if ($messageTrack) {
                         $messageTrack | ForEach-Object {
-                            $messageTrackResults = [PSCustomObject]@{
+                            $messageTrackResults = [PSCustomObject][ordered]@{
                                 Time             = $_.TimeStamp
                                 Directionality   = $_.Directionality
                                 EventID          = $_.EventID

@@ -1,34 +1,32 @@
-function Sync-ADConnect {
-    param (
-        [Parameter(Mandatory = $False)]    
-        [switch] $Initial,
-        [Parameter(Mandatory = $False)]
-        [int]$Sleep = 10
-    )
-    <#
+<#
     .SYNOPSIS
     Forces Sync of Microsoft Entra ID Connect Sync (Synchronizes on premises Active Directory with Microsoft Entra ID/Office 366)
 
+    .DESCRIPTION
+    This function initiates a synchronization cycle for Microsoft Entra ID Connect. It can perform either a delta sync or an initial sync based on the parameters provided.
+
+    .PARAMETER Initial
+    Indicates whether to perform an initial sync (as opposed to a delta sync).
+
     .EXAMPLE
-    # Delta Sync - This should be used unless there are extenuating circumstances
+    Invoke-EntraConnectSync
 
-    Sync-ADConnect
+    Run a delta synchronization.
 
-    # Initial Sync
-    # Typically used if an OU is added or removed from list of OUs to be synced
-    # Can also be used when a normal Delta sync is not syncing a particular change
+    .EXAMPLE
+    Invoke-EntraConnectSync -Initial
+
+    Run an initial synchronization. Typically used if an OU is added or removed from list of OUs to be synced or if rules are changed.
     
-    Sync-ADConnect -Initial
-
-    # Use the -Sleep switch to add a longer delay to sync if AD Connect is already in the midst of syncing
-    # This only comes into play if the initial sync errors out...
-    # ...at that point, the script will wait the number of seconds you specify and attempt sync again
-    
-    Sync-ADConnect -Sleep 240
-
-    Sync-ADConnect -Initial -Sleep 240
-
+    Invoke-EntraConnectSync -Initial
     #>
+
+function Invoke-EntraConnectSync {
+    param (
+        [Parameter(Mandatory = $False)]    
+        [switch] $Initial
+    )
+
     $RootPath = $env:USERPROFILE + '\ps\'
     $User = $env:USERNAME
     

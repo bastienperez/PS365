@@ -18,7 +18,7 @@ function Invoke-SyncRemoteRoutingAddress {
                 $RemoteMailboxLookup | Set-RemoteMailbox -RemoteRoutingAddress $RM.RequestedRRA -ErrorAction Stop
                 $PostRMSet = $null
                 $PostRMSet = Get-RemoteMailbox -filter "ExchangeGuid -eq '$($RM.ExchangeGuid)'"
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Num                        = '[{0} of {1}]' -f $i, $Total
                     DisplayName                = $PostRMSet.DisplayName
                     Log                        = 'SUCCESS'
@@ -36,7 +36,7 @@ function Invoke-SyncRemoteRoutingAddress {
             }
         }
         catch {
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 Num                        = '[{0} of {1}]' -f $i, $Total
                 DisplayName                = $PostRMSet.DisplayName
                 Log                        = $_.Exception.Message

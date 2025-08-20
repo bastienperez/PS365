@@ -1,4 +1,3 @@
-function Get-DistributionGroupMembership {
     <#
     .SYNOPSIS
         Determines the Groups that a recipient is a member of.  Either recursively or not.
@@ -24,6 +23,8 @@ function Get-DistributionGroupMembership {
         Get-Recipient pat@contoso.com | Get-DistributionGroupMembership -Recurse | Export-Csv .\membership.csv -notypeinformation
 
 #>
+function Get-DistributionGroupMembership {
+
     [CmdletBinding()]
     param(
         [Parameter(Mandatory, ValueFromPipeline, ValueFromPipelineByPropertyName)]
@@ -60,7 +61,7 @@ function Get-DistributionGroupMembership {
             $GroupList = Get-Group -ResultSize Unlimited -filter $Filter
             foreach ($Group in $GroupList) {
                 if ($Group.RecipientTypeDetails -notin 'NonUniversalGroup', 'GroupMailbox', 'RoleGroup' -and $Group.WindowsEmailAddress -notin $Processed) {
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         DisplayName             = $Recipient.DisplayName
                         Identity                = $Item
                         PrimarySmtpAddress      = $Recipient.PrimarySmtpAddress

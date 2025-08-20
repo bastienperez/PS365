@@ -114,7 +114,7 @@ function Search-AdminRolesChanges {
 				$objectID = ($auditData.Target | Where-Object { $_.Type -eq 2 -and $_.ID -match '(?im)^[{(]?[0-9A-F]{8}[-]?(?:[0-9A-F]{4}[-]?){3}[0-9A-F]{12}[)}]?$' }).ID # several values are with Type=2 ('User_GUID', 'GUID', 'User', 'NetID') The good value is a GUID so we filter one the value which matches GUID
 			}
 			
-			$object = [PSCustomObject]@{
+			$object = [PSCustomObject][ordered]@{
 				TimeStamp               = $timeStamp
 				ObjectId                = $objectID
 				ObjectUserPrincipalName	= ($auditData.Target | Where-Object { $_.Type -eq 5 }).Id # value is @{ID=xxx@domain; Type=5

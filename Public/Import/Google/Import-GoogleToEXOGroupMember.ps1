@@ -47,7 +47,7 @@ function Import-GoogleToEXOGroupMember {
 
                         Add-DistributionGroupMember @MemberSplat -ErrorAction Stop
 
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             Time            = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                             Result          = 'SUCCESS'
                             Action          = 'ADDING'
@@ -79,7 +79,7 @@ function Import-GoogleToEXOGroupMember {
 
                             $Failure = "Group $($Group.Name) could not be found"
                         }
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             Time            = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                             Result          = 'FAILURE'
                             Action          = 'ADDING'

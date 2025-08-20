@@ -22,7 +22,7 @@ function Invoke-SetMailboxFlag {
     $iUP = 0
     $ChoiceList = foreach ($key in $QuotaHash.keys) {
         $iUP++
-        [PSCustomObject]@{
+        [PSCustomObject][ordered]@{
             'Num'                            = "[$iUP of $Count]"
             'msDS-ExternalDirectoryObjectId' = $key
             'CloudDisplayName'               = $QuotaHash[$key]['DisplayName']
@@ -43,7 +43,7 @@ function Invoke-SetMailboxFlag {
                 $ADUser | Set-ADUser -Replace @{ msExchELCMailboxFlags = $ELCMailboxFlags } -ErrorAction Stop
                 Write-Host 'SUCCESS' -ForegroundColor Green
                 $Post = Get-ADUser -LDAPFilter "(msDS-ExternalDirectoryObjectId=$Mailbox)" -Properties $Props
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     'Num'                            = "[$iUP of $Total]"
                     'DisplayName'                    = $ADUser.DisplayName
                     'CloudDisplayName'               = $QuotaHash[$Mailbox]['DisplayName']
@@ -64,7 +64,7 @@ function Invoke-SetMailboxFlag {
             }
             catch {
                 Write-Host "FAILED  ERROR==> $($_.Exception.Message)" -ForegroundColor Red
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     'Num'                            = "[$iUP of $Total]"
                     'DisplayName'                    = $ADUser.DisplayName
                     'CloudDisplayName'               = $QuotaHash[$Mailbox]['DisplayName']
@@ -86,7 +86,7 @@ function Invoke-SetMailboxFlag {
         }
         else {
             Write-Host "msDS-ExternalDirectoryObjectId: $Mailbox NOT FOUND $($QuotaHash[$Mailbox]['DisplayName'])!!" -ForegroundColor Yellow
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 'Num'                            = "[$iUP of $Total]"
                 'DisplayName'                    = ''
                 'CloudDisplayName'               = $QuotaHash[$Mailbox]['DisplayName']

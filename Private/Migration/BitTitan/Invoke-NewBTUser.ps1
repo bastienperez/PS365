@@ -23,7 +23,7 @@ function Invoke-NewBTUser {
             if ($Param.PrimaryEmailAddress) {
                 try {
                     $Result = Add-BT_CustomerEndUser @Param -WarningAction SilentlyContinue -ErrorAction Stop
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         'DisplayName'        = '{0} {1}' -f $Result.FirstName, $Result.LastName
                         'PrimarySmtpAddress' = $Result.PrimaryEmailAddress
                         'UserPrincipalName'  = $Result.UserPrincipalName
@@ -35,7 +35,7 @@ function Invoke-NewBTUser {
                     }
                 }
                 catch {
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         'DisplayName'        = '{0} {1}' -f $User.FirstName, $User.LastName
                         'PrimarySmtpAddress' = $User.PrimaryEmailAddress
                         'UserPrincipalName'  = $User.UserPrincipalName

@@ -76,7 +76,7 @@ function Import-QADData {
 
             if ($LogOnly) {
 
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Time                  = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                     Result                = 'LOGONLY'
                     Action                = 'REPLACE'
@@ -116,7 +116,7 @@ function Import-QADData {
 
                         $PostSet = Get-ADUser -Identity $Guid -Properties DisplayName, Mail, TargetAddress, MailNickName, ProxyAddresses
 
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             Time                  = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                             Result                = 'SUCCESS'
                             Action                = 'SET'
@@ -141,7 +141,7 @@ function Import-QADData {
                     else {
                         Write-Host "FAILED TO FIND AD USER:`t$DisplayName" -ForegroundColor Red
 
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             Time                  = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                             Result                = 'USERNOTFOUND'
                             Action                = 'GET'
@@ -167,7 +167,7 @@ function Import-QADData {
                 catch {
                     Write-Host "FAILED (CHECK LOGS):`t$DisplayName" -ForegroundColor Red
 
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         Time                  = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                         Result                = 'FAILED'
                         Action                = 'REPLACE'

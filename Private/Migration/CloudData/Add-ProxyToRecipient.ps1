@@ -27,7 +27,7 @@ function Add-ProxyToRecipient {
                 else {
                     Write-Host $RMPrimaryUnchanged -ForegroundColor Black -BackgroundColor Yellow
                 }
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Num                         = '[{0} of {1}]' -f $i, $Count
                     Result                      = 'SUCCESS'
                     TargetDisplayName           = $Add.TargetDisplayName
@@ -44,7 +44,7 @@ function Add-ProxyToRecipient {
                     foreach ($X in ($Add.X500).split('|')) {
                         Set-RemoteMailbox -Identity $Guid -EmailAddresses @{add = $X } -ErrorAction Stop
                         Write-Host "[$i of $Count] Success Set Remote Mailbox x500 $($RMCheck.DisplayName)" -ForegroundColor Cyan
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             Num                         = '[{0} of {1}]' -f $i, $Count
                             Result                      = 'SUCCESS'
                             TargetDisplayName           = $Add.TargetDisplayName
@@ -62,7 +62,7 @@ function Add-ProxyToRecipient {
             }
             catch {
                 Write-Host "[$i of $Count] Failed Setting Remote Mailbox x500 $($RMCheck.DisplayName) Error: $($_.Exception.Message)" -ForegroundColor Red
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Num                         = '[{0} of {1}]' -f $i, $Count
                     Result                      = 'FAILED'
                     TargetDisplayName           = $Add.TargetDisplayName
@@ -94,7 +94,7 @@ function Add-ProxyToRecipient {
                 else {
                     Write-Host $ContactPrimaryUnchanged -ForegroundColor Black -BackgroundColor Yellow
                 }
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Num                         = '[{0} of {1}]' -f $i, $Count
                     Result                      = 'SUCCESS'
                     TargetDisplayName           = $Add.TargetDisplayName
@@ -111,7 +111,7 @@ function Add-ProxyToRecipient {
                     foreach ($X in ($Add.X500).split('|')) {
                         Set-MailContact -Identity $Guid -EmailAddresses @{add = $X } -ErrorAction Stop
                         Write-Host "[$i of $Count] Success Set Mail Contact x500 $($RMCheck.DisplayName)" -ForegroundColor Cyan
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             Num                         = '[{0} of {1}]' -f $i, $Count
                             Result                      = 'SUCCESS'
                             TargetDisplayName           = $Add.TargetDisplayName
@@ -128,7 +128,7 @@ function Add-ProxyToRecipient {
             }
             catch {
                 Write-Host "[$i of $Count] Failed Setting Mail Contact x500 $($RMCheck.DisplayName) Error: $($_.Exception.Message)" -ForegroundColor Red
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Num                         = '[{0} of {1}]' -f $i, $Count
                     Result                      = 'FAILED'
                     TargetDisplayName           = $Add.TargetDisplayName

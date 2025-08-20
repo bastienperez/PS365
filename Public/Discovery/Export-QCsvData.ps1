@@ -222,7 +222,7 @@ import-csv .\file.csv | Export-QCsvData -JoinType and -FindInColumn ProxyAddress
 
             if ($Address) {
                 foreach ($CurAddress in $Address) {
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         Email                      = $Email
                         Name                       = $Name
                         AddressOrMember            = $CurAddress
@@ -241,7 +241,7 @@ import-csv .\file.csv | Export-QCsvData -JoinType and -FindInColumn ProxyAddress
                 }
             }
             else {
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Email                      = $Email
                     Name                       = $Name
                     AddressOrMember            = ""

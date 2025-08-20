@@ -51,7 +51,7 @@ function Get-DupePrefix {
 
     foreach ($SourceKey in $SourceHash.keys) {
         if ($TargetHash.ContainsKey($SourceKey)) {
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 Prefix                     = $SourceKey
                 SourceDisplayName          = $SourceHash[$SourceKey]['DisplayName']
                 SourceRecipientTypeDetails = $SourceHash[$SourceKey]['RecipientTypeDetails']

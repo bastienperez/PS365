@@ -14,7 +14,7 @@ function Select-DisableMailboxEmailAddressPolicy {
         foreach ($RemoteMailbox in $RemoteMailboxList) {
             if ($RemoteMailbox.EmailAddressPolicyEnabled -or $BadPolicyHash.ContainsKey($RemoteMailbox.Guid.ToString())) {
                 $i++
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Num                       = '[{0} of {1}]' -f $i, $Count
                     DisplayName               = $RemoteMailbox.DisplayName
                     EmailAddressPolicyEnabled = $RemoteMailbox.EmailAddressPolicyEnabled
@@ -36,7 +36,7 @@ function Select-DisableMailboxEmailAddressPolicy {
     else {
         foreach ($RemoteMailbox in $RemoteMailboxList) {
             $i++
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 Num                       = '[{0} of {1}]' -f $i, $Count
                 DisplayName               = $RemoteMailbox.DisplayName
                 EmailAddressPolicyEnabled = $RemoteMailbox.EmailAddressPolicyEnabled

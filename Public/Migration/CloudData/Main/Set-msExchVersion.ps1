@@ -63,7 +63,7 @@ function Set-msExchVersion {
     $VersionList = $UserList | Group-Object msExchVersion | Sort-Object Count -Descending
     $ShowVersion = [System.Collections.Generic.List[PSObject]]::New()
     foreach ($Version in $VersionList) {
-        $ShowVersion.Add([PSCustomObject]@{
+        $ShowVersion.Add([PSCustomObject][ordered]@{
                 'Count'   = $Version.Count
                 'Version' = $Version.Name
             })
@@ -97,19 +97,19 @@ function Set-msExchVersion {
     if ($Choice) { Get-DecisionbyOGV } else { Write-Host 'Halting as nothing was selected' ; continue }
 
     $VersionDecision = @(
-        [PSCustomObject]@{
+        [PSCustomObject][ordered]@{
             Version       = 'Exchange2007'
             msExchVersion = '4535486012416'
         }
-        [PSCustomObject]@{
+        [PSCustomObject][ordered]@{
             Version       = 'Exchange2010'
             msExchVersion = '44220983382016'
         }
-        [PSCustomObject]@{
+        [PSCustomObject][ordered]@{
             Version       = 'Exchange2013'
             msExchVersion = '88218628259840'
         }
-        [PSCustomObject]@{
+        [PSCustomObject][ordered]@{
             Version       = 'Exchange2016'
             msExchVersion = '1125899906842624'
         }) | Out-GridView -OutputMode Single -Title 'Choose the msExchVersion to apply to the mailboxes you just selected'

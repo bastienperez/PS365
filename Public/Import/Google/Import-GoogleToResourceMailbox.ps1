@@ -62,7 +62,7 @@ function Import-GoogleToResourceMailbox {
             try {
                 $NewResource = New-Mailbox @NewHash -ErrorAction Stop
 
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Time            = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                     Result          = 'SUCCESS'
                     Action          = 'CREATING'
@@ -80,7 +80,7 @@ function Import-GoogleToResourceMailbox {
 
                         $NewResource | Set-Mailbox -ResourceCustom ($CurResource.featureInstances)
 
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             Time            = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                             Result          = 'SUCCESS'
                             Action          = 'SETTING'
@@ -97,7 +97,7 @@ function Import-GoogleToResourceMailbox {
                 }
                 catch {
 
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         Time            = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                         Result          = 'FAILURE'
                         Action          = 'SETTING'
@@ -114,7 +114,7 @@ function Import-GoogleToResourceMailbox {
             }
             catch {
 
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Time            = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                     Result          = 'FAILURE'
                     Action          = 'CREATING'

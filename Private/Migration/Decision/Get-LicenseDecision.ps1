@@ -10,16 +10,16 @@ function Get-LicenseDecision {
             OutputMode = 'Multiple'
         }
         $LicenseSkuDecision = @(
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 'Options' = 'AddSkus'
             },
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 'Options' = 'AddOptions'
             },
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 'Options' = 'RemoveSkus'
             },
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 'Options' = 'RemoveOptions'
             }
         )

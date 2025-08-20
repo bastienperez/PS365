@@ -16,7 +16,7 @@ function Invoke-T2TCompleteMailboxMove {
                     ErrorAction   = 'Stop'
                 }
                 Set-MoveRequest @Param
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     DisplayName   = $User.DisplayName
                     CompleteAfter = 'NULL'
                     Action        = 'SET'
@@ -25,7 +25,7 @@ function Invoke-T2TCompleteMailboxMove {
                 }
             }
             catch {
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     DisplayName      = $User.DisplayName
                     CompleteAfter    = $LocalTime
                     CompleteAfterUTC = $UTCTime

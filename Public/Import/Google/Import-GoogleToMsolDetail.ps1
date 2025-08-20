@@ -67,7 +67,7 @@ function Import-GoogleToMsolDetail {
                 try {
                     Set-MsolUser -ObjectId $hash.$($Msol.PrimarySmtpAddress) @PropHash -ErrorAction Stop
 
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         Time               = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                         Result             = 'SUCCESS'
                         Action             = 'SETTING'
@@ -86,7 +86,7 @@ function Import-GoogleToMsolDetail {
                     Write-HostLog -Message "Setting MsolUser`t$($Msol.DisplayName)`t$($Msol.PrimarySmtpAddress)" -Status "Success"
                 }
                 catch {
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         Time               = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                         Result             = 'FAILED'
                         Action             = 'SETTING'

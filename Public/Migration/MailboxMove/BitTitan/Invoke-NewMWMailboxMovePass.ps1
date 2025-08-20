@@ -27,7 +27,7 @@ function Invoke-NewMWMailboxMovePass {
             }
             try {
                 $Result = Add-MW_MailboxMigration @PassSplat
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     'Source'       = $Mailbox.Source
                     'Target'       = $Mailbox.Target
                     'Type'         = 'Full'
@@ -40,7 +40,7 @@ function Invoke-NewMWMailboxMovePass {
                 }
             }
             catch {
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     'Source'       = $Mailbox.Source
                     'Target'       = $Mailbox.Target
                     'Type'         = 'Full'

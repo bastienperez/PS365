@@ -48,7 +48,7 @@ function Invoke-GetOfficeEndpoints {
                         # TCP
                         if ($Endpoint.tcpPorts) {
                             foreach ($Port in $Endpoint.tcpPorts.split(',')) {
-                                [PSCustomObject]@{
+                                [PSCustomObject][ordered]@{
                                     id          = $Endpoint.id
                                     serviceArea = $Endpoint.serviceArea
                                     tcpPorts    = $Port
@@ -64,7 +64,7 @@ function Invoke-GetOfficeEndpoints {
                         # UDP
                         if ($Endpoint.udpPorts) {
                             foreach ($Port in $Endpoint.udpPorts.split(',')) {
-                                [PSCustomObject]@{
+                                [PSCustomObject][ordered]@{
                                     id          = $Endpoint.id
                                     serviceArea = $Endpoint.serviceArea
                                     tcpPorts    = ''
@@ -86,7 +86,7 @@ function Invoke-GetOfficeEndpoints {
                         # TCP
                         if ($Endpoint.tcpPorts) {
                             foreach ($Port in $Endpoint.tcpPorts.split(',')) {
-                                [PSCustomObject]@{
+                                [PSCustomObject][ordered]@{
                                     id          = $Endpoint.id
                                     serviceArea = $Endpoint.serviceArea
                                     tcpPorts    = $Port
@@ -102,7 +102,7 @@ function Invoke-GetOfficeEndpoints {
                         # UDP
                         if ($Endpoint.udpPorts) {
                             foreach ($Port in $Endpoint.udpPorts.split(',')) {
-                                [PSCustomObject]@{
+                                [PSCustomObject][ordered]@{
                                     id          = $Endpoint.id
                                     serviceArea = $Endpoint.serviceArea
                                     tcpPorts    = ''
@@ -122,7 +122,7 @@ function Invoke-GetOfficeEndpoints {
         else {
             $TenantType = @('Worldwide', 'USGovDoD', 'USGovGCCHigh', 'China', 'Germany')
             $TenantChoice = ($TenantType | ForEach-Object {
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         Instance = $_
                     }
                 } | Out-GridView -OutputMode Single -Title "Choose tenant instance").Instance
@@ -145,7 +145,7 @@ function Invoke-GetOfficeEndpoints {
             $VersionList = Invoke-RestMethod @MenuRestSplat
             $VersionList.Versions | ForEach-Object { $VersionArray.Add($_) }
             $Script:DateChoice = $VersionArray | ForEach-Object {
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Choice = $_
                 }
             } | Out-GridView -OutputMode Single -Title "Choose initial list (for initial setup) or changes since a particular date"
@@ -157,7 +157,7 @@ function Invoke-GetOfficeEndpoints {
             if ($DateChoice.Choice -eq 'InitialList') {
                 $ServicesType = @('All', 'Common', 'Exchange', 'SharePoint', 'Skype')
                 $Services = ($ServicesType | ForEach-Object {
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             Service = $_
                         }
                     } | Out-GridView -OutputMode Multiple -Title "Choose one or more services").Service
@@ -184,7 +184,7 @@ function Invoke-GetOfficeEndpoints {
                         if ($Change.Remove.urls) { $ItemList = $Change.Remove.urls }
                     }
                     foreach ($Item in $ItemList) {
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             id            = $Change.id
                             endpointsetid = $Change.endpointsetid
                             disposition   = $Change.disposition

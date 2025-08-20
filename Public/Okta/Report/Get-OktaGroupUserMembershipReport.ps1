@@ -11,7 +11,7 @@ function Get-OktaGroupUserMembershipReport {
         $GroupID = $Entry.Key
         $Member = $Entry.Value
         foreach ($CurMember in $Member) {
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 Name           = $GHash.$GroupID.Name
                 Member         = $CurMember
                 ID             = $GroupID

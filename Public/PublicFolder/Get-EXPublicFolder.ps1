@@ -19,7 +19,7 @@ function Get-EXPublicFolder {
         foreach ($Folder in $FolderList) {
             Write-Host "Folder: $($Folder.Name)"
             if ($StatHash[$Folder.EntryID]) {
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     FolderName   = $Folder.name
                     Identity     = $Folder.Identity
                     FolderType   = $Folder.FolderType
@@ -32,7 +32,7 @@ function Get-EXPublicFolder {
                 }
             }
             else {
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     FolderName   = $Folder.name
                     Identity     = $Folder.Identity
                     FolderType   = $Folder.FolderType

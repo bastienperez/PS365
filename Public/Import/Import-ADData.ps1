@@ -74,7 +74,7 @@ function Import-ADData {
             if (-not $LogOnly) {
                 try {
                     if ([String]::IsNullOrWhiteSpace($Address)) {
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             DisplayName = $Display
                             Error       = 'Address is not set'
                             Address     = $Address
@@ -148,7 +148,7 @@ function Import-ADData {
                     }
                 }
                 catch {
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         DisplayName = $Display
                         Attribute   = $Attribute
                         Error       = $_
@@ -161,7 +161,7 @@ function Import-ADData {
             }
             else {
                 if ($Address) {
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         FindThisObject = $ObjectLookup
                         Action         = $AddRemoveOrReplace
                         Attribute      = $Attribute

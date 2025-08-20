@@ -11,7 +11,7 @@ function Select-SetmsExchVersion {
     $i = 0
     foreach ($RemoteMailbox in $RemoteMailboxList) {
         $i++
-        [PSCustomObject]@{
+        [PSCustomObject][ordered]@{
             Num                       = '[{0} of {1}]' -f $i, $Count
             msExchVersion             = if ($Ver = $UserHash[$RemoteMailbox.Guid.ToString()].msExchVersion) { $Ver.ToString() } else { $null }
             DisplayName               = $RemoteMailbox.DisplayName

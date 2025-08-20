@@ -83,7 +83,7 @@ function Sync-RemoteRoutingAddress {
         if ($RemoteMailboxHash.ContainsKey($MoveKey) -and
             $MeuHash.ContainsKey($MoveKey) -and
             $MoveKey -ne '00000000-0000-0000-0000-000000000000') {
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 Num                          = '[{0} of {1}]' -f $i, $Total
                 DisplayName                  = $RemoteMailboxHash[$MoveKey]['DisplayName']
                 OnPremisesOrganizationalUnit = $RemoteMailboxHash[$MoveKey]['OnPremisesOrganizationalUnit']

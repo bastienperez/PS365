@@ -47,7 +47,7 @@ function Get-GraphSecureScore {
                 Method  = 'Get'
             }
             foreach ($Score in $ScoreList) {
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     CurrentScore    = $Score.currentScore
                     Date            = $Score.createdDateTime
                     LicensedUsers   = $Score.licensedUserCount

@@ -301,7 +301,7 @@ function Import-ADUserProxyAddress {
                     }
                 }
                 catch {
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         DisplayName = $Display
                         Error       = $_
                         UPNandMail  = $UPNandMail
@@ -312,7 +312,7 @@ function Import-ADUserProxyAddress {
             }
             else {
                 if ($Address) {
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         DisplayName = $Display
                         UPNandMail  = $UPNandMail
                         Addresses   = $Address -join ','

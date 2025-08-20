@@ -32,7 +32,7 @@ function Get-MTASTSDetails {
     # into an object
     if ($mtasts_policy -ne $null) {
 
-        [PSCustomObject]@{
+        [PSCustomObject][ordered]@{
             'DNSRecord' = $mtasts_dnsrecord
             'Version'   = "$(($mtasts_policy | Select-String -Pattern "version:(.*)").Matches.Groups[1])" -replace ' ' # only STSv1 is valid, so this property isn't used elseWhere-Object in the script yet
             'Mode'      = ($mtasts_policy | Select-String -Pattern "mode:.*(enforce|testing|none)").Matches[0].Captures[0].Groups[1].Value.ToUpper()

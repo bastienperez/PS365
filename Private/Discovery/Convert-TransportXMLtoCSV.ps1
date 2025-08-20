@@ -9,7 +9,7 @@ function Convert-TransportXMLtoCSV {
     )
     foreach ($TRule in $TRuleColList) {
         foreach ($Rule in $TRule.rules.rule) {
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 Name        = $Rule.name
                 Priority    = $TransportHash[$Rule.Name].Priority
                 State       = $TransportHash[$Rule.Name].State

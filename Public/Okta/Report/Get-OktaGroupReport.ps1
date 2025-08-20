@@ -144,7 +144,7 @@ function Get-OktaGroupReport {
 
             $ProfileDetail = $CurGroup.Profile
 
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 Name                       = $ProfileDetail.Name
                 Description                = $ProfileDetail.Description
                 Type                       = $CurGroup.Type

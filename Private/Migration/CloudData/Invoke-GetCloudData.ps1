@@ -18,7 +18,7 @@ function Invoke-GetCloudData {
         $Count = @($MailboxList).Count
         foreach ($Mailbox in $MailboxList) {
             $iUP++
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 Num                       = '[{0} of {1}]' -f $iUP, $Count
                 DisplayName               = $Mailbox.DisplayName
                 Name                      = $Mailbox.Name
@@ -44,7 +44,7 @@ function Invoke-GetCloudData {
         $Count = @($MailUserList).Count
         foreach ($MailUser in $MailUserList) {
             $iUP++
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 Num                       = '[{0} of {1}]' -f $iUP, $Count
                 DisplayName               = $MailUser.DisplayName
                 Name                      = $MailUser.Name
@@ -78,7 +78,7 @@ function Invoke-GetCloudData {
         $Count = @($AzureADUserList).Count
         foreach ($AzureADUser in $AzureADUserList) {
             $iUP++
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 Num                = '[{0} of {1}]' -f $iUP, $Count
                 DisplayName        = $AzureADUser.DisplayName
                 Type               = 'AzureADUser'

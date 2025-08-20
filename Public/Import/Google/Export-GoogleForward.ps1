@@ -11,7 +11,7 @@ function Export-GoogleForward {
     $AllGS = Get-GSUser -Filter *
     foreach ($All in $AllGS) {
         $fwd = Get-GSGmailAutoForwardingSettings -User $All.User | Select-Object -ExpandProperty EmailAddress
-        [PSCustomObject]@{
+        [PSCustomObject][ordered]@{
             Name    = $All.Name.FullName
             User    = $All.User
             Forward = $fwd

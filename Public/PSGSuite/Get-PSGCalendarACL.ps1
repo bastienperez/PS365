@@ -10,7 +10,7 @@ function Get-PSGCalendarACL {
         foreach ($ACL in $ACLList) {
             $Granted = $ACL.Id.replace('user:', '')
             if ($User.User -ne $Granted) {
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Name         = $User.Name.FullName
                     PrimaryEmail = $User.PrimaryEmail
                     User         = $ACL.User

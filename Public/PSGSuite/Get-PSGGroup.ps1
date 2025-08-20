@@ -10,7 +10,7 @@ function Get-PSGGroup {
         $MemberList = Get-GSGroupMember -Identity $Group.Email
         $OwnerList = $MemberList.where{ $_.Role -eq 'OWNER' }
         $ManagerList = $MemberList.where{ $_.Role -eq 'MANAGER' }
-        [PSCustomObject]@{
+        [PSCustomObject][ordered]@{
             Name               = $Group.Name
             Email              = $Group.Email
             Aliases            = @($Group.Aliases) -ne '' -join '|'

@@ -82,7 +82,7 @@ function Get-OktaUserAppReport {
                 Method  = 'Get'
             }
             foreach ($App in $AppsInUser) {
-                [pscustomobject]@{
+                [PSCustomObject][ordered]@{
                     FirstName     = $FirstName
                     LastName      = $LastName
                     Login         = $Login

@@ -32,7 +32,7 @@ function Invoke-SearchAuditLog {
             $ModList = $AuditData.ModifiedProperties
             if ($ModList) {
                 foreach ($Mod in $ModList) {
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         ResultIndex  = $Index
                         Operations   = $_.Operations
                         RecordType   = $_.RecordType
@@ -47,7 +47,7 @@ function Invoke-SearchAuditLog {
                 }
             }
             else {
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     ResultIndex  = $Index
                     Operations   = $_.Operations
                     RecordType   = $_.RecordType

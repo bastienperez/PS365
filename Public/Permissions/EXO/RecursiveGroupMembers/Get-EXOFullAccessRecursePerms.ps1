@@ -58,7 +58,7 @@ function Get-PsExoFullAccessRecursePerms {
                     $Email = $RecipientHash["$($_.User)"].PrimarySMTPAddress
                     $Type = $RecipientHash["$($_.User)"].RecipientTypeDetails
                 }
-                [pscustomobject]@{
+                [PSCustomObject][ordered]@{
                     Mailbox              = $_.Identity
                     MailboxPrimarySMTP   = $RecipientHash["$($_.Identity)"].PrimarySMTPAddress
                     Granted              = $User
@@ -70,7 +70,7 @@ function Get-PsExoFullAccessRecursePerms {
         }
         if ($listGroupMembers.Count -gt 0) {
             foreach ($CurlistGroupMember in $listGroupMembers) {
-                [pscustomobject]@{
+                [PSCustomObject][ordered]@{
                     Mailbox              = $Identity
                     MailboxPrimarySMTP   = $RecipientHash["$Identity"].PrimarySMTPAddress
                     Granted              = $RecipientDNHash["$CurlistGroupMember"].Name

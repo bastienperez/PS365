@@ -46,7 +46,7 @@ function Remove-UnifiedGroupAddress {
                 Write-Host "$($Remove.DisplayName)" -ForegroundColor White
                 Set-UnifiedGroup -Identity $Remove.Guid.ToString() -EmailAddresses @{Remove = @($Remove.EmailList) } -erroraction Stop
                 Write-Host "$($Remove.DisplayName) Removed" -ForegroundColor Green
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Action             = "REMOVEEMAILS"
                     DisplayName        = $Remove.DisplayName
                     PrimarySmtpAddress = $Remove.PrimarySmtpAddress
@@ -59,7 +59,7 @@ function Remove-UnifiedGroupAddress {
             }
             catch {
                 Write-Host "$($Remove.DisplayName) $($_.Exception.Message)" -ForegroundColor Red
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Action             = "REMOVEEMAILS"
                     DisplayName        = $Remove.DisplayName
                     PrimarySmtpAddress = $Remove.PrimarySmtpAddress

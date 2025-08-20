@@ -1,4 +1,4 @@
-﻿function Find-DistributionGroupMembers {
+﻿function Search-DistributionGroupMembers {
 	Param
 	(
 		[Parameter(Mandatory = $false)]

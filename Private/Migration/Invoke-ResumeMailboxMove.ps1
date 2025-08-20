@@ -25,7 +25,7 @@ function Invoke-ResumeMailboxMove {
         foreach ($User in $UserChoice) {
             try {
                 Resume-MoveRequest -Identity $User.ExchangeGuid @ResumeSplat
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     DisplayName  = $User.DisplayName
                     ExchangeGuid = $User.ExchangeGuid
                     Action       = 'RESUME'
@@ -34,7 +34,7 @@ function Invoke-ResumeMailboxMove {
                 }
             }
             catch {
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     DisplayName  = $User.DisplayName
                     ExchangeGuid = $User.ExchangeGuid
                     Action       = 'RESUME'

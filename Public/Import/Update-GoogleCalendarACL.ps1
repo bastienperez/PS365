@@ -105,7 +105,7 @@ function Update-GoogleCalendarACL {
                             $Acl | Remove-GSCalendarAcl -Confirm:$false -ErrorAction SilentlyContinue > $null
                         }
 
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             Object     = 'ACL'
                             Calendar   = $Owned.User
                             User       = $Acl.User
@@ -133,7 +133,7 @@ function Update-GoogleCalendarACL {
                         $ScopeValue = $Acl | Select-Object @{n = 'Value'; e = { $_.Scope.Value } }
 
 
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             Object     = 'ACL'
                             Calendar   = $Owned.User
                             User       = $Acl.User

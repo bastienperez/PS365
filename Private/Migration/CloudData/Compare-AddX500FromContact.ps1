@@ -10,7 +10,7 @@ function Compare-Addx500FromContact {
     )
     foreach ($Key in $Source.Keys) {
         if ($Target.ContainsKey($Key)) {
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 FOUND                = 'TRUE'
                 TargetDisplayName    = $Target[$Key]['DisplayName']
                 SourceDisplayName    = $Source[$Key]['DisplayName']
@@ -26,7 +26,7 @@ function Compare-Addx500FromContact {
             }
         }
         else {
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 FOUND                = 'FALSE'
                 TargetDisplayName    = 'NOTFOUND'
                 SourceDisplayName    = $Source[$Key]['DisplayName']

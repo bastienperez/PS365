@@ -113,7 +113,7 @@ function Import-GoogleToEXOGroup {
                     }
                     else {
 
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             Time            = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                             Result          = 'FAILED'
                             Action          = 'FINDING_MANAGER_FOR_MANAGEDBY'
@@ -143,7 +143,7 @@ function Import-GoogleToEXOGroup {
                     }
                     else {
 
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             Time            = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                             Result          = 'FAILED'
                             Action          = 'FINDING_OWNER_FOR_MANAGEDBY'
@@ -258,7 +258,7 @@ function Import-GoogleToEXOGroup {
                     }
                     else {
 
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             Time            = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                             Result          = 'FAILED'
                             Action          = 'FINDING_OWNER_FOR_MODERATEDBY'
@@ -278,7 +278,7 @@ function Import-GoogleToEXOGroup {
                     }
                     else {
 
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             Time            = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                             Result          = 'FAILED'
                             Action          = 'FINDING_MANAGER_FOR_MODERATEDBY'
@@ -359,7 +359,7 @@ function Import-GoogleToEXOGroup {
 
                 $NewDL = New-DistributionGroup @NewSplat -ErrorAction Stop
 
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Time            = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                     Result          = 'SUCCESS'
                     Action          = 'CREATING'
@@ -376,7 +376,7 @@ function Import-GoogleToEXOGroup {
 
                     Set-DistributionGroup @SetSplat -ErrorAction Stop -WarningAction SilentlyContinue
 
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         Time            = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                         Result          = 'SUCCESS'
                         Action          = 'SETTING'
@@ -393,7 +393,7 @@ function Import-GoogleToEXOGroup {
                 catch {
 
                     $Failure = $_.CategoryInfo.Reason
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         Time            = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                         Result          = 'FAILURE'
                         Action          = 'SETTING'
@@ -421,7 +421,7 @@ function Import-GoogleToEXOGroup {
 
                     $Failure = 'DL already managed by recipient'
                 }
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Time            = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                     Result          = 'FAILURE'
                     Action          = 'CREATING'

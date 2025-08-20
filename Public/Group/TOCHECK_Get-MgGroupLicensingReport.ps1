@@ -108,7 +108,7 @@ function Get-MgGroupLicensingReport {
                                     if ($licenseState.Error -or $licenseState.State -eq 'Error') {
                                         $userHasErrors = $true
                                         
-                                        $errorDetail = [PSCustomObject]@{
+                                        $errorDetail = [PSCustomObject][ordered]@{
                                             UserDisplayName = $user.DisplayName
                                             UserId = $user.Id
                                             SkuId = $licenseState.SkuId
@@ -148,7 +148,7 @@ function Get-MgGroupLicensingReport {
                     "$skuPartNumber ($($license.SkuId))"
                 }
                 
-                $groupReport = [PSCustomObject]@{
+                $groupReport = [PSCustomObject][ordered]@{
                     PSTypeName = 'MgGroupLicenseReport'
                     GroupId = $group.Id
                     GroupDisplayName = $group.DisplayName

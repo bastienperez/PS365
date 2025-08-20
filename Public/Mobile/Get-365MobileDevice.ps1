@@ -28,7 +28,7 @@ function Get-365MobileDevice {
                 Write-Host "Getting info about mobile device(s) for $CurDisplayName"
                 Start-Sleep -Seconds 2
                 $Stat = Get-MobileDeviceStatistics -Identity "$($CurMobile.Guid)"
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     DisplayName           = $CurDisplayName
                     UPN                   = $CurUpn
                     FriendlyName          = $CurMobile.FriendlyName

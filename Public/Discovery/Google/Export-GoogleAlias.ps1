@@ -66,7 +66,7 @@ function Export-GoogleAlias {
             foreach ($CurAlias in $Alias) {
                 foreach ($CurProp in $Prop) {
                     if ($CurAlias.$CurProp -and -not ($DontImport -contains $CurAlias.$CurProp)) {
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             PrimarySmtpAddress = $CurAlias.$MailboxCsvHeaderOfPrimary
                             Alias              = 'smtp:{0}' -f $CurAlias.$CurProp
                         }
@@ -78,7 +78,7 @@ function Export-GoogleAlias {
             foreach ($CurAlias in $Alias) {
                 foreach ($CurProp in $Prop) {
                     if ($CurAlias.$CurProp) {
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             PrimarySmtpAddress = $CurAlias.$MailboxCsvHeaderOfPrimary
                             Alias              = 'smtp:{0}' -f $CurAlias.$CurProp
                         }
@@ -93,7 +93,7 @@ function Export-GoogleAlias {
             foreach ($CurAlias in $Alias) {
                 foreach ($CurProp in $Prop) {
                     if ($CurAlias.$CurProp -and -not ($DontImport -contains $CurAlias.$CurProp)) {
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             PrimarySmtpAddress = $CurAlias.$MailboxCsvHeaderOfPrimary
                             Alias              = $CurAlias.$CurProp
                         }
@@ -105,7 +105,7 @@ function Export-GoogleAlias {
             foreach ($CurAlias in $Alias) {
                 foreach ($CurProp in $Prop) {
                     if ($CurAlias.$CurProp) {
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             PrimarySmtpAddress = $CurAlias.$MailboxCsvHeaderOfPrimary
                             Alias              = $CurAlias.$CurProp
                         }

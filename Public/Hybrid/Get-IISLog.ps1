@@ -57,7 +57,7 @@ function Get-IISLog {
     $NewLog = Import-Csv -Path $LogTemp -Delimiter " "
 
     foreach ($New in $NewLog) {
-        [PSCustomObject]@{
+        [PSCustomObject][ordered]@{
             date        = $New.date
             time        = $New.time
             sip         = $New.sip

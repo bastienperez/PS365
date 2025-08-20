@@ -224,7 +224,7 @@ import-csv .\file.csv | Export-CsvData -JoinType and -FindInColumn ProxyAddresse
 
             if ($Address) {
                 foreach ($CurAddress in $Address) {
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         DisplayName                = $Display
                         OU                         = $OU
                         UserPrincipalName          = $UserPrincipalName
@@ -238,7 +238,7 @@ import-csv .\file.csv | Export-CsvData -JoinType and -FindInColumn ProxyAddresse
                 }
             }
             else {
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     DisplayName                = $Display
                     OU                         = $OU
                     UserPrincipalName          = $UserPrincipalName

@@ -155,7 +155,7 @@ function Get-OktaUserReport {
             $ProfileDetail = ($CurUser).Profile
             $CredDetail = ($CurUser).Credentials
 
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 FirstName        = $ProfileDetail.FirstName
                 LastName         = $ProfileDetail.LastName
                 Login            = $ProfileDetail.Login

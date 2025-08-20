@@ -34,7 +34,7 @@ function Invoke-DisableMailboxEmailAddressPolicy {
                     Write-Host $AllAddressesUnchanged -ForegroundColor Black -BackgroundColor Yellow
                 }
 
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Num                           = '[{0} of {1}]' -f $i, $Count
                     Result                        = 'SUCCESS'
                     Action                        = 'EAPDISABLED'
@@ -62,7 +62,7 @@ function Invoke-DisableMailboxEmailAddressPolicy {
             }
             catch {
                 Write-Host ('[{0} of {1}] {2} Failed Disabling EAP Error: {3}' -f $i, $Count, $item.DisplayName, $_.Exception.Message) -ForegroundColor Red
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Num                           = '[{0} of {1}]' -f $i, $Count
                     Result                        = 'FAILED'
                     Action                        = 'EAPDISABLED'
@@ -105,7 +105,7 @@ function Invoke-DisableMailboxEmailAddressPolicy {
                 else {
                     Write-Host $AllAddressesUnchanged -ForegroundColor Black -BackgroundColor Yellow
                 }
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Num                           = '[{0} of {1}]' -f $i, $Count
                     Result                        = 'SUCCESS'
                     Action                        = 'EAPDISABLED'
@@ -131,7 +131,7 @@ function Invoke-DisableMailboxEmailAddressPolicy {
             }
             catch {
                 Write-Host ('[{0} of {1}] {2} Failed Disabling EAP Error: {3}' -f $i, $Count, $item.DisplayName, $_.Exception.Message) -ForegroundColor Red
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Num                           = '[{0} of {1}]' -f $i, $Count
                     Result                        = 'FAILED'
                     Action                        = 'EAPDISABLED'

@@ -73,7 +73,7 @@ function Update-ExchangeGroupMembership {
 
                     Write-Host "Found member: `t`t $($Member.DisplayName) `t $($Member.PrimarySmtpAddress)"  -ForegroundColor Magenta
 
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         Action               = 'GETGROUPMEMBERSHIP'
                         Result               = 'SUCCESS'
                         Group                = $Group.Group
@@ -97,7 +97,7 @@ function Update-ExchangeGroupMembership {
                         Remove-DistributionGroupMember @RemoveSplat
                         Write-Host "Removed member: `t $($Member.DisplayName) `t $($Member.PrimarySmtpAddress)" -ForegroundColor Yellow
 
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             Action               = 'REMOVEGROUPMEMBER'
                             Result               = 'SUCCESS'
                             Group                = $Group.Group
@@ -112,7 +112,7 @@ function Update-ExchangeGroupMembership {
                     }
                     catch {
                         Write-Host "Failed to remove member: `t $($Member.PrimarySmtpAddress)" -ForegroundColor Red
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             Action               = 'REMOVEGROUPMEMBER'
                             Result               = 'FAILED'
                             Group                = $Group.Group
@@ -137,7 +137,7 @@ function Update-ExchangeGroupMembership {
                         Add-DistributionGroupMember @AddSplat
                         Write-Host "New member added: `t $New" -ForegroundColor Green
 
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             Action               = 'ADDGROUPMEMBER'
                             Result               = 'SUCCESS'
                             Group                = $Group.Group
@@ -154,7 +154,7 @@ function Update-ExchangeGroupMembership {
                     catch {
                         Write-Host "Failed to add new member: `t $New" -ForegroundColor Red
 
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             Action               = 'ADDGROUPMEMBER'
                             Result               = 'FAILED'
                             Group                = $Group.Group
@@ -172,7 +172,7 @@ function Update-ExchangeGroupMembership {
             catch {
                 Write-Host "Group lookup failed: `t $($Group.Group)" -ForegroundColor Red
 
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Action               = 'GETGROUPMEMBERSHIP'
                     Result               = 'FAILED'
                     Group                = $Group.Group

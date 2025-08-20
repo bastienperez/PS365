@@ -10,16 +10,16 @@ function Get-PermissionDecision {
             OutputMode = 'Multiple'
         }
         $PermissionDecision = @(
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 'Options' = 'FullAccess'
             },
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 'Options' = 'SendAs'
             },
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 'Options' = 'SendOnBehalf'
             },
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 'Options' = 'Folder'
             }
         )

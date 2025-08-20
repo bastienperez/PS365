@@ -66,7 +66,7 @@ function Import-QADAlias {
 
             if ($LogOnly) {
 
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Time               = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                     Result             = 'LOGONLY'
                     Action             = 'ADD'
@@ -88,7 +88,7 @@ function Import-QADAlias {
                             foreach ($U in $User) {
                                 Write-Host "Failed: $($U.DisplayName) duplicate proxy address" -ForegroundColor Red
 
-                                [PSCustomObject]@{
+                                [PSCustomObject][ordered]@{
                                     Time               = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                                     Result             = 'FAILED'
                                     Action             = 'DUPLICATEPROXY'
@@ -107,7 +107,7 @@ function Import-QADAlias {
                         else {
                             Write-Host "Success: $($User.DisplayName) found with proxy address: $PrimarySmtpAddress" -ForegroundColor Green
 
-                            [PSCustomObject]@{
+                            [PSCustomObject][ordered]@{
                                 Time               = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                                 Result             = 'SUCCESS'
                                 Action             = 'GETADUSER'
@@ -127,7 +127,7 @@ function Import-QADAlias {
                             }
                             Write-Host "Success: $($User.DisplayName) added proxy address $Alias" -ForegroundColor Green
 
-                            [PSCustomObject]@{
+                            [PSCustomObject][ordered]@{
                                 Time               = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                                 Result             = 'SUCCESS'
                                 Action             = 'ADDPROXY'
@@ -144,7 +144,7 @@ function Import-QADAlias {
 
                             $NewData = $User | Get-ADUser -Properties DisplayName, ProxyAddresses, Mail
 
-                            [PSCustomObject]@{
+                            [PSCustomObject][ordered]@{
                                 Time               = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                                 Result             = 'RESULT'
                                 Action             = 'ADDPROXY'
@@ -163,7 +163,7 @@ function Import-QADAlias {
                     else {
                         Write-Host "Failed: $PrimarySmtpAddress not found" -ForegroundColor Red
 
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             Time               = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                             Result             = 'USERNOTFOUND'
                             Action             = 'GETADUSER'
@@ -182,7 +182,7 @@ function Import-QADAlias {
                 catch {
                     Write-Host "Failed: $($User.DisplayName) not added proxy address $Alias" -ForegroundColor Red
 
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         Time               = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                         Result             = 'PROXYNOTADDED'
                         Action             = 'SETADUSER'

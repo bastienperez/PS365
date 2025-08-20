@@ -31,7 +31,7 @@ function Invoke-GetDeploymentProStatistics {
     process {
         foreach ($User in $UserList) {
             foreach ($DeviceUser in Get-BT_CustomerDeviceUserModule @DevUserSplat -EndUserId $User.Id) {
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     DisplayName          = $UserHash.($DeviceUser.EndUserId.ToString()).DisplayName
                     PrimaryEmailAddress  = $UserHash.($DeviceUser.EndUserId.ToString()).PrimaryEmailAddress
                     DeviceName           = $DeviceHash.($DeviceUser.DeviceId.ToString()).DeviceName

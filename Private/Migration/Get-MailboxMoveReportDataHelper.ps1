@@ -9,7 +9,7 @@ function Get-MailboxMoveReportDataHelper {
     $Stats = Get-MoveRequestStatistics -Identity $Wants.Guid -IncludeReport
     $Size = [regex]::Matches("$($Stats.TotalMailboxSize)", "^[^(]*").value
     foreach ($Log in $Stats.Report.Entries) {
-        [PSCustomObject]@{
+        [PSCustomObject][ordered]@{
             DisplayName       = $Wants.DisplayName
             CreationTime     = $Log.CreationTime.toLocalTime()
             Log              = $Log.Message

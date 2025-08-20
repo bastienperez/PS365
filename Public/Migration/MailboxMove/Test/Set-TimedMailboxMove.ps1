@@ -88,7 +88,7 @@ function Set-TimedMailboxMove {
 
                 Set-MoveRequest @SetSplat
 
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     DisplayName  = $In.DisplayName
                     BatchName    = $In.BatchName
                     ExchangeGuid = $In.ExchangeGuid
@@ -98,7 +98,7 @@ function Set-TimedMailboxMove {
                 }
             }
             catch {
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     DisplayName  = $In.DisplayName
                     BatchName    = $In.BatchName
                     ExchangeGuid = $In.ExchangeGuid
@@ -114,7 +114,7 @@ function Set-TimedMailboxMove {
 
                     Resume-MoveRequest -Identity $In.ExchangeGuid -Confirm:$false -ErrorAction Stop
 
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         DisplayName  = $In.DisplayName
                         BatchName    = $In.BatchName
                         ExchangeGuid = $In.ExchangeGuid
@@ -124,7 +124,7 @@ function Set-TimedMailboxMove {
                     }
                 }
                 catch {
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         DisplayName  = $In.DisplayName
                         BatchName    = $In.BatchName
                         ExchangeGuid = $In.ExchangeGuid
@@ -144,7 +144,7 @@ function Set-TimedMailboxMove {
 
                 Suspend-MoveRequest -Identity $In.ExchangeGuid -Confirm:$false -ErrorAction Stop
 
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     DisplayName  = $In.DisplayName
                     BatchName    = $In.BatchName
                     ExchangeGuid = $In.ExchangeGuid
@@ -154,7 +154,7 @@ function Set-TimedMailboxMove {
                 }
             }
             catch {
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     DisplayName  = $In.DisplayName
                     BatchName    = $In.BatchName
                     ExchangeGuid = $In.ExchangeGuid

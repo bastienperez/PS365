@@ -11,7 +11,7 @@ function Get-TreePrintout {
         $prefix
     )
     foreach ($item in $tree.$Id) {
-        [PSCustomObject]@{
+        [PSCustomObject][ordered]@{
             DisplayName       = $Item.DisplayName
             Mail              = $Item.Mail
             UserPrincipalName = $Item.UserPrincipalName

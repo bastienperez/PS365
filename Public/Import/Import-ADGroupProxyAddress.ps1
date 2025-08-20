@@ -280,7 +280,7 @@ function Import-ADGroupProxyAddress {
                     }
                 }
                 catch {
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         DisplayName   = $Display
                         Error         = $_
                         MailAttribute = $MailAttribute
@@ -291,7 +291,7 @@ function Import-ADGroupProxyAddress {
             }
             else {
                 if ($Address) {
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         DisplayName   = $Display
                         MailAttribute = $MailAttribute
                         Addresses     = $Address -join ','

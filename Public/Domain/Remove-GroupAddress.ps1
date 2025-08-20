@@ -46,7 +46,7 @@ function Remove-GroupAddress {
                 Write-Host "$($Remove.DisplayName)" -ForegroundColor White
                 Get-DistributionGroup -Identity $Remove.Guid.ToString() | Set-DistributionGroup -EmailAddresses @{Remove = @($Remove.EmailList) }
                 Write-Host "$($Remove.DisplayName) Removed" -ForegroundColor Green
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Action             = "REMOVEEMAILS"
                     DisplayName        = $Remove.DisplayName
                     PrimarySmtpAddress = $Remove.PrimarySmtpAddress
@@ -59,7 +59,7 @@ function Remove-GroupAddress {
             }
             catch {
                 Write-Host "$($Remove.DisplayName) $($_.Exception.Message)" -ForegroundColor Red
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Action             = "REMOVEEMAILS"
                     DisplayName        = $Remove.DisplayName
                     PrimarySmtpAddress = $Remove.PrimarySmtpAddress

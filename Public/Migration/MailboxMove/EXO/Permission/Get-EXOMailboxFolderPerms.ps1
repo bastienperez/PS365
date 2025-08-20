@@ -28,7 +28,7 @@ function Get-PsExoMailboxFolderPerms {
             }
             If ($CalAccessList) {
                 Foreach ($CalAccess in $CalAccessList) {
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         Object             = $Mailbox.DisplayName
                         UserPrincipalName  = $Mailbox.UserPrincipalName
                         PrimarySMTPAddress = $Mailbox.PrimarySMTPAddress
@@ -48,7 +48,7 @@ function Get-PsExoMailboxFolderPerms {
             }
             If ($InboxAccessList) {
                 Foreach ($InboxAccess in $InboxAccessList) {
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         Object             = $Mailbox.DisplayName
                         UserPrincipalName  = $Mailbox.UserPrincipalName
                         PrimarySMTPAddress = $Mailbox.PrimarySMTPAddress
@@ -68,7 +68,7 @@ function Get-PsExoMailboxFolderPerms {
             }
             If ($SentAccessList) {
                 Foreach ($SentAccess in $SentAccessList) {
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         Object             = $Mailbox.DisplayName
                         UserPrincipalName  = $Mailbox.UserPrincipalName
                         PrimarySMTPAddress = $Mailbox.PrimarySMTPAddress
@@ -88,7 +88,7 @@ function Get-PsExoMailboxFolderPerms {
             }
             If ($ContactsAccessList) {
                 Foreach ($ContactsAccess in $ContactsAccessList) {
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         Object             = $Mailbox.DisplayName
                         UserPrincipalName  = $Mailbox.UserPrincipalName
                         PrimarySMTPAddress = $Mailbox.PrimarySMTPAddress

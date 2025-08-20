@@ -88,7 +88,7 @@ function Get-MemAssignments {
     if ($AssignedOnly) {
         foreach ($Key in $AHash.keys) {
             if ($AHash[$Key]['Assignments']) {
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Type        = $AHash[$Key]['Type']
                     DisplayName = $Key
                     Assignments = $AHash[$Key]['Assignments']
@@ -98,7 +98,7 @@ function Get-MemAssignments {
     }
     else {
         foreach ($Key in $AHash.keys) {
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 Type        = $AHash[$Key]['Type']
                 DisplayName = $Key
                 Assignments = $AHash[$Key]['Assignments']

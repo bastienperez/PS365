@@ -72,7 +72,7 @@ function Get-SPOWeb {
     }
     Write-Verbose "----------------------"
 
-    [PSCustomObject]@{
+    [PSCustomObject][ordered]@{
         SPOUser             = $curUser
         DisplayName         = $Display
         Url                 = $Url

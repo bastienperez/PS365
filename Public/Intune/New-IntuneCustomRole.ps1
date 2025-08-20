@@ -221,7 +221,7 @@ function New-IntuneCustomRole {
                 Write-Verbose "Custom role created successfully with ID: $($response.id)"
                 
                 # Format the response
-                $roleResponse = [PSCustomObject]@{
+                $roleResponse = [PSCustomObject][ordered]@{
                     Id = $response.id
                     DisplayName = $response.displayName
                     Description = $response.description

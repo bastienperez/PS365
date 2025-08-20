@@ -58,7 +58,7 @@ Group2, diane@contoso.com; sam@contoso.com; naomi@contoso.com
             }
             catch {
                 $ErrorMessage = $_.exception.message
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     DisplayName = $CurGroup.DisplayName
                     Error       = $ErrorMessage
                     Member      = $EachMember

@@ -11,7 +11,7 @@ function Get-MemGroupAppAssignment {
             $Group = try { (Get-GraphGroup -ErrorAction Stop -GroupId $Assigned.Target.GroupId).displayName } catch { }
             if ($Group -or $IncludeUnassigned) {
                 $Store = [regex]::matches($App.'@odata.type', '[^\.]*$').value[0]
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Group                    = $Group
                     DisplayName              = $App.DisplayName
                     OS                       = if ($Store -like "*iOS*") { 'iOS' }

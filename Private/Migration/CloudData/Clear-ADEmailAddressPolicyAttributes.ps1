@@ -39,7 +39,7 @@ function Clear-ADEmailAddressPolicyAttributes {
                 Write-Host $AllAddressesUnchanged -ForegroundColor Black -BackgroundColor Yellow
             }
 
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 Num                            = '[{0} of {1}]' -f $i, $Count
                 Result                         = 'SUCCESS'
                 Action                         = 'EAPCLEARPOLICIES'
@@ -69,7 +69,7 @@ function Clear-ADEmailAddressPolicyAttributes {
         }
         catch {
             Write-Host ('[{0} of {1}] {2} Failed clearing msExchPoliciesIncluded and msExchPoliciesExcluded: {3}' -f $i, $Count, $Item.DisplayName, $_.Exception.Message) -ForegroundColor Red
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 Num                            = '[{0} of {1}]' -f $i, $Count
                 Result                         = 'FAILED'
                 Action                         = 'EAPCLEARPOLICIES'

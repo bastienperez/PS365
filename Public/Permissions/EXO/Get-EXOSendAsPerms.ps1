@@ -55,7 +55,7 @@ function Get-PsExoSendAsPerms {
                 $Email = $RecipientLiveIDHash["$($_.Trustee)"].PrimarySMTPAddress
                 $Type = $RecipientLiveIDHash["$($_.Trustee)"].RecipientTypeDetails
             }
-            [pscustomobject]@{
+            [PSCustomObject][ordered]@{
                 Object               = $_.Identity
                 PrimarySmtpAddress   = $RecipientHash["$($_.Identity)"].PrimarySMTPAddress
                 Granted              = $Trustee

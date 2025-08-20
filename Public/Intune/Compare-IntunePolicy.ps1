@@ -35,7 +35,7 @@ function Compare-IntunePolicy {
         'MobileAppConfig', 'MobileAppConfigTargeted', 'MobileAppProtectionAndroid', 'MobileAppProtectioniOS'
         'MobileDeviceComplianceAndroidAtWork', 'MobileDeviceComplianceiOS', 'MobileDeviceConfigiOSDeviceRestrictions'
         'MobileDeviceConfigiOSEmail', 'MobileDeviceConfigiOSWiFi') | ForEach-Object {
-        [PSCustomObject]@{
+        [PSCustomObject][ordered]@{
             PolicyType = $_
         }
     } | Out-GridView -OutputMode Single -Title 'Choose Policy Type'
@@ -132,7 +132,7 @@ function Compare-IntunePolicy {
         }
     }
     foreach ($MainKey in $MainHash.keys) {
-        [PSCustomObject]@{
+        [PSCustomObject][ordered]@{
             'Type'                  = $PolicyType
             'Property'              = $MainKey
             $Reference.displayName  = $MainHash[$MainKey]['Reference']

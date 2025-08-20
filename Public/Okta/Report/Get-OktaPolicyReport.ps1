@@ -31,7 +31,7 @@ function Get-OktaPolicyReport {
             $Groups = (($CurPolicy).conditions.people.groups.include | ForEach-Object {
                     ((Get-OktaGroupReport -Id $_).name) -join ";"
                 })
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 Name        = $CurPolicy.Name
                 Type        = $CurPolicy.Type
                 Priority    = $CurPolicy.Priority

@@ -166,7 +166,7 @@ Input (from the CSV) of the Addresses (to be imported into ProxyAddresses attrib
 
             if ($Member) {
                 foreach ($CurMember in $Member) {
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         Name               = $Display
                         OU                 = $OU
                         objectGUID         = $objectGUID
@@ -178,7 +178,7 @@ Input (from the CSV) of the Addresses (to be imported into ProxyAddresses attrib
                 }
             }
             else {
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Name               = $Display
                     OU                 = $OU
                     objectGUID         = $objectGUID

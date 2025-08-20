@@ -25,7 +25,7 @@ function Get-PSGCalendar {
 
         foreach ($Calendar in $CalendarList) {
 
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 User          = $User.User
                 CalendarName  = $Calendar.Summary
                 AssignedUser  = $Calendar.User

@@ -88,7 +88,7 @@ function New-PoshSelfSignedCert {
 
     # Invoke-Item $Path
 
-    [PSCustomObject]@{
+    [PSCustomObject][ordered]@{
         Path    = $Path
         CerPath = $CerPath
         PFXPath = $PFXPath

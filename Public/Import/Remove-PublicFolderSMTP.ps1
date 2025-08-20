@@ -34,7 +34,7 @@ function Remove-PublicFolderSMTP {
 
                 $Failure = $_.CategoryInfo.Reason
 
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Time               = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                     Result             = 'FAILURE'
                     Action             = 'REMOVING'

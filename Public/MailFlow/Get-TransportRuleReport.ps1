@@ -6,7 +6,7 @@ function Get-TransportRuleReport {
     end {
         $RuleList = Get-TransportRule
         foreach ($Rule in $RuleList) {
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 'Name'                                          = $Rule.Name
                 'Comments'                                      = $Rule.Comments
                 'Priority'                                      = $Rule.Priority

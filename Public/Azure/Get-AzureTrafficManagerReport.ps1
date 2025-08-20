@@ -10,7 +10,7 @@ function Get-AzureTrafficManagerReport {
 
         foreach ($CurTrafficMgrProfile in $TrafficMgrProfile) {
 
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 ResourceGroupName      = $CurTrafficMgrProfile.ResourceGroupName
                 ProfileName            = $CurTrafficMgrProfile.Name
                 ProfileDnsName         = $CurTrafficMgrProfile.RelativeDnsName + '.trafficmanager.net'

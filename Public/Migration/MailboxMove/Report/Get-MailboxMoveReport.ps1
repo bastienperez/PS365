@@ -31,7 +31,7 @@ function GetMailboxMoveReport {
 
     $MoveRequest = Get-MoveRequest -ResultSize Unlimited
     $MoveRequestDetails = foreach ($Move in $MoveRequest) {
-        [PSCustomObject]@{
+        [PSCustomObject][ordered]@{
             Identity                   = $Move.Identity
             Status                     = $Move.Status
             DisplayName                = $Move.DisplayName

@@ -147,7 +147,7 @@ function Get-OktaGroupMemberReport {
             $Member = Get-OktaGroupMembership -GroupId $CurGroup.Id
 
             foreach ($CurMember in $Member) {
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     MemberLogin                = $CurMember.Login
                     MemberFirstName            = $CurMember.FirstName
                     MemberLastName             = $CurMember.LastName

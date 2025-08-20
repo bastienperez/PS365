@@ -102,7 +102,7 @@ function Remove-PSGGroupCalendarOwnersAndHide {
 
                         Write-Host "Removed $($Permission.AssignedUser) as owner from Calendar $($Permission.CalendarEmail)" -ForegroundColor Green
 
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             CalendarEmail = $Permission.CalendarEmail
                             CalendarName  = $Permission.CalendarName
                             RemovedUser   = $Permission.AssignedUser
@@ -126,7 +126,7 @@ function Remove-PSGGroupCalendarOwnersAndHide {
 
                             Write-Host "Added $($Permission.AssignedUser) as Editor to Calendar $($Permission.CalendarEmail)" -ForegroundColor Green
 
-                            [PSCustomObject]@{
+                            [PSCustomObject][ordered]@{
                                 CalendarEmail = $Permission.CalendarEmail
                                 CalendarName  = $Permission.CalendarName
                                 RemovedUser   = $Permission.AssignedUser
@@ -150,7 +150,7 @@ function Remove-PSGGroupCalendarOwnersAndHide {
 
                                 Write-Host "Hidden from user $($Permission.AssignedUser) the Calendar $($Permission.CalendarEmail)" -ForegroundColor Green
 
-                                [PSCustomObject]@{
+                                [PSCustomObject][ordered]@{
                                     CalendarEmail = $Permission.CalendarEmail
                                     CalendarName  = $Permission.CalendarName
                                     RemovedUser   = $Permission.AssignedUser
@@ -165,7 +165,7 @@ function Remove-PSGGroupCalendarOwnersAndHide {
 
                                 Write-Host "Failed to hide from user $($Permission.AssignedUser) the Calendar $($Permission.CalendarEmail)" -ForegroundColor Red
 
-                                [PSCustomObject]@{
+                                [PSCustomObject][ordered]@{
                                     CalendarEmail = $Permission.CalendarEmail
                                     CalendarName  = $Permission.CalendarName
                                     RemovedUser   = $Permission.AssignedUser
@@ -181,7 +181,7 @@ function Remove-PSGGroupCalendarOwnersAndHide {
 
                             Write-Host "Failed to add $($Permission.AssignedUser) as Editor to Calendar $($Permission.CalendarEmail)" -ForegroundColor Red
 
-                            [PSCustomObject]@{
+                            [PSCustomObject][ordered]@{
                                 CalendarEmail = $Permission.CalendarEmail
                                 CalendarName  = $Permission.CalendarName
                                 RemovedUser   = $Permission.AssignedUser
@@ -198,7 +198,7 @@ function Remove-PSGGroupCalendarOwnersAndHide {
 
                         Write-Host "Failed to remove $($Permission.AssignedUser) as owner from Calendar $($Permission.CalendarEmail)" -ForegroundColor Red
 
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             CalendarEmail = $Permission.CalendarEmail
                             CalendarName  = $Permission.CalendarName
                             RemovedUser   = $Permission.AssignedUser

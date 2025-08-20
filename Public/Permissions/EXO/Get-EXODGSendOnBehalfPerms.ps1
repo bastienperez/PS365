@@ -36,7 +36,7 @@ function Get-PSExoDGSendOnBehalfPerms {
                 $Email = $RecipientHash[$_].PrimarySMTPAddress
                 $Type = $RecipientHash[$_].RecipientTypeDetails
             }
-            [pscustomobject]@{
+            [PSCustomObject][ordered]@{
                 Object               = $SendOB.Identity
                 PrimarySmtpAddress   = $RecipientNameHash[$SendOB.Identity]
                 Granted              = $CurGranted

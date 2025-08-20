@@ -96,7 +96,7 @@ function Get-GraphMailFolderMessageByID {
                     }
                     foreach ($Message in $MessageList.Value) {
                         $i -= 1
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             DisplayName          = $Mailbox.DisplayName
                             UserPrincipalName    = $Mailbox.UserPrincipalName
                             Mail                 = $Mailbox.Mail

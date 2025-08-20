@@ -27,7 +27,7 @@ function Get-AzureNSGReport {
             }
 
             foreach ($CurNSGRule in $NSGRule) {
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     NSGName                  = $NSGName
                     NSGNic                   = $NSGNic
                     NSGSubnet                = $NSGSubnet

@@ -138,7 +138,7 @@ function Import-EXOGroup {
                 $Target = Get-DistributionGroup -Identity $Group.Name -ErrorAction SilentlyContinue | Select-Object *
                 Start-Sleep -Seconds 2
             }
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 SourceName    = $Group.Name
                 TargetName    = $Target.Name
                 Action        = 'NEW'
@@ -152,7 +152,7 @@ function Import-EXOGroup {
         }
         catch {
             Write-Host "FAILED NEW" -ForegroundColor Red
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 SourceName    = $Group.Name
                 TargetName    = ''
                 Action        = 'NEW'
@@ -170,7 +170,7 @@ function Import-EXOGroup {
                 Write-Host "Setting group:`t $($Group.Name)  -  " -ForegroundColor White -NoNewline
                 Set-DistributionGroup @setparams -ErrorAction Stop
                 Write-Host "SUCCESS SET" -ForegroundColor Green
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     SourceName    = $Group.Name
                     TargetName    = $Target.Name
                     Action        = 'SET'
@@ -184,7 +184,7 @@ function Import-EXOGroup {
             }
             catch {
                 Write-Host "FAILED SET" -ForegroundColor Red
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     SourceName    = $Group.Name
                     TargetName    = $Target.Name
                     Action        = 'SET'
@@ -203,7 +203,7 @@ function Import-EXOGroup {
                         Set-DistributionGroup -Identity $Group.Identity -AcceptMessagesOnlyFrom @{Add = "$_" } -ErrorAction Stop
                         Write-Host "SUCCESS" -ForegroundColor Green
                         $AcceptMessagesOnlyFrom = $_
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             SourceName    = $Group.Name
                             TargetName    = $Target.Name
                             Action        = 'AcceptMessagesOnlyFrom'
@@ -218,7 +218,7 @@ function Import-EXOGroup {
                 }
                 catch {
                     Write-Host "FAILED" -ForegroundColor Red
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         SourceName    = $Group.Name
                         TargetName    = $Target.Name
                         Action        = 'AcceptMessagesOnlyFrom'
@@ -238,7 +238,7 @@ function Import-EXOGroup {
                         Set-DistributionGroup -Identity $Group.Identity -AcceptMessagesOnlyFromDLMembers @{Add = "$_" } -ErrorAction Stop
                         Write-Host "SUCCESS" -ForegroundColor Green
                         $AcceptMessagesOnlyFromDLMembers = $_
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             SourceName    = $Group.Name
                             TargetName    = $Target.Name
                             Action        = 'AcceptMessagesOnlyFromDLMembers'
@@ -252,7 +252,7 @@ function Import-EXOGroup {
                     }
                     catch {
                         Write-Host "FAILED" -ForegroundColor Red
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             SourceName    = $Group.Name
                             TargetName    = $Target.Name
                             Action        = 'AcceptMessagesOnlyFromDLMembers'
@@ -273,7 +273,7 @@ function Import-EXOGroup {
                         Set-DistributionGroup -Identity $Group.Identity -BypassModerationFromSendersOrMembers @{Add = "$_" } -ErrorAction Stop
                         Write-Host "SUCCESS" -ForegroundColor Green
                         $BypassModerationFromSendersOrMembers = $_
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             SourceName    = $Group.Name
                             TargetName    = $Target.Name
                             Action        = 'BypassModerationFromSendersOrMembers'
@@ -287,7 +287,7 @@ function Import-EXOGroup {
                     }
                     catch {
                         Write-Host "FAILED" -ForegroundColor Red
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             SourceName    = $Group.Name
                             TargetName    = $Target.Name
                             Action        = 'BypassModerationFromSendersOrMembers'
@@ -308,7 +308,7 @@ function Import-EXOGroup {
                         Set-DistributionGroup -Identity $Group.Identity -GrantSendOnBehalfTo @{Add = "$_" } -ErrorAction Stop
                         Write-Host "SUCCESS" -ForegroundColor Green
                         $GrantSendOnBehalfTo = $_
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             SourceName    = $Group.Name
                             TargetName    = $Target.Name
                             Action        = 'GrantSendOnBehalfTo'
@@ -322,7 +322,7 @@ function Import-EXOGroup {
                     }
                     catch {
                         Write-Host "FAILED" -ForegroundColor Red
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             SourceName    = $Group.Name
                             TargetName    = $Target.Name
                             Action        = 'GrantSendOnBehalfTo'
@@ -343,7 +343,7 @@ function Import-EXOGroup {
                         Set-DistributionGroup -Identity $Group.Identity -ManagedBy @{Add = "$_" } -ErrorAction Stop
                         Write-Host "SUCCESS" -ForegroundColor Green
                         $ManagedBy = $_
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             SourceName    = $Group.Name
                             TargetName    = $Target.Name
                             Action        = 'ManagedBy'
@@ -357,7 +357,7 @@ function Import-EXOGroup {
                     }
                     catch {
                         Write-Host "FAILED" -ForegroundColor Red
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             SourceName    = $Group.Name
                             TargetName    = $Target.Name
                             Action        = 'ManagedBy'
@@ -378,7 +378,7 @@ function Import-EXOGroup {
                         Set-DistributionGroup -Identity $Group.Identity -ModeratedBy @{Add = "$_" } -ErrorAction Stop
                         Write-Host "SUCCESS" -ForegroundColor Green
                         $ModeratedBy = $_
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             SourceName    = $Group.Name
                             TargetName    = $Target.Name
                             Action        = 'ModeratedBy'
@@ -392,7 +392,7 @@ function Import-EXOGroup {
                     }
                     catch {
                         Write-Host "FAILED" -ForegroundColor Red
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             SourceName    = $Group.Name
                             TargetName    = $Target.Name
                             Action        = 'ModeratedBy'
@@ -413,7 +413,7 @@ function Import-EXOGroup {
                         Set-DistributionGroup -Identity $Group.Identity -RejectMessagesFrom @{Add = "$_" } -ErrorAction Stop
                         Write-Host "SUCCESS" -ForegroundColor Green
                         $RejectMessagesFrom = $_
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             SourceName    = $Group.Name
                             TargetName    = $Target.Name
                             Action        = 'RejectMessagesFrom'
@@ -427,7 +427,7 @@ function Import-EXOGroup {
                     }
                     catch {
                         Write-Host "FAILED" -ForegroundColor Red
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             SourceName    = $Group.Name
                             TargetName    = $Target.Name
                             Action        = 'RejectMessagesFrom'
@@ -448,7 +448,7 @@ function Import-EXOGroup {
                         Set-DistributionGroup -Identity $Group.Identity -RejectMessagesFromDLMembers @{Add = "$_" } -ErrorAction Stop
                         Write-Host "SUCCESS" -ForegroundColor Green
                         $RejectMessagesFromDLMembers = $_
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             SourceName    = $Group.Name
                             TargetName    = $Target.Name
                             Action        = 'RejectMessagesFromDLMembers'
@@ -462,7 +462,7 @@ function Import-EXOGroup {
                     }
                     catch {
                         Write-Host "FAILED" -ForegroundColor Red
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             SourceName    = $Group.Name
                             TargetName    = $Target.Name
                             Action        = 'RejectMessagesFromDLMembers'
@@ -483,7 +483,7 @@ function Import-EXOGroup {
                         Set-DistributionGroup -Identity $Group.Identity -RejectMessagesFromSendersOrMembers @{Add = "$_" } -ErrorAction Stop
                         Write-Host "SUCCESS" -ForegroundColor Green
                         $RejectMessagesFromSendersOrMembers = $_
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             SourceName    = $Group.Name
                             TargetName    = $Target.Name
                             Action        = 'RejectMessagesFromSendersOrMembers'
@@ -497,7 +497,7 @@ function Import-EXOGroup {
                     }
                     catch {
                         Write-Host "FAILED" -ForegroundColor Red
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             SourceName    = $Group.Name
                             TargetName    = $Target.Name
                             Action        = 'RejectMessagesFromSendersOrMembers'
@@ -518,7 +518,7 @@ function Import-EXOGroup {
                         Set-DistributionGroup -Identity $Group.Identity -ExtensionCustomAttribute1 @{Add = "$_" } -ErrorAction Stop
                         Write-Host "SUCCESS" -ForegroundColor Green
                         $ExtensionCustomAttribute1 = $_
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             SourceName    = $Group.Name
                             TargetName    = $Target.Name
                             Action        = 'ExtensionCustomAttribute1'
@@ -532,7 +532,7 @@ function Import-EXOGroup {
                     }
                     catch {
                         Write-Host "FAILED" -ForegroundColor Red
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             SourceName    = $Group.Name
                             TargetName    = $Target.Name
                             Action        = 'ExtensionCustomAttribute1'
@@ -553,7 +553,7 @@ function Import-EXOGroup {
                         Set-DistributionGroup -Identity $Group.Identity -ExtensionCustomAttribute2 @{Add = "$_" } -ErrorAction Stop
                         Write-Host "SUCCESS" -ForegroundColor Green
                         $ExtensionCustomAttribute2 = $_
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             SourceName    = $Group.Name
                             TargetName    = $Target.Name
                             Action        = 'ExtensionCustomAttribute2'
@@ -567,7 +567,7 @@ function Import-EXOGroup {
                     }
                     catch {
                         Write-Host "FAILED" -ForegroundColor Red
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             SourceName    = $Group.Name
                             TargetName    = $Target.Name
                             Action        = 'ExtensionCustomAttribute2'
@@ -588,7 +588,7 @@ function Import-EXOGroup {
                         Set-DistributionGroup -Identity $Group.Identity -ExtensionCustomAttribute3 @{Add = "$_" } -ErrorAction Stop
                         Write-Host "SUCCESS" -ForegroundColor Green
                         $ExtensionCustomAttribute3 = $_
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             SourceName    = $Group.Name
                             TargetName    = $Target.Name
                             Action        = 'ExtensionCustomAttribute3'
@@ -602,7 +602,7 @@ function Import-EXOGroup {
                     }
                     catch {
                         Write-Host "FAILED" -ForegroundColor Red
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             SourceName    = $Group.Name
                             TargetName    = $Target.Name
                             Action        = 'ExtensionCustomAttribute3'
@@ -623,7 +623,7 @@ function Import-EXOGroup {
                         Set-DistributionGroup -Identity $Group.Identity -ExtensionCustomAttribute4 @{Add = "$_" } -ErrorAction Stop
                         Write-Host "SUCCESS" -ForegroundColor Green
                         $ExtensionCustomAttribute4 = $_
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             SourceName    = $Group.Name
                             TargetName    = $Target.Name
                             Action        = 'ExtensionCustomAttribute4'
@@ -637,7 +637,7 @@ function Import-EXOGroup {
                     }
                     catch {
                         Write-Host "FAILED" -ForegroundColor Red
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             SourceName    = $Group.Name
                             TargetName    = $Target.Name
                             Action        = 'ExtensionCustomAttribute4'
@@ -657,7 +657,7 @@ function Import-EXOGroup {
                         Write-Host "Set ExtensionCustomAttribute5:`t $($_)  -  " -ForegroundColor White -NoNewline
                         Set-DistributionGroup -Identity $Group.Identity -ExtensionCustomAttribute5 @{Add = "$_" } -ErrorAction Stop
                         Write-Host "SUCCESS" -ForegroundColor Green
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             SourceName    = $Group.Name
                             TargetName    = $Target.Name
                             Action        = 'ExtensionCustomAttribute5'
@@ -671,7 +671,7 @@ function Import-EXOGroup {
                     }
                     catch {
                         Write-Host "FAILED" -ForegroundColor Red
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             SourceName    = $Group.Name
                             TargetName    = $Target.Name
                             Action        = 'ExtensionCustomAttribute5'
@@ -692,7 +692,7 @@ function Import-EXOGroup {
                         Set-DistributionGroup -Identity $Group.Identity -MailTipTranslations @{Add = "$_" } -ErrorAction Stop
                         Write-Host "SUCCESS" -ForegroundColor Green
                         $MailTipTranslations = $_
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             SourceName    = $Group.Name
                             TargetName    = $Target.Name
                             Action        = 'MailTipTranslations'
@@ -706,7 +706,7 @@ function Import-EXOGroup {
                     }
                     catch {
                         Write-Host "FAILED" -ForegroundColor Red
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             SourceName    = $Group.Name
                             TargetName    = $Target.Name
                             Action        = 'MailTipTranslations'
@@ -728,7 +728,7 @@ function Import-EXOGroup {
                         Set-DistributionGroup -Identity $Group.Identity -emailaddresses @{Add = "$_" } -ErrorAction Stop
                         Write-Host "SUCCESS" -ForegroundColor Green
                         $EmailAddresses = $_
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             SourceName    = $Group.Name
                             TargetName    = $Target.Name
                             Action        = 'EmailAddresses'
@@ -742,7 +742,7 @@ function Import-EXOGroup {
                     }
                     catch {
                         Write-Host "FAILED" -ForegroundColor Red
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             SourceName    = $Group.Name
                             TargetName    = $Target.Name
                             Action        = 'EmailAddresses'
@@ -774,7 +774,7 @@ function Import-EXOGroup {
                     Write-Host "Set LegacyExchangeDNasX500:`t $($Group.x500)  -  " -ForegroundColor White -NoNewline
                     Set-DistributionGroup -Identity $Group.Identity -emailaddresses @{Add = $Group.x500 } -ErrorAction Stop
                     Write-Host "SUCCESS" -ForegroundColor Green
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         SourceName    = $Group.Name
                         TargetName    = $Target.Name
                         Action        = 'LegacyExchangeDNasX500'
@@ -788,7 +788,7 @@ function Import-EXOGroup {
                 }
                 catch {
                     Write-Host "FAILED" -ForegroundColor Red
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         SourceName    = $Group.Name
                         TargetName    = $Target.Name
                         Action        = 'LegacyExchangeDNasX500'
@@ -807,7 +807,7 @@ function Import-EXOGroup {
                             Add-DistributionGroupMember -Identity $Group.Identity -member "$_" -ErrorAction Stop
                             Write-Host "SUCCESS" -ForegroundColor Green
                             $membersSMTP = $_
-                            [PSCustomObject]@{
+                            [PSCustomObject][ordered]@{
                                 SourceName    = $Group.Name
                                 TargetName    = $Target.Name
                                 Action        = 'membersSMTP'
@@ -821,7 +821,7 @@ function Import-EXOGroup {
                         }
                         catch {
                             Write-Host "FAILED" -ForegroundColor Red
-                            [PSCustomObject]@{
+                            [PSCustomObject][ordered]@{
                                 SourceName    = $Group.Name
                                 TargetName    = $Target.Name
                                 Action        = 'membersSMTP'

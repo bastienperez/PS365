@@ -54,7 +54,7 @@ function Get-ExDistributionGroupMember {
         else { '' }
 
         foreach ($Member in $MemberList) {
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 GroupName         = $Group.Name
                 GroupPrimary      = $Group.PrimarySmtpAddress
                 GroupType         = $Group.GroupType

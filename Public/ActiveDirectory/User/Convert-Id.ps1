@@ -28,7 +28,7 @@ function Convert-Id {
         try {
             $Guid = [GUID]$Id
             $Byte = $Guid.ToByteArray()
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 Object = [system.convert]::ToBase64String($Byte)
                 Type   = 'immutableID'
             }
@@ -36,7 +36,7 @@ function Convert-Id {
         catch {
             if ($Decoded = [system.convert]::frombase64string($Id)) {
                 if ($Guid = [GUID]$Decoded) {
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         Object = $Guid.ToString()
                         Type   = 'ObjectGuid'
                     }

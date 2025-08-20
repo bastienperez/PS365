@@ -124,7 +124,7 @@ function Trace-Message {
                 $messageTrace = Get-MessageTrace @params -Page $counter
                 if ($messageTrace) {
                     $messageTrace | ForEach-Object {
-                        $messageTraceResults = [PSCustomObject]@{
+                        $messageTraceResults = [PSCustomObject][ordered]@{
                             Received         = $_.Received
                             Status           = $_.Status
                             SenderAddress    = $_.SenderAddress
@@ -152,7 +152,7 @@ function Trace-Message {
 
                 if ($messageTracewithSubject) {
                     $messageTracewithSubject | ForEach-Object {
-                        $messageTraceResults = [PSCustomObject]@{
+                        $messageTraceResults = [PSCustomObject][ordered]@{
                             Received         = $_.Received
                             Status           = $_.Status
                             SenderAddress    = $_.SenderAddress

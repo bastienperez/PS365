@@ -14,7 +14,7 @@
             { $_ -in @('Members', 'Owners', 'Subscribers') } {
                 foreach ($Row in $RowList) {
                     foreach ($Expand in $Row.$FindInColumn.split('|')) {
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             DisplayName          = $Row.DisplayName
                             RecipientTypeDetails = 'UnifiedGroup'
                             Protocol             = "SMTP"
@@ -31,7 +31,7 @@
             { $_ -in @('Mail', 'OtherMails') } {
                 foreach ($Row in $RowList) {
                     foreach ($Expand in $Row.$FindInColumn.split('|')) {
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             DisplayName          = $Row.DisplayName
                             RecipientTypeDetails = $Row.UserType
                             Protocol             = "smtp"
@@ -48,7 +48,7 @@
             { $_ -eq 'ExternalEmailAddress' } {
                 foreach ($Row in $RowList) {
                     foreach ($Expand in $Row.$FindInColumn) {
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             DisplayName          = $Row.DisplayName
                             RecipientTypeDetails = $Row.RecipientTypeDetails
                             Protocol             = $Expand.split(':')[0]
@@ -65,7 +65,7 @@
             Default {
                 foreach ($Row in $RowList) {
                     foreach ($Expand in $Row.$FindInColumn.split('|')) {
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             DisplayName          = $Row.DisplayName
                             RecipientTypeDetails = $Row.RecipientTypeDetails
                             Protocol             = $Expand.split(':')[0]

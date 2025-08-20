@@ -188,13 +188,13 @@
         $TenantConfigExportButton.Add_Click(
             {
                 try {
-                    $Script:TenantObject = [PSCustomObject]@{
+                    $Script:TenantObject = [PSCustomObject][ordered]@{
                         TenantClientID = $ClientIDTextBox.text
                         TenantTenantID = $TenantIDTextBox.text
                         TenantSecret   = $ClientSecTextBox.text | ConvertTo-SecureString -AsPlainText -Force
                     }
                     $TenantConfig = Join-Path -Path $TenantPath -ChildPath ('{0}Config.xml' -f $Tenant)
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         Cred     = [PSCredential]::new($TenantObject.TenantTenantID, $TenantObject.TenantSecret)
                         ClientId = $TenantObject.TenantClientID
                     } | Export-Clixml -Path $TenantConfig
@@ -208,7 +208,7 @@
         $TenantCredsExportButton.Add_Click(
             {
                 try {
-                    $Script:TenantCredObj = [PSCustomObject]@{
+                    $Script:TenantCredObj = [PSCustomObject][ordered]@{
                         TenantUsername = $UsernameTextBox.text
                         TenantPassword = $PasswordMTextBox.text | ConvertTo-SecureString -AsPlainText -Force
                     }

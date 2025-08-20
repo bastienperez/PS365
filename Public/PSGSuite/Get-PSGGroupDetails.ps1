@@ -32,7 +32,7 @@ function Get-PSGGroupDetails {
 
     foreach ($Setting in $SettingsList) {
 
-        [PSCustomObject]@{
+        [PSCustomObject][ordered]@{
             Name                                    = $Setting.Name
             Email                                   = $Setting.Email
             Aliases                                 = $GroupHash[$Setting.Email]['Aliases']

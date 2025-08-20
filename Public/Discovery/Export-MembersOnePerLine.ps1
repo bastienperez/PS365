@@ -39,7 +39,7 @@
 
         foreach ($Row in $RowItem) {
             foreach ($Expand in $Row.$FindInColumn.split('|')) {
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     DisplayName          = $Row.DisplayName
                     $FindInColumn        = $Expand
                     GroupType            = $Row.GroupType

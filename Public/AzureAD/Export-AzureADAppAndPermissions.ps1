@@ -64,7 +64,7 @@ function Export-AzureADAppAndPermissions {
     if ($SecretDate = ($SourceApp | Get-AzureADApplicationPasswordCredential).startdate) { $OldestSecret = ($SecretDate | Sort-Object )[0] }
     else { $OldestSecret = 'No Client Secret' }
 
-    [PSCustomObject]@{
+    [PSCustomObject][ordered]@{
         Name             = $SourceApp.DisplayName
         ObjectId         = $SourceApp.objectid
         AppId            = $SourceApp.AppId
@@ -82,7 +82,7 @@ function Export-AzureADAppAndPermissions {
             ResourceList = [System.Collections.Generic.List[psobject]]
         }
         $RLObj = foreach ($Resource in $ResourceList) {
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 Id   = $Resource.Id
                 Type = $Resource.Type
             }

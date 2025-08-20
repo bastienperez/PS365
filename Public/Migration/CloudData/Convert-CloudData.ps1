@@ -53,7 +53,7 @@ function Convert-CloudData {
             }
             if ($Source.Name) { $Name = $Source.Name } else { $Name = '' }
 
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 DisplayName               = $Source.DisplayName
                 Name                      = $Name
                 Type                      = $Source.Type
@@ -79,7 +79,7 @@ function Convert-CloudData {
     }
     if ($Type -eq 'AzureADUsers') {
         foreach ($Source in $SourceData) {
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 DisplayName       = $Source.DisplayName
                 Mailnickname      = $Source.Mailnickname
                 UserPrincipalName = '{0}@{1}' -f ($Source.UserPrincipalName -split '@')[0], $InitialDomain

@@ -22,7 +22,7 @@ function Get-GraphMailEnabledUser {
             $Response = Invoke-RestMethod @RestSplat -Verbose:$false
             $ObjList = $Response.Value
             foreach ($Obj in $ObjList) {
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     DisplayName = $Obj.DisplayName
                     Mail        = $Obj.Mail
                     MobilePhone = $Obj.mobilePhone

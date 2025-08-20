@@ -23,7 +23,7 @@ function Get-GraphOrgContact {
             $Headers = $Response.Headers
             $ObjList = $Response.Content | ConvertFrom-Json
             foreach ($Obj in $ObjList.Value) {
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     DisplayName = $Obj.DisplayName
                     Mail        = $Obj.Mail
                     Id          = $Obj.Id

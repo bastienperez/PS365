@@ -24,7 +24,7 @@ function Get-ADConnectError {
     foreach ($Err in $ErrList) {
         $ProvList = $Err.ProvisioningErrors
         foreach ($Prov in $ProvList) {
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 DisplayName     = $Err.DisplayName
                 ImmutableId     = $Err.ImmutableId
                 ObjectType      = $Err.ObjectType

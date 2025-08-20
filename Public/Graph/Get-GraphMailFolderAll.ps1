@@ -16,7 +16,7 @@ function Get-GraphMailFolderAll {
                 Write-Host "`r`nMailbox: $($UPN.UserPrincipalName) " -ForegroundColor Green -NoNewline
                 $FolderList = (Invoke-RestMethod @RestSplat -Verbose:$false).value
                 foreach ($Folder in $FolderList) {
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         DisplayName       = $UPN.DisplayName
                         Mail              = $UPN.Mail
                         UserPrincipalName = $UPN.UserPrincipalName

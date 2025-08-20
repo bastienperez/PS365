@@ -33,7 +33,7 @@ function Get-SPN {
         $DNSHostName = $result.Properties['DNSHostName'][0]
 
         foreach ($SPN in $result.Properties['servicePrincipalName']) {
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 Name               = $Name
                 SPN                = $SPN
                 ObjectClass        = $ObjectClass

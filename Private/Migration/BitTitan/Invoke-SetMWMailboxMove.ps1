@@ -38,7 +38,7 @@ function Invoke-SetMWMailboxMove {
             if ($GetParam.ExportEmailAddress) {
                 try {
                     $GetMailbox = Get-MW_Mailbox @GetParam -WarningAction SilentlyContinue -ErrorAction Stop -RetrieveAll:$true
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         'DisplayName' = $User.DisplayName
                         'Source'      = $GetMailbox.ExportEmailAddress
                         'Target'      = $GetMailbox.ImportEmailAddress
@@ -51,7 +51,7 @@ function Invoke-SetMWMailboxMove {
                     }
                 }
                 catch {
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         'DisplayName' = $User.DisplayName
                         'Source'      = $User.SourceTenantAddress
                         'Target'      = $User.TargetTenantAddress
@@ -68,7 +68,7 @@ function Invoke-SetMWMailboxMove {
                     $SetParam.Add('ConnectorId', $MWProject.Id)
                     $SetParam.Add('Mailbox', $GetMailbox)
                     $SetMailbox = Set-MW_Mailbox @SetParam -WarningAction SilentlyContinue -ErrorAction Stop
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         'DisplayName' = $User.DisplayName
                         'Source'      = $SetMailbox.ExportEmailAddress
                         'Target'      = $SetMailbox.ImportEmailAddress
@@ -81,7 +81,7 @@ function Invoke-SetMWMailboxMove {
                     }
                 }
                 catch {
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         'DisplayName' = $User.DisplayName
                         'Source'      = $User.SourceTenantAddress
                         'Target'      = $User.TargetTenantAddress
@@ -95,7 +95,7 @@ function Invoke-SetMWMailboxMove {
                 }
             }
             else {
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     'DisplayName' = $User.DisplayName
                     'Source'      = $User.SourceTenantAddress
                     'Target'      = $User.TargetTenantAddress

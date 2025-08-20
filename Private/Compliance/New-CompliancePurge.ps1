@@ -10,7 +10,7 @@ function New-CompliancePurge {
         $CurrentStatus = Get-ComplianceSearch $Name
         $Choice = $null
         $Choice = @("Delete $($CurrentStatus.Items) emails from: $Name", 'QUIT') | ForEach-Object {
-            [PSCustomObject]@{ ACTION = $_ }
+            [PSCustomObject][ordered]@{ ACTION = $_ }
         } | Out-GridView -PassThru -Title "Compliance Search: $Name Status is $($CurrentStatus.Status). Choose to delete $($CurrentStatus.Items) emails from mailboxes or quit?"
     } until ($CurrentStatus.Status -eq 'Completed' -or $Choice.Action -eq 'QUIT')
     if ($Choice.Action -like 'Delete*') {

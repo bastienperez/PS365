@@ -65,7 +65,7 @@ function Get-EXCalendarProcessing {
         Start-Sleep -Milliseconds $SleepinMilliseconds
         $CalList = Get-CalendarProcessing -Identity $Mailbox.Guid.ToString()
         foreach ($Cal in $CalList) {
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 DisplayName                         = $Mailbox.DisplayName
                 Office                              = $Mailbox.Office
                 RecipientTypeDetails                = $Mailbox.RecipientTypeDetails

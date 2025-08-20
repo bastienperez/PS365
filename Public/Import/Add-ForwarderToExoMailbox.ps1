@@ -92,7 +92,7 @@ function Add-ForwarderToExoMailbox {
                             Write-Verbose ("SUCCESS: Mailbox forwarder set {0}" -f $Mailbox.DisplayName)
                             $AfterSet = Get-Mailbox -Filter $Filterstring
                             Write-Host "$($AfterSet.DisplayName) New Forwarding Address: $($AfterSet.ForwardingSmtpAddress)" -ForegroundColor Green
-                            [PSCustomObject]@{
+                            [PSCustomObject][ordered]@{
                                 Time               = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                                 Result             = 'SUCCESS'
                                 Action             = 'SETFORWARD'
@@ -109,7 +109,7 @@ function Add-ForwarderToExoMailbox {
                         }
                         catch {
                             Write-Host ("FAILED: Mailbox forwarder not set {0}" -f $Mailbox.DisplayName) -ForegroundColor Red
-                            [PSCustomObject]@{
+                            [PSCustomObject][ordered]@{
                                 Time               = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                                 Result             = 'FAILED'
                                 Action             = 'SETFORWARD'
@@ -127,7 +127,7 @@ function Add-ForwarderToExoMailbox {
                     }
                     else {
                         Write-Host ("FAILED: Mailbox not found {0}" -f $Object) -ForegroundColor Red
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             Time               = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                             Result             = 'FAILED'
                             Action             = 'MAILBOXNOTFOUND'
@@ -166,7 +166,7 @@ function Add-ForwarderToExoMailbox {
                             Write-Verbose ("SUCCESS: Mailbox forwarder set {0}" -f $Mailbox.DisplayName)
                             $AfterSet = Get-Mailbox -Filter $Filterstring
                             Write-Host "$($AfterSet.DisplayName) New Forwarding Address: $($AfterSet.ForwardingSmtpAddress)" -ForegroundColor Green
-                            [PSCustomObject]@{
+                            [PSCustomObject][ordered]@{
                                 Time               = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                                 Result             = 'SUCCESS'
                                 Action             = 'SETFORWARD'
@@ -183,7 +183,7 @@ function Add-ForwarderToExoMailbox {
                         }
                         catch {
                             Write-Host ("FAILED: Mailbox forwarder not set {0}" -f $Mailbox.DisplayName) -ForegroundColor Red
-                            [PSCustomObject]@{
+                            [PSCustomObject][ordered]@{
                                 Time               = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                                 Result             = 'FAILED'
                                 Action             = 'SETFORWARD'
@@ -201,7 +201,7 @@ function Add-ForwarderToExoMailbox {
                     }
                     else {
                         Write-Host ("FAILED: Mailbox not found {0}" -f $Object.Login) -ForegroundColor Red
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             Time               = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                             Result             = 'FAILED'
                             Action             = 'MAILBOXNOTFOUND'

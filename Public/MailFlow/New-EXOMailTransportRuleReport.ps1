@@ -122,7 +122,7 @@ function New-EXOMailTransportRuleReport {
 
             if ($messageTrace) {
                 $messageTrace | ForEach-Object {
-                    $messageTraceResults = [PSCustomObject]@{
+                    $messageTraceResults = [PSCustomObject][ordered]@{
                         Date             = $_.Date
                         TransportRule    = $_.TransportRule
                         SenderAddress    = $_.SenderAddress

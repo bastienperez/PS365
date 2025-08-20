@@ -277,7 +277,7 @@
     $ExServerList = Get-ExchangeServer
     $ExServerObject = foreach ($ExServer in $ExServerList) {
         $ExPing = Test-NetConnection -ComputerName $ExServer
-        [PSCustomObject]@{
+        [PSCustomObject][ordered]@{
             Name                      = $ExServer.Name
             ServerRole                = $ExServer.ServerRole
             Site                      = [regex]::Matches("$($ExServer.Site)", "[^/]*$").value[0]
@@ -320,7 +320,7 @@
     Write-Verbose "Retrieving Exchange Receive Connector IPs"
     $ReceiveIPs = foreach ($RecCon in $ReceiveConnectors) {
         $RecCon.RemoteIPRanges -split [regex]::Escape('|') | ForEach-Object {
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 IPRange  = $_
                 Port     = [regex]::Matches($RecCon.Bindings, "[^:]*$").value[0]
                 Identity = $RecCon.Identity

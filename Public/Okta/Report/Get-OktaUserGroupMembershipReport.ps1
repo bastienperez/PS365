@@ -28,7 +28,7 @@ function Get-OktaUserGroupMembershipReport {
     foreach ($User in $userList) {
         $groupList = $M2GHash[$User.Login]
         foreach ($Group in $groupList) {
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 GroupName = $groupId2NameHash.$Group
                 GroupId   = $Group
                 FirstName = $User.FirstName

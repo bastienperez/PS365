@@ -14,7 +14,7 @@ function Get-365MsolGroupMember {
             $LastDirSync = ($CurGroup.LastDirSyncTime).ToLocalTime()
         }
         foreach ($CurMember in $Member) {
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 GroupName   = $CurGroup.DisplayName
                 LastDirSync = $LastDirSync
                 GroupType   = $CurGroup.GroupType

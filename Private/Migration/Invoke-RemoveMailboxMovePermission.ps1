@@ -23,7 +23,7 @@ function Invoke-RemoveMailboxMovePermission {
                     }
                     try {
                         Remove-MailboxFolderPermission @FolderPermSplat
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             Mailbox            = $Permission.Object
                             PrimarySMTPAddress = $Permission.PrimarySMTPAddress
                             Permission         = $Permission.Permission
@@ -36,7 +36,7 @@ function Invoke-RemoveMailboxMovePermission {
                         }
                     }
                     catch {
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             Mailbox            = $Permission.Object
                             PrimarySMTPAddress = $Permission.PrimarySMTPAddress
                             Permission         = $Permission.Permission
@@ -62,7 +62,7 @@ function Invoke-RemoveMailboxMovePermission {
                             }
                             try {
                                 $null = Remove-MailboxPermission @FullAccessSplat
-                                [PSCustomObject]@{
+                                [PSCustomObject][ordered]@{
                                     Mailbox            = $Permission.Object
                                     PrimarySMTPAddress = $Permission.PrimarySMTPAddress
                                     Permission         = $Permission.Permission
@@ -75,7 +75,7 @@ function Invoke-RemoveMailboxMovePermission {
                                 }
                             }
                             catch {
-                                [PSCustomObject]@{
+                                [PSCustomObject][ordered]@{
                                     Mailbox            = $Permission.Object
                                     PrimarySMTPAddress = $Permission.PrimarySMTPAddress
                                     Permission         = $Permission.Permission
@@ -99,7 +99,7 @@ function Invoke-RemoveMailboxMovePermission {
                             }
                             try {
                                 $null = Remove-RecipientPermission @SendAsSplat
-                                [PSCustomObject]@{
+                                [PSCustomObject][ordered]@{
                                     Mailbox            = $Permission.Object
                                     PrimarySMTPAddress = $Permission.PrimarySMTPAddress
                                     Permission         = $Permission.Permission
@@ -112,7 +112,7 @@ function Invoke-RemoveMailboxMovePermission {
                                 }
                             }
                             catch {
-                                [PSCustomObject]@{
+                                [PSCustomObject][ordered]@{
                                     Mailbox            = $Permission.Object
                                     PrimarySMTPAddress = $Permission.PrimarySMTPAddress
                                     Permission         = $Permission.Permission
@@ -134,7 +134,7 @@ function Invoke-RemoveMailboxMovePermission {
                             }
                             try {
                                 $null = Set-Mailbox @SOBSplat
-                                [PSCustomObject]@{
+                                [PSCustomObject][ordered]@{
                                     Mailbox            = $Permission.Object
                                     PrimarySMTPAddress = $Permission.PrimarySMTPAddress
                                     Permission         = $Permission.Permission
@@ -147,7 +147,7 @@ function Invoke-RemoveMailboxMovePermission {
                                 }
                             }
                             catch {
-                                [PSCustomObject]@{
+                                [PSCustomObject][ordered]@{
                                     Mailbox            = $Permission.Object
                                     PrimarySMTPAddress = $Permission.PrimarySMTPAddress
                                     Permission         = $Permission.Permission

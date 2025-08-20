@@ -17,7 +17,7 @@ function Invoke-SuspendMailboxMove {
         foreach ($User in $UserChoice) {
             try {
                 Suspend-MoveRequest -Identity $User.ExchangeGuid @SuspendSplat
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     DisplayName  = $User.DisplayName
                     ExchangeGuid = $User.ExchangeGuid
                     Action       = 'SUSPEND'
@@ -26,7 +26,7 @@ function Invoke-SuspendMailboxMove {
                 }
             }
             catch {
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     DisplayName  = $User.DisplayName
                     ExchangeGuid = $User.ExchangeGuid
                     Action       = 'SUSPEND'

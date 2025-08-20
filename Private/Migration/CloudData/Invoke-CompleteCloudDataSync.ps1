@@ -31,7 +31,7 @@ function Invoke-CompleteCloudDataSync {
             Write-Host 'SUCCESS' -ForegroundColor Green
             Write-Host "`tBEFORE:`t$($PrePrimaryChange.PrimarySMTPAddress)" -ForegroundColor White
             Write-Host "`tAFTER :`t$($PostPrimaryChange.PrimarySMTPAddress)" -ForegroundColor White
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 Num                              = '[{0} of {1}]' -f $iUP, $Count
                 Action                           = 'CHANGEPRIMARY'
                 Log                              = 'SUCCESS'
@@ -65,7 +65,7 @@ function Invoke-CompleteCloudDataSync {
         }
         catch {
             Write-Host "FAILED $($_.Exception.Message)" -ForegroundColor Red
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 Num                              = '[{0} of {1}]' -f $iUP, $Count
                 Action                           = 'CHANGEPRIMARY'
                 Log                              = $_.Exception.Message
@@ -114,7 +114,7 @@ function Invoke-CompleteCloudDataSync {
             Write-Host 'SUCCESS' -ForegroundColor Green
             Write-Host "`tBEFORE:`t$($PreUPNChange.UserPrincipalName)" -ForegroundColor White
             Write-Host "`tAFTER :`t$($PostUPNChange.UserPrincipalName)" -ForegroundColor White
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 Num                              = '[{0} of {1}]' -f $iUP, $Count
                 Action                           = 'UPNCHANGE'
                 Log                              = 'SUCCESS'
@@ -148,7 +148,7 @@ function Invoke-CompleteCloudDataSync {
         }
         catch {
             Write-Host "FAILED $($_.Exception.Message)" -ForegroundColor Red
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 Num                              = '[{0} of {1}]' -f $iUP, $Count
                 Action                           = 'UPNCHANGE'
                 Log                              = $_.Exception.Message
@@ -204,7 +204,7 @@ function Invoke-CompleteCloudDataSync {
                 }
                 Write-Host 'SUCCESS' -ForegroundColor Green
                 Write-Host ('{0}FOUND ({1}) {2}' -f "`t", $smtp, ($smtp -in $PostEmailChange.EmailAddresses)) -ForegroundColor DarkCyan
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Num                              = '[{0} of {1}]' -f $iUP, $Count
                     Action                           = 'ADDSECONDARY'
                     Log                              = 'SUCCESS'
@@ -239,7 +239,7 @@ function Invoke-CompleteCloudDataSync {
             }
             catch {
                 Write-Host "FAILED $($_.Exception.Message)" -ForegroundColor Red
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Num                              = '[{0} of {1}]' -f $iUP, $Count
                     Action                           = 'ADDSECONDARY'
                     Log                              = $_.Exception.Message

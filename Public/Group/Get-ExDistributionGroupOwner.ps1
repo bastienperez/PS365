@@ -49,7 +49,7 @@ function Get-ExDistributionGroupOwner {
 
     foreach ($Group in $UniqueGroupList) {
         foreach ($Owner in $Group.Owner) {
-            [pscustomobject]@{
+            [PSCustomObject][ordered]@{
                 GroupName = $Group.Name
                 OwnerName = $Owner.split("/")[-1]
             }

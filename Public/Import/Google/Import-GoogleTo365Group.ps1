@@ -196,7 +196,7 @@ function Import-GoogleTo365Group {
 
             try {
                 # $NewDL = New-DistributionGroup @NewSplat -ErrorAction Stop
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Time            = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                     Result          = 'SUCCESS'
                     Action          = 'CREATING'
@@ -210,7 +210,7 @@ function Import-GoogleTo365Group {
                 Write-HostLog -Message "Creating`t$($NewDL.Name)`t$($NewDL.PrimarySmtpAddress)" -Status Success
                 try {
                     # Set-DistributionGroup @SetSplat -ErrorAction Stop -WarningAction SilentlyContinue
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         Time            = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                         Result          = 'SUCCESS'
                         Action          = 'SETTING'
@@ -225,7 +225,7 @@ function Import-GoogleTo365Group {
                 }
                 catch {
                     $Failure = $_.CategoryInfo.Reason
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         Time            = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                         Result          = 'FAILURE'
                         Action          = 'SETTING'
@@ -247,7 +247,7 @@ function Import-GoogleTo365Group {
                 if ($_ -match 'is already managed by recipient') {
                     $Failure = 'DL already managed by recipient'
                 }
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Time            = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                     Result          = 'FAILURE'
                     Action          = 'CREATING'

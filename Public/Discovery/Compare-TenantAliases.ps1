@@ -70,7 +70,7 @@
             $SourceAndTargetID = '{0}{1}' -f $Source.ExchangeObjectId, $TargetHash.(($Source.Address -split '@')[0]).ExchangeObjectId
             if ($TargetHash.Keys -contains ($Source.Address -split '@')[0] -and -not $AlreadyAdded.Contains($SourceAndTargetID)) {
                 $null = $AlreadyAdded.Add($SourceAndTargetID)
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     DisplayName                = $Source.DisplayName
                     Alias                      = ($Source.Address -split '@')[0]
                     PrefixedAddress            = $Source.PrefixedAddress

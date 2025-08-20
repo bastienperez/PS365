@@ -42,14 +42,14 @@ function Grant-OneDriveAdminAccess {
         try {
             Set-SPOUser -Site $site -LoginName $GAUsername -IsSiteCollectionAdmin:$true
             Write-Verbose "Processing $site"
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 User = $User
                 Site = $site
                 Log  = "Success"
             }
         }
         catch {
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 User = $User
                 Site = $site
                 Log  = $_.Exception.Message

@@ -37,7 +37,7 @@ function Invoke-SetMWMailboxMoveForward {
                 }
                 try {
                     Set-Mailbox @ForwardParams
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         Source                     = $Object.Source
                         Forward                    = $Object.Target
                         DeliverToMailboxAndForward = [bool]$ForwardParams.DeliverToMailboxAndForward
@@ -47,7 +47,7 @@ function Invoke-SetMWMailboxMoveForward {
                     }
                 }
                 catch {
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         Source                     = $Object.Source
                         Forward                    = $Object.Target
                         DeliverToMailboxAndForward = [bool]$ForwardParams.DeliverToMailboxAndForward

@@ -45,7 +45,7 @@ function Convert-CIDRToIPRange {
     $ipEnd = ($ipNum -bor (-bnot $mask))
 
     # return
-    return [PSCustomObject]@{
+    return [PSCustomObject][ordered]@{
         Start = ([BitConverter]::GetBytes([Net.IPAddress]::HostToNetworkOrder($ipStart)) | ForEach-Object { $_ } ) -join '.'
         End   = ([BitConverter]::GetBytes([Net.IPAddress]::HostToNetworkOrder($ipEnd)) | ForEach-Object { $_ } ) -join '.'
     }

@@ -46,7 +46,7 @@ function Remove-MailboxAddress {
                 Write-Host "$($Remove.DisplayName)" -ForegroundColor White
                 Get-EXOMailbox -Identity $Remove.Guid.ToString() | Set-Mailbox -EmailAddresses @{Remove = @($Remove.EmailList) }
                 Write-Host "$($Remove.DisplayName) Removed" -ForegroundColor Green
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Action             = "REMOVEEMAILS"
                     DisplayName        = $Remove.DisplayName
                     PrimarySmtpAddress = $Remove.PrimarySmtpAddress
@@ -59,7 +59,7 @@ function Remove-MailboxAddress {
             }
             catch {
                 Write-Host "$($Remove.DisplayName) $($_.Exception.Message)" -ForegroundColor Red
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Action             = "REMOVEEMAILS"
                     DisplayName        = $Remove.DisplayName
                     PrimarySmtpAddress = $Remove.PrimarySmtpAddress

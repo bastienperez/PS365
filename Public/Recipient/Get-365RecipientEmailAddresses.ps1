@@ -52,7 +52,7 @@ function Get-365RecipientEmailAddresses {
                 $RecipientTypeDetails = $_.RecipientTypeDetails
 
                 $_.EmailAddresses -split [regex]::Escape('|') | ForEach-Object {
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         DisplayName          = $DisplayName
                         Identity             = $Identity
                         Alias                = $Alias

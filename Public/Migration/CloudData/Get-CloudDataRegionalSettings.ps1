@@ -22,7 +22,7 @@ function Get-CloudDataRegionalSettings {
     foreach ($Mailbox in $MailboxList) {
         try {
             $Config = Get-MailboxRegionalConfiguration -Identity $Mailbox.ExchangeGuid.ToString() -ErrorAction Stop
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 DisplayName        = $Mailbox.DisplayName
                 PrimarySmtpAddress = $Mailbox.PrimarySmtpAddress
                 ExchangeGuid       = $Mailbox.ExchangeGuid
@@ -34,7 +34,7 @@ function Get-CloudDataRegionalSettings {
             }
         }
         catch {
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 DisplayName        = $Mailbox.DisplayName
                 PrimarySmtpAddress = $Mailbox.PrimarySmtpAddress
                 ExchangeGuid       = $Mailbox.ExchangeGuid

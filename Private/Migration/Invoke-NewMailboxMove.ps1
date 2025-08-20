@@ -87,7 +87,7 @@ function Invoke-NewMailboxMove {
             }
             try {
                 $Result = New-MoveRequest @Param -WarningAction SilentlyContinue -ErrorAction Stop
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     'DisplayName'       = $User.DisplayName
                     'UserPrincipalName' = $User.UserPrincipalName
                     'ExchangeGuid'      = $User.ExchangeGuid
@@ -99,7 +99,7 @@ function Invoke-NewMailboxMove {
                 }
             }
             catch {
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     'DisplayName'       = $User.DisplayName
                     'UserPrincipalName' = $User.UserPrincipalName
                     'ExchangeGuid'      = $User.ExchangeGuid

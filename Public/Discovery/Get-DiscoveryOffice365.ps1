@@ -87,7 +87,7 @@ function Get-DiscoveryOffice365 {
                 'PermissionsReport', 'FolderPermissionReport', 'Compliance'
                 'CreateExcel', 'CreateBitTitanFile'
             ) | ForEach-Object {
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     DiscoveryItems = $_
                 }
             } | Out-GridView -OutputMode Multiple -Title 'Choose Service(s) to Discover. Then click OK'
@@ -102,7 +102,7 @@ function Get-DiscoveryOffice365 {
         if ($Menu.DiscoveryItems -match 'MSOnline' ) { $ConnectHash.Add('MSOnline', $true) }
         # if ($Menu.DiscoveryItems -match 'Compliance' ) { $ConnectHash.Add('Compliance', $true) }
         $ConnectionType = 'Connect without MFA', 'Connect with MFA', 'I am already connected' | ForEach-Object {
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 ConnectionType = $_
             }
         } | Out-GridView -OutputMode Single -Title ('We can connect you to {0}' -f ($ConnectHash.keys -join ', '))
@@ -721,7 +721,7 @@ function Get-DiscoveryOffice365 {
                 $PolicyAndRuleReport = foreach ($CompliancePolicy in $CompliancePolicyList) {
                     $RuleList = Get-RetentionComplianceRule -Policy $CompliancePolicy.Guid
                     foreach ($Rule in $RuleList) {
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             PolicyName                          = $CompliancePolicy.Name
                             PolicyEnabled                       = $CompliancePolicy.Enabled
                             PolicyWorkload                      = $CompliancePolicy.Workload

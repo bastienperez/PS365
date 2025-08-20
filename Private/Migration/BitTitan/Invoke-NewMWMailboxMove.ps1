@@ -39,7 +39,7 @@ function Invoke-NewMWMailboxMove {
             if ($Param.ExportEmailAddress) {
                 try {
                     $Result = Add-MW_Mailbox @Param -WarningAction SilentlyContinue -ErrorAction Stop
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         'DisplayName' = $User.DisplayName
                         'Source'      = $Result.ExportEmailAddress
                         'Target'      = $Result.ImportEmailAddress
@@ -51,7 +51,7 @@ function Invoke-NewMWMailboxMove {
                     }
                 }
                 catch {
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         'DisplayName' = $User.DisplayName
                         'Source'      = $User.SourceTenantAddress
                         'Target'      = $User.TargetTenantAddress
@@ -64,7 +64,7 @@ function Invoke-NewMWMailboxMove {
                 }
             }
             else {
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     'DisplayName' = $User.DisplayName
                     'Source'      = $User.SourceTenantAddress
                     'Target'      = $User.TargetTenantAddress

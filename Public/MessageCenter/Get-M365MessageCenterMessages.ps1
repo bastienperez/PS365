@@ -32,7 +32,7 @@ function Get-M365MessageCenterMessages {
     $output = @{ }
     $output.MessageCenterInformation = foreach ($Message in $AllMessages.Value) {
 
-        [PSCustomObject]@{
+        [PSCustomObject][ordered]@{
             Id                       = $Message.Id
             Title                    = $Message.Title
             Service                  = $Message.services

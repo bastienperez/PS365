@@ -155,7 +155,7 @@ function Get-MgUserLicenseAssignment {
                     
                     $assignmentMethods = ($licenseAssignments[$skuId].Methods | Sort-Object -Unique) -join ', '
                     
-                    $userLicenseInfo = [PSCustomObject]@{
+                    $userLicenseInfo = [PSCustomObject][ordered]@{
                         PSTypeName        = 'MgUserLicenseAssignment'
                         UserId            = $user.Id
                         UserDisplayName   = $user.DisplayName

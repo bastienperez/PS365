@@ -7,7 +7,7 @@ function Get-AzureStorageReport {
     }
     process {
         foreach ($CurStorageAcct in $StorageAcct) {
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 ResourceGroupName  = $CurStorageAcct.ResourceGroupName
                 StorageAccountName = $CurStorageAcct.StorageAccountName
                 Location           = $CurStorageAcct.Location

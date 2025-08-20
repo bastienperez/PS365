@@ -156,7 +156,7 @@ function Register-GraphApplication {
     }
     $NewApp = Import-TemplateApp @Params
 
-    $ConfigObject = [PSCustomObject]@{
+    $ConfigObject = [PSCustomObject][ordered]@{
         TenantClientID = $NewApp.ApplicationId
         TenantTenantID = $NewApp.TenantId
         TenantObjectID = $NewApp.ObjectId
@@ -166,7 +166,7 @@ function Register-GraphApplication {
     if ($AlsoCreateGraphConnection -or $PSCmdlet.ParameterSetName -notcontains 'ExchangeCBA') {
 
         $TenantConfig = Join-Path -Path $TenantPath -ChildPath ('{0}Config.xml' -f $Tenant)
-        [PSCustomObject]@{
+        [PSCustomObject][ordered]@{
             Cred     = [PSCredential]::new($ConfigObject.TenantTenantID, $ConfigObject.TenantSecret)
             ClientId = $ConfigObject.TenantClientID
         } | Export-Clixml -Path $TenantConfig

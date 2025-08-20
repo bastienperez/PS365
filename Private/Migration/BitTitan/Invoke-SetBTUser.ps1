@@ -33,7 +33,7 @@ function Invoke-SetBTUser {
                     Write-Host "User found`t: $($GetResult.PrimaryEmailAddress)" -ForegroundColor White
                     $Result = $GetResult | Set-BT_CustomerEndUser -Ticket $BitTic @Set
                     Write-Host "User set `t: $($GetResult.PrimaryEmailAddress)" -ForegroundColor Green
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         'DisplayName'        = '{0} {1}' -f $User.FirstName, $User.LastName
                         'PrimarySmtpAddress' = $Result.PrimaryEmailAddress
                         'UserPrincipalName'  = $Result.UserPrincipalName
@@ -47,7 +47,7 @@ function Invoke-SetBTUser {
                     }
                 }
                 catch {
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         'DisplayName'        = '{0} {1}' -f $User.FirstName, $User.LastName
                         'PrimarySmtpAddress' = $User.PrimarySmtpAddress
                         'UserPrincipalName'  = $User.UserPrincipalName

@@ -24,7 +24,7 @@ function Get-EXPublicFolderRights {
                 foreach ($Perm in $PermList) {
 
                     if ($StatHash[$Folder.EntryID]) {
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             FolderName   = $Folder.name
                             Identity     = $Folder.Identity
                             FolderType   = $Folder.FolderType
@@ -38,7 +38,7 @@ function Get-EXPublicFolderRights {
                         }
                     }
                     else {
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             FolderName   = $Folder.name
                             Identity     = $Folder.Identity
                             FolderType   = $Folder.FolderType
@@ -55,7 +55,7 @@ function Get-EXPublicFolderRights {
             }
             else {
                 if ($StatHash[$Folder.EntryID]) {
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         FolderName   = $Folder.name
                         Identity     = $Folder.Identity
                         FolderType   = $Folder.FolderType
@@ -69,7 +69,7 @@ function Get-EXPublicFolderRights {
                     }
                 }
                 else {
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         FolderName   = $Folder.name
                         Identity     = $Folder.Identity
                         FolderType   = $Folder.FolderType

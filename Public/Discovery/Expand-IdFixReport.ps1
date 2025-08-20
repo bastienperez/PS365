@@ -23,7 +23,7 @@ function Expand-IdFixReport {
     $idFixReport = Import-Csv $ReportFile
 
     foreach ($id in $idFixReport) {
-        [PSCustomObject]@{
+        [PSCustomObject][ordered]@{
             ORGANIZATIONALUNIT = Convert-DistinguishedToCanonical -DistinguishedName ($id.DistinguishedName -replace '^.+?,(?=(OU|CN)=)')
             DISPLAYNAME        = $id.DISTINGUISHEDNAME -replace '^CN=|,.*$'
             DISTINGUISHEDNAME  = $id.DISTINGUISHEDNAME

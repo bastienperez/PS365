@@ -59,7 +59,7 @@ function Get-PsExoFullAccessPerms {
                 $Email = $RecipientLiveIDHash["$($_.User)"].PrimarySMTPAddress
                 $Type = $RecipientLiveIDHash["$($_.User)"].RecipientTypeDetails
             }
-            [pscustomobject]@{
+            [PSCustomObject][ordered]@{
                 Object               = $_.Identity
                 PrimarySmtpAddress   = $RecipientHash["$($_.Identity)"].PrimarySMTPAddress
                 Granted              = $User

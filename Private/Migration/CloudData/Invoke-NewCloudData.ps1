@@ -53,7 +53,7 @@ function Invoke-NewCloudData {
                 $MeuSet = Get-MailUser -Filter ('PrimarySmtpAddress -eq "{0}"' -f $Converted.PrimarySmtpAddress)
                 Write-Host "[$iUP of $Count] Success Set MailUser: $($MeuSet.DisplayName)" -ForegroundColor Green
 
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Time                      = $Time
                     ResultNew                 = 'SUCCESS'
                     ResultSet                 = 'SUCCESS'
@@ -78,7 +78,7 @@ function Invoke-NewCloudData {
             }
             catch {
                 if ($MeuCreated -and -not $MeuSet) {
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         Time                      = $Time
                         ResultNew                 = 'SUCCESS'
                         ResultSet                 = 'FAILED'
@@ -103,7 +103,7 @@ function Invoke-NewCloudData {
                     Write-Host "[$iUP of $Count] Failed Set MailUser: $($MeuCreated.DisplayName) <$($_.Exception.Message)>" -ForegroundColor Yellow
                 }
                 else {
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         Time                      = $Time
                         ResultNew                 = 'FAILED'
                         ResultSet                 = 'FAILED'
@@ -163,7 +163,7 @@ function Invoke-NewCloudData {
                 }
                 $NewAzADUser = New-AzureADUser @AzUserParams
                 Write-Host "[$iUP of $Count] Success New AzureADUser: $($NewAzADUser.DisplayName)" -ForegroundColor Green
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Time              = $Time
                     ResultNew         = 'SUCCESS'
                     DisplayName       = $NewAzADUser.DisplayName
@@ -177,7 +177,7 @@ function Invoke-NewCloudData {
                 }
             }
             catch {
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Time              = $Time
                     ResultNew         = 'FAILED'
                     DisplayName       = $NewAzADUser.DisplayName

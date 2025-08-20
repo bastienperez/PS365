@@ -16,7 +16,7 @@ function Get-AzureVPNReport {
             $id = $CurVpnGateway.IpConfigurations.PublicIPAddress.id
             $PublicIP = (Get-AzureRmPublicIpAddress -ResourceGroup $ResourceGroupName -Name ($id -split '/')[8]).IpAddress
 
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 ResourceGroupName         = $CurVpnGateway.ResourceGroupName
                 Location                  = $CurVpnGateway.Location
                 Name                      = $CurVpnGateway.Name

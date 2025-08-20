@@ -28,7 +28,7 @@ function Invoke-RemoveBTUser {
             foreach ($Remove in $RemoveChoice) {
                 try {
                     Remove-BT_CustomerEndUser -Ticket $BitTic -id $Remove.Id -Force -ErrorAction Stop
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         'DisplayName'         = $Remove.DisplayName
                         'PrimaryEmailAddress' = $Remove.PrimaryEmailAddress
                         'UserPrincipalName'   = $Remove.UserPrincipalName
@@ -41,7 +41,7 @@ function Invoke-RemoveBTUser {
                     }
                 }
                 catch {
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         'DisplayName'         = $Remove.DisplayName
                         'PrimaryEmailAddress' = $Remove.PrimaryEmailAddress
                         'UserPrincipalName'   = $Remove.UserPrincipalName

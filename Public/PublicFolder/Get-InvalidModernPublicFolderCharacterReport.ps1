@@ -78,7 +78,7 @@ function Get-InvalidModernPublicFolderCharacterReport {
             Write-Host "Old Folder Name:`t$($BadNamePF.FolderName)" -ForegroundColor 'Cyan'
             Write-Host "New Folder Name:`t$NewFolder" -ForegroundColor 'Green'
 
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 CurrentPFName     = $BadNamePF.FolderName
                 RecommendedPFName = $NewFolder
                 OffendingChar     = @($OffendingChar) -ne '' -join '|'

@@ -8,7 +8,7 @@ function Get-PSGUser {
 
     foreach ($User in $UserList) {
         $Forward = Get-GSGmailAutoForwardingSettings -User $User.User
-        [PSCustomObject]@{
+        [PSCustomObject][ordered]@{
             Name                       = $User.Name.FullName
             GivenName                  = $User.Name.GivenName
             FamilyName                 = $User.Name.FamilyName

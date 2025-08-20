@@ -54,7 +54,7 @@ function Import-PoshAlias {
                 try {
                     Set-MailUser -Identity $Alias.Target -Add @{'EmailAddresses' = $Alias.Alias } -ErrorAction Stop
                     Write-Host "Success adding alias $($Alias.Alias) to mailbox $($Alias.Target)" -ForegroundColor Green
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         Alias      = $Alias.Alias
                         Target     = $Alias.Target
                         TargetType = $Alias.TargetType
@@ -64,7 +64,7 @@ function Import-PoshAlias {
                 }
                 catch {
                     Write-Host "Failed adding alias $($Alias.Alias) to mailbox $($Alias.Target)" -ForegroundColor Red
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         Alias      = $Alias.Alias
                         Target     = $Alias.Target
                         TargetType = $Alias.TargetType
@@ -77,7 +77,7 @@ function Import-PoshAlias {
                 try {
                     Set-DistributionGroup -Identity $Alias.Target -Add @{'EmailAddresses' = $Alias.Alias } -ErrorAction Stop
                     Write-Host "Failed adding alias $($Alias.Alias) to distribution group $($Alias.Target)" -ForegroundColor Green
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         Alias      = $Alias.Alias
                         Target     = $Alias.Target
                         TargetType = $Alias.TargetType
@@ -87,7 +87,7 @@ function Import-PoshAlias {
                 }
                 catch {
                     Write-Host "Failed adding alias $($Alias.Alias) to distribution group $($Alias.Target)" -ForegroundColor Red
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         Alias      = $Alias.Alias
                         Target     = $Alias.Target
                         TargetType = $Alias.TargetType
@@ -104,7 +104,7 @@ function Import-PoshAlias {
                 try {
                     Set-Mailbox -Identity $Alias.Target -Add @{'EmailAddresses' = $Alias.Alias } -ErrorAction Stop
                     Write-Host "Success adding alias $($Alias.Alias) to Mailbox $($Alias.Target)" -ForegroundColor Green
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         Alias      = $Alias.Alias
                         Target     = $Alias.Target
                         TargetType = $Alias.TargetType
@@ -114,7 +114,7 @@ function Import-PoshAlias {
                 }
                 catch {
                     Write-Host "Failed adding alias $($Alias.Alias) to Mailbox $($Alias.Target)" -ForegroundColor Red
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         Alias      = $Alias.Alias
                         Target     = $Alias.Target
                         TargetType = $Alias.TargetType
@@ -127,7 +127,7 @@ function Import-PoshAlias {
                 try {
                     Set-DistributionGroup -Identity $Alias.Target -Add @{'EmailAddresses' = $Alias.Alias } -ErrorAction Stop
                     Write-Host "Failed adding alias $($Alias.Alias) to distribution group $($Alias.Target)" -ForegroundColor Green
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         Alias      = $Alias.Alias
                         Target     = $Alias.Target
                         TargetType = $Alias.TargetType
@@ -137,7 +137,7 @@ function Import-PoshAlias {
                 }
                 catch {
                     Write-Host "Failed adding alias $($Alias.Alias) to distribution group $($Alias.Target)" -ForegroundColor Red
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         Alias      = $Alias.Alias
                         Target     = $Alias.Target
                         TargetType = $Alias.TargetType
@@ -157,7 +157,7 @@ function Import-PoshAlias {
                     try {
                         $Found = Get-ADUser -Filter "mail -eq '$($Alias.Target)'" -properties mail, proxyaddresses
                         Write-Host "Success finding ADUSER $($Alias.Target) via MAIL attribute" -ForegroundColor Green
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             Alias      = $Alias.Alias
                             Target     = $Alias.Target
                             TargetType = $Alias.TargetType
@@ -169,7 +169,7 @@ function Import-PoshAlias {
                     }
                     catch {
                         Write-Host "Failed finding ADUSER $($Alias.Target) via MAIL attribute" -ForegroundColor Red
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             Alias      = $Alias.Alias
                             Target     = $Alias.Target
                             TargetType = $Alias.TargetType
@@ -184,7 +184,7 @@ function Import-PoshAlias {
                     try {
                         $Found = Get-ADUser -Filter "SamAccountName -eq '$($Alias.Target)'"
                         Write-Host "Success finding ADUSER $($Alias.Target) via SAMACCOUNTNAME attribute" -ForegroundColor Green
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             Alias      = $Alias.Alias
                             Target     = $Alias.Target
                             TargetType = $Alias.TargetType
@@ -196,7 +196,7 @@ function Import-PoshAlias {
                     }
                     catch {
                         Write-Host "Failed finding ADUSER $($Alias.Target) via SAMACCOUNTNAME attribute" -ForegroundColor Red
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             Alias      = $Alias.Alias
                             Target     = $Alias.Target
                             TargetType = $Alias.TargetType
@@ -212,7 +212,7 @@ function Import-PoshAlias {
                     try {
                         $Found | Set-ADUser -Add @{'ProxyAddresses' = 'smtp:{0}' -f $Alias.Alias } -ErrorAction Stop
                         Write-Host "Success adding ADUSER alias $($Alias.Alias)" -ForegroundColor Green
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             Alias      = $Alias.Alias
                             Target     = $Alias.Target
                             TargetType = $Alias.TargetType
@@ -224,7 +224,7 @@ function Import-PoshAlias {
                     }
                     catch {
                         Write-Host "Failed adding ADUSER alias $($Alias.Alias)" -ForegroundColor Red
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             Alias      = $Alias.Alias
                             Target     = $Alias.Target
                             TargetType = $Alias.TargetType
@@ -240,7 +240,7 @@ function Import-PoshAlias {
                     try {
                         $Found | Set-ADUser -Add @{'ProxyAddresses' = 'SMTP:{0}' -f $Alias.Target } -ErrorAction Stop
                         Write-Host "Success adding ADUSER PrimarySmtpAddress to proxyaddresses $($Alias.Target)" -ForegroundColor Green
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             Alias      = $Alias.Alias
                             Target     = $Alias.Target
                             TargetType = $Alias.TargetType
@@ -252,7 +252,7 @@ function Import-PoshAlias {
                     }
                     catch {
                         Write-Host "Failed adding ADUSER PrimarySmtpAddress to proxyaddresses $($Alias.Target)" -ForegroundColor Red
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             Alias      = $Alias.Alias
                             Target     = $Alias.Target
                             TargetType = $Alias.TargetType
@@ -270,7 +270,7 @@ function Import-PoshAlias {
                     try {
                         $Found = Get-ADGroup -Filter "mail -eq '$($Alias.Target)'"
                         Write-Host "Success finding ADGroup $($Alias.Target) via MAIL attribute" -ForegroundColor Green
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             Alias      = $Alias.Alias
                             Target     = $Alias.Target
                             TargetType = $Alias.TargetType
@@ -282,7 +282,7 @@ function Import-PoshAlias {
                     }
                     catch {
                         Write-Host "Failed finding ADGroup $($Alias.Target) via MAIL attribute" -ForegroundColor Red
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             Alias      = $Alias.Alias
                             Target     = $Alias.Target
                             TargetType = $Alias.TargetType
@@ -297,7 +297,7 @@ function Import-PoshAlias {
                     try {
                         $Found = Get-ADGroup -Filter "SamAccountName -eq '$($Alias.Target)'"
                         Write-Host "Success finding ADGroup $($Alias.Target) via SAMACCOUNTNAME attribute" -ForegroundColor Green
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             Alias      = $Alias.Alias
                             Target     = $Alias.Target
                             TargetType = $Alias.TargetType
@@ -309,7 +309,7 @@ function Import-PoshAlias {
                     }
                     catch {
                         Write-Host "Failed finding ADGroup $($Alias.Target) via SAMACCOUNTNAME attribute" -ForegroundColor Red
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             Alias      = $Alias.Alias
                             Target     = $Alias.Target
                             TargetType = $Alias.TargetType
@@ -325,7 +325,7 @@ function Import-PoshAlias {
                     try {
                         $Found | Set-ADGroup -Add @{'ProxyAddresses' = 'smtp:{0}' -f $Alias.Alias } -ErrorAction Stop
                         Write-Host "Success adding ADGROUP alias $($Alias.Alias)" -ForegroundColor Green
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             Alias      = $Alias.Alias
                             Target     = $Alias.Target
                             TargetType = $Alias.TargetType
@@ -337,7 +337,7 @@ function Import-PoshAlias {
                     }
                     catch {
                         Write-Host "Failed adding ADGROUP alias $($Alias.Alias)" -ForegroundColor Red
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             Alias      = $Alias.Alias
                             Target     = $Alias.Target
                             TargetType = $Alias.TargetType
@@ -352,7 +352,7 @@ function Import-PoshAlias {
                     try {
                         $Found | Set-ADGroup -Add @{'ProxyAddresses' = 'SMTP:{0}' -f $Alias.Target } -ErrorAction Stop
                         Write-Host "Success adding ADGROUP PrimarySmtpAddress to proxyaddresses $($Alias.Target)" -ForegroundColor Green
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             Alias      = $Alias.Alias
                             Target     = $Alias.Target
                             TargetType = $Alias.TargetType
@@ -364,7 +364,7 @@ function Import-PoshAlias {
                     }
                     catch {
                         Write-Host "Failed adding ADGROUP PrimarySmtpAddress to proxyaddresses $($Alias.Target)" -ForegroundColor Red
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             Alias      = $Alias.Alias
                             Target     = $Alias.Target
                             TargetType = $Alias.TargetType

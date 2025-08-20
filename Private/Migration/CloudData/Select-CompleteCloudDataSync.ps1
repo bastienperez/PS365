@@ -14,7 +14,7 @@ function Select-CompleteCloudDataSync {
     $Time = [DateTime]::Now.ToString('yyyy-MM-dd-hhmm')
     foreach ($Result in $ResultObject) {
         $iUP++
-        [PSCustomObject]@{
+        [PSCustomObject][ordered]@{
             Num                       = '[{0} of {1}]' -f $iUP, $Count
             Time                      = $Time
             LogTime                   = $Result.Time

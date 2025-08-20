@@ -42,7 +42,7 @@ function Invoke-SetMailboxMoveAddressBookPolicy {
                 }
                 try {
                     Set-Mailbox @SetSplat
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         DisplayName       = $User.DisplayName
                         Result            = 'SUCCESS'
                         Identity          = $User.UserPrincipalName
@@ -53,7 +53,7 @@ function Invoke-SetMailboxMoveAddressBookPolicy {
                     }
                 }
                 catch {
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         DisplayName       = $User.DisplayName
                         Result            = 'FAILED'
                         Identity          = $User.UserPrincipalName

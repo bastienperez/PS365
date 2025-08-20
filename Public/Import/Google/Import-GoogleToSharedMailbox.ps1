@@ -52,7 +52,7 @@ function Import-GoogleToSharedMailbox {
             try {
                 $NewShared = New-Mailbox @NewSharedSplat
 
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Time               = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                     Result             = 'SUCCESS'
                     Action             = 'CREATING'
@@ -73,7 +73,7 @@ function Import-GoogleToSharedMailbox {
             }
             catch {
 
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Time               = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                     Result             = 'FAILED'
                     Action             = 'CREATING'

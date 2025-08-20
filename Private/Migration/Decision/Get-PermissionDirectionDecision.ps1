@@ -10,10 +10,10 @@ function Get-PermissionDirectionDecision {
             OutputMode = 'Multiple'
         }
         $PermissionDirectionDecision = @(
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 'Options' = 'Show me delegates (those granted access to mailbox(es) you just selected)'
             },
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 'Options' = 'Show me delegated (the mailboxes that can be accessed by mailbox(es) you just selected)'
             }
         )

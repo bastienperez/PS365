@@ -20,7 +20,7 @@ function Get-DNSSECDetails {
         $dnskey_dnsrecord = "N/A"
     }
 
-    [PSCustomObject]@{
+    [PSCustomObject][ordered]@{
         'DNSKeyExists' = $dnskey_exists
         'DNSKEYRecord' = $dnskey_dnsrecord
     }

@@ -39,7 +39,7 @@ function Invoke-SetMailboxMove {
         foreach ($User in $UserChoice) {
             try {
                 Set-MoveRequest -Identity $User.Guid @SetSplat
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     DisplayName                = $User.DisplayName
                     ExchangeGuid               = $User.ExchangeGuid.toString()
                     Result                     = 'SUCCESS'
@@ -52,7 +52,7 @@ function Invoke-SetMailboxMove {
                 }
             }
             catch {
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     DisplayName                = $User.DisplayName
                     ExchangeGuid               = $User.ExchangeGuid.toString()
                     Result                     = 'FAILED'

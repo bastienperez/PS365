@@ -89,7 +89,7 @@ function New-ActiveDirectoryUser {
                     }
                 }
                 catch {
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         DisplayName = $Display
                         Name        = $Name
                         Error       = $_
@@ -100,7 +100,7 @@ function New-ActiveDirectoryUser {
                 }
             }
             else {
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     DisplayName = $Display
                     Name        = $Name
                     Path        = $OU

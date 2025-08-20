@@ -51,7 +51,7 @@ function Get-PSExoSendOnBehalfRecursePerms {
                     $Email = $RecipientHash["$CurGranted"].PrimarySMTPAddress
                     $Type = $RecipientHash["$CurGranted"].RecipientTypeDetails
                 }
-                [pscustomobject]@{
+                [PSCustomObject][ordered]@{
                     Mailbox              = $RecipientDNHash["$Mailbox"].Name
                     MailboxPrimarySMTP   = $RecipientDNHash["$Mailbox"].PrimarySMTPAddress
                     Granted              = $CurGranted
@@ -63,7 +63,7 @@ function Get-PSExoSendOnBehalfRecursePerms {
         }
         if ($listGroupMembers.Count -gt 0) {
             foreach ($CurlistGroupMember in $listGroupMembers) {
-                [pscustomobject]@{
+                [PSCustomObject][ordered]@{
                     Mailbox              = $RecipientDNHash["$Mailbox"].Name
                     MailboxPrimarySMTP   = $RecipientDNHash["$Mailbox"].PrimarySMTPAddress
                     Granted              = $RecipientDNHash["$CurlistGroupMember"].Name

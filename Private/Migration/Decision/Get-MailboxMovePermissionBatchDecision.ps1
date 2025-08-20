@@ -99,7 +99,7 @@ function Get-MailboxMovePermissionBatchDecision {
             $Null = $UCSet.Add($_.GrantedSMTP)
         }
         $UCSet | ForEach-Object {
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 PrimarySmtpAddress = $_
             }
         }

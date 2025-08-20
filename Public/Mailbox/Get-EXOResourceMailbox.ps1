@@ -73,7 +73,7 @@ function Get-PsExoResourceMailbox {
             foreach ($Resource in $ResourceMailbox) {
                 $CalList = Get-CalendarProcessing -Identity $Resource.Guid.ToString()
                 foreach ($Cal in $CalList) {
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         DisplayName                         = $Resource.DisplayName
                         Office                              = $Resource.Office
                         RecipientTypeDetails                = $Resource.RecipientTypeDetails

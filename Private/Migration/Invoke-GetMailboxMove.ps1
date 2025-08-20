@@ -17,7 +17,7 @@ function Invoke-GetMailboxMove {
         $MoveRequest = Get-MoveRequest -ResultSize 'Unlimited' | Sort-Object -Property Identity
     }
     foreach ($Move in $MoveRequest) {
-        [PSCustomObject]@{
+        [PSCustomObject][ordered]@{
             Identity                   = $Move.Identity
             Status                     = $Move.Status
             DisplayName                = $Move.DisplayName

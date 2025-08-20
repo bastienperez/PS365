@@ -18,7 +18,7 @@ else {
       if ($TimeStamp -eq $AADCheck) {
         # It's a new record, so let's write it out
         $NewGuests++
-        $ReportLine = [PSCustomObject]@{
+        $ReportLine = [PSCustomObject][ordered]@{
           TimeStamp = $TimeStamp
           User      = $AuditData.UserId
           Action    = $AuditData.Operation

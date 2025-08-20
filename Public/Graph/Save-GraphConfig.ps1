@@ -41,7 +41,7 @@
         if ($Secret) {
             $TenantSecret = $Secret | ConvertTo-SecureString -AsPlainText -Force
             $TenantConfig = Join-Path -Path $TenantPath -ChildPath ('{0}Config.xml' -f $Tenant)
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 Cred     = [PSCredential]::new($TenantId, $TenantSecret)
                 ClientId = $ApplicationId
             } | Export-Clixml -Path $TenantConfig

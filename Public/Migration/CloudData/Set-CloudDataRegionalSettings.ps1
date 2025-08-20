@@ -36,7 +36,7 @@ function Set-CloudDataRegionalSettings {
         try {
             Set-MailboxRegionalConfiguration -Identity $Mailbox.ExchangeGuid -Language $Mailbox.Language -TimeZone $Mailbox.TimeZone -ErrorAction Stop
             $NewConfig = Get-MailboxRegionalConfiguration -Identity $Mailbox.ExchangeGuid
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 DisplayName        = $Mailbox.DisplayName
                 PrimarySmtpAddress = $Mailbox.PrimarySmtpAddress
                 ExchangeGuid       = $Mailbox.ExchangeGuid
@@ -50,7 +50,7 @@ function Set-CloudDataRegionalSettings {
             }
         }
         catch {
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 DisplayName        = $Mailbox.DisplayName
                 PrimarySmtpAddress = $Mailbox.PrimarySmtpAddress
                 ExchangeGuid       = $Mailbox.ExchangeGuid

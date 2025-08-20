@@ -34,7 +34,7 @@ function Get-GraphMailMessage {
             foreach ($CurMail in $Mail) {
 
                 $CurMail| Select-Object *
-                # [PSCustomObject]@{
+                # [PSCustomObject][ordered]@{
                 #     'Mailbox'                 = $UPN
                 #     'FolderName'              = $FolderName
                 #     'WellKnownName'           = $WellKnownFolderName

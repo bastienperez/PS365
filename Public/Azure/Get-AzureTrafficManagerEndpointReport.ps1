@@ -10,7 +10,7 @@ function Get-AzureTrafficManagerEndpointReport {
     process {
 
         foreach ($CurTrafficMgrProfile in $TrafficMgrProfile.Endpoints) {
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 Priority              = $CurTrafficMgrProfile.Priority
                 Name                  = $CurTrafficMgrProfile.Name
                 Weight                = $CurTrafficMgrProfile.Weight

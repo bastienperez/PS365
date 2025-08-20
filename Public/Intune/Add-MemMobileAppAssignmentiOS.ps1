@@ -54,7 +54,7 @@ function Add-MemMobileAppAssignmentiOS {
     #             Uri     = 'https://graph.microsoft.com/beta/deviceAppManagement/mobileApps/{0}/assign' -f $AppId
     #             Headers = @{ "Authorization" = "Bearer $Token" }
     #             Method  = 'POST'
-    #             Body    = [PSCustomObject]@{
+    #             Body    = [PSCustomObject][ordered]@{
     #                 assignments = @{
     #                     target   = @{
     #                         '@odata.type' = '#microsoft.graph.groupAssignmentTarget'

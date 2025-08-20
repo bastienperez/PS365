@@ -16,7 +16,7 @@ function Sync-CloudData {
     #Region Choose Recipient
 
     $TypeGrid = foreach ($Item in 'Mailboxes', 'MailUsers', 'AzureADUsers') {
-        [PSCustomObject]@{
+        [PSCustomObject][ordered]@{
             RecipientType = $Item
         }
     }

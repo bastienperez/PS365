@@ -14,7 +14,7 @@ function Invoke-GetMailboxMoveStatistics {
             $StatList = $Move | Get-MoveRequestStatistics
 
             foreach ($Stat in $StatList) {
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Identity                   = $Stat.Identity
                     Status                     = $Stat.Status.toString()
                     BatchName                  = $Stat.BatchName

@@ -50,7 +50,7 @@ function Invoke-T2TNewMailboxMove {
             try {
                 # VERIFY THE LAST CHANGE TO    UserPrincipalName  = $User.ExchangeGuid works for T2T!!
                 $Result = New-MoveRequest @Param -WarningAction SilentlyContinue -ErrorAction Stop
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     DisplayName        = $User.DisplayName
                     UserPrincipalName  = $User.ExchangeGuid
                     Result             = 'SUCCESS'
@@ -63,7 +63,7 @@ function Invoke-T2TNewMailboxMove {
                 }
             }
             catch {
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     DisplayName        = $User.DisplayName
                     UserPrincipalName  = $User.UserPrincipalName
                     ExchangeGuid       = $User.ExchangeGuid

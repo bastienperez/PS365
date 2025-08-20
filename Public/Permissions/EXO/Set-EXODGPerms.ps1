@@ -45,7 +45,7 @@
                     Confirm       = $false
                 }
                 $SAResult = Add-RecipientPermission @SAParams
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Num          = "[$iSA of $Count]"
                     Log          = 'SUCCESS'
                     Identity     = $SAResult.Identity
@@ -54,7 +54,7 @@
                 }
             }
             catch {
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Num          = "[$iSA of $Count]"
                     Log          = $_.Exception.Message
                     Identity     = $SendAs.PrimarySmtpAddress
@@ -81,7 +81,7 @@
                     WarningAction       = 'SilentlyContinue'
                 }
                 Set-DistributionGroup @SOBParams
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Num          = "[$iSOB of $SOBCount]"
                     Log          = 'SUCCESS'
                     Identity     = $SendOnBehalf.PrimarySmtpAddress
@@ -90,7 +90,7 @@
                 }
             }
             catch {
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Num          = "[$iSOB of $SOBCount]"
                     Log          = $_.Exception.Message
                     Identity     = $SendOnBehalf.PrimarySmtpAddress

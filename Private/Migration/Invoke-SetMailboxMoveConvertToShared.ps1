@@ -42,7 +42,7 @@ function Invoke-SetMailboxMoveConvertToShared {
                 }
                 try {
                     Set-Mailbox @SetSplat
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         DisplayName  = $User.DisplayName
                         Result       = 'SUCCESS'
                         Identity     = $User.UserPrincipalName
@@ -52,7 +52,7 @@ function Invoke-SetMailboxMoveConvertToShared {
                     }
                 }
                 catch {
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         DisplayName  = $User.DisplayName
                         Result       = 'FAILED'
                         Identity     = $User.UserPrincipalName

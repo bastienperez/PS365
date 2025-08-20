@@ -22,7 +22,7 @@ function Invoke-RemoveMailboxMove {
             foreach ($User in $UserChoice) {
                 try {
                     Remove-MoveRequest -Identity $User.Guid -Confirm:$false -ErrorAction Stop
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         DisplayName = $User.DisplayName
                         Result      = 'SUCCESS'
                         Log         = 'SUCCESS'
@@ -30,7 +30,7 @@ function Invoke-RemoveMailboxMove {
                     }
                 }
                 catch {
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         DisplayName = $User.DisplayName
                         Result      = 'FAILED'
                         Log         = $_.Exception.Message

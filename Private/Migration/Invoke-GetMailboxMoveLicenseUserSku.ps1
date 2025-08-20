@@ -44,7 +44,7 @@ function Invoke-GetMailboxMoveLicenseUserSku {
                     if (-not $OnePerLine) {
                         foreach ($User in $UserChoice) {
                             if ($SkuList = (Get-AzureADUser -Filter "UserPrincipalName eq '$($User.UserPrincipalName)'").AssignedLicenses.SkuID) {
-                                [PSCustomObject]@{
+                                [PSCustomObject][ordered]@{
                                     DisplayName        = $User.DisplayName
                                     PrimarySmtpAddress = $User.PrimarySmtpAddress
                                     UserPrincipalName  = $User.UserPrincipalName
@@ -53,7 +53,7 @@ function Invoke-GetMailboxMoveLicenseUserSku {
                                 }
                             }
                             else {
-                                [PSCustomObject]@{
+                                [PSCustomObject][ordered]@{
                                     DisplayName        = $User.DisplayName
                                     PrimarySmtpAddress = $User.PrimarySmtpAddress
                                     UserPrincipalName  = $User.UserPrincipalName
@@ -66,7 +66,7 @@ function Invoke-GetMailboxMoveLicenseUserSku {
                         foreach ($User in $UserChoice) {
                             if ($SkuList = (Get-AzureADUser -Filter "UserPrincipalName eq '$($User.UserPrincipalName)'").AssignedLicenses.SkuID) {
                                 foreach ($Sku in $SkuList) {
-                                    [PSCustomObject]@{
+                                    [PSCustomObject][ordered]@{
                                         DisplayName        = $User.DisplayName
                                         PrimarySmtpAddress = $User.PrimarySmtpAddress
                                         UserPrincipalName  = $User.UserPrincipalName
@@ -75,7 +75,7 @@ function Invoke-GetMailboxMoveLicenseUserSku {
                                 }
                             }
                             else {
-                                [PSCustomObject]@{
+                                [PSCustomObject][ordered]@{
                                     DisplayName        = $User.DisplayName
                                     PrimarySmtpAddress = $User.PrimarySmtpAddress
                                     UserPrincipalName  = $User.UserPrincipalName
@@ -91,7 +91,7 @@ function Invoke-GetMailboxMoveLicenseUserSku {
                     foreach ($User in $UserChoice) {
                         if ($User.AssignedLicenses.SkuID) {
                             foreach ($Sku in $User.AssignedLicenses.SkuID) {
-                                [PSCustomObject]@{
+                                [PSCustomObject][ordered]@{
                                     DisplayName        = $User.DisplayName
                                     PrimarySmtpAddress = [regex]::Matches("$($User.ProxyAddresses)", "(?<=SMTP:)[^ ]*").value
                                     UserPrincipalName  = $User.UserPrincipalName
@@ -100,7 +100,7 @@ function Invoke-GetMailboxMoveLicenseUserSku {
                             }
                         }
                         else {
-                            [PSCustomObject]@{
+                            [PSCustomObject][ordered]@{
                                 DisplayName        = $User.DisplayName
                                 PrimarySmtpAddress = [regex]::Matches("$($User.ProxyAddresses)", "(?<=SMTP:)[^ ]*").value
                                 UserPrincipalName  = $User.UserPrincipalName
@@ -111,7 +111,7 @@ function Invoke-GetMailboxMoveLicenseUserSku {
                 }
                 else {
                     foreach ($User in $UserChoice) {
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             DisplayName        = $User.DisplayName
                             PrimarySmtpAddress = [regex]::Matches("$($User.ProxyAddresses)", "(?<=SMTP:)[^ ]*").value
                             UserPrincipalName  = $User.UserPrincipalName
@@ -125,7 +125,7 @@ function Invoke-GetMailboxMoveLicenseUserSku {
                 if ($OnePerLine) {
                     foreach ($User in $UserChoice) {
                         foreach ($Sku in $User.AssignedLicenses.SkuID) {
-                            [PSCustomObject]@{
+                            [PSCustomObject][ordered]@{
                                 DisplayName        = $User.DisplayName
                                 PrimarySmtpAddress = [regex]::Matches("$($User.ProxyAddresses)", "(?<=SMTP:)[^ ]*").value
                                 UserPrincipalName  = $User.UserPrincipalName
@@ -136,7 +136,7 @@ function Invoke-GetMailboxMoveLicenseUserSku {
                 }
                 else {
                     foreach ($User in $UserChoice) {
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             DisplayName        = $User.DisplayName
                             PrimarySmtpAddress = [regex]::Matches("$($User.ProxyAddresses)", "(?<=SMTP:)[^ ]*").value
                             UserPrincipalName  = $User.UserPrincipalName
@@ -151,7 +151,7 @@ function Invoke-GetMailboxMoveLicenseUserSku {
                     foreach ($User in $UserChoice) {
                         if ($User.AssignedLicenses.SkuID) {
                             foreach ($Sku in $User.AssignedLicenses.SkuID) {
-                                [PSCustomObject]@{
+                                [PSCustomObject][ordered]@{
                                     DisplayName        = $User.DisplayName
                                     PrimarySmtpAddress = [regex]::Matches("$($User.ProxyAddresses)", "(?<=SMTP:)[^ ]*").value
                                     UserPrincipalName  = $User.UserPrincipalName
@@ -160,7 +160,7 @@ function Invoke-GetMailboxMoveLicenseUserSku {
                             }
                         }
                         else {
-                            [PSCustomObject]@{
+                            [PSCustomObject][ordered]@{
                                 DisplayName        = $User.DisplayName
                                 PrimarySmtpAddress = [regex]::Matches("$($User.ProxyAddresses)", "(?<=SMTP:)[^ ]*").value
                                 UserPrincipalName  = $User.UserPrincipalName
@@ -171,7 +171,7 @@ function Invoke-GetMailboxMoveLicenseUserSku {
                 }
                 else {
                     foreach ($User in $UserChoice) {
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             DisplayName        = $User.DisplayName
                             PrimarySmtpAddress = [regex]::Matches("$($User.ProxyAddresses)", "(?<=SMTP:)[^ ]*").value
                             UserPrincipalName  = $User.UserPrincipalName

@@ -106,7 +106,7 @@ function Set-365RegionalSettings {
             Set-MailboxRegionalConfiguration -Identity $mailbox.PrimarySmtpAddress -Language $mailbox.Language -TimeZone $mailbox.TimeZone -LocalizeDefaultFolderName $true -ErrorAction Stop
             <#
             $NewConfig = Get-mailboxRegionalConfiguration -Identity $mailbox.ExchangeGuid
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 DisplayName        = $mailbox.DisplayName
                 PrimarySmtpAddress = $mailbox.PrimarySmtpAddress
                 ExchangeGuid       = $mailbox.ExchangeGuid
@@ -121,7 +121,7 @@ function Set-365RegionalSettings {
             #>
         }
         catch {
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 DisplayName        = $mailbox.DisplayName
                 PrimarySmtpAddress = $mailbox.PrimarySmtpAddress
                 ExchangeGuid       = $mailbox.ExchangeGuid

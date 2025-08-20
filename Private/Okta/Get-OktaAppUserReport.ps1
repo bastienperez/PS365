@@ -69,7 +69,7 @@ function Get-OktaAppUserReport {
             $ProfileDetail = ($CurUser).Profile
             $CredDetail = ($CurUser).Credentials
 
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 AppID        = $AppId
                 DisplayName  = $ProfileDetail.displayName
                 FirstName    = $ProfileDetail.FirstName

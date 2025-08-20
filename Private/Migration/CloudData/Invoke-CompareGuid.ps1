@@ -18,7 +18,7 @@ function Invoke-CompareGuid {
         $Count = @($Numbered).Count
         foreach ($Num in $Numbered) {
             $i++
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 Num                = '[{0} of {1}]' -f $i, $Count
                 DisplayName        = $Num.DisplayName
                 OrganizationalUnit = $Num.OrganizationalUnit
@@ -35,7 +35,7 @@ function Invoke-CompareGuid {
     else {
         foreach ($RMKey in $RMHash.keys) {
             if ($CloudHash.ContainsKey($RMKey)) {
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Displayname           = if ($RMHash[$RMKey]['DisplayName']) { $RMHash[$RMKey]['DisplayName'] } else { $RMHash[$RMKey]['DisplayName'] }
                     UserPrincipalName     = $RMKey
                     PrimarySmtpAddress    = $RMHash[$RMKey]['PrimarySmtpAddress']
@@ -53,7 +53,7 @@ function Invoke-CompareGuid {
                 }
             }
             else {
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Displayname           = if ($RMHash[$RMKey]['DisplayName']) { $RMHash[$RMKey]['DisplayName'] } else { $RMHash[$RMKey]['DisplayName'] }
                     UserPrincipalName     = $RMKey
                     PrimarySmtpAddress    = $RMHash[$RMKey]['PrimarySmtpAddress']

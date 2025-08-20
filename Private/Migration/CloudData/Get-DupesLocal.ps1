@@ -14,7 +14,7 @@ function Get-DupesLocal {
         $Recipient
     )
     Write-Host "Prefix Overlap: $($Recipient.PrimarySmtpAddress)" -ForegroundColor Red
-    [PSCustomObject]@{
+    [PSCustomObject][ordered]@{
         Prefix                 = $Prefix
         Address                = $Address
         Type                   = $Hash[$Prefix]['RecipientTypeDetails']

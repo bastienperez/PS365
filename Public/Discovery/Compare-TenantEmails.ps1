@@ -67,7 +67,7 @@
             $SourceAndTargetID = '{0}{1}' -f $Source.ExchangeObjectId, $TargetHash.($Source.PrefixedAddress).ExchangeObjectId
             if ($TargetHash.Keys -contains $Source.PrefixedAddress -and -not $AlreadyAdded.Contains($SourceAndTargetID)) {
                 $null = $AlreadyAdded.Add($SourceAndTargetID)
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     DisplayName                = $Source.DisplayName
                     PrefixedAddress            = $Source.PrefixedAddress
                     RecipientTypeDetails       = $Source.RecipientTypeDetails

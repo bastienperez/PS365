@@ -83,7 +83,7 @@ function Get-OktaAppReport {
             $Features = ($CurApp).Features
             $Settings = ($CurApp).Settings
 
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 Name                 = $CurApp.Name
                 Label                = $CurApp.Label
                 Status               = $CurApp.Status

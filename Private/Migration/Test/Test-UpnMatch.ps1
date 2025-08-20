@@ -13,7 +13,7 @@ function Test-UpnMatch {
             $FilterString = "UserPrincipalName -eq '$($Change.UserPrincipalName)'"
             $ADUser = Get-ADUser -filter $FilterString
             If ($ADUser.PrimarySmtpAddress -ne $ADUser.PrimarySmtpAddress) {
-                $Result.Add([PSCustomObject]@{
+                $Result.Add([PSCustomObject][ordered]@{
                         DisplayName        = $ADUser.DisplayName
                         Identity           = $User.UserPrincipalName
                         UserPrincipalName  = $ADUser.UserPrincipalName

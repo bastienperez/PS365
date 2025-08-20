@@ -44,7 +44,7 @@ function Get-UsersInOuNotInCloud {
     }
     Import-Excel @ADUserExcelSplat | ForEach-Object {
         if (($_.OU -in $BatchesHash.Values) -and ($_.UserPrincipalName -notin $BatchesHash.Keys)) {
-            [PSCustomObject]@{
+            [PSCustomObject][ordered]@{
                 Name               = $_.Name
                 DisplayName        = $_.DisplayName
                 CanonicalName      = $_.CanonicalName

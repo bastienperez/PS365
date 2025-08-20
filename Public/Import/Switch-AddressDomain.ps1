@@ -173,7 +173,7 @@ Input of Distinguished Names are expected in CSV with DistinguishedName header i
                     }
                 }
                 catch {
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         DisplayName       = $DisplayName
                         ObjectGUID        = $ObjectGUID
                         Error             = $_
@@ -191,7 +191,7 @@ Input of Distinguished Names are expected in CSV with DistinguishedName header i
             }
             else {
                 if ($Address) {
-                    [PSCustomObject]@{
+                    [PSCustomObject][ordered]@{
                         DisplayName       = $DisplayName
                         ObjectGUID        = $ObjectGUID
                         OldMail           = $Mail

@@ -62,7 +62,7 @@ function Import-GoogleToChangeUpn {
 
                 Set-MsolUserPrincipalName @UpnSplat
 
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Time               = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                     Result             = 'SUCCESS'
                     Action             = 'CHANGEUPN'
@@ -83,7 +83,7 @@ function Import-GoogleToChangeUpn {
             }
             catch {
 
-                [PSCustomObject]@{
+                [PSCustomObject][ordered]@{
                     Time               = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                     Result             = 'FAILED'
                     Action             = 'CHANGEUPN'

@@ -43,7 +43,7 @@ function Invoke-GetMailboxMoveLicenseUserSkuWithType {
                     if (-not $OnePerLine) {
                         foreach ($User in $UserChoice) {
                             $SkuList = (Get-AzureADUser -Filter "UserPrincipalName eq '$($User.UserPrincipalName)'").AssignedLicenses.SkuID
-                            [PSCustomObject]@{
+                            [PSCustomObject][ordered]@{
                                 DisplayName          = $User.DisplayName
                                 RecipientTypeDetails = $TypeHash[$User.PrimarySmtpAddress]
                                 PrimarySmtpAddress   = $User.PrimarySmtpAddress
@@ -57,7 +57,7 @@ function Invoke-GetMailboxMoveLicenseUserSkuWithType {
                         foreach ($User in $UserChoice) {
                             if ($SkuList = (Get-AzureADUser -Filter "mail eq '$($User.PrimarySmtpAddress)' or UserPrincipalName eq '$($User.UserPrincipalName)'").AssignedLicenses.SkuID) {
                                 foreach ($Sku in $SkuList) {
-                                    [PSCustomObject]@{
+                                    [PSCustomObject][ordered]@{
                                         DisplayName          = $User.DisplayName
                                         RecipientTypeDetails = $TypeHash[$User.PrimarySmtpAddress]
                                         PrimarySmtpAddress   = $User.PrimarySmtpAddress
@@ -67,7 +67,7 @@ function Invoke-GetMailboxMoveLicenseUserSkuWithType {
                                 }
                             }
                             else {
-                                [PSCustomObject]@{
+                                [PSCustomObject][ordered]@{
                                     DisplayName          = $User.DisplayName
                                     RecipientTypeDetails = $TypeHash[$User.PrimarySmtpAddress]
                                     PrimarySmtpAddress   = $User.PrimarySmtpAddress
@@ -88,7 +88,7 @@ function Invoke-GetMailboxMoveLicenseUserSkuWithType {
                         else { $Type = 'NoPrimarySmtp' }
                         if ($User.AssignedLicenses.SkuID) {
                             foreach ($Sku in $User.AssignedLicenses.SkuID) {
-                                [PSCustomObject]@{
+                                [PSCustomObject][ordered]@{
                                     DisplayName          = $User.DisplayName
                                     RecipientTypeDetails = $Type
                                     PrimarySmtpAddress   = $PrimarySmtpAddress
@@ -98,7 +98,7 @@ function Invoke-GetMailboxMoveLicenseUserSkuWithType {
                             }
                         }
                         else {
-                            [PSCustomObject]@{
+                            [PSCustomObject][ordered]@{
                                 DisplayName          = $User.DisplayName
                                 RecipientTypeDetails = $Type
                                 PrimarySmtpAddress   = $PrimarySmtpAddress
@@ -114,7 +114,7 @@ function Invoke-GetMailboxMoveLicenseUserSkuWithType {
                             $Type = $TypeHash[$PrimarySmtpAddress]
                         }
                         else { $Type = 'NoPrimarySmtp' }
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             DisplayName          = $User.DisplayName
                             RecipientTypeDetails = $Type
                             PrimarySmtpAddress   = $PrimarySmtpAddress
@@ -133,7 +133,7 @@ function Invoke-GetMailboxMoveLicenseUserSkuWithType {
                         }
                         else { $Type = 'NoPrimarySmtp' }
                         foreach ($Sku in $User.AssignedLicenses.SkuID) {
-                            [PSCustomObject]@{
+                            [PSCustomObject][ordered]@{
                                 DisplayName          = $User.DisplayName
                                 RecipientTypeDetails = $Type
                                 PrimarySmtpAddress   = $PrimarySmtpAddress
@@ -149,7 +149,7 @@ function Invoke-GetMailboxMoveLicenseUserSkuWithType {
                             $Type = $TypeHash[$PrimarySmtpAddress]
                         }
                         else { $Type = 'NoPrimarySmtp' }
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             DisplayName          = $User.DisplayName
                             RecipientTypeDetails = $Type
                             PrimarySmtpAddress   = $PrimarySmtpAddress
@@ -169,7 +169,7 @@ function Invoke-GetMailboxMoveLicenseUserSkuWithType {
                         else { $Type = 'NoPrimarySmtp' }
                         if ($User.AssignedLicenses.SkuID) {
                             foreach ($Sku in $User.AssignedLicenses.SkuID) {
-                                [PSCustomObject]@{
+                                [PSCustomObject][ordered]@{
                                     DisplayName          = $User.DisplayName
                                     RecipientTypeDetails = $Type
                                     PrimarySmtpAddress   = $PrimarySmtpAddress
@@ -179,7 +179,7 @@ function Invoke-GetMailboxMoveLicenseUserSkuWithType {
                             }
                         }
                         else {
-                            [PSCustomObject]@{
+                            [PSCustomObject][ordered]@{
                                 DisplayName          = $User.DisplayName
                                 RecipientTypeDetails = $Type
                                 PrimarySmtpAddress   = $PrimarySmtpAddress
@@ -195,7 +195,7 @@ function Invoke-GetMailboxMoveLicenseUserSkuWithType {
                             $Type = $TypeHash[$PrimarySmtpAddress]
                         }
                         else { $Type = 'NoPrimarySmtp' }
-                        [PSCustomObject]@{
+                        [PSCustomObject][ordered]@{
                             DisplayName          = $User.DisplayName
                             RecipientTypeDetails = $Type
                             PrimarySmtpAddress   = $PrimarySmtpAddress
