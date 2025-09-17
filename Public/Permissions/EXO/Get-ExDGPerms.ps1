@@ -25,10 +25,10 @@
     Parameter description
 
     .EXAMPLE
-    Get-PSExoDGPerms
+    Get-ExDGPerms
 
     .EXAMPLE
-    Get-Recipient -Filter {EmailAddresses -like "*contoso.com"} -ResultSize Unlimited | Select-Object -ExpandProperty name | Get-PSExoDGPerms
+    Get-Recipient -Filter {EmailAddresses -like "*contoso.com"} -ResultSize Unlimited | Select-Object -ExpandProperty name | Get-ExDGPerms
 
     #>
     [CmdletBinding()]
@@ -79,12 +79,12 @@
 
         if (-not $SkipSendAs) {
             Write-Host "`r`n`r`nGetting SendAs permissions for each Distribution Group and writing to file`r`n" -ForegroundColor Yellow
-            $AllDGSA | Get-PsExoSendAsPerms -RecipientHash $RecipientHash -RecipientMailHash $RecipientMailHash -RecipientLiveIDHash $RecipientLiveIDHash |
+            $AllDGSA | Get-ExSendAsPerms -RecipientHash $RecipientHash -RecipientMailHash $RecipientMailHash -RecipientLiveIDHash $RecipientLiveIDHash |
             Export-Csv (Join-Path $PoshPath "EXO_DGSendAs.csv") -NoTypeInformation
         }
         if (-not $SkipSendOnBehalf) {
             Write-Host "`r`n`r`nGetting SendOnBehalf permissions for each Distribution Group and writing to file`r`n" -ForegroundColor Yellow
-            $AllDGSOB | Get-PSExoDGSendOnBehalfPerms -RecipientHash $RecipientHash -RecipientMailHash $RecipientMailHash -RecipientDNHash $RecipientDNHash -RecipientNameHash $RecipientNameHash |
+            $AllDGSOB | Get-ExDGSendOnBehalfPerms -RecipientHash $RecipientHash -RecipientMailHash $RecipientMailHash -RecipientDNHash $RecipientDNHash -RecipientNameHash $RecipientNameHash |
             Export-Csv (Join-Path $PoshPath "EXO_DGSendOnBehalf.csv") -NoTypeInformation
         }
     }

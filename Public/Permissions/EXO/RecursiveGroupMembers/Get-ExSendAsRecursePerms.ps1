@@ -1,4 +1,4 @@
-function Get-PsExoSendAsRecursePerms {
+function Get-ExSendAsRecursePerms {
     <#
     .SYNOPSIS
     Outputs Send As permissions for each mailbox that has permissions assigned.
@@ -6,7 +6,7 @@ function Get-PsExoSendAsRecursePerms {
 
     .EXAMPLE
 
-    (Get-Mailbox -ResultSize unlimited | Select-Object -expandproperty distinguishedname) | Get-PsExoSendAsRecursePerms | Export-csv .\SA.csv -NoTypeInformation
+    (Get-Mailbox -ResultSize unlimited | Select-Object -expandproperty distinguishedname) | Get-ExSendAsRecursePerms | Export-csv .\SA.csv -NoTypeInformation
 
     #>
     [CmdletBinding()]

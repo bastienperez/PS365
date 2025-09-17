@@ -8,7 +8,7 @@ function GetPsExoMigrationStatistics {
     Each report will open in a seperate Out-GridView
 
     .EXAMPLE
-    Get-PsExoMigrationStatistics
+    Get-ExMigrationStatistics
 
     #>
     [CmdletBinding()]

@@ -10,16 +10,16 @@
     "Mailbox","MailboxPrimarySMTP","Granted","GrantedSMTP","RecipientTypeDetails","Permission"
 
     .EXAMPLE
-    Get-PsExoMailboxRecursePerms -Tenant Contoso -ReportPath C:\PermsReports -Verbose
+    Get-ExMailboxRecursePerms -Tenant Contoso -ReportPath C:\PermsReports -Verbose
 
     .EXAMPLE
-    Get-PsExoMailboxRecursePerms -Tenant Contoso -ReportPath C:\PermsReports -SkipFullAccess -Verbose
+    Get-ExMailboxRecursePerms -Tenant Contoso -ReportPath C:\PermsReports -SkipFullAccess -Verbose
 
     .EXAMPLE
-    Get-PsExoMailboxRecursePerms -Tenant Contoso -ReportPath C:\PermsReports -SkipSendOnBehalf -Verbose
+    Get-ExMailboxRecursePerms -Tenant Contoso -ReportPath C:\PermsReports -SkipSendOnBehalf -Verbose
 
     .EXAMPLE
-    Get-PsExoMailboxRecursePerms -Tenant Contoso -ReportPath C:\PermsReports -SkipSendAs -SkipFullAccess -Verbose
+    Get-ExMailboxRecursePerms -Tenant Contoso -ReportPath C:\PermsReports -SkipSendAs -SkipFullAccess -Verbose
 
     #>
     [CmdletBinding(SupportsShouldProcess = $true)]
@@ -63,17 +63,17 @@
 
     if (-not $SkipSendAs) {
         Write-Verbose "Getting SendAs permissions for each mailbox and writing to file"
-        $allMailboxDNs | Get-PsExoSendAsRecursePerms -RecipientHash $RecipientHash -RecipientMailHash $RecipientMailHash -RecipientDNHash $RecipientDNHash -GroupMemberHash $GroupMemberHash |
+        $allMailboxDNs | Get-ExSendAsRecursePerms -RecipientHash $RecipientHash -RecipientMailHash $RecipientMailHash -RecipientDNHash $RecipientDNHash -GroupMemberHash $GroupMemberHash |
         Export-csv (Join-Path $ReportPath "EXOSendAsRecursePerms.csv") -NoTypeInformation
     }
     if (-not $SkipSendOnBehalf) {
         Write-Verbose "Getting SendOnBehalf permissions for each mailbox and writing to file"
-        $AllMailboxDNs | Get-PSExoSendOnBehalfRecursePerms -RecipientHash $RecipientHash -RecipientMailHash $RecipientMailHash -RecipientDNHash $RecipientDNHash -GroupMemberHash $GroupMemberHash |
+        $AllMailboxDNs | Get-ExSendOnBehalfRecursePerms -RecipientHash $RecipientHash -RecipientMailHash $RecipientMailHash -RecipientDNHash $RecipientDNHash -GroupMemberHash $GroupMemberHash |
         Export-csv (Join-Path $ReportPath "EXOSendOnBehalfRecursePerms.csv") -NoTypeInformation
     }
     if (-not $SkipFullAccess) {
         Write-Verbose "Getting FullAccess permissions for each mailbox and writing to file"
-        $AllMailboxDNs | Get-PsExoFullAccessRecursePerms -RecipientHash $RecipientHash -RecipientMailHash $RecipientMailHash -RecipientDNHash $RecipientDNHash -GroupMemberHash $GroupMemberHash |
+        $AllMailboxDNs | Get-ExFullAccessRecursePerms -RecipientHash $RecipientHash -RecipientMailHash $RecipientMailHash -RecipientDNHash $RecipientDNHash -GroupMemberHash $GroupMemberHash |
         Export-csv (Join-Path $ReportPath "EXOFullAccessRecursePerms.csv") -NoTypeInformation
     }
 

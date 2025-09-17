@@ -1,46 +1,37 @@
-function Get-EXPublicFolder {
+function Get-ExPublicFolder {
     param (
 
     )
     end {
-        $StatList = Get-PublicFolderStatistics -Resultsize unlimited
-        $StatHash = @{ }
-        foreach ($Stat in $StatList) {
-            $StatHash[$Stat.Identity] = @{
-                LastModified = $Stat.LastModificationTime
-                Created      = $Stat.CreationTime
-                ItemCount    = $Stat.ItemCount
-                SizeMB       = [Math]::Round([Double]($Stat.TotalItemSize -replace '^.*\(| .+$|,') / 1MB, 4)
-            }
-        }
-
         $FolderList = Get-PublicFolder -Recurse -Resultsize unlimited
-
         foreach ($Folder in $FolderList) {
-            Write-Host "Folder: $($Folder.Name)"
-            if ($StatHash[$Folder.EntryID]) {
-                [PSCustomObject][ordered]@{
-                    FolderName   = $Folder.name
-                    Identity     = $Folder.Identity
-                    FolderType   = $Folder.FolderType
-                    LastModified = $StatHash[$Folder.EntryID]['LastModified']
-                    Created      = $StatHash[$Folder.EntryID]['Created']
-                    ItemCount    = $StatHash[$Folder.EntryID]['ItemCount']
-                    SizeMB       = $StatHash[$Folder.EntryID]['SizeMB']
-                    MailEnabled  = $Folder.MailEnabled
-                    Owner        = ''
+            $FolderStatsList = Get-PublicFolderStatistics $Folder.Identity
+            foreach ($FolderStats in $FolderStatsList) {
+                if ($Folder.MailEnabled) {
+                    [PSCustomObject][ordered]@{
+                        FolderName         = $Folder.name
+                        Identity           = $Folder.Identity
+                        LastModified       = $FolderStats.LastModificationTime
+                        Created            = $FolderStats.CreationTime
+                        ItemCount          = $FolderStats.ItemCount
+                        SizeMB             = [Math]::Round([Double]($FolderStats.TotalItemSize -replace '^.*\(| .+$|,') / 1MB, 4)
+                        MailEnabled        = $Folder.MailEnabled
+                        PrimarySmtpAddress = (Get-Recipient $Folder.MailRecipientGuid.ToString()).PrimarySmtpAddress
+                        Owner              = @((Get-PublicFolderClientPermission $Folder.Identity | Where-Object { $_.accessrights -like "*owner*" }).User.ADRecipient.PrimarySmtpAddress) -ne '' -join '|'
+                    }
                 }
-            }
-            else {
-                [PSCustomObject][ordered]@{
-                    FolderName   = $Folder.name
-                    Identity     = $Folder.Identity
-                    FolderType   = $Folder.FolderType
-                    LastModified = ''
-                    Created      = ''
-                    ItemCount    = ''
-                    SizeMB       = ''
-                    MailEnabled  = $Folder.MailEnabled
+                else {
+                    [PSCustomObject][ordered]@{
+                        FolderName         = $Folder.name
+                        Identity           = $Folder.Identity
+                        LastModified       = $FolderStats.LastModificationTime
+                        Created            = $FolderStats.CreationTime
+                        ItemCount          = $FolderStats.ItemCount
+                        SizeMB             = [Math]::Round([Double]($FolderStats.TotalItemSize -replace '^.*\(| .+$|,') / 1MB, 4)
+                        MailEnabled        = $Folder.MailEnabled
+                        PrimarySmtpAddress = ""
+                        Owner              = @((Get-PublicFolderClientPermission $Folder.Identity | Where-Object { $_.accessrights -like "*owner*" }).User.ADRecipient.PrimarySmtpAddress) -ne '' -join '|'
+                    }
                 }
             }
         }

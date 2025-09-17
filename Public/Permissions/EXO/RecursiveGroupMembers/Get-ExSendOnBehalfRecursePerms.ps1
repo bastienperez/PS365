@@ -1,4 +1,4 @@
-function Get-PSExoSendOnBehalfRecursePerms {
+function Get-ExSendOnBehalfRecursePerms {
     <#
     .SYNOPSIS
     Outputs Send On Behalf permissions for each mailbox that has permissions assigned.
@@ -6,7 +6,7 @@ function Get-PSExoSendOnBehalfRecursePerms {
 
     .EXAMPLE
 
-    (Get-Mailbox -ResultSize unlimited | Select-Object -expandproperty distinguishedname) | Get-PSExoSendOnBehalfRecursePerms | Export-csv .\SendOB.csv -NoTypeInformation
+    (Get-Mailbox -ResultSize unlimited | Select-Object -expandproperty distinguishedname) | Get-ExSendOnBehalfRecursePerms | Export-csv .\SendOB.csv -NoTypeInformation
 
     #>
     [CmdletBinding()]

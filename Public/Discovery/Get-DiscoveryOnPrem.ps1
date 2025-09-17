@@ -442,13 +442,13 @@
 
     Write-Verbose "Retrieving Exchange Resource Mailboxes and Calendar Processing"
     $ResourceMailboxes = $Mailboxes | Where-Object { $_.RecipientTypeDetails -in 'RoomMailbox', 'EquipmentMailbox' }
-    Get-PsExoResourceMailbox -ResourceMailbox $ResourceMailboxes | Sort-Object DisplayName |
+    Get-ExResourceMailbox -ResourceMailbox $ResourceMailboxes | Sort-Object DisplayName |
     Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_ResourceMailboxes.csv')
 
     # Exchange Contacts
     Write-Verbose "Retrieving Exchange Mail Contacts"
     Get-MailContact -ResultSize unlimited | Select-Object * | Export-Clixml -Path (Join-Path -Path $Detailed -ChildPath 'ExchangeMailContacts.xml')
-    Get-PsExoMailContact | Select-Object $ContactProp | Sort-Object DisplayName |
+    Get-ExMailContact | Select-Object $ContactProp | Sort-Object DisplayName |
     Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_MailContacts.csv')
 
     # Exchange DLP Policies
@@ -538,8 +538,8 @@
     $EA = $global:ErrorActionPreference
     $global:ErrorActionPreference = 'Stop'
     try {
-        Get-EXPublicFolder | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_PublicFolders.csv')
-        Get-EXPublicFolderRights | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_PublicFoldersRights.csv')
+        Get-ExPublicFolder | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_PublicFolders.csv')
+        Get-ExPublicFolderRights | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_PublicFoldersRights.csv')
     }
     catch {
         Write-Host "$($_.Exception.Message)" -ForegroundColor DarkCyan

@@ -1,4 +1,4 @@
-function Get-EXPublicFolderRights {
+function Get-ExPublicFolderRights {
     param (
 
     )

@@ -1,4 +1,4 @@
-function Get-PsExoFullAccessPerms {
+function Get-ExFullAccessPerms {
     <#
     .SYNOPSIS
     Outputs Full Access permissions for each object that has permissions assigned.
@@ -6,7 +6,7 @@ function Get-PsExoFullAccessPerms {
 
     .EXAMPLE
 
-    (Get-Mailbox -ResultSize unlimited | Select-Object -expandproperty distinguishedname) | Get-PsExoFullAccessPerms | Export-csv .\FA.csv -NoTypeInformation
+    (Get-Mailbox -ResultSize unlimited | Select-Object -expandproperty distinguishedname) | Get-ExFullAccessPerms | Export-csv .\FA.csv -NoTypeInformation
 
     If not running from Exchange Management Shell (EMS), run this first:
 

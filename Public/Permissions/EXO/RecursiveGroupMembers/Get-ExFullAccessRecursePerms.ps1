@@ -1,4 +1,4 @@
-function Get-PsExoFullAccessRecursePerms {
+function Get-ExFullAccessRecursePerms {
     <#
     .SYNOPSIS
     Outputs Full Access permissions for each mailbox that has permissions assigned.
@@ -6,7 +6,7 @@ function Get-PsExoFullAccessRecursePerms {
 
     .EXAMPLE
 
-    (Get-Mailbox -ResultSize unlimited | Select-Object -expandproperty distinguishedname) | Get-PsExoFullAccessRecursePerms | Export-csv .\FA.csv -NoTypeInformation
+    (Get-Mailbox -ResultSize unlimited | Select-Object -expandproperty distinguishedname) | Get-ExFullAccessRecursePerms | Export-csv .\FA.csv -NoTypeInformation
 
     If not running from Exchange Management Shell (EMS), run this first:
 

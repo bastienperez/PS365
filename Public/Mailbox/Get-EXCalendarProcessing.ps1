@@ -1,4 +1,4 @@
-function Get-EXCalendarProcessing {
+function Get-ExCalendarProcessing {
     <#
     .SYNOPSIS
     Export a list of mailbox calendar processing settings
