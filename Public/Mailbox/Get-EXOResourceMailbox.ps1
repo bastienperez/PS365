@@ -1,22 +1,39 @@
-function Get-PsExoResourceMailbox {
+function Get-ExoResourceMailbox {
     <#
     .SYNOPSIS
-    Export Office 365 Resource Mailboxes and Calendar Processing
+    Exports Exchange Online resource mailboxes and their calendar processing settings
 
     .DESCRIPTION
-    Export Office 365 Resource Mailboxes and Calendar Processing
+    This function retrieves Exchange Online resource mailboxes (rooms and equipment)
+    resource mailboxes (rooms and equipment) and their calendar processing parameters. It also includes a
+    It also includes a "splatting" feature that deploys distribution groups to display all individual members.
 
-    .PARAMETER Filter
-    Provide specific mailboxes to report on.  Otherwise, all mailboxes will be reported.  Please review the examples provided.
+    PARAMETER Filter
+    Specifies filters to target specific mailboxes.
+    If no filter is provided, all resource mailboxes will be returned.
+    Example: '{emailaddresses -like "*contoso.com"}''
 
-    .PARAMETER DetailedReport
-    Provides a full report of all attributes.  Otherwise, only a refined report will be given.
+    .PARAMETER ResourceMailboxes
+    Collection of resource mailboxes to be processed.
+    If not specified, the function will automatically retrieve the mailboxes according to the filters.
+
+    .PARAMETER UseExchangeDNHash
+    Uses a hash of Exchange Legacy DNs to optimize performance when processing
+    delegates and reservation strategies.
+
+    .PARAMETER IgnoreExpandGroups
+    Disables the expansion of distribution groups to list individual members
+    in ResourceDelegates, BookInPolicy, RequestInPolicy and RequestOutOfPolicy properties.
 
     .EXAMPLE
-    Get-PsExoResourceMailbox | Export-Csv c:\scripts\All365Mailboxes.csv -notypeinformation -encoding UTF8
+    Get-ExoResourceMailboxes | Export-Csv c:\scripts\All365Mailboxes.csv -NoTypeInformation -Encoding UTF8
+    
+    Exports all resource mailboxes to a CSV file.
 
     .EXAMPLE
-    '{emailaddresses -like "*contoso.com"}' | Get-PsExoResourceMailbox | Export-Csv c:\scripts\365ResourceMailboxes.csv -notypeinformation -encoding UTF8
+    Get-ExoResourceMailboxes -Filter '{emailaddresses -like "*contoso.com"}' -ExpandGroups | Export-Csv c:\scripts\365ResourceMailboxes.csv -NoTypeInformation -Encoding UTF8
+
+    Exports resource mailboxes from the contoso.com domain with group expansion.
 
     #>
     [CmdletBinding()]
@@ -25,99 +42,129 @@ function Get-PsExoResourceMailbox {
         [string[]] $Filter,
 
         [Parameter()]
-        $ResourceMailbox
+        $ResourceMailboxes,
+
+        [Parameter()]
+        [switch] $UseExchangeDNHash
     )
+
     begin {
-        <#
-        $MailboxProperties = @(
-            'DisplayName', 'Office', 'RecipientTypeDetails', 'UserPrincipalName', 'Identity', 'PrimarySmtpAddress', 'Alias'
-        )
-        #>
-        if ($Filter) {
-            $AllUserMailboxes = Get-Mailbox -filter $CurFilter -RecipientTypeDetails RoomMailbox, EquipmentMailbox -ResultSize Unlimited
-            $MailboxLegacyExchangeDNHash = $AllUserMailboxes | Get-MailboxLegacyExchangeDNHash
-        }
-        else {
-            $AllUserMailboxes = Get-Mailbox -RecipientTypeDetails RoomMailbox, EquipmentMailbox -ResultSize Unlimited
-            $MailboxLegacyExchangeDNHash = $AllUserMailboxes | Get-MailboxLegacyExchangeDNHash
-        }
 
-        $Selectproperties = @(
-            'Identity', 'RecipientTypeDetails', 'AdditionalResponse', 'AddAdditionalResponse', 'AddNewRequestsTentatively', 'AddOrganizerToSubject', 'AllBookInPolicy', 'AllowConflicts'
-            'AllowRecurringMeetings', 'AllRequestInPolicy', 'AllRequestOutOfPolicy', 'DeleteAttachments', 'DeleteComments', 'DeleteNonCalendarItems'
-            'DeleteSubject', 'EnableResponseDetails', 'EnforceSchedulingHorizon', 'ForwardRequestsToDelegates', 'IsValid', 'OrganizerInfo'
-            'ProcessExternalMeetingMessages', 'RemoveForwardedMeetingNotifications', 'RemoveOldMeetingMessages', 'RemovePrivateProperty'
-            'ScheduleOnlyDuringWorkHours', 'TentativePendingApproval', 'BookingWindowInDays', 'ConflictPercentageAllowed', 'MaximumConflictInstances'
-            'MaximumDurationInMinutes', 'AutomateProcessing', 'MailboxOwnerId', 'ObjectState'
-        )
+        if ($UseExchangeDNHash) {
+            $MailboxLegacyExchangeDNHash = Get-Mailbox -ResultSize Unlimited | Get-MailboxLegacyExchangeDNHash
+        }
+        
+        if (-not $ResourceMailboxes) {
+            
+            [System.Collections.Generic.List[PSCustomObject]]$ResourceMailboxes = @()
 
-        $CalculatedProps = @(
-            @{n = "ResourceDelegates" ; e = { @($MailboxLegacyExchangeDNHash[$_.ResourceDelegates]) -ne '' -join '|' } },
-            @{n = "BookInPolicy" ; e = { @($MailboxLegacyExchangeDNHash[$_.BookInPolicy]) -ne '' -join '|' } },
-            @{n = "RequestInPolicy" ; e = { @($MailboxLegacyExchangeDNHash[$_.RequestInPolicy]) -ne '' -join '|' } },
-            @{n = "RequestOutOfPolicy" ; e = { @($MailboxLegacyExchangeDNHash[$_.RequestOutOfPolicy]) -ne '' -join '|' } }
-        )
-        if (-not $ResourceMailbox) {
             if ($Filter) {
                 foreach ($CurFilter in $Filter) {
-                    Get-Mailbox -filter $CurFilter -RecipientTypeDetails RoomMailbox, EquipmentMailbox -ResultSize Unlimited |
-                    Get-CalendarProcessing | Select-Object ($Selectproperties + $CalculatedProps)
+                    $mbxes = Get-Mailbox -Filter $CurFilter -RecipientTypeDetails RoomMailbox, EquipmentMailbox -ResultSize Unlimited
                 }
             }
             else {
-                Get-Mailbox -RecipientTypeDetails RoomMailbox, EquipmentMailbox -ResultSize Unlimited |
-                Get-CalendarProcessing | Select-Object ($Selectproperties + $CalculatedProps)
+                Write-Verbose 'No filter provided, retrieving all resource mailboxes'
+                $mbxes = Get-Mailbox -RecipientTypeDetails RoomMailbox, EquipmentMailbox -ResultSize Unlimited
+            }
+
+            $mbxes | ForEach-Object {
+                $ResourceMailboxes.Add($_)
             }
         }
-        else {
-            foreach ($Resource in $ResourceMailbox) {
-                $CalList = Get-CalendarProcessing -Identity $Resource.Guid.ToString()
-                foreach ($Cal in $CalList) {
-                    [PSCustomObject][ordered]@{
-                        DisplayName                         = $Resource.DisplayName
-                        Office                              = $Resource.Office
-                        RecipientTypeDetails                = $Resource.RecipientTypeDetails
-                        Identity                            = $Resource.Identity
-                        PrimarySmtpAddress                  = $Resource.PrimarySmtpAddress
-                        Alias                               = $Resource.Alias
-                        AutomateProcessing                  = $Cal.AutomateProcessing
-                        ResourceDelegates                   = @($Cal.ResourceDelegates) -ne '' -join '|'
-                        AllBookInPolicy                     = $Cal.AllBookInPolicy
-                        AllRequestInPolicy                  = $Cal.AllRequestInPolicy
-                        BookInPolicy                        = @($Cal.BookInPolicy) -ne '' -join '|'
-                        RequestInPolicy                     = @($Cal.RequestInPolicy) -ne '' -join '|'
-                        RequestOutOfPolicy                  = @($Cal.RequestOutOfPolicy) -ne '' -join '|'
-                        AllRequestOutOfPolicy               = $Cal.AllRequestOutOfPolicy
-                        TotalGB                             = $Resource.TotalGB
-                        MaximumDurationInMinutes            = $Cal.MaximumDurationInMinutes
-                        BookingWindowInDays                 = $Cal.BookingWindowInDays
-                        ConflictPercentageAllowed           = $Cal.ConflictPercentageAllowed
-                        MaximumConflictInstances            = $Cal.MaximumConflictInstances
-                        AdditionalResponse                  = $Cal.AdditionalResponse
-                        AddAdditionalResponse               = $Cal.AddAdditionalResponse
-                        AddNewRequestsTentatively           = $Cal.AddNewRequestsTentatively
-                        ForwardRequestsToDelegates          = $Cal.ForwardRequestsToDelegates
-                        TentativePendingApproval            = $Cal.TentativePendingApproval
-                        AddOrganizerToSubject               = $Cal.AddOrganizerToSubject
-                        AllowConflicts                      = $Cal.AllowConflicts
-                        AllowRecurringMeetings              = $Cal.AllowRecurringMeetings
-                        DeleteAttachments                   = $Cal.DeleteAttachments
-                        DeleteComments                      = $Cal.DeleteComments
-                        DeleteNonCalendarItems              = $Cal.DeleteNonCalendarItems
-                        DeleteSubject                       = $Cal.DeleteSubject
-                        EnableResponseDetails               = $Cal.EnableResponseDetails
-                        EnforceSchedulingHorizon            = $Cal.EnforceSchedulingHorizon
-                        IsValid                             = $Cal.IsValid
-                        OrganizerInfo                       = $Cal.OrganizerInfo
-                        ProcessExternalMeetingMessages      = $Cal.ProcessExternalMeetingMessages
-                        RemoveForwardedMeetingNotifications = $Cal.RemoveForwardedMeetingNotifications
-                        RemoveOldMeetingMessages            = $Cal.RemoveOldMeetingMessages
-                        RemovePrivateProperty               = $Cal.RemovePrivateProperty
-                        ScheduleOnlyDuringWorkHours         = $Cal.ScheduleOnlyDuringWorkHours
-                        ObjectState                         = $Cal.ObjectState
-                        MailboxOwnerId                      = $Cal.MailboxOwnerId
+
+        foreach ($resource in $ResourceMailboxes) {
+            Write-Verbose "Processing resource mailbox: $($resource.Identity)"
+            $calProcArray = Get-CalendarProcessing -Identity $resource.Guid.ToString()
+
+            foreach ($calProc in $calProcArray) {
+
+                $parameters = @('BookInPolicy', 'RequestInPolicy', 'RequestOutOfPolicy', 'ResourceDelegates')
+
+                foreach ($param in $parameters) {
+                    $applyTo = @()
+
+                    $applyToSplatted = @()
+
+                    if ($calProc.$param) {
+                        foreach ($object in $calProc.$param) {
+                            if ($UseExchangeDNHash) {
+                                $applyTo += $MailboxLegacyExchangeDNHash[$object]
+                            }
+                            else {
+                                $recipient = Get-Recipient $object
+                                $applyTo += $recipient.PrimarySmtpAddress
+                            }
+                            
+                            if ($recipient.RecipientType -like '*Group*') {
+                                $applyToSplatted += (Get-DistributionGroupMember -Identity $object | Select-Object @{ Name = 'PrimarySmtpAddress'; Expression = { $_.PrimarySmtpAddress.ToString() -join '|' } }).PrimarySmtpAddress
+                            }
+                            else {
+                                if ($UseExchangeDNHash) {
+                                    $applyToSplatted += $MailboxLegacyExchangeDNHash[$object]
+                                }
+                                else {
+                                    $applyToSplatted += $recipient.PrimarySmtpAddress
+                                }
+                            }
+                        }
                     }
+
+                    $calProc | Add-Member -MemberType NoteProperty -Name $param-applyTo -Value $($applyTo -join '|')
+                    $calProc | Add-Member -MemberType NoteProperty -Name $param-applyToSplatted -Value $($applyToSplatted -join '|')
                 }
+            }
+
+            [PSCustomObject][ordered]@{
+                DisplayName                         = $resource.DisplayName
+                Office                              = $resource.Office
+                RecipientTypeDetails                = $resource.RecipientTypeDetails
+                Identity                            = $resource.Identity
+                PrimarySmtpAddress                  = $resource.PrimarySmtpAddress
+                Alias                               = $resource.Alias
+                AutomateProcessing                  = $calProc.AutomateProcessing
+                ResourceDelegates                   = @($calProc.ResourceDelegates) -ne '' -join '|'
+                ResourceDelegatesResolved           = $calProc.'ResourceDelegates-applyTo'
+                ResourceDelegatesResolvedSplatted   = $calProc.'ResourceDelegates-apply'
+                AllBookInPolicy                     = $calProc.AllBookInPolicy
+                AllRequestOutOfPolicy               = $calProc.AllRequestOutOfPolicy
+                AllRequestInPolicy                  = $calProc.AllRequestInPolicy
+                BookInPolicy                        = @($calProc.BookInPolicy) -ne '' -join '| '
+                BookInPolicyResolved                = $calProc.'BookInPolicy-applyTo'
+                BookInPolicyResolvedSplatted        = $calProc.'BookInPolicy-applyToSplatted'
+                RequestInPolicy                     = @($calProc.RequestInPolicy) -ne '' -join '| '
+                RequestInPolicyResolved             = $calProc.'RequestInPolicy-applyTo'
+                RequestInPolicyResolvedSplatted     = $calProc.'RequestInPolicy-applyToSplatted'
+                RequestOutOfPolicy                  = @($calProc.RequestOutOfPolicy) -ne '' -join '| '
+                RequestOutOfPolicyResolved          = $calProc.'RequestOutOfPolicy-applyTo'
+                RequestOutOfPolicyResolvedSplatted  = $calProc.'RequestOutOfPolicy-applyToSplatted'
+                MaximumDurationInMinutes            = $calProc.MaximumDurationInMinutes
+                BookingWindowInDays                 = $calProc.BookingWindowInDays
+                ConflictPercentageAllowed           = $calProc.ConflictPercentageAllowed
+                MaximumConflictInstances            = $calProc.MaximumConflictInstances
+                AdditionalResponse                  = $calProc.AdditionalResponse
+                AddAdditionalResponse               = $calProc.AddAdditionalResponse
+                AddNewRequestsTentatively           = $calProc.AddNewRequestsTentatively
+                ForwardRequestsToDelegates          = $calProc.ForwardRequestsToDelegates
+                TentativePendingApproval            = $calProc.TentativePendingApproval
+                AddOrganizerToSubject               = $calProc.AddOrganizerToSubject
+                AllowConflicts                      = $calProc.AllowConflicts
+                AllowRecurringMeetings              = $calProc.AllowRecurringMeetings
+                DeleteAttachments                   = $calProc.DeleteAttachments
+                DeleteComments                      = $calProc.DeleteComments
+                DeleteNonCalendarItems              = $calProc.DeleteNonCalendarItems
+                DeleteSubject                       = $calProc.DeleteSubject
+                EnableResponseDetails               = $calProc.EnableResponseDetails
+                EnforceSchedulingHorizon            = $calProc.EnforceSchedulingHorizon
+                IsValid                             = $calProc.IsValid
+                OrganizerInfo                       = $calProc.OrganizerInfo
+                ProcessExternalMeetingMessages      = $calProc.ProcessExternalMeetingMessages
+                RemoveForwardedMeetingNotifications = $calProc.RemoveForwardedMeetingNotifications
+                RemoveOldMeetingMessages            = $calProc.RemoveOldMeetingMessages
+                RemovePrivateProperty               = $calProc.RemovePrivateProperty
+                ScheduleOnlyDuringWorkHours         = $calProc.ScheduleOnlyDuringWorkHours
+                ObjectState                         = $calProc.ObjectState
+                MailboxOwnerId                      = $calProc.MailboxOwnerId
             }
         }
     }
