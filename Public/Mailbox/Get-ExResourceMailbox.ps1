@@ -40,11 +40,12 @@ function Get-ExResourceMailbox {
 
     [CmdletBinding()]
     param (
-        [Parameter()]
-        [String[]] $Filter,
+        
+        [Parameter(Position = 0)]
+        [String[]] $PrimarySmtpAddress,
 
         [Parameter()]
-        [String[]] $PrimarySmtpAddress,
+        [String[]] $Filter,
 
         [Parameter()]
         [switch] $UseExchangeDNHash
