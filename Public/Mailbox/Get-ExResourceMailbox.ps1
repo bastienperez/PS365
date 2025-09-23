@@ -12,8 +12,8 @@
     If no filter is provided, all resource mailboxes will be returned.
     Example: '{emailaddresses -like "*contoso.com"}''
 
-    .PARAMETER ResourceMailboxes
-    Collection of resource mailboxes to be processed.
+    .PARAMETER PrimarySmtpAddress
+    Specifies an array of primary SMTP addresses to retrieve specific mailboxes.
     If not specified, the function will automatically retrieve the mailboxes according to the filters.
 
     .PARAMETER UseExchangeDNHash
@@ -41,25 +41,24 @@ function Get-ExResourceMailbox {
     [CmdletBinding()]
     param (
         [Parameter()]
-        [string[]] $Filter,
+        [String[]] $Filter,
 
         [Parameter()]
-        $ResourceMailboxes,
+        [String[]] $PrimarySmtpAddress,
 
         [Parameter()]
         [switch] $UseExchangeDNHash
     )
 
     begin {
+        [System.Collections.Generic.List[PSCustomObject]]$ResourceMailboxes = @()
 
         if ($UseExchangeDNHash) {
             $MailboxLegacyExchangeDNHash = Get-Mailbox -ResultSize Unlimited | Get-MailboxLegacyExchangeDNHash
         }
         
-        if (-not $ResourceMailboxes) {
+        if (-not $PrimarySmtpAddress) {
             
-            [System.Collections.Generic.List[PSCustomObject]]$ResourceMailboxes = @()
-
             if ($Filter) {
                 foreach ($CurFilter in $Filter) {
                     $mbxes = Get-Mailbox -Filter $CurFilter -RecipientTypeDetails RoomMailbox, EquipmentMailbox -ResultSize Unlimited
@@ -74,6 +73,17 @@ function Get-ExResourceMailbox {
                 $ResourceMailboxes.Add($_)
             }
         }
+        else {
+            foreach ($smtpAddress in $PrimarySmtpAddress) {
+                $mbx = Get-Mailbox -Identity $smtpAddress -ErrorAction SilentlyContinue
+                if ($mbx) {
+                    $ResourceMailboxes.Add($mbx)
+                }
+                else {
+                    Write-Warning "Mailbox $smtpAddress not found"
+                }
+            }
+        }
 
         foreach ($resource in $ResourceMailboxes) {
             Write-Verbose "Processing resource mailbox: $($resource.Identity)"
@@ -84,36 +94,46 @@ function Get-ExResourceMailbox {
                 $parameters = @('BookInPolicy', 'RequestInPolicy', 'RequestOutOfPolicy', 'ResourceDelegates')
 
                 foreach ($param in $parameters) {
-                    $applyTo = @()
+                    [System.Collections.Generic.List[PSCustomObject]]$applyToArray = @()
+                    [System.Collections.Generic.List[PSCustomObject]]$applyToSplatted = @()
 
-                    $applyToSplatted = @()
 
                     if ($calProc.$param) {
                         foreach ($object in $calProc.$param) {
                             if ($UseExchangeDNHash) {
-                                $applyTo += $MailboxLegacyExchangeDNHash[$object]
+                                $applyToArray.Add($MailboxLegacyExchangeDNHash[$object])
                             }
                             else {
-                                $recipient = Get-Recipient $object
-                                $applyTo += $recipient.PrimarySmtpAddress
+                                try {
+                                    $recipientObject = Get-Recipient $object -ErrorAction Stop
+                                }
+                                catch {
+                                    Write-Warning "$resource - $param - Recipient $object not found - You will see $object(NotFound) in the report"
+                                    $recipientObject = "$object(NotFound)"
+                                }
+                                
+                                $applyToArray.Add($recipientObject)
                             }
-                            
-                            if ($recipient.RecipientType -like '*Group*') {
-                                $applyToSplatted += (Get-DistributionGroupMember -Identity $object | Select-Object @{ Name = 'PrimarySmtpAddress'; Expression = { $_.PrimarySmtpAddress.ToString() -join '|' } }).PrimarySmtpAddress
+
+                            if ($recipientObject.RecipientType -like '*Group*') {
+                                (Get-DistributionGroupMember -Identity $object | Select-Object @{ Name = 'PrimarySmtpAddress'; Expression = { $_.PrimarySmtpAddress } }) | ForEach-Object {
+                                    $applyToSplatted.Add($_.PrimarySmtpAddress)
+                                }
+
                             }
                             else {
                                 if ($UseExchangeDNHash) {
-                                    $applyToSplatted += $MailboxLegacyExchangeDNHash[$object]
+                                    $applyToSplatted.Add($MailboxLegacyExchangeDNHash[$object])
                                 }
                                 else {
-                                    $applyToSplatted += $recipient.PrimarySmtpAddress
+                                    $applyToSplatted.Add($recipientObject.PrimarySmtpAddress)
                                 }
                             }
                         }
                     }
 
-                    $calProc | Add-Member -MemberType NoteProperty -Name $param-applyTo -Value $($applyTo -join '|')
-                    $calProc | Add-Member -MemberType NoteProperty -Name $param-applyToSplatted -Value $($applyToSplatted -join '|')
+                    $calProc | Add-Member -MemberType NoteProperty -Name $param-applyTo -Value $($applyToArray -join '|')
+                    $calProc | Add-Member -MemberType NoteProperty -Name $param-applyToArraySplatted -Value $($applyToSplatted -join '|')
                 }
             }
 
@@ -127,19 +147,19 @@ function Get-ExResourceMailbox {
                 AutomateProcessing                  = $calProc.AutomateProcessing
                 ResourceDelegates                   = @($calProc.ResourceDelegates) -ne '' -join '|'
                 ResourceDelegatesResolved           = $calProc.'ResourceDelegates-applyTo'
-                ResourceDelegatesResolvedSplatted   = $calProc.'ResourceDelegates-apply'
+                ResourceDelegatesSplatted           = $calProc.'ResourceDelegates-applyToArraySplatted'
                 AllBookInPolicy                     = $calProc.AllBookInPolicy
                 AllRequestOutOfPolicy               = $calProc.AllRequestOutOfPolicy
                 AllRequestInPolicy                  = $calProc.AllRequestInPolicy
                 BookInPolicy                        = @($calProc.BookInPolicy) -ne '' -join '| '
                 BookInPolicyResolved                = $calProc.'BookInPolicy-applyTo'
-                BookInPolicyResolvedSplatted        = $calProc.'BookInPolicy-applyToSplatted'
+                BookInPolicySplatted                = $calProc.'BookInPolicy-applyToArraySplatted'
                 RequestInPolicy                     = @($calProc.RequestInPolicy) -ne '' -join '| '
                 RequestInPolicyResolved             = $calProc.'RequestInPolicy-applyTo'
-                RequestInPolicyResolvedSplatted     = $calProc.'RequestInPolicy-applyToSplatted'
+                RequestInPolicySplatted             = $calProc.'RequestInPolicy-applyToArraySplatted'
                 RequestOutOfPolicy                  = @($calProc.RequestOutOfPolicy) -ne '' -join '| '
                 RequestOutOfPolicyResolved          = $calProc.'RequestOutOfPolicy-applyTo'
-                RequestOutOfPolicyResolvedSplatted  = $calProc.'RequestOutOfPolicy-applyToSplatted'
+                RequestOutOfPolicySplatted          = $calProc.'RequestOutOfPolicy-applyToArraySplatted'
                 MaximumDurationInMinutes            = $calProc.MaximumDurationInMinutes
                 BookingWindowInDays                 = $calProc.BookingWindowInDays
                 ConflictPercentageAllowed           = $calProc.ConflictPercentageAllowed
