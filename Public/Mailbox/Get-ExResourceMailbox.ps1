@@ -1,5 +1,4 @@
-function Get-ExResourceMailbox {
-    <#
+<#
     .SYNOPSIS
     Exports Exchange Online resource mailboxes and their calendar processing settings
 
@@ -26,16 +25,19 @@ function Get-ExResourceMailbox {
     in ResourceDelegates, BookInPolicy, RequestInPolicy and RequestOutOfPolicy properties.
 
     .EXAMPLE
-    Get-ExResourceMailboxes | Export-Csv c:\scripts\All365Mailboxes.csv -NoTypeInformation -Encoding UTF8
+    Get-ExResourceMailbox | Export-Csv c:\scripts\All365Mailboxes.csv -NoTypeInformation -Encoding UTF8
     
     Exports all resource mailboxes to a CSV file.
 
     .EXAMPLE
-    Get-ExResourceMailboxes -Filter '{emailaddresses -like "*contoso.com"}' -ExpandGroups | Export-Csv c:\scripts\365ResourceMailboxes.csv -NoTypeInformation -Encoding UTF8
+    Get-ExResourceMailbox -Filter '{emailaddresses -like "*contoso.com"}' -ExpandGroups | Export-Csv c:\scripts\365ResourceMailboxes.csv -NoTypeInformation -Encoding UTF8
 
     Exports resource mailboxes from the contoso.com domain with group expansion.
 
     #>
+    
+function Get-ExResourceMailbox {
+
     [CmdletBinding()]
     param (
         [Parameter()]
