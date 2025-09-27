@@ -25,16 +25,18 @@ PublishingEditor: CreateItems, CreateSubfolders, DeleteAllItems, DeleteOwnedItem
 Reviewer: FolderVisible, ReadItems
 #>
 
-$mbxs = Get-Mailbox -ResultSize unlimited -RecipientTypeDetails Usermailbox
+function Set-ExCalendarDefaultPermissions {
+    $mbxs = Get-Mailbox -ResultSize unlimited -RecipientTypeDetails Usermailbox
 
-#$permission = 'Reviewer'
-$permission = 'LimitedDetails'
+    #$permission = 'Reviewer'
+    $permission = 'LimitedDetails'
 
-foreach ($mbx in $mbxs) {
-    $calFolders = @($mbx | Get-MailboxFolderStatistics -FolderScope Calendar | Where-Object { $_.FolderType -eq 'Calendar' } )
+    foreach ($mbx in $mbxs) {
+        $calFolders = @($mbx | Get-MailboxFolderStatistics -FolderScope Calendar | Where-Object { $_.FolderType -eq 'Calendar' } )
 
-    $defaultCalendar = $calFolders | Where-Object ContainerClass -eq ''
+        $defaultCalendar = $calFolders | Where-Object ContainerClass -EQ ''
 
-    Write-Host -ForegroundColor Cyan "Add $permission permissions for $($mbx.alias):\$($defaultCalendar.Name)"
-    Set-MailboxFolderPermission -Identity "$($mbx.alias):\$($defaultCalendar.Name)" -User Default -AccessRights $permission
+        Write-Host -ForegroundColor Cyan "Add $permission permissions for $($mbx.alias):\$($defaultCalendar.Name)"
+        Set-MailboxFolderPermission -Identity "$($mbx.alias):\$($defaultCalendar.Name)" -User Default -AccessRights $permission
+    }
 }

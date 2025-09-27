@@ -1,18 +1,25 @@
-$oneDriveRoot = $env:OneDriveCommercial
-$userProfile = $env:USERPROFILE
 
-$oneDriveDesktop = [Environment]::GetFolderPath('Desktop')
-$oneDriveMyDocuments = [Environment]::GetFolderPath('MyDocuments')
-$oneDriveMyPictures = [Environment]::GetFolderPath('MyPictures')
+#TODO: Do each folder separately
 
 function Invoke-OneDriveKnownFoldersLinksFix {
 	param(
 		[Parameter(Mandatory = $true)]
 		[string]$Folder,
 		[Parameter(Mandatory = $true)]
-		[string]$OneDriveFolder
+		[string]$OneDriveFolder,
+		[Parameter(Mandatory = $true)]
+		[ValidateSet('Desktop', 'Documents', 'Pictures', 'All')]
+		[string]$FolderType
 	)
-		
+	
+	$oneDriveRoot = $env:OneDriveCommercial
+	$userProfile = $env:USERPROFILE
+
+
+	$oneDriveDesktop = [Environment]::GetFolderPath('Desktop')
+	$oneDriveMyDocuments = [Environment]::GetFolderPath('MyDocuments')
+	$oneDriveMyPictures = [Environment]::GetFolderPath('MyPictures')
+
 	if ($oneDriveFolder -like "$oneDriveRoot*") {
 		Write-Host "$folder is on OneDrive $oneDriveFolder" -ForegroundColor green
 		$junctionsFolder = $null
@@ -48,9 +55,5 @@ function Invoke-OneDriveKnownFoldersLinksFix {
 
 		Write-Host "Create symbolic link $userProfile\$folder => $oneDriveFolde" -ForegroundColor green
 		cmd /c mklink /J "$userProfile\$Folder" "$oneDriveFolder"
-	}
+	}	
 }
-
-Invoke-OneDriveKnownFoldersLinksFix -Folder Desktop -OneDriveFolder $oneDriveDesktop
-Invoke-OneDriveKnownFoldersLinksFix -Folder Images -OneDriveFolder $oneDriveMyPictures
-Invoke-OneDriveKnownFoldersLinksFix -Folder Documents -OneDriveFolder $oneDriveMyDocuments
