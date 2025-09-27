@@ -66,10 +66,6 @@ Import users while rewriting source domain from contoso.com to fabrikam.com in a
 single-pass (1 stage) migration.  Use this when migrating Office 365 groups but not
 preserving the domain name (such as in a divestiture scenario).
 
-.LINK
-Credit
-Aaron Guilmette
-https://gallery.technet.microsoft.com/Export-and-Import-Unified-e73d82ba
 
 .NOTES
 2017-10-27	- Fixed typo for Owners.
