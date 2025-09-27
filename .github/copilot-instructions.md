@@ -25,7 +25,7 @@ ENVIRONMENT
 POWERSHELL STYLE RULES
 - Use full command names (Get-ChildItem instead of gci).
 - Use camelCase for variables and PascalCase for function parameters.
-- Use [System.Collections.Generic.List[object]]$array = @() for arrays; avoid [System.Collections.Generic.List[pscustomobject]]::new().
+- Use [System.Collections.Generic.List[PSCustomObject]]$array = @() for arrays; avoid [System.Collections.Generic.List[PSCustomObject]]::new().
 - Use foreach loops, $null to discard output, and splatting for parameters.
 - End scripts with return instead of exit.
 - Prefer single quotes (') over double quotes (") unless interpolation is required.
