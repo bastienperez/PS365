@@ -3,9 +3,8 @@
 # Priority 3: inbox rule
 
 # Autoforward works if forwardingAddress because it's an internal object
-# TODO:
-# Add forwardWorks for inbox rules
-# Add forwardWorks if RemoteDomain enable
+# TODO: Add forwardWorks for inbox rules & if RemoteDomain enabled
+# label: enhancements
 
 function Get-MailboxForwarding {
 
