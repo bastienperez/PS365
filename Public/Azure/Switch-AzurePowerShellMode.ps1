@@ -70,12 +70,12 @@ function Switch-AzurePowerShellMode {
         # Switch to specified mode
         if ($Mode -eq 'Browser') {
             Write-Verbose 'Disabling Web Account Manager (WAM)...'
-            Update-AzConfig -EnableLoginByWam $false
+            $null = Update-AzConfig -EnableLoginByWam $false
             Write-Host 'Azure CLI authentication switched to browser mode.' -ForegroundColor Green
         }
         else {
             Write-Verbose 'Enabling Web Account Manager (WAM)...'
-            Update-AzConfig -EnableLoginByWam $true
+            $null = Update-AzConfig -EnableLoginByWam $true
             Write-Host 'Azure CLI authentication switched to WAM mode.' -ForegroundColor Green
         }
     }
@@ -83,12 +83,12 @@ function Switch-AzurePowerShellMode {
         # Toggle mode
         if ($currentSetting) {
             Write-Verbose 'Disabling Web Account Manager (WAM)...'
-            Update-AzConfig -EnableLoginByWam $false
+            $null = Update-AzConfig -EnableLoginByWam $false
             Write-Host 'Azure CLI authentication switched to browser mode.' -ForegroundColor Green
         }
         else {
             Write-Verbose 'Enabling Web Account Manager (WAM)...'
-            Update-AzConfig -EnableLoginByWam $true
+            $null = Update-AzConfig -EnableLoginByWam $true
             Write-Host 'Azure CLI authentication switched to WAM mode.' -ForegroundColor Green
         }
     }
