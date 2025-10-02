@@ -8,7 +8,7 @@
     The function also retrieves the owners of each application.
 
     .EXAMPLE
-    $credentials = Get-MgApplicationCredential
+    Get-MgApplicationCredential
     Retrieves all Entra ID applications and their credentials.
 
     .EXAMPLE

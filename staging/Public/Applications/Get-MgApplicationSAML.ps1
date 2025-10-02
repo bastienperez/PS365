@@ -8,7 +8,7 @@
     and its validity status.
 
 .EXAMPLE
-    $samlApps = Get-MgApplicationSAML
+    Get-MgApplicationSAML
 
     Retrieves all Entra ID applications configured for SAML SSO.
 
