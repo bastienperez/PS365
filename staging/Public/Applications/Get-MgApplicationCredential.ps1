@@ -1,21 +1,39 @@
 <#
-Version History:
+.SYNOPSIS
+    Retrieves all Entra ID applications and their credentials (key and password).
 
-## [1.2] - 2025-04-04
-### Changed
-- Format output for Owners property
+.DESCRIPTION
+    This function returns a list of all Entra ID applications with their credentials information,
+    including key credentials and password credentials, along with their validity status.
+    The function also retrieves the owners of each application.
 
-## [1.1] - 2025-02-26
-### Changed
-- Transform the script into a function
-- Add `ForceNewToken` parameter
-- Test if already connected to Microsoft Graph and with the right permissions
+    .EXAMPLE
+    $credentials = Get-MgApplicationCredential
+    Retrieves all Entra ID applications and their credentials.
 
-## [1.0] - 2024-xx-xx
-### Initial Release
+    .EXAMPLE
+    Get-MgApplicationCredential -ForceNewToken
+    Forces the function to disconnect and reconnect to Microsoft Graph to obtain a new access token.
+
+    .NOTES
+    Author: Bastien Perez
+
+    .CHANGELOG
+    ## [1.2] - 2025-04-04
+    ### Changed
+    - Format output for Owners property
+
+    ## [1.1] - 2025-02-26
+    ### Changed
+    - Transform the script into a function
+    - Add `ForceNewToken` parameter
+    - Test if already connected to Microsoft Graph and with the right permissions
+
+    ## [1.0] - 2024-xx-xx
+    ### Initial Release
 #>
 
-function Get-MgApplicationsCredentials {
+function Get-MgApplicationCredential {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $false)]

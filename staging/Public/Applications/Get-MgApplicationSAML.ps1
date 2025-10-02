@@ -1,23 +1,49 @@
-# article : https://itpro-tips.com/get-azure-ad-saml-certificate-details/
-# the information about the SAML applications clams is not available in the Microsoft Graph API v1 but in https://main.iam.ad.ext.azure.com/api/ApplicationSso/<service-principal-id>/FederatedSsoV2 so we don't get them
 <#
-Version History:
+.SYNOPSIS
+    Retrieves all Entra ID applications configured for SAML SSO.
 
-## [1.2] - 2025-04-04
-### Changed
-- Change Write-Warning message in the catch block to Import-Module
+.DESCRIPTION
+    This function returns a list of all Entra ID applications configured for SAML Single Sign-On
+    along with their SAML-related properties, including the PreferredTokenSigningKeyEndDateTime
+    and its validity status.
 
-## [1.1] - 2025-02-26
-### Changed
-- Transform the script into a function
-- Add `ForceNewToken` parameter
-- Test if already connected to Microsoft Graph and with the right permissions
+.EXAMPLE
+    $samlApps = Get-MgApplicationSAML
 
-## [1.0] - 2024-xx-xx
-### Initial Release
+    Retrieves all Entra ID applications configured for SAML SSO.
+
+.EXAMPLE
+    Get-MgApplicationSAML -ForceNewToken
+
+    Forces the function to disconnect and reconnect to Microsoft Graph to obtain a new access token.
+
+.NOTES
+    This function requires the Microsoft.Graph.Beta.Applications module to be installed.
+
+    Author: Bastien Perez
+
+    .LIMITATIONS
+    The information about the SAML applications clams is not available in the Microsoft Graph API v1 but in https://main.iam.ad.ext.azure.com/api/ApplicationSso/<service-principal-id>/FederatedSsoV2 so we don't get them
+
+    .CHANGELOG
+    ## [1.2] - 2025-04-04
+    ### Changed
+    - Change Write-Warning message in the catch block to Import-Module
+  
+    ## [1.1] - 2025-02-26
+    ### Changed
+    - Transform the script into a function
+    - Add `ForceNewToken` parameter
+    - Test if already connected to Microsoft Graph and with the right permissions
+
+    ## [1.0] - 2024-xx-xx
+    ### Initial Release
+
+    .LINK
+    https://itpro-tips.com/get-azure-ad-saml-certificate-details/
 #>
 
-function Get-MgApplicationsSAML {
+function Get-MgApplicationSAML {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $false)]

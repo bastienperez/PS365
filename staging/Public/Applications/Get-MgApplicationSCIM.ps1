@@ -1,24 +1,56 @@
-# The groups assignments are not retrieve because based on https://main.iam.ad.ext.azure.com
 <#
-Version History:
+.SYNOPSIS
+    Retrieves all Entra ID applications configured for SCIM provisioning.
 
-## [1.2] - 2025-05-27
-### Added
-- Export functionality for synchronization job details
-- Support for additional synchronization job properties
+.DESCRIPTION
+    This function returns a list of all Entra ID applications with SCIM provisioning enabled,
+    along with their synchronization job details and settings.
 
-## [1.1] - 2025-02-26
-### Changed
-- Transform the script into a function
-- Replace `Write-Host` with `Write-Verbose`
+.EXAMPLE
+    $scimApps = Get-MgApplicationSCIM
 
-## [1.0] - 2024-xx-xx
-### Initial Release
+    Retrieves all Entra ID applications with SCIM provisioning enabled.
+
+.EXAMPLE
+    Get-MgApplicationSCIM -ForceNewToken
+
+    Forces the function to disconnect and reconnect to Microsoft Graph to obtain a new access token.
+
+    .EXAMPLE
+    Get-MgApplicationSCIM -Export
+
+    Exports the SCIM configuration details to a CSV file.
+
+    .EXAMPLE
+    Get-MgApplicationSCIM -ObjectID "xxx-xxx-xxx"
+
+    Retrieves the SCIM configuration for a specific application by its ObjectID.
+
+    .NOTES
+    .REQUIREMENTS
+    This function requires the Microsoft.Graph.Applications and Microsoft.Graph.Authentication modules.
+
+    .AUTHOR
+    Bastien Perez
+
+    .LIMITATIONS
+    The groups assignments are not retrieved because based on https://main.iam.ad.ext.azure.com
+
+    .CHANGELOG
+    ### Added
+    - Export functionality for synchronization job details
+    - Support for additional synchronization job properties
+
+    ## [1.1] - 2025-02-26
+    ### Changed
+    - Transform the script into a function
+    - Replace `Write-Host` with `Write-Verbose`
+
+    ## [1.0] - 2024-xx-xx
+    ### Initial Release
 #>
 
-## Modules : Microsoft.Graph.Applications & Microsoft.Graph.Authentication
-
-function Get-MgSCIMConfiguration {
+function Get-MgApplicationSCIM {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $false)]
@@ -87,7 +119,7 @@ function Get-MgSCIMConfiguration {
             $job | Add-Member -MemberType NoteProperty -Name TroubleshootingUrl -Value $job.Status.TroubleshootingUrl
 
             # synchronizationJobSettings Value
-            foreach($property in $job.SynchronizationJobSettings) {
+            foreach ($property in $job.SynchronizationJobSettings) {
                 $job | Add-Member -MemberType NoteProperty -Name $property.Name -Value $property.Value
             }
 
@@ -143,16 +175,6 @@ function Get-MgSCIMConfiguration {
                 $targetObjectType = $mapping.TargetObjectName
 
                 foreach ($attribute in $mapping.AttributeMappings) {
-        
-                    <#
-                    DefaultValue            :
-                    ExportMissingReferences : False
-                    FlowBehavior            : FlowWhenChanged
-                    FlowType                : Always
-                    MatchingPriority        : 0
-                    Source                  : Microsoft.Graph.PowerShell.Models.MicrosoftGraphAttributeMappingSource
-                    TargetAttributeName     : members
-                #>
                 
                     $object = [PSCustomObject][ordered]@{
                         Type                    = $targetObjectType
