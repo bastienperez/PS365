@@ -4,7 +4,7 @@
 
     .DESCRIPTION
     This function retrieves Exchange Online resource mailboxes (rooms and equipment)
-    resource mailboxes (rooms and equipment) and their calendar processing parameters. It also includes a
+    and their calendar processing parameters. It also includes a
     It also includes a "splatting" feature that deploys distribution groups to display all individual members.
 
     PARAMETER Filter
