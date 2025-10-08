@@ -1,7 +1,10 @@
 <#
 # TODO: add MFA state
+# TODO: Add Get-ManagementRoleAssignment to obtain permissions, as this is sometimes not done via a group
+#Get-ManagementRoleAssignment -RoleAssigneeType User
+
 .SYNOPSIS
-Get-ExchangeRoleReport - Reports on Exchange RBAC roles and permissions.
+Get-ExRoleReport - Reports on Exchange RBAC roles and permissions.
 
 .DESCRIPTION 
 This script produces a report of the membership of Exchange RBAC role groups.
@@ -9,19 +12,16 @@ By default, the report contains only the groups with members.
 
 .OUTPUTS
 The report is output to an array contained all the audit logs found.
-To export in a csv, do Get-ExchangeRoleReport | Export-CSV -NoTypeInformation "$(Get-Date -Format yyyyMMdd)_adminRoles.csv" -Encoding UTF8
+To export in a csv, do Get-ExRoleReport | Export-CSV -NoTypeInformation "$(Get-Date -Format yyyyMMdd)_adminRoles.csv" -Encoding UTF8
 
 .EXAMPLE
-Get-ExchangeRoleReport
+Get-ExRoleReport
 
 .LINK
 
 .NOTES
-Written by Bastien Perez (ITPro-Tips.com)
+Written by Bastien Perez (Clidsys.com - ITPro-Tips.com)
 
-Version history:
-V1.0, 14 april 2022 - Initial version
-v2.0 22 november 2024 - Add option to see permission graph - not work by now
 
 Version History:
 ## [2.1] - 2025-07-03
@@ -39,7 +39,7 @@ Version History:
 ### Initial Release
 
 #>
-function Get-ExchangeRoleReport {
+function Get-ExRoleReport {
     [CmdletBinding()]
     param (
         [switch]$OnPrem
@@ -70,12 +70,11 @@ function Get-ExchangeRoleReport {
             # These types of role groups can't be edited and are not shown by default.
             $exchangeRoles = Get-RoleGroup -ShowPartnerLinked -ErrorAction Stop
         }
-
     }
     catch {
         Write-Warning "Unable to retrieve Exchange RBAC roles. $($_.Exception.Message)"
     }
-   
+
     [System.Collections.Generic.List[Object]]$exchangeRolesMembership = @()
     foreach ($exchangeRole in $exchangeRoles) {        
         try {
@@ -113,8 +112,7 @@ function Get-ExchangeRoleReport {
             }
             else {         
 
-                foreach ($roleMember in $roleMembers) {                
-                   
+                foreach ($roleMember in $roleMembers) {
                     $object = [PSCustomObject][ordered]@{
                         'Role'                       = $exchangeRole.Name
                         'MemberName'                 = $roleMember.Name
@@ -135,8 +133,7 @@ function Get-ExchangeRoleReport {
         }
     }
 
-    # TODO: Add Get-ManagementRoleAssignment to obtain permissions, as this is sometimes not done via a group
-    #Get-ManagementRoleAssignment -RoleAssigneeType User
+
     
     return $exchangeRolesMembership
 }

@@ -1,5 +1,8 @@
 <#
-# TODO: add MFA state
+
+# TODO: Add Get-ManagementRoleAssignment to obtain permissions, as this is sometimes not done via a group
+#Get-ManagementRoleAssignment -RoleAssigneeType User
+    
 .SYNOPSIS
 Get-PurviewRoleReport - Reports on Purview RBAC roles and permissions.
 
@@ -119,9 +122,6 @@ function Get-PurviewRoleReport {
             Write-Warning $_.Exception.Message
         }
     }
-
-    # TODO: Add Get-ManagementRoleAssignment to obtain permissions, as this is sometimes not done via a group
-    #Get-ManagementRoleAssignment -RoleAssigneeType User
 
     return $purviewRolesMembership
 }
