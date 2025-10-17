@@ -47,9 +47,13 @@ Written by Bastien Perez (Clidsys.com - ITPro-Tips.com)
 For more Office 365/Microsoft 365 tips and news, check out ITPro-Tips.com.
 
 Version History:
+## [1.8.2] - 2025-10-17
+### Changed
+- Fix `onPremisesSyncEnabled` property
+
 ## [1.8.1] - 2025-10-17
 ### Added
-- Add `RecommendationsSync` property
+- Add `RecommendationSync` property
 
 ## [1.8.0] - 2025-10-08
 ### Added
@@ -226,13 +230,14 @@ function Get-MgRoleReport {
             PrincipalType        = $assignment.principal.AdditionalProperties.'@odata.type'.Split('.')[-1]
             PrincipalObjectID    = $assignment.principal.id
             AssignedRole         = $assignment.RoleDefinitionExtended.displayName
+            AssignedRoleDefinitionId = $assignment.RoleDefinitionId
             AssignedRoleScope    = $assignment.directoryScopeId
             AssignmentType       = if ($assignment.status -eq 'Provisioned') { 'Eligible' } else { 'Permanent' }
             RoleIsBuiltIn        = $assignment.RoleDefinitionExtended.isBuiltIn
             RoleTemplate         = $assignment.RoleDefinitionExtended.templateId
             DirectMember         = $true
             Recommendations      = 'Check if the user has alternate email or alternate phone number on Microsoft Entra ID'
-            RecommendationsSync  = $null
+            RecommendationSync   = $null
         }
 
         $rolesMembersArray.Add($object)
@@ -275,7 +280,7 @@ function Get-MgRoleReport {
                     RoleTemplate         = $assignment.RoleDefinitionExtended.templateId
                     DirectMember         = $false
                     Recommendations      = 'Check if the user has alternate email or alternate phone number on Microsoft Entra ID'
-                    RecommendationsSync  = $null
+                    RecommendationSync  = $null
                 }
 
                 $rolesMembersArray.Add($object)
@@ -294,7 +299,7 @@ function Get-MgRoleReport {
         RoleTemplate         = 'Not applicable'
         DirectMember         = 'Not applicable'
         Recommendations      = 'Please check this URL to identify if you have partner with admin roles https: / / admin.microsoft.com / AdminPortal / Home#/partners. More information on https://practical365.com/identifying-potential-unwanted-access-by-your-msp-csp-reseller/'
-        RecommendationsSync  = $null
+        RecommendationSync  = $null
     }    
     
     $rolesMembersArray.Add($object)
@@ -314,8 +319,8 @@ function Get-MgRoleReport {
         }
     }
 
-
     foreach ($member in $rolesMembersArray) {
+        Write-Verbose "Processing $($member.AssignedRole) - $($member.AssignedRole)"
 
         $lastSignInDateTime = $null
         $accountEnabled = $null
@@ -342,11 +347,7 @@ function Get-MgRoleReport {
                     $lastSignInDateTime = $mgUser.signInActivity.LastSignInDateTime
                     $lastNonInteractiveSignInDateTime = $mgUser.signInActivity.LastNonInteractiveSignInDateTime
                     $onPremisesSyncEnabled = [bool]($mgUser.onPremisesSyncEnabled -eq $true)
-
-                    $member | Add-Member -MemberType NoteProperty -Name 'OnPremisesSyncEnabled' -Value $onPremisesSyncEnabled
-                    if ($onPremisesSyncEnabled) {
-                        $member.RecommendationsSync = 'User is synced from on-premises. Privileged users in Entra ID should be cloud-only accounts.'
-                    }
+                    
                     break
                 }
 
@@ -355,7 +356,8 @@ function Get-MgRoleReport {
                     $lastSignInDateTime = 'Not applicable'
                     $lastNonInteractiveSignInDateTime = 'Not applicable'
                     # onpremisesSyncEnabled already get from Get-MgGroup in the previous loop
-                    
+                    $onPremisesSyncEnabled = $member.OnPremisesSyncEnabled
+
                     break
                 }
 
@@ -366,8 +368,6 @@ function Get-MgRoleReport {
                     $lastNonInteractiveSignInDateTime = $lastSignInActivity.LastNonInteractiveSignInDateTime
                     $onPremisesSyncEnabled = $false
                     
-                    $member | Add-Member -MemberType NoteProperty -Name 'OnPremisesSyncEnabled' -Value $onPremisesSyncEnabled
-
                     break
                 }
                 
@@ -376,9 +376,7 @@ function Get-MgRoleReport {
                     $lastSignInDateTime = 'Not applicable'
                     $lastNonInteractiveSignInDateTime = 'Not applicable'
                     $onPremisesSyncEnabled = 'Not applicable'
-                    
-                    $member | Add-Member -MemberType NoteProperty -Name 'OnPremisesSyncEnabled' -Value $false
-                    
+
                     break
                 }
 
@@ -387,8 +385,7 @@ function Get-MgRoleReport {
                     $lastSignInDateTime = 'Not applicable'
                     $lastNonInteractiveSignInDateTime = 'Not applicable'
                     $onPremisesSyncEnabled = 'Not applicable'
-                    
-                    $member | Add-Member -MemberType NoteProperty -Name 'OnPremisesSyncEnabled' -Value $onPremisesSyncEnabled
+
                 }
             }
         }
@@ -396,6 +393,11 @@ function Get-MgRoleReport {
         $member | Add-Member -MemberType NoteProperty -Name 'LastSignInDateTime' -Value $lastSignInDateTime
         $member | Add-Member -MemberType NoteProperty -Name 'LastNonInteractiveSignInDateTime' -Value $lastNonInteractiveSignInDateTime
         $member | Add-Member -MemberType NoteProperty -Name 'AccountEnabled' -Value $accountEnabled
+        $member | Add-Member -MemberType NoteProperty -Name 'OnPremisesSyncEnabled' -Value $onPremisesSyncEnabled
+
+        if($onPremisesSyncEnabled) {
+            $member.RecommendationSync = 'Privileged accounts should be cloud-only.'
+        }
 
         # only add if not already in the cache
         if (-not $objectsCacheArray.Principal -contains $member.Principal) {
