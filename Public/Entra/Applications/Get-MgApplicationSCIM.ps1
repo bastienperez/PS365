@@ -141,17 +141,16 @@ function Get-MgApplicationSCIM {
         Write-Host "Get synchronization settings $($job.DisplayName) ($j/$($synchronizationJobsArray.Count))"
 
         $jobSchema = Get-MgServicePrincipalSynchronizationJobSchema -ServicePrincipalId $job.ServicePrincipalId -SynchronizationJobId $job.Id
-   
+
         $job | Add-Member -MemberType NoteProperty -Name Scheduling -Value $job.Schedule.Interval
         $job | Add-Member -MemberType NoteProperty -Name SchedulingState -Value $job.Schedule.State
         $job | Add-Member -MemberType NoteProperty -Name LastSuccessfulExecutionDate -Value $job.Status.LastSuccessfulExecution.TimeEnded
         $job | Add-Member -MemberType NoteProperty -Name LastSuccessfulExecutionState -Value $job.Status.LastSuccessfulExecution.State
         $job | Add-Member -MemberType NoteProperty -Name LastSuccessfulExecutionWithExportsDate -Value $job.Status.LastSuccessfulExecutionWithExports.TimeEnded
         $job | Add-Member -MemberType NoteProperty -Name LastSuccessfulExecutionWithExportsState -Value $job.Status.LastSuccessfulExecutionWithExports.State
-    
+
         if ($job.Status.Quarantine.CurrentBegan) {
             $job | Add-Member -MemberType NoteProperty -Name Quarantined -Value $true
-
         }
         else {
             $job | Add-Member -MemberType NoteProperty -Name Quarantined -Value $false
