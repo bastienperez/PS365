@@ -37,6 +37,12 @@
     The groups assignments are not retrieved because based on https://main.iam.ad.ext.azure.com
 
     .CHANGELOG
+    ## [1.3] - 2025-10-23
+    ### Added
+    - Added error handling when adding member to job
+    - Add `DisplayName` parameter
+    
+    ## [1.2] - 2025-xx-xx
     ### Added
     - Export functionality for synchronization job details
     - Support for additional synchronization job properties
@@ -51,10 +57,12 @@
 #>
 
 function Get-MgApplicationSCIM {
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName = 'All')]
     param (
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'ByObjectId')]
         [string]$ObjectID,
+        [Parameter(Mandatory = $false, ParameterSetName = 'ByDisplayName')]
+        [string]$DisplayName,
         [Parameter(Mandatory = $false)]
         [switch]$ForceNewToken,
         [Parameter(Mandatory = $false)]
@@ -75,10 +83,20 @@ function Get-MgApplicationSCIM {
 
         Connect-MgGraph -Scopes $scopes -NoWelcome
     }
+    # Determine how to search for the Service Principal(s): by ObjectID (GUID), by DisplayName, or all
     if ($ObjectID) {
+        # If ObjectID looks like a GUID, use it directly
         $servicePrincipals = Get-MgServicePrincipal -ServicePrincipalId $ObjectID
     }
+    elseif ($DisplayName) {
+        # Use OData filter to search by DisplayName. Escape single quotes by doubling them.
+        $escaped = $DisplayName -replace "'", "''"
+        $filter = "DisplayName eq '$escaped'"
+        Write-Verbose "Filtering service principals with: $filter"
+        $servicePrincipals = Get-MgServicePrincipal -Filter $filter -All -Property DisplayName, Id
+    }
     else {
+        # Default: get all service principals (existing behavior)
         $servicePrincipals = Get-MgServicePrincipal -All -Property DisplayName, Id
     }
 
@@ -87,7 +105,7 @@ function Get-MgApplicationSCIM {
     $i = 0
     foreach ($servicePrincipal in $servicePrincipals) {
         $i++
-        Write-Host "($i/$($servicePrincipals.Count)) - $($servicePrincipal.DisplayName)  and check for synchronization jobs" -ForegroundColor Cyan
+        Write-Host "($i/$($servicePrincipals.Count)) - $($servicePrincipal.DisplayName): check for synchronization jobs " -ForegroundColor Cyan -NoNewline
         # Service principal is the ObjectID in Microsoft Entra ID
         $job = Get-MgServicePrincipalSynchronizationJob -ServicePrincipalId $servicePrincipal.Id -All
         
@@ -200,10 +218,14 @@ function Get-MgApplicationSCIM {
                     else {
                         $res = "$res$($object.SourceAttributeName) --> $($object.TargetAttributeName)"
                     }
+                }
+                try {
+                    $job | Add-Member -MemberType NoteProperty -Name "Attributes-$($object.Type)" -Value $res
+                }
+                catch {
+                    Write-Host "Error adding member to job: $($_.Exception.Message)" -ForegroundColor Red
                 }           
             }
-
-            $job | Add-Member -MemberType NoteProperty -Name "Attributes-$($object.Type)" -Value $res
         }
     
         # exclude properties because they are not needed
