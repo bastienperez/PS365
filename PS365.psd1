@@ -12,7 +12,7 @@
 RootModule = 'PS365.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.0.5'
+ModuleVersion = '0.0.6'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -73,8 +73,9 @@ RequiredAssemblies = 'Private\SharePointDLL\Microsoft.SharePoint.Client.dll',
 FunctionsToExport = 'Switch-AzureCliAuthMode', 'Switch-AzurePowerShellMode', 
                'Get-MgApplicationAssignment', 'Get-MgApplicationCredential', 
                'Get-MgApplicationSAML', 'Get-MgApplicationSCIM', 
-               'Get-MgAuditLogSignInDetails', 'Get-MgRoleReport', 
-               'Get-ExResourceMailbox', 'Get-MessageTraceInfo', 
+               'Get-MgAuditLogSignInDetails', 'New-MgAuditLogSignInHTMLReport', 
+               'Get-MgPasswordPolicyDetail', 'Get-MgUserPasswordInfo', 
+               'Get-MgRoleReport', 'Get-ExResourceMailbox', 'Get-MessageTraceInfo', 
                'Get-MobileDeviceDetail', 'Get-ExRoleReport', 'Get-PurviewRoleReport', 
                'Disable-MSSelfServicePurchase'
 

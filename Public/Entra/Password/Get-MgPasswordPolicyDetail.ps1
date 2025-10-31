@@ -6,7 +6,7 @@
 
 #>
 
-function Get-MgPasswordPolicies { 
+function Get-MgPasswordPolicyDetail { 
 
     [System.Collections.Generic.List[PSCustomObject]]$pwdPolicies = @()
 
@@ -14,7 +14,7 @@ function Get-MgPasswordPolicies {
     
     foreach ($domain in $domains) {
         
-        if ($domain.PasswordValidityPeriodInDays -eq '2147483647') {
+        if ($domain.PasswordValidityPeriodInDays -eq '2147483647' -or $null -eq $domain.PasswordValidityPeriodInDays) {
             $pwddValidityPeriodInDays = 'Password never expire'
         }
         else {
