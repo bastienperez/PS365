@@ -98,6 +98,22 @@ function Get-MgAuditLogSignInDetails {
 
         [Parameter(Mandatory = $false)]
         [switch]$AnalyzeReportOnlyCA,
+        
+        # Remplace plusieurs switches par un seul paramètre avec ValidateSet
+        [Parameter(Mandatory = $false)]
+        [ValidateSet(
+            'Last2Minutes',
+            'Last10Minutes',
+            'LastHour',
+            'Last6Hours',
+            'Last12Hours',
+            'Last24Hours',
+            'Last3Days',
+            'Last7Days',
+            'Last15Days',
+            'Maximum'
+        )]
+        [string]$TimeRange,
 
         [Parameter(Mandatory = $false)]
         [string]$OutputFile,
@@ -145,39 +161,126 @@ function Get-MgAuditLogSignInDetails {
 
     [System.Collections.Generic.List[PSObject]]$signsInList = @()
 
-    if ($StartDate) {
-        try {
-            $null = [datetime]::parseExact($StartDate, 'yyyy-MM-dd', $null)
-        }
-        catch {
-            Write-Warning "Unable to get date from StartDate. Please add with the following format: yyyy-mm-dd $($_.Exception.Message)"
-            return
+    # Build StartDate/EndDate from TimeRange if provided (use full datetime when relevant)
+    $endWasDayOnly = $false
+    if ($TimeRange) {
+        switch ($TimeRange) {
+            'Last2Minutes' {
+                $startDt = (Get-Date).AddMinutes(-2)
+                break
+            }
+            'Last10Minutes' {
+                $startDt = (Get-Date).AddMinutes(-10)
+                break
+            }
+            'LastHour' {
+                $startDt = (Get-Date).AddHours(-1)
+                break
+            }
+            'Last6Hours' {
+                $startDt = (Get-Date).AddHours(-6)
+                break
+            }
+            'Last12Hours' {
+                $startDt = (Get-Date).AddHours(-12)
+                break
+            }
+            'Last24Hours' {
+                $startDt = (Get-Date).AddHours(-24)
+                break
+            }
+            'Last3Days' {
+                $startDt = (Get-Date).AddDays(-3)
+                break
+            }
+            'Last7Days' {
+                $startDt = (Get-Date).AddDays(-7)
+                break
+            }
+            'Last15Days' {
+                $startDt = (Get-Date).AddDays(-14)
+                break
+            }
+            'Maximum' {
+                Write-Host -ForegroundColor Cyan "You have selected the 'Maximum' TimeRange option. The value corresponds to the maximum retention period of Microsoft Entra ID (Azure AD) sign-in logs, which is 30 days for Entra P1/P2 licence and 7 days otherwise."
+                $startDt = (Get-Date).AddDays(-30)
+                break
+            }
         }
 
-        $dateFilter = "createdDateTime gt $StartDate"
+        # When using predefined TimeRange, default EndDate to now (preserve time resolution)
+        $endDt = (Get-Date)
+        $endWasDayOnly = $false
+    }
+
+    # Normalize and validate StartDate and EndDate once, then build a single UTC ISO date filter
+    try {
+        if (-not $startDt) {
+            if ($StartDate) {
+                # if startDate greater than 30 days ago, warn the user and set it to 30 days ago
+                $parsedStart = [datetime]::ParseExact($StartDate, 'yyyy-MM-dd', $null)
+                if ($parsedStart -lt (Get-Date).AddDays(-30)) {
+                    Write-Warning 'StartDate is greater than 30 days ago. Microsoft Entra ID (Azure AD) sign-in logs are retained for 30 days only. Setting StartDate to 30 days ago.'
+                    $startDt = (Get-Date).AddDays(-30)
+                }
+                else {
+                    # use start of the provided day
+                    $startDt = $parsedStart
+                }
+            }
+            else {
+                # Default: 30 days ago (keeps previous behaviour)
+                # https://learn.microsoft.com/en-us/entra/identity/monitoring-health/reference-reports-data-retention#how-long-does-microsoft-entra-id-store-the-data
+                $startDt = (Get-Date).AddDays(-30)
+            }
+        }
+        else {
+            # If TimeRange produced a startDt older than retention, clamp it and warn
+            if ($startDt -lt (Get-Date).AddDays(-30)) {
+                Write-Warning 'Computed TimeRange start is greater than 30 days ago. Microsoft Entra ID sign-in logs are retained for 30 days only. Setting StartDate to 30 days ago.'
+                $startDt = (Get-Date).AddDays(-30)
+            }
+        }
+    }
+    catch {
+        Write-Warning "Unable to get date from StartDate. Please add with the following format: yyyy-MM-dd. $($_.Exception.Message)"
+        return
+    }
+
+    try {
+        if (-not $endDt) {
+            if ($EndDate) {
+                $endDt = [datetime]::ParseExact($EndDate, 'yyyy-MM-dd', $null)
+                # mark that user provided day-only EndDate so we can make it exclusive later
+                $endWasDayOnly = $true
+            }
+            else {
+                # Default endDate: now (we will make it exclusive only if user provided day-only EndDate)
+                $endDt = (Get-Date)
+                $endWasDayOnly = $false
+            }
+        }
+    }
+    catch {
+        Write-Warning "Unable to get date from EndDate. Please add with the following format: yyyy-MM-dd. $($_.Exception.Message)"
+        return
+    }
+
+    # Make the end bound exclusive and include the full provided EndDate day when end was day-only
+    if ($endWasDayOnly) {
+        $endExclusive = $endDt.AddDays(1)
     }
     else {
-        # define StartDate 31 days ago (30 days max) : https://docs.microsoft.com/en-us/azure/active-directory/reports-monitoring/reference-reports-data-retention#how-long-does-azure-ad-store-the-data
-        $dateFilter = "createdDateTime gt $((Get-Date).AddDays(-31).Tostring('yyyy-MM-dd'))"
+        # endDt already includes a time component (e.g. TimeRange or now)
+        $endExclusive = $endDt
     }
 
-    if ($EndDate) {
-        try {
-            $null = [datetime]::parseExact($EndDate, 'yyyy-MM-dd', $null)
-        }
-        catch {
-            Write-Warning "Unable to get date from EndDate. Please add with the following format: yyyy-mm-dd $($_.Exception.Message)"
-            return
-        }
+    # Convert to UTC ISO format accepted by Microsoft Graph filters
+    $startUtc = $startDt.ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
+    $endUtc = $endExclusive.ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
 
-        $dateFilter += " and createdDateTime lt $EndDate"
-    }
-    else {
-        # define endDate to tomorrow to be sure to take everything from today
-        $dateFilter += " and createdDateTime lt $((Get-Date).AddDays(1).Tostring('yyyy-MM-dd'))"
-    }
+    $dateFilter = "createdDateTime gt $startUtc and createdDateTime lt $endUtc"
 
-    
     $filter = $dateFilter
     
     if ($BadCredentialsOnly) {
