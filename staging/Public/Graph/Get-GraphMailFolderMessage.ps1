@@ -91,7 +91,7 @@ function Get-GraphMailFolderMessage {
                 }
                 $i = if ($Top) { $Top } else { 10000000 }
                 do {
-                    if ([datetime]::UtcNow -ge $TimeToRefresh) { Connect-PoshGraphRefresh }
+                    if ([datetime]::UtcNow -ge $TimeToRefresh) { Connect-PS365Refresh }
                     try {
                         $MessageList = Invoke-RestMethod @RestSplat -Verbose:$false
                         if ($MessageList.'@odata.nextLink' -match 'skip') { $Next = $MessageList.'@odata.nextLink' }

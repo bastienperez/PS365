@@ -10,7 +10,7 @@ function New-GraphUser {
     )
     process {
         foreach ($User in $UserList) {
-            if ([datetime]::UtcNow -ge $TimeToRefresh) { Connect-PoshGraphRefresh }
+            if ([datetime]::UtcNow -ge $TimeToRefresh) { Connect-PS365Refresh }
             $Headers = @{
                 'Authorization' = "Bearer $Token"
                 'Content-Type'  = 'application/json'

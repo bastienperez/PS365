@@ -5,8 +5,8 @@ function Get-DiscoveryIntune {
         $Tenant
     )
 
-    $PoshPath = Join-Path ([Environment]::GetFolderPath("Desktop")) -ChildPath 'PS365'
-    $DiscoPath = Join-Path $PoshPath -ChildPath 'Discovery'
+    $PS365Path = Join-Path ([Environment]::GetFolderPath("Desktop")) -ChildPath 'PS365'
+    $DiscoPath = Join-Path $PS365Path -ChildPath 'Discovery'
     $TenantPath = Join-Path $DiscoPath -ChildPath "$Tenant\Intune"
     $Detailed = Join-Path $TenantPath -ChildPath 'Detailed'
     $CSV = Join-Path $TenantPath -ChildPath 'CSV'

@@ -1,4 +1,4 @@
-function Connect-PoshGraphRefresh {
+function Connect-PS365Refresh {
     [CmdletBinding()]
     param (    )
 

@@ -5,12 +5,12 @@ function Get-SourceQuotaHash {
     Get-PSSession | Remove-PSSession
     Connect-ExchangeOnline
 
-    $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath PS365)
-    if (-not (Test-Path $PoshPath)) {
-        $null = New-Item $PoshPath -type Directory -Force:$true -ErrorAction SilentlyContinue
+    $PS365Path = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath PS365)
+    if (-not (Test-Path $PS365Path)) {
+        $null = New-Item $PS365Path -type Directory -Force:$true -ErrorAction SilentlyContinue
     }
-    $QuotaMailboxBackupXML = Join-Path -Path $PoshPath -ChildPath ('SourceQuota_Mailbox_Backup_{0}.xml' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
-    $SourceQuotaXML = Join-Path -Path $PoshPath -ChildPath 'SourceQuotaHash.xml'
+    $QuotaMailboxBackupXML = Join-Path -Path $PS365Path -ChildPath ('SourceQuota_Mailbox_Backup_{0}.xml' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
+    $SourceQuotaXML = Join-Path -Path $PS365Path -ChildPath 'SourceQuotaHash.xml'
 
     Get-EXOMailbox -ResultSize Unlimited -PropertySets All | Export-Clixml $QuotaMailboxBackupXML
     $MailboxList = Import-Clixml $QuotaMailboxBackupXML

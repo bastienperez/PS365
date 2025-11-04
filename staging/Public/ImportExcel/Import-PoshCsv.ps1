@@ -1,4 +1,4 @@
-function Import-PoshCsv {
+function Import-PS365Csv {
     <#
     .SYNOPSIS
     Import a CSV and not worry if it is open or not
@@ -12,7 +12,7 @@ function Import-PoshCsv {
     example: c:\scripts\afile.csv
 
     .EXAMPLE
-    Import-PoshCsv "c:\scripts\RawADUsers.csv" | Export-PoshExcel "c:\scripts\PrettyADUsers.xlsx"
+    Import-PS365Csv "c:\scripts\RawADUsers.csv" | Export-PS365Excel "c:\scripts\PrettyADUsers.xlsx"
 
     .NOTES
     General notes

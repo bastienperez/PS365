@@ -3,7 +3,7 @@ function Get-MemMobileAppConfigTargetedData {
     param (
 
     )
-    if ([datetime]::UtcNow -ge $TimeToRefresh) { Connect-PoshGraphRefresh }
+    if ([datetime]::UtcNow -ge $TimeToRefresh) { Connect-PS365Refresh }
     $RestSplat = @{
         Uri     = 'https://graph.microsoft.com/beta/deviceAppManagement/targetedManagedAppConfigurations?$expand=assignments,apps'
         Headers = @{ 'Authorization' = "Bearer $Token" }

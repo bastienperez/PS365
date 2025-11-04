@@ -155,13 +155,13 @@ function Trace-ExchangeMessage {
 
     if ($allMessageTrackResults.count -gt 0) {
         if ($ExportToExcel -or $ExportToCSV) {
-            $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath PS365)
-            $null = New-Item $PoshPath -type Directory -Force -ErrorAction SilentlyContinue
+            $PS365Path = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath PS365)
+            $null = New-Item $PS365Path -type Directory -Force -ErrorAction SilentlyContinue
 
             if ($ExportToExcel) {
                 $FileStamp = 'OnPremises-MessageTrace_{0}.xlsx' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm')
                 $ExcelSplat = @{
-                    Path                    = (Join-Path $PoshPath $FileStamp)
+                    Path                    = (Join-Path $PS365Path $FileStamp)
                     TableStyle              = 'Medium2'
                     FreezeTopRowFirstColumn = $true
                     AutoSize                = $true
@@ -179,7 +179,7 @@ function Trace-ExchangeMessage {
             if ($ExportToCSV) {
                 $FileStamp = 'OnPremises-MessageTrace_{0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm')
                 $CsvSplat = @{
-                    Path              = (Join-Path $PoshPath $FileStamp)
+                    Path              = (Join-Path $PS365Path $FileStamp)
                     NoTypeInformation = $true
                     Encoding          = 'UTF8'
                 }

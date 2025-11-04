@@ -3,14 +3,14 @@ function Get-MemMobileDeviceListData {
     param (
 
     )
-    if ([datetime]::UtcNow -ge $TimeToRefresh) { Connect-PoshGraphRefresh }
+    if ([datetime]::UtcNow -ge $TimeToRefresh) { Connect-PS365Refresh }
     $RestSplat = @{
         Uri     = 'https://graph.microsoft.com/beta/deviceManagement/managedDevices'
         Headers = @{ 'Authorization' = "Bearer $Token" }
         Method  = 'Get'
     }
     do {
-        if ([datetime]::UtcNow -ge $TimeToRefresh) { Connect-PoshGraphRefresh }
+        if ([datetime]::UtcNow -ge $TimeToRefresh) { Connect-PS365Refresh }
         $Response = Invoke-RestMethod @RestSplat -Verbose:$false
         $Response.value
         if ($Response.'@odata.nextLink' -match 'skip') { $Next = $Response.'@odata.nextLink' }

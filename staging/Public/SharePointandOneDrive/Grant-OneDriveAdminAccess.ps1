@@ -10,7 +10,7 @@ function Grant-OneDriveAdminAccess {
     Username of Global Admin used to connect to SharePoint Online
     
     .EXAMPLE
-    Grant-OneDriveAdminAccess -GAUserName AdminSmith | Export-PoshExcel .\GrantLog.xlsx
+    Grant-OneDriveAdminAccess -GAUserName AdminSmith | Export-PS365Excel .\GrantLog.xlsx
     
     .NOTES
     General notes

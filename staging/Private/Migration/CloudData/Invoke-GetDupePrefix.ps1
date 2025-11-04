@@ -5,7 +5,7 @@ function Invoke-GetDupePrefix {
         $FilePath,
 
         [Parameter()]
-        $PoshPath,
+        $PS365Path,
 
         [Parameter()]
         [switch]
@@ -31,7 +31,7 @@ function Invoke-GetDupePrefix {
                 $Address = ($Email -split ':')[1]
                 $Prefix = ($Address -split '@')[0]
                 if ($Hash.ContainsKey($Prefix) -and $Hash[$Prefix]['PrimarySmtpAddress'] -ne $Recipient.PrimarySmtpAddress ) {
-                    Get-DupesLocal -Prefix $Prefix -Address $Address -Hash $Hash -Recipient $Recipient | Export-Csv (Join-Path $PoshPath $FileStamp) -NoTypeInformation -Append
+                    Get-DupesLocal -Prefix $Prefix -Address $Address -Hash $Hash -Recipient $Recipient | Export-Csv (Join-Path $PS365Path $FileStamp) -NoTypeInformation -Append
                 }
                 else {
                     $Hash[$Prefix] = @{

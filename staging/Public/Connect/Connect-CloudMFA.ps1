@@ -41,8 +41,8 @@ function Connect-CloudMFA {
     end {
         if ($Tenant -match 'onmicrosoft') { $Tenant = $Tenant.Split(".")[0] }
         $host.ui.RawUI.WindowTitle = "Tenant: $($Tenant.ToUpper())"
-        $PoshPath = Join-Path $Env:USERPROFILE '.PS365'
-        $TenantPath = Join-Path $PoshPath $Tenant
+        $PS365Path = Join-Path $Env:USERPROFILE '.PS365'
+        $TenantPath = Join-Path $PS365Path $Tenant
         $CredPath = Join-Path $TenantPath 'Credentials'
         $CredFile = Join-Path $CredPath CC.xml
         $LogPath = Join-Path $TenantPath 'Logs'
@@ -53,7 +53,7 @@ function Connect-CloudMFA {
                 Force       = $true
                 ErrorAction = 'SilentlyContinue'
             }
-            $null = New-Item $PoshPath @ItemSplat
+            $null = New-Item $PS365Path @ItemSplat
             $null = New-Item $CredPath @ItemSplat
             $null = New-Item $LogPath @ItemSplat
         }

@@ -8,7 +8,7 @@ function Get-GraphGroup {
         $Name
     )
 
-    if ([datetime]::UtcNow -ge $TimeToRefresh) { Connect-PoshGraphRefresh }
+    if ([datetime]::UtcNow -ge $TimeToRefresh) { Connect-PS365Refresh }
     switch ($PSCmdlet.ParameterSetName) {
         'GroupID' {
             Get-GraphGroupData -GroupId $GroupId

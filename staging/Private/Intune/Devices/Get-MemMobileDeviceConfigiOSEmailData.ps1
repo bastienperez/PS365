@@ -3,7 +3,7 @@ function Get-MemMobileDeviceConfigiOSEmailData {
     param (
 
     )
-    if ([datetime]::UtcNow -ge $TimeToRefresh) { Connect-PoshGraphRefresh }
+    if ([datetime]::UtcNow -ge $TimeToRefresh) { Connect-PS365Refresh }
     $RestSplat = @{
         Uri     = "https://graph.microsoft.com/beta/deviceManagement/deviceConfigurations?`$filter=isof('microsoft.graph.iosEasEmailProfileConfiguration')&`$expand=assignments"
         Headers = @{ 'Authorization' = "Bearer $Token" }

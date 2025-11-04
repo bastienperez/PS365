@@ -15,7 +15,7 @@ function Compare-IntunePolicy {
     Compare-IntunePolicy | Out-GridView
 
     .EXAMPLE
-    Compare-IntunePolicy | Export-PoshExcel .\Comparison.xlsx
+    Compare-IntunePolicy | Export-PS365Excel .\Comparison.xlsx
 
     .EXAMPLE
     Compare-IntunePolicy | Export-Csv .\Comparison.csv -notypeinformation

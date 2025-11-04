@@ -39,8 +39,8 @@ function Get-OfficeEndpoints {
         }
         # NOT OUTPUT CONSOLE
         else {
-            $PoshDesktop = Join-Path ([Environment]::GetFolderPath("Desktop")) -ChildPath 'PS365'
-            $EndpointPath = Join-Path -Path $PoshDesktop -ChildPath 'Endpoints'
+            $PS365Desktop = Join-Path ([Environment]::GetFolderPath("Desktop")) -ChildPath 'PS365'
+            $EndpointPath = Join-Path -Path $PS365Desktop -ChildPath 'Endpoints'
             $EndpointCsv = Join-Path -Path $EndpointPath -ChildPath 'Endpoints.csv'
             $EndpointXlsx = Join-Path -Path $EndpointPath -ChildPath 'Endpoints.xlsx'
 
@@ -50,7 +50,7 @@ function Get-OfficeEndpoints {
                     Force       = $true
                     ErrorAction = 'SilentlyContinue'
                 }
-                $null = New-Item $PoshDesktop @ItemSplat
+                $null = New-Item $PS365Desktop @ItemSplat
                 $null = New-Item $EndpointPath @ItemSplat
             }
 

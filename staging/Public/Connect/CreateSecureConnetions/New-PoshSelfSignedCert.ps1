@@ -1,4 +1,4 @@
-function New-PoshSelfSignedCert {
+function New-PS365SelfSignedCert {
 
     Param(
 
@@ -31,16 +31,16 @@ function New-PoshSelfSignedCert {
         $ExportToPFX
     )
 
-    $PoshCertPath = Join-Path -Path $Env:USERPROFILE -ChildPath '.PS365/Certificates'
+    $PS365CertPath = Join-Path -Path $Env:USERPROFILE -ChildPath '.PS365/Certificates'
 
     $ItemSplat = @{
         Type        = 'Directory'
         Force       = $true
         ErrorAction = 'SilentlyContinue'
     }
-    if (-not (Test-Path $PoshCertPath)) { $null = New-Item $PoshCertPath @ItemSplat }
+    if (-not (Test-Path $PS365CertPath)) { $null = New-Item $PS365CertPath @ItemSplat }
 
-    $Path = Join-Path -Path $PoshCertPath -ChildPath $Tenant
+    $Path = Join-Path -Path $PS365CertPath -ChildPath $Tenant
     if (-not (Test-Path $Path)) { $null = New-Item $Path @ItemSplat }
 
     if ($DnsName) {

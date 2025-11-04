@@ -121,8 +121,8 @@ function Get-DiscoveryOffice365 {
             if ($Menu.DiscoveryItems -match 'CreateExcel' ) { $TenantName = $Tenant }
         } until ($TenantName)
 
-        $PoshPath = Join-Path ([Environment]::GetFolderPath("Desktop")) -ChildPath 'PS365'
-        $DiscoPath = Join-Path $PoshPath -ChildPath 'Discovery'
+        $PS365Path = Join-Path ([Environment]::GetFolderPath("Desktop")) -ChildPath 'PS365'
+        $DiscoPath = Join-Path $PS365Path -ChildPath 'Discovery'
         $TenantPath = Join-Path $DiscoPath -ChildPath $TenantName
         $Detailed = Join-Path $TenantPath -ChildPath 'Detailed'
         $CSV = Join-Path $TenantPath -ChildPath 'CSV'

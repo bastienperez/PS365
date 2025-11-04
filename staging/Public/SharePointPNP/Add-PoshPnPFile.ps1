@@ -1,4 +1,4 @@
-function Add-PoshPnPFile {
+function Add-PS365PnPFile {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory)]

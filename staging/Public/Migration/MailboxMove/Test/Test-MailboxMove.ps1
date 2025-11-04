@@ -57,8 +57,8 @@ function Test-MailboxMove {
         $SkipUpnMatchSmtpTest
     )
     end {
-        $PoshPath = Join-Path ([Environment]::GetFolderPath("Desktop")) -ChildPath 'PS365'
-        $null = New-Item -ItemType Directory -Path $PoshPath  -ErrorAction SilentlyContinue
+        $PS365Path = Join-Path ([Environment]::GetFolderPath("Desktop")) -ChildPath 'PS365'
+        $null = New-Item -ItemType Directory -Path $PS365Path  -ErrorAction SilentlyContinue
         switch ($PSCmdlet.ParameterSetName) {
             'SharePoint' {
                 $SharePointSplat = @{
@@ -81,7 +81,7 @@ function Test-MailboxMove {
                 Write-Host 'Testing & Exporting... Please standby' -ForegroundColor Green
                 $TestResult = Invoke-TestMailboxMove -UserList $UserChoice -SkipUpnMatchSmtpTest:$SkipUpnMatchSmtpTest | Select-Object $TestSelect
                 $TestResult | Out-GridView -Title 'Results of Test Mailbox Move'
-                $TestResult | Export-PoshExcel (Join-Path $PoshPath ('PreFlight_{0}.xlsx' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm')))
+                $TestResult | Export-PS365Excel (Join-Path $PS365Path ('PreFlight_{0}.xlsx' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm')))
                 Write-Host 'Excel file saved in the folder PS365 on the Desktop' -ForegroundColor Green
             }
             else {

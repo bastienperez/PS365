@@ -4,7 +4,7 @@ function Get-AzureADSP {
 
     )
     if ([datetime]::UtcNow -ge $TimeToRefresh) {
-        Connect-PoshGraphRefresh
+        Connect-PS365Refresh
     }
     $RestSplat = @{
         Uri     = 'https://graph.microsoft.com/beta/servicePrincipals/'

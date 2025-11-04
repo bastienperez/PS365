@@ -7,7 +7,7 @@ function Get-InvalidModernPublicFolderCharacterReport {
     Export Report of Public Folders with Invalid Characters
 
     .EXAMPLE
-    Import-Csv .\PublicFolders.csv | Get-InvalidModernPublicFolderCharacterReport | Export-PoshExcel .\PFBadCharReport.xlsx
+    Import-Csv .\PublicFolders.csv | Get-InvalidModernPublicFolderCharacterReport | Export-PS365Excel .\PFBadCharReport.xlsx
 
     .EXAMPLE
     Import-Excel .\PublicFolders.xlsx | Get-InvalidModernPublicFolderCharacterReport | Export-Csv .\PFBadCharReport.csv -notypeinformation

@@ -12,7 +12,7 @@ function Get-GraphDeltaMailEnabledUser {
         $SelectString = 'DisplayName, mail, mobilePhone, City, State'
     }
     process {
-        $Token = Connect-PoshGraph -Tenant $Tenant
+        $Token = Connect-PS365 -Tenant $Tenant
         $Headers = @{
             "Authorization" = "Bearer $Token"
         }

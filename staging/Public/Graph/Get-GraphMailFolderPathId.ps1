@@ -32,7 +32,7 @@ function Get-GraphMailFolderPathId {
     )
     process {
         foreach ($Mailbox in $MailboxList) {
-            # $Token = Connect-PoshGraph -Tenant $Tenant
+            # $Token = Connect-PS365 -Tenant $Tenant
             # $DisplayName = $Mailbox.DisplayName
             # $UPN = $Mailbox.UserPrincipalName
             # $Mail = $Mailbox.Mail

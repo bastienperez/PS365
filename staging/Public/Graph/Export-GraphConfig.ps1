@@ -8,14 +8,14 @@
     Get-RSJob -State Completed | Remove-RSJob -force
     $null = Start-RSJob -ArgumentList $Tenant -ScriptBlock {
         param($Tenant)
-        $PoshPath = Join-Path -Path $Env:USERPROFILE -ChildPath '.PS365/Credentials/Graph'
+        $PS365Path = Join-Path -Path $Env:USERPROFILE -ChildPath '.PS365/Credentials/Graph'
         $ItemSplat = @{
             Type        = 'Directory'
             Force       = $true
             ErrorAction = 'SilentlyContinue'
         }
-        if (-not (Test-Path $PoshPath)) { New-Item $PoshPath @ItemSplat }
-        $TenantPath = Join-Path -Path $PoshPath -ChildPath $Tenant
+        if (-not (Test-Path $PS365Path)) { New-Item $PS365Path @ItemSplat }
+        $TenantPath = Join-Path -Path $PS365Path -ChildPath $Tenant
         if (-not (Test-Path $TenantPath)) { $null = New-Item $TenantPath @ItemSplat }
 
         Add-Type -AssemblyName System.Windows.Forms

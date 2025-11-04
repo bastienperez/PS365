@@ -6,7 +6,7 @@ function Get-GraphMailFolderAll {
     )
     process {
         foreach ($UPN in $UserPrincipalName) {
-            if ([datetime]::UtcNow -ge $TimeToRefresh) { Connect-PoshGraphRefresh }
+            if ([datetime]::UtcNow -ge $TimeToRefresh) { Connect-PS365Refresh }
             $RestSplat = @{
                 Uri     = "https://graph.microsoft.com/beta/users/{0}/mailfolders/msgfolderroot/childFolders" -f $UPN.UserPrincipalName
                 Headers = @{ "Authorization" = "Bearer $Token" }

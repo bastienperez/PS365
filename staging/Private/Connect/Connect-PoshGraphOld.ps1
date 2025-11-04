@@ -1,4 +1,4 @@
-function Connect-PoshGraphOld {
+function Connect-PS365Old {
     [CmdletBinding()]
     param(
 

@@ -30,8 +30,8 @@ function Connect-MigrationWiz {
             }
         }
         $host.ui.RawUI.WindowTitle = "BitTitan Tenant: $($EmailAddress)"
-        $PoshPath = Join-Path $Env:USERPROFILE '.PS365'
-        $TenantPath = Join-Path $PoshPath $EmailAddress
+        $PS365Path = Join-Path $Env:USERPROFILE '.PS365'
+        $TenantPath = Join-Path $PS365Path $EmailAddress
         $CredPath = Join-Path $TenantPath 'Credentials'
         $CredFile = Join-Path $CredPath BitTitan.xml
 
@@ -41,7 +41,7 @@ function Connect-MigrationWiz {
                 Force       = $true
                 ErrorAction = 'SilentlyContinue'
             }
-            $null = New-Item $PoshPath @ItemSplat
+            $null = New-Item $PS365Path @ItemSplat
             $null = New-Item $CredPath @ItemSplat
         }
 

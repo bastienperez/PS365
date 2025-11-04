@@ -7,20 +7,20 @@ function Sync-RemoteRoutingAddress {
     ##########
     # ADD SERVER !!!!!! for RM or AD
 
-    $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath PS365)
+    $PS365Path = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath PS365)
 
-    if (-not (Test-Path $PoshPath)) {
-        $null = New-Item $PoshPath -Type Directory -Force -ErrorAction SilentlyContinue
+    if (-not (Test-Path $PS365Path)) {
+        $null = New-Item $PS365Path -Type Directory -Force -ErrorAction SilentlyContinue
     }
     while (-not $InitialDomain) {
         $InitialDomain = Select-CloudDataConnection -Type 'MailUsers' -TenantLocation 'Source' -OnlyEXO
     }
 
-    $SourceMeuXML = Join-Path -Path $PoshPath -ChildPath ('Sync-RRA_Source_MailUsers_{0}_{1}.xml' -f $InitialDomain, [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
+    $SourceMeuXML = Join-Path -Path $PS365Path -ChildPath ('Sync-RRA_Source_MailUsers_{0}_{1}.xml' -f $InitialDomain, [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
     $MEUList = Get-MailUser -ResultSize Unlimited
     $MEUList | Select-Object * | Export-Clixml -Path $SourceMeuXML
 
-    $SourceMoveRequestXML = Join-Path -Path $PoshPath -ChildPath ('Sync-RRA_Source_MoveRequests_{0}_{1}.xml' -f $InitialDomain, [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
+    $SourceMoveRequestXML = Join-Path -Path $PS365Path -ChildPath ('Sync-RRA_Source_MoveRequests_{0}_{1}.xml' -f $InitialDomain, [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
     $MoveChoice = Get-MoveRequest -ResultSize Unlimited | Out-GridView -Title 'Choose - COMPLETED - Move Requests. To be matched to Remote Mailboxes' -OutputMode Multiple
     $MoveChoice | Select-Object * | Export-Clixml -Path $SourceMoveRequestXML
 
@@ -57,7 +57,7 @@ function Sync-RemoteRoutingAddress {
     Get-PSSession | Remove-PSSession
     Connect-Exchange -PromptConfirm
 
-    $SourceRemoteMailboxXML = Join-Path -Path $PoshPath -ChildPath ('Sync-RRA_Source_RemoteMailbox_{0}_{1}.xml' -f $InitialDomain, [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
+    $SourceRemoteMailboxXML = Join-Path -Path $PS365Path -ChildPath ('Sync-RRA_Source_RemoteMailbox_{0}_{1}.xml' -f $InitialDomain, [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
     $RemoteMailboxList = Get-RemoteMailbox -ResultSize Unlimited
     $RemoteMailboxList | Select-Object * | Export-Clixml -Path $SourceRemoteMailboxXML
 
@@ -106,7 +106,7 @@ function Sync-RemoteRoutingAddress {
             Write-Host ('[{0} of {1}] Move Request {2} ExchangeGuid is 00000000-0000-0000-0000-000000000000: {3}' -f $i, $Total, $MoveHash[$MoveKey]['DisplayName'], ($MoveKey -eq '00000000-0000-0000-0000-000000000000'))
         }
     }
-    $ResultCsv = Join-Path -Path $PoshPath -ChildPath 'Sync-RRA_Target_RemoteMailbox_RESULTS.csv'
+    $ResultCsv = Join-Path -Path $PS365Path -ChildPath 'Sync-RRA_Target_RemoteMailbox_RESULTS.csv'
     $RemoteMailboxChoice = $MailboxMatchMove | Out-GridView -OutputMode Multiple -Title 'Choose the Remote Mailboxes to stamp with RequestedRRA'
     while ($RemoteMailboxChoice) {
         $Result = Invoke-SyncRemoteRoutingAddress -RemoteMailboxChoice $RemoteMailboxChoice

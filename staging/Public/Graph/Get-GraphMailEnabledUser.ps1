@@ -9,7 +9,7 @@ function Get-GraphMailEnabledUser {
 
     }
     process {
-        $Token = Connect-PoshGraph -Tenant $Tenant
+        $Token = Connect-PS365 -Tenant $Tenant
         $Headers = @{
             "Authorization" = "Bearer $Token"
         }

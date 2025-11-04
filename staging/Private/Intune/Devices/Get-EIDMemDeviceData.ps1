@@ -20,7 +20,7 @@ function Get-EIDMemDeviceData {
         $NonCompliantOnly
     )
 
-    if ([datetime]::UtcNow -ge $TimeToRefresh) { Connect-PoshGraphRefresh }
+    if ([datetime]::UtcNow -ge $TimeToRefresh) { Connect-PS365Refresh }
 
     if ($SearchString) {
         #$filter = "?`$search=""displayName:{0}""" -f $SearchString

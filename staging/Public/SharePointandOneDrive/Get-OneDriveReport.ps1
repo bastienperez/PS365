@@ -12,7 +12,7 @@ function Get-OneDriveReport {
     
     .EXAMPLE
     Connect-Cloud -Tenant CONTOSO -SharePoint
-    Get-OneDriveReport -Verbose | Export-PoshExcel .\OneDriveUsage.xlsx
+    Get-OneDriveReport -Verbose | Export-PS365Excel .\OneDriveUsage.xlsx
     
     .NOTES
     if user is not assigned OneDrive license you may see the following message in the LOG column in the output :

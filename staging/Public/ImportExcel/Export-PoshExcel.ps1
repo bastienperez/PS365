@@ -1,4 +1,4 @@
-function Export-PoshExcel {
+function Export-PS365Excel {
     <#
     .SYNOPSIS
     Create an excel from a csv, directory of csv's, or recursively through a directory and subdirectories (csv's)
@@ -25,26 +25,26 @@ function Export-PoshExcel {
     Options are Grey, Blue, Orange, LtGrey, Gold, LtBlue, or Green
 
     .EXAMPLE
-    Export-PoshExcel -Path C:\Scripts\test.xlsx -InputDirectory C:\Scripts
+    Export-PS365Excel -Path C:\Scripts\test.xlsx -InputDirectory C:\Scripts
 
     .EXAMPLE
     Same as above example, using positional parameters
 
-    Export-PoshExcel C:\Scripts\test.xlsx C:\Scripts
+    Export-PS365Excel C:\Scripts\test.xlsx C:\Scripts
 
     .EXAMPLE
     Same as above example, using -Recuse to import all CSVs in the directory c:\Scripts and also its subdirectories
 
-    Export-PoshExcel C:\Scripts\test.xlsx C:\Scripts -Recurse
+    Export-PS365Excel C:\Scripts\test.xlsx C:\Scripts -Recurse
 
     .EXAMPLE
-    Get-Process | Export-PoshExcel C:\Scripts\Process.xlsx -Color Green
+    Get-Process | Export-PS365Excel C:\Scripts\Process.xlsx -Color Green
 
     .EXAMPLE
-    Import-Csv c:\scripts\allusers.csv | Export-PoshExcel C:\scripts\AllUsers.xlsx -Color Green
+    Import-Csv c:\scripts\allusers.csv | Export-PS365Excel C:\scripts\AllUsers.xlsx -Color Green
 
     .EXAMPLE
-    Import-Csv c:\scripts\allusers.csv | Export-PoshExcel C:\scripts\AllUsers.xlsx -Color Orange -WorksheetName AllUsers
+    Import-Csv c:\scripts\allusers.csv | Export-PS365Excel C:\scripts\AllUsers.xlsx -Color Orange -WorksheetName AllUsers
 
     .NOTES
     The Excel file, by default, will have these features

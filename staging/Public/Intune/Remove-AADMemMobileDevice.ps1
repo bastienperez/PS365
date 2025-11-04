@@ -5,7 +5,7 @@ function Remove-AADMemMobileDevice {
     )
     process {
         foreach ($i in $Id) {
-            if ([datetime]::UtcNow -ge $TimeToRefresh) { Connect-PoshGraphRefresh }
+            if ([datetime]::UtcNow -ge $TimeToRefresh) { Connect-PS365Refresh }
             $RestSplat = @{
                 Uri     = "https://graph.microsoft.com/beta/devices/{0}" -f $i
                 Headers = @{ "Authorization" = "Bearer $Token" }

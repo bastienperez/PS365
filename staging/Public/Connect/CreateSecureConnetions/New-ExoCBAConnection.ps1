@@ -74,7 +74,7 @@ function New-ExoCBAConnection {
         Duration    = $Duration
         Tenant      = $Tenant
     }
-    $CertInfo = New-PoshSelfSignedCert @SelfSignedSplat
+    $CertInfo = New-PS365SelfSignedCert @SelfSignedSplat
 
     # Register Microsoft Entra ID Application
     $RegisterAppSplat = @{

@@ -86,7 +86,7 @@ function SpillFinder {
         $UserPrincipalName
     )
     if ($DeleteCreds) {
-        Connect-PoshGraph -Tenant $Tenant -DeleteCreds:$DeleteCreds
+        Connect-PS365 -Tenant $Tenant -DeleteCreds:$DeleteCreds
         $null = $PSBoundParameters.Remove('DeleteCreds')
         SpillFinder $PSBoundParameters
     }

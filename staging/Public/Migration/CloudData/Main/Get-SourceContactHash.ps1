@@ -4,11 +4,11 @@ function Get-SourceContactHash {
     param (
 
     )
-    $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath PS365)
-    if (-not (Test-Path $PoshPath)) {
-        $null = New-Item $PoshPath -type Directory -Force:$true -ErrorAction SilentlyContinue
+    $PS365Path = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath PS365)
+    if (-not (Test-Path $PS365Path)) {
+        $null = New-Item $PS365Path -type Directory -Force:$true -ErrorAction SilentlyContinue
     }
-    $ContactXML = Join-Path -Path $PoshPath -ChildPath ('SourceContact_{0}.xml' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
+    $ContactXML = Join-Path -Path $PS365Path -ChildPath ('SourceContact_{0}.xml' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
 
     $Script:RestartConsole = $null
     Connect-CloudModuleImport -EXO2
@@ -41,9 +41,9 @@ function Get-SourceContactHash {
             EmailAddresses   = @($Contact.EmailAddresses) -ne '' -join '|'
         }
     }
-    $OutputXml = Join-Path -Path $PoshPath -ChildPath 'SourceContactHash.xml'
+    $OutputXml = Join-Path -Path $PS365Path -ChildPath 'SourceContactHash.xml'
     $Hash | Export-Clixml $OutputXml
     Write-Host "Hash has been exported as an XML file here: " -ForegroundColor Cyan -NoNewline
     Write-Host "$OutputXml" -ForegroundColor Green
-    Invoke-Item -Path $PoshPath
+    Invoke-Item -Path $PS365Path
 }

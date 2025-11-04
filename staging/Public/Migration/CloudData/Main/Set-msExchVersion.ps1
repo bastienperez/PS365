@@ -26,12 +26,12 @@ function Set-msExchVersion {
         Write-Host 'Active Directory PowerShell Module not found.  Halting Script.' -ForegroundColor Red
         continue
     }
-    $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath PS365)
-    if (-not (Test-Path $PoshPath)) {
-        $null = New-Item $PoshPath -type Directory -Force:$true -ErrorAction SilentlyContinue
+    $PS365Path = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath PS365)
+    if (-not (Test-Path $PS365Path)) {
+        $null = New-Item $PS365Path -type Directory -Force:$true -ErrorAction SilentlyContinue
     }
     Import-Module ActiveDirectory -force
-    $ADUserXML = Join-Path -Path $PoshPath -ChildPath 'ADUser_msExchVersion.xml'
+    $ADUserXML = Join-Path -Path $PS365Path -ChildPath 'ADUser_msExchVersion.xml'
     if ($ReuseADXML) {
         $UserList = Import-Clixml $ADUserXML
     }
@@ -74,7 +74,7 @@ function Set-msExchVersion {
         Get-PSSession | Remove-PSSession
         Connect-Exchange -DontViewEntireForest:$DontViewEntireForest -PromptConfirm
     }
-    $RemoteMailboxXML = Join-Path -Path $PoshPath -ChildPath 'RemoteMailbox_msExchVersion.xml'
+    $RemoteMailboxXML = Join-Path -Path $PS365Path -ChildPath 'RemoteMailbox_msExchVersion.xml'
     Write-Host 'Fetching Remote Mailboxes...' -ForegroundColor Cyan
 
     Get-RemoteMailbox -DomainController $DomainController -ResultSize Unlimited | Select-Object * | Export-Clixml $RemoteMailboxXML
@@ -91,7 +91,7 @@ function Set-msExchVersion {
 
     $Choice = Select-SetmsExchVersion -RemoteMailboxList $RemoteMailboxList -UserHash $UserHash |
     Out-GridView -OutputMode Multiple -Title 'Choose which Remote Mailboxes to modify msExchVersion'
-    $ChoiceCSV = Join-Path -Path $PoshPath -ChildPath ('Before modify msExchVersion {0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
+    $ChoiceCSV = Join-Path -Path $PS365Path -ChildPath ('Before modify msExchVersion {0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
     $Choice | Export-Csv $ChoiceCSV -NoTypeInformation -Encoding UTF8
 
     if ($Choice) { Get-DecisionbyOGV } else { Write-Host 'Halting as nothing was selected' ; continue }
@@ -118,6 +118,6 @@ function Set-msExchVersion {
     $Result = Invoke-SetmsExchVersion -DomainController $DomainController -Choice $Choice -RMHash $RMHash -UserHash $UserHash -VersionDecision $VersionDecision.msExchVersion
 
     $Result | Out-GridView -Title ('Results of modifying msExchVersion to version: {0}  [ Count: {1} ]' -f $VersionDecision.msExchVersion, $Result.Count)
-    $ResultCSV = Join-Path -Path $PoshPath -ChildPath ('After modify msExchVersion {0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
+    $ResultCSV = Join-Path -Path $PS365Path -ChildPath ('After modify msExchVersion {0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
     $Result | Export-Csv $ResultCSV -NoTypeInformation
 }

@@ -10,11 +10,11 @@ function Set-MailboxFlag {
     }
     Import-Module ActiveDirectory -Force
 
-    $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath PS365)
-    if (-not (Test-Path $PoshPath)) {
-        $null = New-Item $PoshPath -type Directory -Force:$true -ErrorAction SilentlyContinue
+    $PS365Path = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath PS365)
+    if (-not (Test-Path $PS365Path)) {
+        $null = New-Item $PS365Path -type Directory -Force:$true -ErrorAction SilentlyContinue
     }
     $Result = Invoke-SetMailboxFlag -ELCMailboxFlags $ELCMailboxFlags
     $Result | Out-GridView -Title 'Results of Setting flag'
-    $Result | Export-Csv (Join-Path $PoshPath 'RESULTS_SetMailboxFlag.csv') -NoTypeInformation -Append
+    $Result | Export-Csv (Join-Path $PS365Path 'RESULTS_SetMailboxFlag.csv') -NoTypeInformation -Append
 }

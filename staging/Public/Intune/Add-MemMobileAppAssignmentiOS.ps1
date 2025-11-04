@@ -29,7 +29,7 @@ function Add-MemMobileAppAssignmentiOS {
         $intent
     )
     # begin {
-    #     if ([datetime]::UtcNow -ge $TimeToRefresh) { Connect-PoshGraphRefresh }
+    #     if ([datetime]::UtcNow -ge $TimeToRefresh) { Connect-PS365Refresh }
     #     $PSFun = @($PSCmdlet.ParameterSetName) -ne '' -join ','
     #     Write-Host "$PSFun" -ForegroundColor Green
     #     if ($GroupName) {

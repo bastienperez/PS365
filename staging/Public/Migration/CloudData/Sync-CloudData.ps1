@@ -6,10 +6,10 @@ function Sync-CloudData {
         $ResultSize = 'Unlimited'
     )
     #Region Paths
-    $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath PS365)
-    $SourcePath = Join-Path -Path $PoshPath -ChildPath $InitialDomain
+    $PS365Path = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath PS365)
+    $SourcePath = Join-Path -Path $PS365Path -ChildPath $InitialDomain
     if (-not ($null = Test-Path $SourcePath)) {
-        $null = New-Item $PoshPath -Type Directory -Force -ErrorAction SilentlyContinue
+        $null = New-Item $PS365Path -Type Directory -Force -ErrorAction SilentlyContinue
         $null = New-Item $SourcePath -Type Directory -Force -ErrorAction SilentlyContinue
     }
     #EndRegion Paths
@@ -89,7 +89,7 @@ function Sync-CloudData {
             New-CloudData -SourceData $ConvertedData -Type $Type | Export-Csv $ResultFile -NoTypeInformation -Append
             $ResultObject = Import-Csv $ResultFile
             $ResultObject | Out-GridView -Title $ResultFile
-            $ResultObject | Export-PoshExcel (Join-Path -Path $SourcePath -ChildPath ('SyncCloudData_Results_EXCEL_{0}.xlsx' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm') ))
+            $ResultObject | Export-PS365Excel (Join-Path -Path $SourcePath -ChildPath ('SyncCloudData_Results_EXCEL_{0}.xlsx' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm') ))
         }
         1 {
             Write-Host 'Halting Script' -ForegroundColor Red

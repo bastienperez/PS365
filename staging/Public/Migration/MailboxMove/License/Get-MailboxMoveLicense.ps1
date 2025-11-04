@@ -27,18 +27,18 @@ function Get-MailboxMoveLicense {
         $OneSkuPerLine
     )
     if ($ExportToExcel) {
-        $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath("Desktop")) -ChildPath PS365)
+        $PS365Path = (Join-Path -Path ([Environment]::GetFolderPath("Desktop")) -ChildPath PS365)
 
         $ItemSplat = @{
             Type        = 'Directory'
             Force       = $true
             ErrorAction = 'SilentlyContinue'
-            Path        = $PoshPath
+            Path        = $PS365Path
         }
         $null = New-Item @ItemSplat
 
         $ExcelSplat = @{
-            Path                    = (Join-Path -Path $PoshPath -ChildPath ('Licenses_{0}.xlsx' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm')))
+            Path                    = (Join-Path -Path $PS365Path -ChildPath ('Licenses_{0}.xlsx' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm')))
             TableStyle              = 'Medium2'
             FreezeTopRowFirstColumn = $true
             AutoSize                = $true

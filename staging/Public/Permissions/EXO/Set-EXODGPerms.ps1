@@ -23,11 +23,11 @@
         $IncludeSendOnBehalf
     )
 
-    $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath PS365)
-    $SendAsList = Import-Csv (Join-Path $PoshPath "EXO_DGSendAs.csv")
+    $PS365Path = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath PS365)
+    $SendAsList = Import-Csv (Join-Path $PS365Path "EXO_DGSendAs.csv")
     $SAChoice = $SendAsList | Out-GridView -OutputMode Multiple -Title 'Choose Distribution Groups to which we will apply SEND AS permissions'
     if ($IncludeSendOnBehalf) {
-        $SOBList = Import-Csv (Join-Path $PoshPath "EXO_DGSendOnBehalf.csv")
+        $SOBList = Import-Csv (Join-Path $PS365Path "EXO_DGSendOnBehalf.csv")
         $SOBChoice = $SOBList | Out-GridView -OutputMode Multiple -Title 'Choose Distribution Groups to which we will apply SEND ON BEHALF permissions'
     }
     if ($SAChoice[0].Permission -eq 'SendAs') {

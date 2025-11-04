@@ -1,4 +1,4 @@
-function Connect-PoshGraph {
+function Connect-PS365 {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory)]

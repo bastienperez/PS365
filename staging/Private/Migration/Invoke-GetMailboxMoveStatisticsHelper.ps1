@@ -75,7 +75,7 @@ function Invoke-GetMailboxMoveStatisticsHelper {
             $StatsFilePath = Join-Path -Path $Env:Temp -ChildPath $StatsFile
             Rename-Item -Path $TempExcel -NewName $StatsFilePath
 
-            $null = Add-PoshPnPFile -SharePointUrl $UploadToSharePointURL -FilePath $StatsFilePath -ErrorAction Stop
+            $null = Add-PS365PnPFile -SharePointUrl $UploadToSharePointURL -FilePath $StatsFilePath -ErrorAction Stop
             Write-Host "Upload of the file " -ForegroundColor White -NoNewline
             Write-Host "$StatsFile " -ForegroundColor Cyan -NoNewline
             Write-Host "is complete. Removing any older stats files Shared Documents. . ." -ForegroundColor White

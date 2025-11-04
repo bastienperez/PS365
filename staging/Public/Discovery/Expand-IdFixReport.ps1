@@ -10,7 +10,7 @@ function Expand-IdFixReport {
     Parameter description
 
     .EXAMPLE
-    Expand-IdFixReport -ReportFile .\idFix.csv |Export-PoshExcel .\IDFixWithOU.xlsx
+    Expand-IdFixReport -ReportFile .\idFix.csv |Export-PS365Excel .\IDFixWithOU.xlsx
 
     .NOTES
     General notes

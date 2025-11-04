@@ -25,7 +25,7 @@ function Get-DupePrefix {
     Get-EXORecipient -ResultSize Unlimited -PropertySet All | Export-Clixml .\TargetRecipients.xml
 
     .EXAMPLE
-    Get-DupePrefix -SourceFilePath .\SourceRecipients.xml -TargetFilePath .\TargetRecipients.xml | Export-PoshExcel .\DupesBetweenTenants.xlsx
+    Get-DupePrefix -SourceFilePath .\SourceRecipients.xml -TargetFilePath .\TargetRecipients.xml | Export-PS365Excel .\DupesBetweenTenants.xlsx
 
     .NOTES
 
@@ -40,14 +40,14 @@ function Get-DupePrefix {
         $TargetFilePath
     )
 
-    $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath PS365)
+    $PS365Path = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath PS365)
 
-     if (-not (Test-Path $PoshPath)) {
-        $null = New-Item $PoshPath -type Directory -Force:$true -ErrorAction SilentlyContinue
+     if (-not (Test-Path $PS365Path)) {
+        $null = New-Item $PS365Path -type Directory -Force:$true -ErrorAction SilentlyContinue
     }
 
-    $SourceHash = Invoke-GetDupePrefix -Data $SourceFilePath -PoshPath $PoshPath -FilePath $SourceFilePath
-    $TargetHash = Invoke-GetDupePrefix -Data $TargetFilePath -PoshPath $PoshPath -FilePath $TargetFilePath -Target
+    $SourceHash = Invoke-GetDupePrefix -Data $SourceFilePath -PS365Path $PS365Path -FilePath $SourceFilePath
+    $TargetHash = Invoke-GetDupePrefix -Data $TargetFilePath -PS365Path $PS365Path -FilePath $TargetFilePath -Target
 
     foreach ($SourceKey in $SourceHash.keys) {
         if ($TargetHash.ContainsKey($SourceKey)) {

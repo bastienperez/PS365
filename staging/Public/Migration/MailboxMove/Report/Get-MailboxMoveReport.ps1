@@ -64,10 +64,10 @@ function GetMailboxMoveReport {
         }
     }
     elseif ($ExportToExcel) {
-        $PoshPath = Join-Path ([Environment]::GetFolderPath("Desktop")) -ChildPath 'PS365'
-        $null = New-Item -ItemType Directory -Path $PoshPath  -ErrorAction SilentlyContinue
-        $Report = Join-Path $PoshPath ('MailboxMove-Report_{0}.xlsx' -f [DateTime]::Now.ToString('yyyy MM dd hhmm'))
-        Get-MailboxMoveReportData -WantsDetailOnTheseMoveRequests $WantsDetailOnTheseMoveRequests | Export-PoshExcel $Report
+        $PS365Path = Join-Path ([Environment]::GetFolderPath("Desktop")) -ChildPath 'PS365'
+        $null = New-Item -ItemType Directory -Path $PS365Path  -ErrorAction SilentlyContinue
+        $Report = Join-Path $PS365Path ('MailboxMove-Report_{0}.xlsx' -f [DateTime]::Now.ToString('yyyy MM dd hhmm'))
+        Get-MailboxMoveReportData -WantsDetailOnTheseMoveRequests $WantsDetailOnTheseMoveRequests | Export-PS365Excel $Report
         Write-Host "Report complete: $Report" -ForegroundColor Green
     }
     else {

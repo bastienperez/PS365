@@ -21,8 +21,8 @@ function Sync-Guid {
     }
     Connect-Exchange -DontViewEntireForest:$DontViewEntireForest -PromptConfirm -Server $Server
 
-    $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath PS365)
-    $RemoteMailboxXML = Join-Path -Path $PoshPath -ChildPath ('RemoteMailboxSyncGuid_{0}.xml' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
+    $PS365Path = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath PS365)
+    $RemoteMailboxXML = Join-Path -Path $PS365Path -ChildPath ('RemoteMailboxSyncGuid_{0}.xml' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
     Write-Host "Fetching Remote Mailboxes..." -ForegroundColor Cyan
 
     Get-RemoteMailbox -DomainController $DomainController -ResultSize Unlimited | Select-Object * | Export-Clixml $RemoteMailboxXML
@@ -41,7 +41,7 @@ function Sync-Guid {
 
     $CompareObject = Invoke-CompareGuid -RMHash $RMHash -CloudHash $CloudHash
 
-    $SourcePath = Join-Path -Path $PoshPath -ChildPath $InitialDomain
+    $SourcePath = Join-Path -Path $PS365Path -ChildPath $InitialDomain
     $SourceFile = Join-Path -Path $SourcePath -ChildPath ('Guid_Compare_{0}_{1}.csv' -f $InitialDomain, [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
 
     if (-not ($null = Test-Path $SourcePath)) {
@@ -50,7 +50,7 @@ function Sync-Guid {
             Force       = $true
             ErrorAction = 'SilentlyContinue'
         }
-        $null = New-Item $PoshPath @ItemSplat
+        $null = New-Item $PS365Path @ItemSplat
         $null = New-Item $SourcePath @ItemSplat
     }
 

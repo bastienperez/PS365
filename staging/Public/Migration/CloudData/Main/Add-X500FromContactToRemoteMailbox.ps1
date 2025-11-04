@@ -11,12 +11,12 @@ function Add-X500FromContactToRemoteMailbox {
 
     Get-DestinationRecipientHash -Type RemoteMailbox
 
-    $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath PS365)
-    if (-not (Test-Path $PoshPath)) {
-        $null = New-Item $PoshPath -type Directory -Force:$true -ErrorAction SilentlyContinue
+    $PS365Path = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath PS365)
+    if (-not (Test-Path $PS365Path)) {
+        $null = New-Item $PS365Path -type Directory -Force:$true -ErrorAction SilentlyContinue
     }
-    $TargetHash = Join-Path -Path $PoshPath -ChildPath 'TargetRemoteMailboxHash.xml'
-    $SourceHash = Join-Path -Path $PoshPath -ChildPath 'SourceContactHash.xml'
+    $TargetHash = Join-Path -Path $PS365Path -ChildPath 'TargetRemoteMailboxHash.xml'
+    $SourceHash = Join-Path -Path $PS365Path -ChildPath 'SourceContactHash.xml'
 
     if (-not (Test-Path $TargetHash) -or -not (Test-Path $SourceHash)) {
         Write-Host "Missing one or both files" -ForegroundColor Red
@@ -29,7 +29,7 @@ function Add-X500FromContactToRemoteMailbox {
         $Source = Import-Clixml $SourceHash
     }
 
-    $MatchingPrimaryCSV = Join-Path -Path $PoshPath -ChildPath ('REPORT SourceContact Matching TargetRemoteMailbox_{0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
+    $MatchingPrimaryCSV = Join-Path -Path $PS365Path -ChildPath ('REPORT SourceContact Matching TargetRemoteMailbox_{0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
     $ResultObject = Compare-AddX500FromContact -Target $Target -Source $Source | Sort-Object TargetDisplayName
 
     $ResultObject | Out-GridView -Title "Results of comparison between source and target - Looking for (Source) ExternalEmailAddress matching (Target) PrimarySmtpAddress"
@@ -46,7 +46,7 @@ function Add-X500FromContactToRemoteMailbox {
     $YesNo = $host.ui.PromptForChoice($Title, $Question, $Options, 1)
     switch ($YesNo) {
         0 {
-            $TargetResult = Join-Path -Path $PoshPath -ChildPath ('REPORT Results of adding x500s to Target Remote Mailboxes_{0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
+            $TargetResult = Join-Path -Path $PS365Path -ChildPath ('REPORT Results of adding x500s to Target Remote Mailboxes_{0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
             do {
                 Write-Host "Choose Recipients to add X500s then click OK - To select use Ctrl/Shift + click (individual) or Ctrl + A (all)" -ForegroundColor Black -BackgroundColor White
                 $AddProxyList = Invoke-Addx500FromContact -MatchingPrimary $ResultObject | Out-GridView -OutputMode Multiple -Title "Choose Recipients to add X500s then click OK - To select use Ctrl/Shift + click (individual) or Ctrl + A (All)"

@@ -51,16 +51,16 @@ function Disable-MailboxEmailAddressPolicy {
         Connect-Exchange -DontViewEntireForest:$DontViewEntireForest -PromptConfirm
     }
 
-    $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath PS365)
+    $PS365Path = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath PS365)
 
-    if (-not (Test-Path $PoshPath)) {
-        $null = New-Item $PoshPath -type Directory -Force:$true -ErrorAction SilentlyContinue
+    if (-not (Test-Path $PS365Path)) {
+        $null = New-Item $PS365Path -type Directory -Force:$true -ErrorAction SilentlyContinue
     }
 
     Write-Host "Fetching Remote Mailboxes..." -ForegroundColor Cyan
 
     if ($OnlyEAPEnabled) {
-        $RemoteMailboxXML = Join-Path -Path $PoshPath -ChildPath 'RemoteMailbox_OnlyEAPEnabled.xml'
+        $RemoteMailboxXML = Join-Path -Path $PS365Path -ChildPath 'RemoteMailbox_OnlyEAPEnabled.xml'
         Get-RemoteMailbox -DomainController $DomainController -ResultSize Unlimited | Select-Object * | Export-Clixml $RemoteMailboxXML
         $RemoteMailboxList = Import-Clixml $RemoteMailboxXML | Sort-Object DisplayName, OrganizationalUnit
         Write-Host "Caching ADUser Hashtable..." -ForegroundColor Cyan
@@ -69,7 +69,7 @@ function Disable-MailboxEmailAddressPolicy {
         $RMHash = Get-RemoteMailboxHash -Key Guid -RemoteMailboxList $RemoteMailboxList
     }
     else {
-        $RemoteMailboxXML = Join-Path -Path $PoshPath -ChildPath 'RemoteMailbox_ALL.xml'
+        $RemoteMailboxXML = Join-Path -Path $PS365Path -ChildPath 'RemoteMailbox_ALL.xml'
         Get-RemoteMailbox -DomainController $DomainController -ResultSize Unlimited | Select-Object * | Export-Clixml $RemoteMailboxXML
         $RemoteMailboxList = Import-Clixml $RemoteMailboxXML | Sort-Object DisplayName, OrganizationalUnit
         $RMHash = Get-RemoteMailboxHash -Key Guid -RemoteMailboxList $RemoteMailboxList
@@ -82,10 +82,10 @@ function Disable-MailboxEmailAddressPolicy {
     Out-GridView -OutputMode Multiple -Title "Choose which Remote Mailboxes in which to disable their Email Address Policy"
 
     if ($OnlyEAPEnabled) {
-        $ChoiceCSV = Join-Path -Path $PoshPath -ChildPath ('Before Clearing EAP Policy Attributes {0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
+        $ChoiceCSV = Join-Path -Path $PS365Path -ChildPath ('Before Clearing EAP Policy Attributes {0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
     }
     else {
-        $ChoiceCSV = Join-Path -Path $PoshPath -ChildPath ('Before EAP Changes {0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
+        $ChoiceCSV = Join-Path -Path $PS365Path -ChildPath ('Before EAP Changes {0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
     }
     $Choice | Export-Csv $ChoiceCSV -NoTypeInformation -Encoding UTF8
 
@@ -93,7 +93,7 @@ function Disable-MailboxEmailAddressPolicy {
     if ($OnlyEAPEnabled) {
         $ClearResult = Clear-ADEmailAddressPolicyAttributes -Choice $Choice -Hash $RMHash -BadPolicyHash $BadPolicyHash -DomainController $DomainController
         $ClearResult | Out-GridView -Title ('Results of Clearing EAP Policy Attributes in AD  [ Count: {0} ]' -f @($ClearResult).Count)
-        $ClearResultCSV = Join-Path -Path $PoshPath -ChildPath ('After Clearing EAP Policy Attributes {0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
+        $ClearResultCSV = Join-Path -Path $PS365Path -ChildPath ('After Clearing EAP Policy Attributes {0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
         $ClearResult | Export-Csv $ClearResultCSV -NoTypeInformation
         $Result = Invoke-DisableMailboxEmailAddressPolicy -CheckADeap -Choice $Choice -Hash $RMHash -DomainController $DomainController
     }
@@ -101,6 +101,6 @@ function Disable-MailboxEmailAddressPolicy {
         $Result = Invoke-DisableMailboxEmailAddressPolicy -Choice $Choice -Hash $RMHash -DomainController $DomainController
     }
     $Result | Out-GridView -Title ('Results of Disabling Email Address Policy  [ Count: {0} ]' -f @($Result).Count)
-    $ResultCSV = Join-Path -Path $PoshPath -ChildPath ('After Disable EAP {0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
+    $ResultCSV = Join-Path -Path $PS365Path -ChildPath ('After Disable EAP {0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
     $Result | Export-Csv $ResultCSV -NoTypeInformation
 }

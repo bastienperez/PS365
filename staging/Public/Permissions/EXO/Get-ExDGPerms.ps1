@@ -47,9 +47,9 @@
     )
     begin {
         $allrecipients = [System.Collections.Generic.List[PSCustomObject]]::new()
-        $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath PS365)
-        if (-not (Test-Path $PoshPath)) {
-            $null = New-Item $PoshPath -type Directory -Force:$true -ErrorAction SilentlyContinue
+        $PS365Path = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath PS365)
+        if (-not (Test-Path $PS365Path)) {
+            $null = New-Item $PS365Path -type Directory -Force:$true -ErrorAction SilentlyContinue
         }
     }
     process {
@@ -80,12 +80,12 @@
         if (-not $SkipSendAs) {
             Write-Host "`r`n`r`nGetting SendAs permissions for each Distribution Group and writing to file`r`n" -ForegroundColor Yellow
             $AllDGSA | Get-ExSendAsPerms -RecipientHash $RecipientHash -RecipientMailHash $RecipientMailHash -RecipientLiveIDHash $RecipientLiveIDHash |
-            Export-Csv (Join-Path $PoshPath "EXO_DGSendAs.csv") -NoTypeInformation
+            Export-Csv (Join-Path $PS365Path "EXO_DGSendAs.csv") -NoTypeInformation
         }
         if (-not $SkipSendOnBehalf) {
             Write-Host "`r`n`r`nGetting SendOnBehalf permissions for each Distribution Group and writing to file`r`n" -ForegroundColor Yellow
             $AllDGSOB | Get-ExDGSendOnBehalfPerms -RecipientHash $RecipientHash -RecipientMailHash $RecipientMailHash -RecipientDNHash $RecipientDNHash -RecipientNameHash $RecipientNameHash |
-            Export-Csv (Join-Path $PoshPath "EXO_DGSendOnBehalf.csv") -NoTypeInformation
+            Export-Csv (Join-Path $PS365Path "EXO_DGSendOnBehalf.csv") -NoTypeInformation
         }
     }
 }

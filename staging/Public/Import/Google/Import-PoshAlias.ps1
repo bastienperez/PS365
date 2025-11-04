@@ -1,5 +1,5 @@
 
-function Import-PoshAlias {
+function Import-PS365Alias {
     <#
 
     .SYNOPSIS
@@ -19,13 +19,13 @@ function Import-PoshAlias {
     ActiveDirectory will use Set-ADUser and Set-ADGroup for Groups
 
     .EXAMPLE
-    Import-PoshAlias -AddtoObjectType MailUser -CSVFilePath C:\scripts\ContosoAliases.csv | Export-Csv .\Results.csv -notypeinformation
+    Import-PS365Alias -AddtoObjectType MailUser -CSVFilePath C:\scripts\ContosoAliases.csv | Export-Csv .\Results.csv -notypeinformation
 
     .EXAMPLE
-    Import-PoshAlias -AddtoObjectType Mailbox -CSVFilePath C:\scripts\ContosoAliases.csv | Export-Csv .\Results.csv -notypeinformation
+    Import-PS365Alias -AddtoObjectType Mailbox -CSVFilePath C:\scripts\ContosoAliases.csv | Export-Csv .\Results.csv -notypeinformation
 
     .EXAMPLE
-    Import-PoshAlias -AddtoObjectType ActiveDirectory -CSVFilePath C:\scripts\ContosoAliases.csv | Export-Csv .\Results.csv -notypeinformation
+    Import-PS365Alias -AddtoObjectType ActiveDirectory -CSVFilePath C:\scripts\ContosoAliases.csv | Export-Csv .\Results.csv -notypeinformation
 
     .NOTES
     The CSV's expected headers

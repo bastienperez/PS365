@@ -18,7 +18,7 @@ function Get-GraphMailMessage {
             $FolderName = $CurMailboxAndFolder.DisplayName
             $WellKnownFolderName = $CurMailboxAndFolder.WellKnownName
             $FolderId = $CurMailboxAndFolder.FolderId
-            Connect-PoshGraph -Tenant $Tenant
+            Connect-PS365 -Tenant $Tenant
 
             $Headers = @{
                 "Authorization" = "Bearer $Token"

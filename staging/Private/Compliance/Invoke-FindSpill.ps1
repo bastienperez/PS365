@@ -86,7 +86,7 @@ function Invoke-FindSpill {
         $UserPrincipalName
     )
     try {
-        Connect-PoshGraph -Tenant $Splat.Tenant
+        Connect-PS365 -Tenant $Splat.Tenant
         $FolderList = [System.Collections.Generic.List[string]]::New()
         $Params = @{ }
         if ($Count) { $Params['Top'] = $Count } else { $Params['Top'] = 10 }

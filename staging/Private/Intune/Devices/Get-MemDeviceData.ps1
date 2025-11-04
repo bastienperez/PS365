@@ -11,7 +11,7 @@ function Get-MemDeviceData {
         [ValidateSet('retirePending', 'managed')]
         $managementState
     )
-    if ([datetime]::UtcNow -ge $TimeToRefresh) { Connect-PoshGraphRefresh }
+    if ([datetime]::UtcNow -ge $TimeToRefresh) { Connect-PS365Refresh }
 
     if ($imei) {
         $filter = "?`$filter=imei eq '$imei'"

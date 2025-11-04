@@ -7,7 +7,7 @@ function Get-MemMobileAppData {
         [Parameter(ParameterSetName = 'Name')]
         $Name
     )
-    if ([datetime]::UtcNow -ge $TimeToRefresh) { Connect-PoshGraphRefresh }
+    if ([datetime]::UtcNow -ge $TimeToRefresh) { Connect-PS365Refresh }
     switch ($PSCmdlet.ParameterSetName) {
         'Name' {
             # $Uri = "https://graph.microsoft.com/beta/deviceAppManagement/mobileApps/?`$filter=(isof('microsoft.graph.managedIOSStoreApp') and microsoft.graph.managedApp/appAvailability eq microsoft.graph.managedAppAvailability'lineOfBusiness') or isof('microsoft.graph.iosLobApp') or isof('microsoft.graph.iosStoreApp') or isof('microsoft.graph.iosVppApp') or isof('microsoft.graph.managedIOSLobApp') or (isof('microsoft.graph.managedIOSStoreApp'))&`$search=$Name"

@@ -5,7 +5,7 @@ function Get-GSGraphUserAll {
         [string] $Tenant
     )
     begin {
-        $Token = Connect-PoshGraph -Tenant $Tenant
+        $Token = Connect-PS365 -Tenant $Tenant
 
         $Headers = @{
             "Authorization" = "Bearer $Token"
@@ -16,7 +16,7 @@ function Get-GSGraphUserAll {
             Method  = 'Get'
         }
         do {
-            $Token = Connect-PoshGraph -Tenant $Tenant
+            $Token = Connect-PS365 -Tenant $Tenant
             try {
                 $Response = Invoke-RestMethod @RestSplat -Verbose:$false -ErrorAction Stop
                 $UserList = $Response.value

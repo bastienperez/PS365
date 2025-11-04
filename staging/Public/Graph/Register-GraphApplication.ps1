@@ -5,7 +5,7 @@ function Register-GraphApplication {
 
     .DESCRIPTION
     Register Apps with preset permissions for quick access to graph endpoints
-    Use those permissions with the connection script, Connect-PoshGraph
+    Use those permissions with the connection script, Connect-PS365
     Please check the Microsoft Entra ID app that this app creates to understand the permissions you have prior to running any commands.
 
     Make sure you that clearly understand and inspect any script before you run them!!!
@@ -18,7 +18,7 @@ function Register-GraphApplication {
 
     .PARAMETER Tenant
     Use this to uniquely identify the tenant and permissions.
-    You will use this to connect to graph with "Connect-PoshGraph"
+    You will use this to connect to graph with "Connect-PS365"
 
     Please see examples!
 
@@ -36,7 +36,7 @@ function Register-GraphApplication {
 
     # The registration is a one-time thing.
     # Once it is complete, use the below command each time to connect to Graph
-    Connect-PoshGraph -Tenant Contoso
+    Connect-PS365 -Tenant Contoso
 
 
     .EXAMPLE
@@ -46,7 +46,7 @@ function Register-GraphApplication {
 
     # The registration is a one-time thing.
     # Once it is complete, use the below command each time to connect to Graph
-    Connect-PoshGraph -Tenant ContosoIntune
+    Connect-PS365 -Tenant ContosoIntune
 
 
     .NOTES
@@ -79,18 +79,18 @@ function Register-GraphApplication {
         $GCCHigh
     )
 
-    $PoshPath = Join-Path -Path $Env:USERPROFILE -ChildPath '.PS365/Credentials/Graph'
+    $PS365Path = Join-Path -Path $Env:USERPROFILE -ChildPath '.PS365/Credentials/Graph'
     $ItemSplat = @{
         Type        = 'Directory'
         Force       = $true
         ErrorAction = 'SilentlyContinue'
     }
-    if (-not (Test-Path $PoshPath)) { $null = New-Item $PoshPath @ItemSplat }
-    $TenantPath = Join-Path -Path $PoshPath -ChildPath $Tenant
+    if (-not (Test-Path $PS365Path)) { $null = New-Item $PS365Path @ItemSplat }
+    $TenantPath = Join-Path -Path $PS365Path -ChildPath $Tenant
 
     if (Test-Path $TenantPath) {
         if ($AlsoCreateGraphConnection -or $PSCmdlet.ParameterSetName -notcontains 'ExchangeCBA') {
-            Write-Host "Connect-PoshGraph already has a connection named, $TenantPath" -ForegroundColor Yellow -NoNewline
+            Write-Host "Connect-PS365 already has a connection named, $TenantPath" -ForegroundColor Yellow -NoNewline
             $UsePath = Read-Host ". Type 'YES' to overwrite"
             if ($UsePath -ne 'YES') {
                 Write-Host "Please rerun your command and choose another name to represent your connection" -ForegroundColor Green
@@ -107,7 +107,7 @@ function Register-GraphApplication {
         Write-Host "$App" -ForegroundColor Green -NoNewline
 
         Write-Host " API permission set. Credentials will be encrypted to $TenantPath. Once complete, connect to Graph with: `r`n" -ForegroundColor Cyan
-        Write-Host "Connect-PoshGraph " -ForegroundColor Yellow -NoNewline
+        Write-Host "Connect-PS365 " -ForegroundColor Yellow -NoNewline
         Write-Host "-Tenant " -ForegroundColor White -NoNewline
         Write-Host "$Tenant`r`n`r`n" -ForegroundColor Green
 

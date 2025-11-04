@@ -13,7 +13,7 @@ function Get-GSGraphDeltaUser {
         $SelectString = 'DisplayName, mail, mobilePhone, City, State'
     }
     process {
-        $Token = Connect-PoshGraph -Tenant $Tenant
+        $Token = Connect-PS365 -Tenant $Tenant
         $Headers = @{
             "Authorization" = "Bearer $Token"
             prefer          = "return=minimal"
