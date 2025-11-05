@@ -35,7 +35,7 @@ function Invoke-M365AppsDownload {
 		$configFileFullPath = (Get-Item $ConfigFilePath).FullName
 	}
 
-	$odtFolder = "$PSScriptRoot\ODT"
+	$odtFolder = "$env:SystemDrive\Custom-OfficeDeploymentTool"
 	
 	if (-not (Test-Path $odtFolder -ErrorAction SilentlyContinue)) {
 		Write-Host -ForegroundColor Cyan "Creating the folder $odtFolder"

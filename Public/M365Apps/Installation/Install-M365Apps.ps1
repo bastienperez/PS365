@@ -19,7 +19,7 @@
 		Install-M365Apps -ODTFolderPath '\\server\share\Office' -ConfigFilePath ".\Configuration-XX.xml"
 
 	.EXAMPLE
-		Install-M365Apps -ODTFolderPath 'OfficeSource' -ConfigFilePath 'C:\Configs\OfficeConfig.xml'
+		Install-M365Apps -ODTFolderPath 'C:\Custom-OfficeDeploymentTool' -ConfigFilePath 'C:\Configs\OfficeConfig.xml'
 
 	.NOTES
 		Ensure that the source path is accessible and that the configuration file is correctly formatted.
@@ -32,7 +32,7 @@ function Install-M365Apps {
 	[CmdletBinding()]
 	param (
 		[Parameter(Mandatory = $true)]
-		[string]$ODTFolderPath ,
+		[string]$ODTFolderPath,
 		[Parameter(Mandatory = $true)]
 		[string]$ConfigFilePath
 	)
