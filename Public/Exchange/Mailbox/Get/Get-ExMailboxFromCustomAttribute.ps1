@@ -21,6 +21,9 @@ This example retrieves mailboxes with the custom attribute "CustomAttribute" and
 Get-ExMailboxFromAttribute -Attribute "CustomAttribute"
 This example retrieves mailboxes with the custom attribute "CustomAttribute" without comparing any attributes.
 
+.NOTES
+You can also use `Get-AttributeMatching` to compare two attributes directly in AD/Exchange/Entra ID
+
 #>
 
 function Get-ExMailboxFromAttribute {

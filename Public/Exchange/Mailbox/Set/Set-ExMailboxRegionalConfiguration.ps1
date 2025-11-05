@@ -1,4 +1,4 @@
-function Set-MailboxRegionalConfigurationSetting {
+function Set-ExMailboxRegionalConfiguration {
 	[CmdletBinding(SupportsShouldProcess)]
 	param(
 		[Parameter(Mandatory = $true, ParameterSetName = 'Identity')]
@@ -41,7 +41,7 @@ function Set-MailboxRegionalConfigurationSetting {
 		[switch]$GenerateCmdlets,
 
 		[Parameter(Mandatory = $false)]
-		[string]$OutputFile = "$(Get-Date -Format 'yyyy-MM-dd_HHmmss')-MailboxRegionalConfig_Commands.txt"
+		[string]$OutputFile = "$(Get-Date -Format 'yyyy-MM-dd_HHmmss')-SetMailboxRegionalConfig_Commands.txt"
 	)
 
 	# Time zone mappings for simplified input (e.g., '+1' -> 'Romance Standard Time')
@@ -78,9 +78,8 @@ function Set-MailboxRegionalConfigurationSetting {
 		# we can't filter PrimarySmtpAddress with `-like '*domain'` so we first find mailboxes with emailaddresses matching the domain then filter primarySMTPAddress
 		# https://michev.info/blog/post/2404/exchange-online-now-supports-the-like-operator-for-primarysmtpaddress-filtering-sort-of
 
-
 		Write-Host -ForegroundColor Cyan "Searching mailboxes with PrimarySmtpAddress matching '*@$ByDomain'"
-		$Mailboxes = Get-Mailbox -Filter "EmailAddresses -like '*@$ByDomain'" -ResultSize unlimited | Where-Object { $_.PrimarySmtpAddress -like "*@$ByDomain" }
+		$Mailboxes = Get-Mailbox -Filter "EmailAddresses -like '*@$ByDomain'" -ResultSize Unlimited | Where-Object { $_.PrimarySmtpAddress -like "*@$ByDomain" }
 	}
 	elseif ($PSCmdlet.ParameterSetName -eq 'AllMailboxes') {
 		$Mailboxes = Get-Mailbox -ResultSize Unlimited
@@ -100,10 +99,10 @@ function Set-MailboxRegionalConfigurationSetting {
 				$Mailbox | Add-Member -NotePropertyName 'CSVLanguage' -NotePropertyValue $row.Language -Force
 				$Mailbox | Add-Member -NotePropertyName 'CSVTimeZone' -NotePropertyValue $row.TimeZone -Force
 
-				if ( $row.DateFormat) {
+				if ($row.DateFormat) {
 					$Mailbox | Add-Member -NotePropertyName 'CSVDateFormat' -NotePropertyValue $row.DateFormat -Force
 				}
-				if ( $row.TimeFormat) {
+				if ($row.TimeFormat) {
 					$Mailbox | Add-Member -NotePropertyName 'CSVTimeFormat' -NotePropertyValue $row.TimeFormat -Force
 				}
 				
@@ -115,60 +114,51 @@ function Set-MailboxRegionalConfigurationSetting {
 		}
 	}
 	else {
-		[System.Collections.Generic.List[PSCustomObject]]$Mailboxes = @()
-
-		foreach ( $id in $Identity ) {
-			try {
-				$Mailbox = Get-Mailbox -Identity $id -ErrorAction Stop
-				$Mailboxes.Add($Mailbox)
-			}
-			catch {
-				Write-Warning "Mailbox not found: $id"
-			}
-		}
+		Write-Warning 'ParameterSetName Identity is not supported in this function.'
+		return 1
 	}
 
 	$Commands = @()
 
-	foreach ($Mailbox in $Mailboxes) {
-		$Params = @{
-			Identity = $Mailbox.PrimarySmtpAddress
+	foreach ($mbx in $Mailboxes) {
+		$cmdParams = @{
+			Identity = $mbx.PrimarySmtpAddress
 		}
 
 		# Use CSV-specific settings if available, otherwise use parameter values
 		if ($PSCmdlet.ParameterSetName -eq 'FromCSV') {
-			if ($Mailbox.CSVLanguage) { 
-				$Params['Language'] = $Mailbox.CSVLanguage 
+			if ($mbx.CSVLanguage) { 
+				$cmdParams['Language'] = $mbx.CSVLanguage 
 				# Auto-detect date and time formats based on language culture
 			}
 
-			if ($Mailbox.CSVDateFormat) {
-				$Params['DateFormat'] = $Mailbox.CSVDateFormat
+			if ($mbx.CSVDateFormat) {
+				$cmdParams['DateFormat'] = $mbx.CSVDateFormat
 			}
 
-			if ( $Mailbox.CSVTimeFormat) {
-				$Params['TimeFormat'] = $Mailbox.CSVTimeFormat
+			if ($mbx.CSVTimeFormat) {
+				$cmdParams['TimeFormat'] = $mbx.CSVTimeFormat
 			}
 
-			if ($Mailbox.CSVTimeZone) {
-				$TZ = $Mailbox.CSVTimeZone
+			if ($mbx.CSVTimeZone) {
+				$TZ = $mbx.CSVTimeZone
 				if ($TimeZoneMappings.ContainsKey($TZ)) {
 					$TZ = $TimeZoneMappings[$TZ]
 				}
-				$Params['TimeZone'] = $TZ
+				$cmdParams['TimeZone'] = $TZ
 			}
 		}
 		else {
-			if ($Language) { 
-				$Params['Language'] = $Language 
+			if ($Language) {
+				$cmdParams['Language'] = $Language
 			}
 			# Auto-detect date and time formats based on language culture
 			if ($DateFormat) {
-				$Params['DateFormat'] = $DateFormat
+				$cmdParams['DateFormat'] = $DateFormat
 			}
 
 			if ($TimeFormat) {
-				$Params['TimeFormat'] = $TimeFormat
+				$cmdParams['TimeFormat'] = $TimeFormat
 			}
 		
 			if ($TimeZone) {
@@ -176,12 +166,13 @@ function Set-MailboxRegionalConfigurationSetting {
 				if ($TimeZoneMappings.ContainsKey($TZ)) {
 					$TZ = $TimeZoneMappings[$TZ]
 				}
-				$Params['TimeZone'] = $TZ
+				$cmdParams['TimeZone'] = $TZ
 			}
 		}
 
-		$CmdletString = 'Set-MailboxRegionalConfiguration'
-		$ParamString = ($Params.GetEnumerator() | ForEach-Object { 
+		$cmdletString = 'Set-MailboxRegionalConfiguration'
+		
+		$cmdParamstring = ($cmdParams.GetEnumerator() | ForEach-Object { 
 				if ($_.Value -match '\s') {
 					"-$($_.Key) '$($_.Value)'"
 				}
@@ -189,19 +180,37 @@ function Set-MailboxRegionalConfigurationSetting {
 					"-$($_.Key) $($_.Value)"
 				}
 			}) -join ' '
-		$FullCommand = "$CmdletString $ParamString"
+
+		# The LocalizeDefaultFolderName switch localizes the default folder names of the mailbox in the current or specified language.
+		# You don't need to specify a value with this switch.
+		$cmdParams['LocalizeDefaultFolderName'] = $true
+		
+		$cmdParamstring = ($cmdParams.GetEnumerator() | ForEach-Object { 
+				if ($_.Key -eq 'LocalizeDefaultFolderName') {
+					"-$($_.Key)"
+				}
+				elseif ($_.Value -match '\s') {
+					"-$($_.Key) '$($_.Value)'"
+				}
+				else {
+					"-$($_.Key) $($_.Value)"
+				}
+			}) -join ' '
+		
+		$FullCommand = "$cmdletString $cmdParamstring"
 
 		if ($GenerateCmdlets) {
 			$Commands += $FullCommand
 		}
 
-		if (-not $GenerateCmdlets -and $PSCmdlet.ShouldProcess($Mailbox.PrimarySmtpAddress, 'Set regional configuration')) {
+		if (-not $GenerateCmdlets -and $PSCmdlet.ShouldProcess($mbx.PrimarySmtpAddress, 'Set regional configuration')) {
+			Write-Host -ForegroundColor Cyan "$($mbx.PrimarySmtpAddress) - Setting configuration..."
 			try {
-				Set-MailboxRegionalConfiguration @Params -ErrorAction Stop
-				Write-Host "Configuration applied for $($Mailbox.PrimarySmtpAddress)" -ForegroundColor Green
+				Set-MailboxRegionalConfiguration @cmdParams -ErrorAction Stop
+				Write-Host "$($mbx.PrimarySmtpAddress) - Configuration applied successfully." -ForegroundColor Green
 			}
 			catch {
-				Write-Host "$($Mailbox.PrimarySmtpAddress) - $($_.Exception.Message)" -ForegroundColor Red
+				Write-Host "$($mbx.PrimarySmtpAddress) - $($_.Exception.Message)" -ForegroundColor Red
 			}
 		}
 	}
