@@ -113,6 +113,19 @@ function Set-ExMailboxRegionalConfiguration {
 			}
 		}
 	}
+	elseif ($PSCmdlet.ParameterSetName -eq 'Identity') {
+		[System.Collections.Generic.List[PSCustomObject]]$Mailboxes = @()
+
+		foreach ($id in $Identity) {
+			try {
+				$mbx = Get-Mailbox -Identity $id -ErrorAction Stop
+				$Mailboxes.Add($mbx)
+			}
+			catch {
+				Write-Warning "Mailbox not found: $id"
+			}
+		}
+	}
 	else {
 		Write-Warning 'ParameterSetName Identity is not supported in this function.'
 		return 1

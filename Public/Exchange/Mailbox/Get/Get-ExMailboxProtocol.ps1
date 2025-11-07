@@ -1,5 +1,7 @@
 function Get-ExMailboxProtocol {
     param (
+        [Parameter(Mandatory = $false, Position = 0)]
+        [string]$Identity,
         [Parameter(Mandatory = $false)]
         [string]$ByDomain
     )
@@ -21,6 +23,16 @@ function Get-ExMailboxProtocol {
     if ($ByDomain) {
         $casMailboxes = Get-EXOCasMailbox -ResultSize Unlimited -Filter "EmailAddresses -like '*@$ByDomain'" -PropertySets All | Where-Object { $_.PrimarySmtpAddress -like "*@$ByDomain" }
     }
+    elseif ($Identity) {
+        [System.Collections.Generic.List[PSCustomObject]]$casMailboxes = @()
+        try {
+            $mbx = Get-EXOCasMailbox -Identity $Identity -PropertySets All
+            $casMailboxes.Add($mbx)
+        }
+        catch {
+            Write-Warning "Mailbox not found: $Identity"
+        }
+    }
     else {
         $casMailboxes = Get-EXOCasMailbox -ResultSize Unlimited -PropertySets All
     }
@@ -39,16 +51,19 @@ function Get-ExMailboxProtocol {
     
         $object = [PSCustomObject][ordered]@{ 
             PrimarySmtpAddress                    = $casMailbox.PrimarySmtpAddress
-            OWAEnabled                            = $casMailbox.OWAEnabled
-            ImapEnabled                           = $casMailbox.ImapEnabled
-            PopEnabled                            = $casMailbox.PopEnabled
+            DisplayName                           = $casMailbox.DisplayName
+            ExchangeObjectId                      = $casMailbox.ExchangeObjectId
             MAPIEnabled                           = $casMailbox.MAPIEnabled
+            OWAEnabled                            = $casMailbox.OWAEnabled
+            UniversalOutlookEnabled               = $casMailbox.UniversalOutlookEnabled
+            OutlookMobileEnabled                  = $casMailbox.OutlookMobileEnabled
+            IMAPEnabled                           = $casMailbox.ImapEnabled
+            POPEnabled                            = $casMailbox.PopEnabled
             EwsEnabled                            = $casMailbox.EwsEnabled
             ActiveSyncEnabled                     = $casMailbox.ActiveSyncEnabled
             # CMDlet returns SMTPClientAuthenticationDisabled but we want SMTPClientAuthenticationEnabled
-            UniversalOutlookEnabled               = $casMailbox.UniversalOutlookEnabled
-            OutlookMobileEnabled                  = $casMailbox.OutlookMobileEnabled
             ECPEnabled                            = $casMailbox.ECPEnabled
+            # we invert the value to provide SMTPClientAuthenticationEnabled because by default the cmdlet returns SMTPClientAuthentication*Disabled*
             SMTPClientAuthenticationEnabled       = if ($null -ne $casMailbox.SMTPClientAuthenticationDisabled) { -not $casMailbox.SMTPClientAuthenticationDisabled }else { '-' }
             TenantSmtpClientAuthenticationEnabled = $tenantSmtpClientAuthenticationEnabled
         }

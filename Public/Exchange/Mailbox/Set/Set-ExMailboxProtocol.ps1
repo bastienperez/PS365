@@ -82,6 +82,7 @@ function Set-ExMailboxProtocol {
             ActiveSyncEnabled                = $false
             EwsEnabled                       = $false
             SmtpClientAuthenticationDisabled = $true
+            # Admins can use the UniversalOutlookEnabled parameter value $false on the CASMailbox cmdlet to block organization accounts from using the built-in Mail and Calendar app in Windows (https://learn.microsoft.com/en-us/microsoft-365-apps/outlook/manage/policy-management#disable-toggle-from-classic-outlook-for-windows)
             UniversalOutlookEnabled          = $false
             OutlookMobileEnabled             = $true
         }
@@ -131,6 +132,19 @@ function Set-ExMailboxProtocol {
             }
         }
     }
+    elseif ($PSCmdlet.ParameterSetName -eq 'Identity') {
+        [System.Collections.Generic.List[PSCustomObject]]$Mailboxes = @()
+
+        foreach ($id in $Identity) {
+            try {
+                $mbx = Get-EXOCasMailbox -Identity $id -ErrorAction Stop
+                $Mailboxes.Add($mbx)
+            }
+            catch {
+                Write-Warning "Mailbox not found: $id"
+            }
+        }
+    }
     else {
         Write-Warning 'ParameterSetName Identity is not supported in this function.'
         return 1
@@ -163,13 +177,14 @@ function Set-ExMailboxProtocol {
         }
 
         $command = 'Set-EXOCasMailbox ' + ($cmdParams.GetEnumerator() | ForEach-Object { 
-            $value = if ($_.Value -is [bool]) { 
-                if ($_.Value) { '$true' } else { '$false' }
-            } else { 
-                "`"$($_.Value)`"" 
-            }
-            "-$($_.Key) $value"
-        }) -join ' '
+                $value = if ($_.Value -is [bool]) { 
+                    if ($_.Value) { '$true' } else { '$false' }
+                }
+                else { 
+                    "`"$($_.Value)`"" 
+                }
+                "-$($_.Key) $value"
+            }) -join ' '
         $Commands += $command
 
         if (-not $GenerateCmdlets -and $PSCmdlet.ShouldProcess($casMailbox.PrimarySmtpAddress, 'Set EXO Mailbox Protocols')) {
