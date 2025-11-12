@@ -1,23 +1,23 @@
 <#
-	.SYNOPSIS
-		Downloads the Microsoft 365 Apps binary using the Office Deployment Tool (ODT).
+    .SYNOPSIS
+        Downloads the Microsoft 365 Apps binary using the Office Deployment Tool (ODT).
 
-	.DESCRIPTION
-		This script downloads the Office Deployment Tool from Microsoft's official site,
-		extracts it, and uses a specified configuration XML file to download the Microsoft 365 Apps binary.
+    .DESCRIPTION
+        This script downloads the Office Deployment Tool from Microsoft's official site,
+        extracts it, and uses a specified configuration XML file to download the Microsoft 365 Apps binary.
 
-	.PARAMETER ConfigFilePath
-		The path to the configuration XML file used for the download.
-		You can generate this file using the Office Customization Tool (OCT) at https://config.office.com/.
-		Can be a relative or absolute path.
+    .PARAMETER ConfigFilePath
+        The path to the configuration XML file used for the download.
+        You can generate this file using the Office Customization Tool (OCT) at https://config.office.com/.
+        Can be a relative or absolute path.
 
-	.EXAMPLE
-		Invoke-M365AppsDownload -ConfigFilePath .\Configuration-XX.xml
+    .EXAMPLE
+        Invoke-M365AppsDownload -ConfigFilePath .\Configuration-XX.xml
 
-		Runs the script to download the Microsoft 365 Apps binary.
+        Runs the script to download the Microsoft 365 Apps binary.
 
-	.NOTES
-		Ensure that you have a valid configuration XML file in the ConfigFiles folder.
+    .NOTES
+        Ensure that you have a valid configuration XML file in the ConfigFiles folder.
 #>
 
 function Invoke-M365AppsDownload {
@@ -36,10 +36,25 @@ function Invoke-M365AppsDownload {
 	}
 
 	$odtFolder = "$env:SystemDrive\Custom-OfficeDeploymentTool"
-	
+    
 	if (-not (Test-Path $odtFolder -ErrorAction SilentlyContinue)) {
 		Write-Host -ForegroundColor Cyan "Creating the folder $odtFolder"
-		$null = New-Item -ItemType Directory -Path $odtFolder
+		try {
+			$null = New-Item -ItemType Directory -Path $odtFolder -ErrorAction Stop
+		}
+		catch {
+
+			Write-Warning "Unable to create the folder $odtFolder (maybe because user has no admin rights). Trying another location..."
+			# try to create in the userfolder
+			$odtFolder = "$env:USERPROFILE\Custom-OfficeDeploymentTool"
+			try {
+				$null = New-Item -ItemType Directory -Path $odtFolder -ErrorAction Stop
+			}
+			catch {
+				Write-Warning "Unable to create the folder $odtFolder. Error: $($_.Exception.Message)"
+				return
+			}
+		}
 	}
 
 	Write-Host -ForegroundColor Cyan "Downloading the Office Deployment Tool to $odtFolder"
@@ -51,12 +66,19 @@ function Invoke-M365AppsDownload {
 
 	$regex = 'https:\/\/download\.microsoft\.com\/download\/[a-z0-9\-\/]+\/officedeploymenttool_[0-9\-]+\.exe'
 	$downloadLink = [regex]::Match($response, $regex).Value
-	
+    
 	Write-Host -ForegroundColor Cyan "Downloading the Office Deployment Tool from $downloadLink"
 	Invoke-WebRequest -Uri $downloadLink -OutFile "$odtFolder\officedeploymenttool.exe"
 
 	Write-Host -ForegroundColor Cyan "Extracting the Office Deployment Tool to $odtFolder"
 	. $odtFolder\officedeploymenttool.exe /extract:$odtFolder /quiet
+
+	# if UAC is enabled, LASTEXITCODE can be other than 0 even if extraction is successful
+	# so we need to check if setup.exe is present
+	if ($LASTEXITCODE -ne 0 -and -not (Test-Path "$odtFolder\setup.exe")) {
+		Write-Warning "Extraction failed with exit code $LASTEXITCODE."
+		return
+	}
 
 	# Wait for the extraction to complete
 	# si setup.exe is not yet available, wait a bit
