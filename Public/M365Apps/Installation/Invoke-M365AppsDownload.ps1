@@ -73,6 +73,8 @@ function Invoke-M365AppsDownload {
 	Write-Host -ForegroundColor Cyan "Extracting the Office Deployment Tool to $odtFolder"
 	. $odtFolder\officedeploymenttool.exe /extract:$odtFolder /quiet
 
+	# pause in case of UAC prompt, otherwise setup.exe may not be available yet
+	Start-Sleep -Seconds 30
 	# if UAC is enabled, LASTEXITCODE can be other than 0 even if extraction is successful
 	# so we need to check if setup.exe is present
 	if ($LASTEXITCODE -ne 0 -and -not (Test-Path "$odtFolder\setup.exe")) {
