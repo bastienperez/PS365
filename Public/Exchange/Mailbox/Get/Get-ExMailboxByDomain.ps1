@@ -18,11 +18,17 @@
 function Get-ExMailboxByDomain {
 	param (
 		[Parameter(Mandatory = $true, Position = 0)]    
-		[string]$Domain
+		[string]$Domain,
+		[Parameter(Mandatory = $false)]
+		[ValidateSet('UserMailbox', 'SharedMailbox', 'RoomMailbox', 'EquipmentMailbox', 'LinkedMailbox', 'SchedulingMailbox')]
+		[string]$RecipientTypeDetails
 	)
 
 	$mailboxesArray = Get-Mailbox -ResultSize Unlimited -Filter "EmailAddresses -like '*@$Domain'" | Where-Object { $_.PrimarySmtpAddress -like "*@$Domain" }
     
+	if ($RecipientTypeDetails) {
+		$mailboxesArray = $mailboxesArray | Where-Object { $RecipientTypeDetails -contains $_.RecipientTypeDetails }
+	}
 
 	return $mailboxesArray
 }
