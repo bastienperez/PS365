@@ -22,7 +22,7 @@
     Invoke-DCReplication
     Initiates forest-wide replication on all Domain Controllers.
     Same as using the -SyncAll parameter.
-  
+
     .EXAMPLE
     Invoke-DCReplication -Sync All
     Initiates forest-wide replication on all Domain Controllers.
