@@ -12,7 +12,7 @@
 RootModule = 'PS365.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.0.21'
+ModuleVersion = '0.0.22'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -85,7 +85,7 @@ FunctionsToExport = 'Switch-AzureCliAuthMode', 'Switch-AzurePowerShellMode',
                'Set-ExMailboxProtocol', 'Set-ExMailboxRegionalConfiguration', 
                'Get-MessageTraceInfo', 'Get-MobileDeviceDetail', 'Get-ExRoleReport', 
                'Get-PurviewRoleReport', 'Install-M365Apps', 
-               'Invoke-M365AppsDownload', 'Find-M365Email', 'Get-AttributeMatching', 
+               'Invoke-M365AppsDownload', 'Compare-UserAttribute', 'Find-M365Email', 
                'Disable-MSSelfServicePurchase'
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.

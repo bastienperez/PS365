@@ -1,4 +1,4 @@
-function Get-AttributeMatching {
+function Compare-UserAttribute {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
