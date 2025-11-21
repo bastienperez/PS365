@@ -14,13 +14,13 @@ Some functions still use Azure AD PowerShell cmdlets, so they need to be migrate
 ```powershell
 Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
 [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
-Install-Module Posh365 -Force -Scope CurrentUser
+Install-Module PS365 -Force -Scope CurrentUser
 ```
 
-###### Update Posh365
+###### Update PS365
 ```powershell
 [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
-Install-Module Posh365 -Force
+Install-Module PS365 -Force
 Import-Module Posh365 -Force
 ```
 ### `Connect`
@@ -60,10 +60,10 @@ Connect-Exchange -Server EXHybrid -DontViewEntireForest
 Connect-Exchange -Server EXHybrid -DeleteExchangeCreds #Deletes locally encrypted creds only
 ```
 **Export-GraphConfig** Use a GUI to save/encrypt ClientID, TenantID, Secret, UserName & Password
-**Connect-PoshGraph** Use saved encrypted credentials to connnect to Graph and Azure APIs
+**Connect-PS365** Use saved encrypted credentials to connnect to Graph and Azure APIs
 ```powershell
 Export-GraphConfig -Tenant Contoso
-Connect-PoshGraph -Tenant Contoso
+Connect-PS365 -Tenant Contoso
 ```
 
 ### `Discover Office 365`
