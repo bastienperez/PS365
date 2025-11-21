@@ -1,0 +1,186 @@
+name: 🚀 Publish PowerShell Module to Gallery
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Module version to publish (leave empty to use current version)'
+        required: false
+        type: string
+
+jobs:
+  publish:
+    runs-on: windows-latest
+    name: Publish PS365 Module
+    
+    steps:
+    - name: 📥 Checkout Repository
+      uses: actions/checkout@v4
+      
+    - name: 📋 Display Repository Structure
+      shell: pwsh
+      run: |
+        Write-Host "Repository structure:" -ForegroundColor Green
+        Get-ChildItem -Recurse -Name | Where-Object { $_ -match '\.(ps1|psd1|psm1)$' } | Sort-Object
+
+    - name: 🔍 Validate Module Structure
+      shell: pwsh
+      run: |
+        Write-Host "Validating module structure..." -ForegroundColor Yellow
+        
+        # Check required files exist
+        $requiredFiles = @('PS365.psd1', 'PS365.psm1')
+        foreach ($file in $requiredFiles) {
+          if (-not (Test-Path $file)) {
+            throw "Required file not found: $file"
+          }
+          Write-Host "✅ Found: $file" -ForegroundColor Green
+        }
+        
+        # Check required directories
+        $requiredDirs = @('Public', 'Private')
+        foreach ($dir in $requiredDirs) {
+          if (-not (Test-Path $dir -PathType Container)) {
+            throw "Required directory not found: $dir"
+          }
+          Write-Host "✅ Found directory: $dir" -ForegroundColor Green
+        }
+
+    - name: 🧪 Test Module Import
+      shell: pwsh
+      run: |
+        Write-Host "Testing module import..." -ForegroundColor Yellow
+        
+        try {
+          Import-Module .\PS365.psd1 -Force -Verbose
+          $module = Get-Module PS365
+          Write-Host "✅ Module imported successfully" -ForegroundColor Green
+          Write-Host "Module version: $($module.Version)" -ForegroundColor Cyan
+          Write-Host "Exported functions: $($module.ExportedFunctions.Count)" -ForegroundColor Cyan
+        }
+        catch {
+          Write-Error "❌ Failed to import module: $_"
+          throw
+        }
+
+    - name: 📦 Prepare Module for Publishing
+      shell: pwsh
+      run: |
+        Write-Host "Preparing module for publishing..." -ForegroundColor Yellow
+        
+        # Create temporary publish directory
+        $publishDir = ".\publish\PS365"
+        if (Test-Path ".\publish") {
+          Remove-Item ".\publish" -Recurse -Force
+        }
+        New-Item -ItemType Directory -Path $publishDir -Force | Out-Null
+        
+        # Copy required files and directories
+        $itemsToCopy = @(
+          @{ Source = "PS365.psd1"; Destination = "$publishDir\PS365.psd1" }
+          @{ Source = "PS365.psm1"; Destination = "$publishDir\PS365.psm1" }
+          @{ Source = "Public"; Destination = "$publishDir\Public" }
+          @{ Source = "Private"; Destination = "$publishDir\Private" }
+          @{ Source = "README.md"; Destination = "$publishDir\README.md" }
+        )
+        
+        foreach ($item in $itemsToCopy) {
+          if (Test-Path $item.Source) {
+            if (Test-Path $item.Source -PathType Container) {
+              Copy-Item $item.Source -Destination $item.Destination -Recurse -Force
+              Write-Host "✅ Copied directory: $($item.Source)" -ForegroundColor Green
+            } else {
+              Copy-Item $item.Source -Destination $item.Destination -Force
+              Write-Host "✅ Copied file: $($item.Source)" -ForegroundColor Green
+            }
+          } else {
+            Write-Warning "⚠️ Item not found: $($item.Source)"
+          }
+        }
+        
+        Write-Host "📦 Module prepared in: $publishDir" -ForegroundColor Cyan
+
+    - name: 🔧 Update Module Version (if specified)
+      if: ${{ github.event.inputs.version != '' }}
+      shell: pwsh
+      run: |
+        $newVersion = '${{ github.event.inputs.version }}'
+        Write-Host "Updating module version to: $newVersion" -ForegroundColor Yellow
+        
+        $manifestPath = ".\publish\PS365\PS365.psd1"
+        $content = Get-Content $manifestPath -Raw
+        $content = $content -replace "ModuleVersion\s*=\s*'[^']*'", "ModuleVersion = '$newVersion'"
+        Set-Content -Path $manifestPath -Value $content -Encoding UTF8
+        
+        Write-Host "✅ Version updated to: $newVersion" -ForegroundColor Green
+
+    - name: 🧪 Final Module Validation
+      shell: pwsh
+      run: |
+        Write-Host "Performing final module validation..." -ForegroundColor Yellow
+        
+        try {
+          $manifestPath = ".\publish\PS365\PS365.psd1"
+          Test-ModuleManifest -Path $manifestPath -Verbose
+          Write-Host "✅ Module manifest is valid" -ForegroundColor Green
+          
+          Import-Module $manifestPath -Force
+          $module = Get-Module PS365
+          Write-Host "✅ Final module validation successful" -ForegroundColor Green
+          Write-Host "Final version: $($module.Version)" -ForegroundColor Cyan
+        }
+        catch {
+          Write-Error "❌ Final validation failed: $_"
+          throw
+        }
+
+    - name: 🚀 Publish to PowerShell Gallery
+      env:
+        PS_GALLERY_KEY: ${{ secrets.POWERSHELLGALLERY_KEY }}
+      shell: pwsh
+      run: |
+        Write-Host "Publishing module to PowerShell Gallery..." -ForegroundColor Yellow
+        
+        if (-not $env:PS_GALLERY_KEY) {
+          throw "❌ PowerShell Gallery API key not found. Please set POWERSHELLGALLERY_KEY secret."
+        }
+        
+        try {
+          $publishParams = @{
+            Path = '.\publish\PS365'
+            NuGetApiKey = $env:PS_GALLERY_KEY
+            Verbose = $true
+            Force = $true
+          }
+          
+          Write-Host "Publishing with parameters:" -ForegroundColor Cyan
+          Write-Host "Path: $($publishParams.Path)" -ForegroundColor Gray
+          
+          Publish-Module @publishParams
+          
+          Write-Host "🎉 Module published successfully to PowerShell Gallery!" -ForegroundColor Green
+        }
+        catch {
+          Write-Error "❌ Failed to publish module: $_"
+          throw
+        }
+
+    - name: 📋 Publication Summary
+      shell: pwsh
+      run: |
+        Write-Host "📋 Publication Summary" -ForegroundColor Cyan
+        Write-Host "===================" -ForegroundColor Cyan
+        
+        $module = Import-PowerShellDataFile ".\publish\PS365\PS365.psd1"
+        Write-Host "Module Name: PS365" -ForegroundColor White
+        Write-Host "Version: $($module.ModuleVersion)" -ForegroundColor White
+        Write-Host "Author: $($module.Author)" -ForegroundColor White
+        Write-Host "Functions Exported: $($module.FunctionsToExport.Count)" -ForegroundColor White
+        
+        if ($module.PrivateData.PSData.Prerelease) {
+          Write-Host "Prerelease: $($module.PrivateData.PSData.Prerelease)" -ForegroundColor Yellow
+        } else {
+          Write-Host "Release Type: Stable" -ForegroundColor Green
+        }
+        
+        Write-Host "✅ Module is now available at: https://www.powershellgallery.com/packages/PS365" -ForegroundColor Green

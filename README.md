@@ -8,7 +8,7 @@ This module offers a collection of PowerShell functions designed to simplify com
 
 ## Project Status
 
-**⚠️ Note**: This project is currently in alpha stage.
+**⚠️ Note**: This project is currently in alpha stage. Many functions are still under development or testing. Use with caution in production environments.
 
 ## Prerequisites
 
@@ -111,7 +111,7 @@ Import-Module .\PS365\PS365.psd1
 ### Utilities
 
 - `Find-M365Email` - Find email addresses across Microsoft 365 services
-- `Get-AttributeMatching` - Get attribute matching information
+- `Compare-UserAttribute` - Compare user attributes across different sources
 
 ### Commerce & Licensing
 
@@ -131,6 +131,7 @@ Connect-MgGraph -Scopes 'RoleManagement.Read.All', 'Directory.Read.All', 'AuditL
 ```powershell
 # Get all roles with members, including PIM eligible assignments
 Get-MgRoleReport
+
 
 # Include empty roles in the report
 Get-MgRoleReport -IncludeEmptyRoles
