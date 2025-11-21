@@ -97,6 +97,28 @@ jobs:
         
         Write-Host "✅ Version updated to: $newVersion" -ForegroundColor Green
 
+    - name: 📦 Install Required Modules
+      shell: pwsh
+      run: |
+        Write-Host "Installing required modules..." -ForegroundColor Yellow
+        
+        # Read required modules from manifest
+        $manifestPath = ".\publish\PS365\PS365.psd1"
+        $manifest = Import-PowerShellDataFile $manifestPath
+        
+        if ($manifest.RequiredModules) {
+          foreach ($requiredModule in $manifest.RequiredModules) {
+            Write-Host "Installing module: $requiredModule" -ForegroundColor Cyan
+            try {
+              Install-Module -Name $requiredModule -Force -Scope CurrentUser -SkipPublisherCheck
+              Write-Host "✅ Installed: $requiredModule" -ForegroundColor Green
+            }
+            catch {
+              Write-Warning "⚠️ Failed to install $requiredModule : $_"
+            }
+          }
+        }
+
     - name: 🧪 Validate Module Manifest
       shell: pwsh
       run: |
