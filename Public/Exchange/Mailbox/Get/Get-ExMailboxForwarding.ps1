@@ -6,7 +6,25 @@
 # TODO: Add forwardWorks for inbox rules & if RemoteDomain enabled
 # label: enhancements
 
-function Get-MailboxForwarding {
+<#
+	.SYNOPSIS
+		Get mailbox forwarding configuration
+
+	.DESCRIPTION
+		Get mailbox forwarding configuration from ForwardingAddress, ForwardingSMTPAddress and Inbox Rules
+
+	.EXAMPLE
+		Get-ExMailboxForwarding
+
+		Returns all mailboxes with forwarding configuration.
+
+	.EXAMPLE
+		Get-ExMailboxForwarding -Mailboxes "user1@example.com","user2@example.com"
+
+		Returns forwarding configuration for specified mailboxes.
+#>
+
+function Get-ExMailboxForwarding {
 
 	[CmdletBinding()] 
 	param ( 

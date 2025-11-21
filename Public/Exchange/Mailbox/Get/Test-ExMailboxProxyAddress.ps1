@@ -7,16 +7,16 @@
     It can process a single mailbox/email pair or read multiple entries from a CSV file.
 
 .EXAMPLE
-    Test-ProxyAddress -Mailbox "user@example.com" -EmailToCheck "alias@example.com"
+    Test-ExMailboxProxyAddress -Mailbox "user@example.com" -EmailToCheck "alias@example.com"
 
     Tests if "alias@example.com" exists in the proxy addresses of the mailbox "user@example.com".
 
 .EXAMPLE
-    Test-ProxyAddress -CsvPath "C:\path\to\file.csv" -MailboxColumn "PrimarySmtpAddress" -EmailColumn "OnMicrosoftAddress" -OnlyMatch
+    Test-ExMailboxProxyAddress -CsvPath "C:\path\to\file.csv" -MailboxColumn "PrimarySmtpAddress" -EmailColumn "OnMicrosoftAddress" -OnlyMatch
 
     Reads mailbox and email pairs from the specified CSV file and returns only those where the email address matches a proxy address in the mailbox.
 #>
-function Test-ProxyAddress {
+function Test-ExMailboxProxyAddress {
     param(
         [Parameter(Mandatory = $false, ParameterSetName = 'Single')]
         [string]$Mailbox,
