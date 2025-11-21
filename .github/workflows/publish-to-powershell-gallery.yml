@@ -28,8 +28,8 @@ jobs:
       run: |
         Write-Host "Validating module structure..." -ForegroundColor Yellow
         
-        # Check required files exist
-        $requiredFiles = @('PS365.psd1', 'PS365.psm1')
+        # Check required files exist in powershell directory
+        $requiredFiles = @('powershell\PS365.psd1', 'powershell\PS365.psm1')
         foreach ($file in $requiredFiles) {
           if (-not (Test-Path $file)) {
             throw "Required file not found: $file"
@@ -37,8 +37,8 @@ jobs:
           Write-Host "✅ Found: $file" -ForegroundColor Green
         }
         
-        # Check required directories
-        $requiredDirs = @('Public', 'Private')
+        # Check required directories in powershell directory
+        $requiredDirs = @('powershell\Public', 'powershell\Private')
         foreach ($dir in $requiredDirs) {
           if (-not (Test-Path $dir -PathType Container)) {
             throw "Required directory not found: $dir"
@@ -58,12 +58,12 @@ jobs:
         }
         New-Item -ItemType Directory -Path $publishDir -Force | Out-Null
         
-        # Copy required files and directories
+        # Copy required files and directories from powershell folder
         $itemsToCopy = @(
-          @{ Source = "PS365.psd1"; Destination = "$publishDir\PS365.psd1" }
-          @{ Source = "PS365.psm1"; Destination = "$publishDir\PS365.psm1" }
-          @{ Source = "Public"; Destination = "$publishDir\Public" }
-          @{ Source = "Private"; Destination = "$publishDir\Private" }
+          @{ Source = "powershell\PS365.psd1"; Destination = "$publishDir\PS365.psd1" }
+          @{ Source = "powershell\PS365.psm1"; Destination = "$publishDir\PS365.psm1" }
+          @{ Source = "powershell\Public"; Destination = "$publishDir\Public" }
+          @{ Source = "powershell\Private"; Destination = "$publishDir\Private" }
           @{ Source = "README.md"; Destination = "$publishDir\README.md" }
         )
         
