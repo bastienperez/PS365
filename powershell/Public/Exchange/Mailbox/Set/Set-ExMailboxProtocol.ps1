@@ -22,6 +22,10 @@ function Set-ExMailboxProtocol {
         [Parameter(Mandatory = $false)]
         [switch]$ModernProtocolsOnly,
 
+        # for migration projects where EWS is still needed
+        [Parameter(Mandatory = $false)]
+        [switch]$ModernProtocolsAndEws,
+
         <#Exchange on-premise only
         [Parameter(Mandatory = $false)]
         [bool]$ECPEnabled,
@@ -59,14 +63,13 @@ function Set-ExMailboxProtocol {
     $individualProtocolParams = @('ECPEnabled', 'MAPIEnabled', 'OWAEnabled', 'PopEnabled', 'ImapEnabled', 'ActiveSyncEnabled', 'EwsEnabled', 'SmtpClientAuthenticationDisabled', 'UniversalOutlookEnabled', 'OutlookMobileEnabled')
     $providedIndividualParams = $individualProtocolParams | Where-Object { $PSBoundParameters.ContainsKey($_) }
     
-    if ($ModernProtocolsOnly -and $providedIndividualParams.Count -gt 0) {
-        Write-Error 'Cannot use -ModernProtocolsOnly with individual protocol parameters. Choose either -ModernProtocolsOnly OR individual protocol parameters, not both.'
+    if (($ModernProtocolsOnly -or $ModernProtocolsAndEws) -and $providedIndividualParams.Count -gt 0) {
+        Write-Error 'Cannot use -ModernProtocolsOnly or -ModernProtocolsAndEws with individual protocol parameters. Choose either -ModernProtocolsOnly or -ModernProtocolsAndEws OR individual protocol parameters, not both.'
         return
     }
 
-    # Check if at least one protocol configuration is specified
-    if (-not $ModernProtocolsOnly -and $providedIndividualParams.Count -eq 0) {
-        Write-Error 'No protocol configuration specified. Please use either -ModernProtocolsOnly switch or specify at least one individual protocol parameter (ECPEnabled, MAPIEnabled, OWAEnabled, etc.).'
+    if ($ModernProtocolsOnly -and $ModernProtocolsAndEws) {
+        Write-Error 'Cannot use both -ModernProtocolsOnly and -ModernProtocolsAndEws switches together. Please choose one.'
         return
     }
 
@@ -81,6 +84,20 @@ function Set-ExMailboxProtocol {
             ImapEnabled                      = $false
             ActiveSyncEnabled                = $false
             EwsEnabled                       = $false
+            SmtpClientAuthenticationDisabled = $true
+            # Admins can use the UniversalOutlookEnabled parameter value $false on the CASMailbox cmdlet to block organization accounts from using the built-in Mail and Calendar app in Windows (https://learn.microsoft.com/en-us/microsoft-365-apps/outlook/manage/policy-management#disable-toggle-from-classic-outlook-for-windows)
+            UniversalOutlookEnabled          = $false
+            OutlookMobileEnabled             = $true
+        }
+    }
+    elseif ($ModernProtocolsAndEws) {
+        $protocolSettings = @{
+            MAPIEnabled                      = $true
+            OWAEnabled                       = $true
+            PopEnabled                       = $false
+            ImapEnabled                      = $false
+            ActiveSyncEnabled                = $false
+            EwsEnabled                       = $true
             SmtpClientAuthenticationDisabled = $true
             # Admins can use the UniversalOutlookEnabled parameter value $false on the CASMailbox cmdlet to block organization accounts from using the built-in Mail and Calendar app in Windows (https://learn.microsoft.com/en-us/microsoft-365-apps/outlook/manage/policy-management#disable-toggle-from-classic-outlook-for-windows)
             UniversalOutlookEnabled          = $false
