@@ -156,24 +156,29 @@ function Get-MgUserPasswordInfo {
             $userDomainPolicy.PasswordValidityInheritedFrom = 'User password policy'
         }
 
-        if ($userDomainPolicy.PasswordValidityPeriod -ne '2147483647 (Password never expire)') {
+        if ($userDomainPolicy.PasswordValidityPeriod -ne '2147483647 (Password never expire)' -and $user.LastPasswordChangeDateTime -and $user.LastPasswordChangeDateTime -ne [datetime]::new(1601, 1, 1, 0, 0, 0, [DateTimeKind]::Utc)) {
 
             if ($user.LastPasswordChangeDateTime -lt (Get-Date).AddDays(-$userDomainPolicy.PasswordValidityPeriod)) { 
                 $passwordExpired = $true 
             }
         }
 
-        if ($userDomainPolicy.PasswordValidityPeriod -ne '2147483647 (Password never expire)') {
+        if ($userDomainPolicy.PasswordValidityPeriod -ne '2147483647 (Password never expire)' -and $user.LastPasswordChangeDateTime -and $user.LastPasswordChangeDateTime -ne [datetime]::new(1601, 1, 1, 0, 0, 0, [DateTimeKind]::Utc)) {
             $daysLeft = ($user.LastPasswordChangeDateTime.AddDays($userDomainPolicy.PasswordValidityPeriod) - (Get-Date)).Days
             if ($daysLeft -lt 0) {
                 $daysLeft = 'Already expired'
             }
-            else {
-                $daysLeft = $daysLeft
-            }
+            
+            $date = $user.LastPasswordChangeDateTime.AddDays($userDomainPolicy.PasswordValidityPeriod)
+            $passwordExpirationDateUTC = $date.ToString('dd/MM/yyyy HH:mm:ss')
+        }
+        elseif ($userDomainPolicy.PasswordValidityPeriod -ne '2147483647 (Password never expire)' -and (-not $user.LastPasswordChangeDateTime -or $user.LastPasswordChangeDateTime -eq [datetime]::new(1601, 1, 1, 0, 0, 0, [DateTimeKind]::Utc))) {
+            $daysLeft = 'No password set date available'
+            $passwordExpirationDateUTC = $null
         }
         else {
             $daysLeft = 'Password never expires'
+            $passwordExpirationDateUTC = $null
         }
 
         $object = [PSCustomObject][ordered]@{
@@ -181,13 +186,13 @@ function Get-MgUserPasswordInfo {
             DisplayName                          = $user.DisplayName
             Enabled                              = $user.AccountEnabled
             PasswordPolicies                     = $user.PasswordPolicies
-            PasswordLastSetUTCTime               = $user.LastPasswordChangeDateTime
+            PasswordLastSetUTCTime               = if ($user.LastPasswordChangeDateTime -and $user.LastPasswordChangeDateTime -ne [datetime]::new(1601, 1, 1, 0, 0, 0, [DateTimeKind]::Utc)) { $user.LastPasswordChangeDateTime.ToString('yyyy-MM-dd HH:mm:ss') } else { $null }
             PasswordPolicyMaxPasswordAgeInDays   = $userDomainPolicy.PasswordValidityPeriod
-            PasswordExpirationDateUTC            = if ($userDomainPolicy.PasswordValidityPeriod -ne '2147483647 (Password never expire)') { $user.LastPasswordChangeDateTime.AddDays($userDomainPolicy.PasswordValidityPeriod) }else {}
+            PasswordExpirationDateUTC            = $passwordExpirationDateUTC
             DaysLeftBeforePasswordChangeUTC      = $daysLeft
-            OnPremisesLastSyncDateTimeUTC        = $user.OnPremisesLastSyncDateTime
-            ForceChangePasswordNextSignIn        = $user.PasswordProfile.ForceChangePasswordNextSignIn
-            ForceChangePasswordNextSignInWithMfa = $user.PasswordProfile.ForceChangePasswordNextSignInWithMfa
+            OnPremisesLastSyncDateTimeUTC        = if ($user.OnPremisesLastSyncDateTime -and $user.OnPremisesLastSyncDateTime -ne [datetime]::new(1601, 1, 1, 0, 0, 0, [DateTimeKind]::Utc)) { $user.OnPremisesLastSyncDateTime.ToString('yyyy-MM-dd HH:mm:ss') } else { $null }
+            ForceChangePasswordNextSignIn        = if ($user.PasswordProfile) { $user.PasswordProfile.ForceChangePasswordNextSignIn } else { $null }
+            ForceChangePasswordNextSignInWithMfa = if ($user.PasswordProfile) { $user.PasswordProfile.ForceChangePasswordNextSignInWithMfa } else { $null }
             OnPremisesSyncEnabled                = $user.OnPremisesSyncEnabled
             Domain                               = $userDomain
             PasswordValidityInheritedFrom        = $userDomainPolicy.PasswordValidityInheritedFrom

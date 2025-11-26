@@ -1,28 +1,65 @@
 <#
-.SYNOPSIS
-    Test if a given email address exists in the proxy addresses of a mailbox.
+    .SYNOPSIS
+        Test if a given proxy address exists in the proxy addresses of a mailbox.
 
-.DESCRIPTION
-    This cmdlet checks whether a specified email address is present in the proxy addresses of a given mailbox.
-    It can process a single mailbox/email pair or read multiple entries from a CSV file.
+    .DESCRIPTION
+        This cmdlet checks whether a specified proxy address is present in the proxy addresses of a given mailbox.
+        It can process a single mailbox/proxy address pair or read multiple entries from a CSV file.
 
-.EXAMPLE
-    Test-ExMailboxProxyAddress -Mailbox "user@example.com" -EmailToCheck "alias@example.com"
+    .PARAMETER Mailbox
+        The identity of the mailbox to check (e.g., email address, alias, or GUID).
+        This parameter is used when processing a single mailbox/proxy address pair.
 
-    Tests if "alias@example.com" exists in the proxy addresses of the mailbox "user@example.com".
+    .PARAMETER ProxyAddress
+        The proxy address to check for in the mailbox's proxy addresses.
+        This parameter is used when processing a single mailbox/proxy address pair.
 
-.EXAMPLE
-    Test-ExMailboxProxyAddress -CsvPath "C:\path\to\file.csv" -MailboxColumn "PrimarySmtpAddress" -EmailColumn "OnMicrosoftAddress" -OnlyMatch
+    .PARAMETER CsvPath
+        The path to a CSV file containing mailbox and proxy address pairs.
+        This parameter is used when processing multiple entries from a CSV file.
 
-    Reads mailbox and email pairs from the specified CSV file and returns only those where the email address matches a proxy address in the mailbox.
+    .PARAMETER MailboxColumn
+        The name of the column in the CSV file that contains mailbox identities.
+        Default is 'PrimarySmtpAddress'.
+
+    .PARAMETER ProxyAddressColumn
+        The name of the column in the CSV file that contains proxy addresses.
+        Default is 'OnMicrosoftAddress'.
+
+    .PARAMETER MatchOnly
+        If specified, only returns entries where the proxy address matches.
+
+    .PARAMETER NotMatchOnly
+        If specified, only returns entries where the proxy address does not match.
+
+    .EXAMPLE
+        Test-ExMailboxProxyAddress -Mailbox "user@example.com" -ProxyAddress "alias@example.com"
+
+        Tests if "alias@example.com" exists in the proxy addresses of the mailbox "user@example.com".
+
+    .EXAMPLE
+        Test-ExMailboxProxyAddress -CsvPath "C:\path\to\file.csv" -MailboxColumn "PrimarySmtpAddress" -ProxyAddressColumn "OnMicrosoftAddress"
+        
+        Reads mailbox and proxy address pairs from the specified CSV file and tests each pair.
+
+    .EXAMPLE
+        Test-ExMailboxProxyAddress -CsvPath "C:\path\to\file.csv" -MatchOnly
+
+        Reads mailbox and proxy address pairs from the specified CSV file and returns only those that match.
+
+    .EXAMPLE
+        Test-ExMailboxProxyAddress -CsvPath "C:\path\to\file.csv" -NotMatchOnly 
+
+        Reads mailbox and proxy address pairs from the specified CSV file and returns only those that do not match.
 #>
+
 function Test-ExMailboxProxyAddress {
     param(
         [Parameter(Mandatory = $false, ParameterSetName = 'Single')]
         [string]$Mailbox,
         
         [Parameter(Mandatory = $false, ParameterSetName = 'Single')]
-        [string]$EmailToCheck,
+        [string]$ProxyAddress,
         
         [Parameter(Mandatory = $false, ParameterSetName = 'Csv')]
         [string]$CsvPath,
@@ -31,59 +68,49 @@ function Test-ExMailboxProxyAddress {
         [string]$MailboxColumn = 'PrimarySmtpAddress',
         
         [Parameter(Mandatory = $false, ParameterSetName = 'Csv')]
-        [string]$EmailColumn = 'OnMicrosoftAddress',
+        [string]$ProxyAddressColumn = 'OnMicrosoftAddress',
         
         [Parameter(Mandatory = $false)]
-        [switch]$OnlyMatch,
+        [switch]$MatchOnly,
         
         [Parameter(Mandatory = $false)]
-        [switch]$OnlyNotMatch
+        [switch]$NotMatchOnly
     )
 
     [System.Collections.Generic.List[PSCustomObject]]$results = @()
-
+    
+    # Direct processing based on parameter type
     if ($PSCmdlet.ParameterSetName -eq 'Csv') {
-        $data = Import-Csv -Path $CsvPath -Delimiter ';'
+        # If the column does not exist, throw an error
         
-        foreach ($row in $data) {
-            Write-Host -ForegroundColor Cyan "Checking mailbox: $($row.$MailboxColumn) for email: $($row.$EmailColumn)"
-            
-            $mailboxValue = $row.$MailboxColumn
-            $emailValue = $row.$EmailColumn
-            $statusValue = 'ERROR'
-            
-            try {
-                $mb = Get-Mailbox -Identity $mailboxValue -ErrorAction Stop
-                
-                if ($mb.EmailAddresses -contains "smtp:$emailValue") {
-                    $statusValue = 'MATCH'
-                }
-                else {
-                    $statusValue = 'NOTMATCH'
-                }
-            }
-            catch {
-                $statusValue = 'ERROR'
-            }
-            
-            $object = [PSCustomObject][ordered]@{
-                Mailbox = $mailboxValue
-                Email   = $emailValue
-                Status  = $statusValue
-            }
-            
-            $results.Add($object)
+        $data = Import-Csv -Path $CsvPath -Delimiter ';'
+
+        # If the columns do not exist, throw an error
+        if (-not ($data | Get-Member -Name $MailboxColumn)) {
+            throw "Column '$MailboxColumn' does not exist in the CSV file."
+            return
         }
+        if (-not ($data | Get-Member -Name $ProxyAddressColumn)) {
+            throw "Column '$ProxyAddressColumn' does not exist in the CSV file."
+            return
+        }
+
+        $itemsToProcess = $data | ForEach-Object { @{ Mailbox = $_.$MailboxColumn; ProxyAddress = $_.$ProxyAddressColumn } }
     }
     else {
-        $mailboxValue = $Mailbox
-        $emailValue = $EmailToCheck
+        $itemsToProcess = @(@{ Mailbox = $Mailbox; ProxyAddress = $ProxyAddress })
+    }
+    
+    # Process all items with the same logic
+    foreach ($item in $itemsToProcess) {
+        Write-Host -ForegroundColor Cyan "Checking mailbox: $($item.Mailbox) for email: $($item.ProxyAddress)"
+        
         $statusValue = 'ERROR'
         
         try {
-            $mb = Get-Mailbox -Identity $mailboxValue -ErrorAction Stop
+            $mb = Get-Mailbox -Identity $item.Mailbox -ErrorAction Stop
             
-            if ($mb.EmailAddresses -contains "smtp:$emailValue") {
+            if ($mb.EmailAddresses -contains "smtp:$($item.ProxyAddress)") {
                 $statusValue = 'MATCH'
             }
             else {
@@ -95,17 +122,18 @@ function Test-ExMailboxProxyAddress {
         }
         
         $object = [PSCustomObject][ordered]@{
-            Mailbox = $mailboxValue
-            Email   = $emailValue
-            Status  = $statusValue
+            Mailbox      = $item.Mailbox
+            ProxyAddress = $item.ProxyAddress
+            Status       = $statusValue
         }
+        
         $results.Add($object)
     }
 
-    if ($OnlyMatch) {
+    if ($MatchOnly) {
         return $results | Where-Object { $_.Status -eq 'MATCH' }
     }
-    elseif ($OnlyNotMatch) {
+    elseif ($NotMatchOnly) {
         return $results | Where-Object { $_.Status -ne 'MATCH' }
     }
     else {
