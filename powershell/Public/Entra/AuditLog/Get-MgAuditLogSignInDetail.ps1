@@ -1,14 +1,15 @@
-<#.SYNOPSIS
-    Get Microsoft Entra ID (Azure AD) Audit Log Sign-In Details
+<#
+    .SYNOPSIS
+        Get Microsoft Entra ID (Azure AD) Audit Log Sign-In Details
 
-.DESCRIPTION
-    Get Microsoft Entra ID (Azure AD) Audit Log Sign-In Details with various filtering options.
+    .DESCRIPTION
+        Get Microsoft Entra ID (Azure AD) Audit Log Sign-In Details with various filtering options.
 
     .PARAMETER StartDate
-        The start date for filtering sign-in logs (format: yyyy-MM-dd).
+        The start date for filtering sign-in logs. Accepts either a DateTime object or a string in yyyy-MM-dd format.
 
     .PARAMETER EndDate  
-        The end date for filtering sign-in logs (format: yyyy-MM-dd).
+        The end date for filtering sign-in logs. Accepts either a DateTime object or a string in yyyy-MM-dd format.
 
     .PARAMETER Users
         An array of user principal names to filter the sign-in logs.
@@ -23,8 +24,14 @@
     .PARAMETER BasicAuthenticationOnly
         Switch to filter sign-ins using legacy authentication protocols.
 
-    .PARAMETER FailuresOnly
+    .PARAMETER SingleFactorAuthenticationOnly
+        Switch to filter only single-factor authentication sign-in attempts.
+
+    .PARAMETER FailureOnly
         Switch to filter only failed sign-in attempts.
+        
+    .PARAMETER SuccessOnly
+        Switch to filter only successful sign-in attempts.
 
     .PARAMETER BadCredentialsOnly
         Switch to filter sign-ins with bad username or password (error code 50126).
@@ -32,45 +39,94 @@
     .PARAMETER LastLogonOnly
         Switch to get only the last logon details for each user.
 
+    .PARAMETER NonMFASignInsOnly
+        Switch to filter non-MFA sign-ins only.
+
+    .PARAMETER MFASignInsOnly
+        Switch to filter MFA sign-ins only.
+
+    .PARAMETER NonInteractiveSignIns
+        Switch to filter non-interactive sign-ins only.
+
+    .PARAMETER ServicePrincipalSignIns
+        Switch to filter service principal sign-ins only.
+
+    .PARAMETER ManagedIdentitySignIns
+        Switch to filter managed identity sign-ins only.
+    
     .PARAMETER ConditionalAccessPolicyName
         Filter sign-ins by a specific Conditional Access Policy Name.
 
-    .PARAMETER AnalyzeReportOnlyCA 
+    .PARAMETER ConditionalAccessPolicyNotApplied
+        Switch to filter sign-ins where the Conditional Access Policy was not applied.
+
+    .PARAMETER ConditionalAccessPolicySuccessOnly
+        Switch to filter sign-ins where the Conditional Access Policy evaluation was successful.
+
+    .PARAMETER ConditionalAccessPolicyFailedOnly
+        Switch to filter sign-ins where the Conditional Access Policy evaluation failed.
+
+    .PARAMETER AnalyzeCAPInReportOnly 
         Switch to filter sign-ins with Conditional Access applied in ReportOnly mode.
         Only sign-ins where the policy was used (exclude 'NotApplied') are returned.
 
-    .PARAMETER OutputFile
-        The path to the output file where the results will be saved.
+    .PARAMETER ExportToExcel
+        Switch to export the sign-in details report to an Excel file.
+        The file will be saved in the user's profile directory with a timestamped filename.
 
     .PARAMETER ForceNewToken
         Switch to force the acquisition of a new authentication token.
 
     .EXAMPLE
-        Get-MgAuditLogSignInDetails -StartDate '2024-01-01' -EndDate '2024-01-31' -Users 'user1@contoso.com', 'user2@contoso.com'
+        Get-MgAuditLogSignInDetail -StartDate '2024-01-01' -EndDate '2024-01-31' -Users 'user1@contoso.com', 'user2@contoso.com'
 
         Retrieves sign-in logs for specified users between January 1, 2024, and January 31, 2024.
 
     .EXAMPLE
-    Get-MgAuditLogSignInDetails -LastXSignIns 100 -FailuresOnly
+        Get-MgAuditLogSignInDetail -LastXSignIns 100 -FailureOnly
 
-    Retrieves the last 100 failed sign-in attempts.
+        Retrieves the last 100 failed sign-in attempts.
 
     .EXAMPLE
-    Get-MgAuditLogSignInDetails -AnalyzeReportOnlyCA
+        Get-MgAuditLogSignInDetail -AnalyzeCAPInReportOnly
 
-    Retrieves sign-in logs with Conditional Access applied in ReportOnly mode.
+        Retrieves sign-in logs with Conditional Access applied in ReportOnly mode.
+
+    .EXAMPLE
+        Get-MgAuditLogSignInDetail -StartDate (Get-Date).AddHours(-1) -NonMFASignInsOnly
+
+        Retrieves non-MFA sign-ins from the last hour.
 
     .NOTES
 
+    .CHANGELOG
+
+    [2.0.0] - 2025-11-27
+    # Added
+    - Add parameters `NonInteractiveSignIns`, `ServicePrincipalSignIns`, `ManagedIdentitySignIns` to filter by sign-in event types
+    - Add parameters `ConditionalAccessPolicyName`, `ConditionalAccessPolicyNotApplied`, `ConditionalAccessPolicySuccessOnly`, `ConditionalAccessPolicyFailedOnly` to filter by Conditional Access policy details
+    - Add parameters `NonMFASignInsOnly` and `MFASignInsOnly` to filter by MFA status
+    - Add parameter `ExportToExcel` to export the report to an Excel file.
+
+    # Changed
+    - Change StartDate/EndDate parameters to accept both DateTime objects and string dates
+    - Update to use `Get-MgBetaAuditLogSignIn` to support `authenticationRequirement` in filter operations
+    - Change `AnalyzeReportOnlyCA` to `AnalyzeCAPInReportOnly`
+    
+    # Fixed
+    - Fix DateTime parsing error when using DateTime objects as parameters 
+
+    # Breaking Changes
+    - Switch from `Get-MgAuditLogSignIn` to `Get-MgBetaAuditLogSignIn` (Microsoft Graph Beta module required)
 #>
 
-function Get-MgAuditLogSignInDetails {
+function Get-MgAuditLogSignInDetail {
     param(
         [Parameter(Mandatory = $false)]    
-        [String]$StartDate,
+        $StartDate,
 
         [Parameter(Mandatory = $false)]
-        [String]$EndDate,
+        $EndDate,
 
         [Parameter(Mandatory = $false)]
         [string[]]$Users,
@@ -85,7 +141,10 @@ function Get-MgAuditLogSignInDetails {
         [switch]$BasicAuthenticationOnly,
 
         [Parameter(Mandatory = $false)]
-        [switch]$FailuresOnly,
+        [switch]$SuccessOnly,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$FailureOnly,
 
         [Parameter(Mandatory = $false)]
         [switch]$BadCredentialsOnly,
@@ -94,10 +153,31 @@ function Get-MgAuditLogSignInDetails {
         [switch]$LastLogonOnly,
 
         [Parameter(Mandatory = $false)]
+        [switch]$NonMFASignInsOnly,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$MFASignInsOnly,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$NonInteractiveSignIns,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$ServicePrincipalSignIns,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$ManagedIdentitySignIns,
+
+        [Parameter(Mandatory = $false)]
         [string]$ConditionalAccessPolicyName,
 
         [Parameter(Mandatory = $false)]
-        [switch]$AnalyzeReportOnlyCA,
+        [switch]$ConditionalAccessPolicyNotApplied,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$ConditionalAccessPolicySuccessOnly,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$ConditionalAccessPolicyFailedOnly,   
         
         # Remplace plusieurs switches par un seul paramètre avec ValidateSet
         [Parameter(Mandatory = $false)]
@@ -116,10 +196,13 @@ function Get-MgAuditLogSignInDetails {
         [string]$TimeRange,
 
         [Parameter(Mandatory = $false)]
-        [string]$OutputFile,
+        [switch]$ForceNewToken,
 
         [Parameter(Mandatory = $false)]
-        [switch]$ForceNewToken
+        [switch]$AnalyzeCAPInReportOnly,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$ExportToExcel
     )
     
     <# Excluded because can be used in PowerShell 5.1 or 7.x
@@ -150,11 +233,11 @@ function Get-MgAuditLogSignInDetails {
     }
 
     try {
-        $null = Get-MgAuditLogSignIn -Top 1 -ErrorAction stop
+        $null = Get-MgBetaAuditLogSignIn -Top 1 -ErrorAction stop
     }
     catch {
         if ($_.Exception.ErrorContent.Code) {
-            Write-Warning "Unable to geet MgAuditLogSignIn: $($_.Exception.Message)"
+            Write-Warning "Unable to get MgBetaAuditLogSignIn: $($_.Exception.Message)"
             return
         }
     }
@@ -217,14 +300,22 @@ function Get-MgAuditLogSignInDetails {
     try {
         if (-not $startDt) {
             if ($StartDate) {
+                # Handle both DateTime objects and string dates
+                if ($StartDate -is [DateTime]) {
+                    $parsedStart = $StartDate
+                }
+                else {
+                    # Try to parse as string in yyyy-MM-dd format
+                    $parsedStart = [datetime]::ParseExact($StartDate, 'yyyy-MM-dd', $null)
+                }
+                
                 # if startDate greater than 30 days ago, warn the user and set it to 30 days ago
-                $parsedStart = [datetime]::ParseExact($StartDate, 'yyyy-MM-dd', $null)
                 if ($parsedStart -lt (Get-Date).AddDays(-30)) {
                     Write-Warning 'StartDate is greater than 30 days ago. Microsoft Entra ID (Azure AD) sign-in logs are retained for 30 days only. Setting StartDate to 30 days ago.'
                     $startDt = (Get-Date).AddDays(-30)
                 }
                 else {
-                    # use start of the provided day
+                    # use the provided datetime (preserving time if it's a DateTime object)
                     $startDt = $parsedStart
                 }
             }
@@ -243,16 +334,25 @@ function Get-MgAuditLogSignInDetails {
         }
     }
     catch {
-        Write-Warning "Unable to get date from StartDate. Please add with the following format: yyyy-MM-dd. $($_.Exception.Message)"
+        Write-Warning "Unable to get date from StartDate. Please provide either a DateTime object or a string in yyyy-MM-dd format. $($_.Exception.Message)"
         return
     }
 
     try {
         if (-not $endDt) {
             if ($EndDate) {
-                $endDt = [datetime]::ParseExact($EndDate, 'yyyy-MM-dd', $null)
-                # mark that user provided day-only EndDate so we can make it exclusive later
-                $endWasDayOnly = $true
+                # Handle both DateTime objects and string dates
+                if ($EndDate -is [DateTime]) {
+                    $endDt = $EndDate
+                    # DateTime objects preserve time, so don't treat as day-only
+                    $endWasDayOnly = $false
+                }
+                else {
+                    # Try to parse as string in yyyy-MM-dd format
+                    $endDt = [datetime]::ParseExact($EndDate, 'yyyy-MM-dd', $null)
+                    # mark that user provided day-only EndDate so we can make it exclusive later
+                    $endWasDayOnly = $true
+                }
             }
             else {
                 # Default endDate: now (we will make it exclusive only if user provided day-only EndDate)
@@ -262,7 +362,7 @@ function Get-MgAuditLogSignInDetails {
         }
     }
     catch {
-        Write-Warning "Unable to get date from EndDate. Please add with the following format: yyyy-MM-dd. $($_.Exception.Message)"
+        Write-Warning "Unable to get date from EndDate. Please provide either a DateTime object or a string in yyyy-MM-dd format. $($_.Exception.Message)"
         return
     }
 
@@ -329,19 +429,19 @@ function Get-MgAuditLogSignInDetails {
         }
     }
 
-    if ($BadCredentialsOnly) {
-        Write-Verbose 'Get signs-in with bad username or password'
-
-        $filter += ' and status/errorCode eq 50126'
-    }
-
-    if ($FailuresOnly) {
+    if ($FailureOnly) {
         Write-Verbose 'Get signs-in with status failure'
         
         # ignore null because Teams return null
         # ignore 50140 because it means "This occurred due to 'Keep me signed in' interrupt when the user was signing in"
         
         $filter += ' and status/errorCode ne 0 and status/errorCode ne 50140'
+    }
+
+    if ($SuccessOnly) {
+        Write-Verbose 'Get signs-in with status success'
+        
+        $filter += ' and status/errorCode eq 0'
     }
 
     if ($BasicAuthenticationOnly) {
@@ -358,25 +458,49 @@ function Get-MgAuditLogSignInDetails {
             Write-Verbose "IPAddress: $IPAddress"
 
             if ($ipFilter) {
-                $userFilter = " or ipaddress eq '$IPAddress'"
+                $ipFilter = " or ipaddress eq '$IPAddress'"
             }
             else {
-                $userFilter += " ipaddress eq '$IPAddress'"
+                $ipFilter += " ipaddress eq '$IPAddress'"
             }
         }
 
         $filter += "$ipFilter"
     }
 
+    if ($NonInteractiveSignIns.IsPresent) {
+        Write-Verbose 'Filter non-interactive sign-ins only'
+        $filter += " and (signInEventTypes/any(t: t eq 'noninteractiveUser'))"
+    }
+
+    if ($ServicePrincipalSignIns.IsPresent) {
+        Write-Verbose 'Filter service principal sign-ins only'
+        $filter += " and (signInEventTypes/any(t: t eq 'servicePrincipal'))"
+    }
+
+    if ($ManagedIdentitySignIns.IsPresent) {
+        Write-Verbose 'Filter managed identity sign-ins only'
+        $filter += " and (signInEventTypes/any(t: t eq 'managedIdentity'))"
+    }
+
+    if ($NonMFASignInsOnly.IsPresent) {
+        Write-Verbose 'Filter non-MFA sign-ins only'
+        $filter += " and (authenticationRequirement eq 'singleFactorAuthentication')"
+    }
+
+    if ($MFASignInsOnly.IsPresent) {
+        Write-Verbose 'Filter MFA sign-ins only'
+        $filter += " and (authenticationRequirement eq 'multiFactorAuthentication')"
+    }
 
     if ($LastXSignIns) {
-        Write-Verbose "Get-MgAuditLogSignIn -Top: $LastXSignIns -Filter $filter"
-        $signsIn = Get-MgAuditLogSignIn -Top $LastXSignIns -Filter $filter
+        Write-Verbose "Get-MgBetaAuditLogSignIn -Top: $LastXSignIns -Filter $filter"
+        $signsIn = Get-MgBetaAuditLogSignIn -Top $LastXSignIns -Filter $filter
     }
     else {
-        Write-Verbose "Get-MgAuditLogSignIn -All:`$true -Filter $filter"
+        Write-Verbose "Get-MgBetaAuditLogSignIn -All:`$true -Filter $filter"
 
-        $signsIn = Get-MgAuditLogSignIn -All:$true -Filter $filter
+        $signsIn = Get-MgBetaAuditLogSignIn -All:$true -Filter $filter
     }
     
     Write-Verbose "Filter is $filter"
@@ -388,7 +512,22 @@ function Get-MgAuditLogSignInDetails {
         }
     }
 
-    if ($AnalyzeReportOnlyCA ) {
+    if ($ConditionalAccessPolicyNotApplied.IsPresent) {
+        Write-Verbose 'Filter signs-in with Conditional Access Policy Not Applied'
+        $signsIn = $signsIn | Where-Object { $_.ConditionalAccessStatus -eq 'notApplied' }
+    }
+
+    if ( $ConditionalAccessPolicySuccessOnly.IsPresent) {
+        Write-Verbose 'Filter signs-in with Conditional Access Policy Success Only'
+        $signsIn = $signsIn | Where-Object { $_.ConditionalAccessStatus -eq 'success' }
+    }
+
+    if ( $ConditionalAccessPolicyFailedOnly.IsPresent) {
+        Write-Verbose 'Filter signs-in with Conditional Access Policy Failed Only'
+        $signsIn = $signsIn | Where-Object { $_.ConditionalAccessStatus -eq 'failure' }
+    }
+    
+    if ($AnalyzeCAPInReportOnly ) {
         Write-Verbose "Filter signs-in with Conditional Access applied in ReportOnly mode and used (exclude 'NotApplied')"
         
         foreach ($signIn in $signsIn) {
@@ -477,7 +616,7 @@ function Get-MgAuditLogSignInDetails {
             }
 
             $object = [PSCustomObject][ordered]@{
-                Time                             = $signIn.CreatedDateTime
+                DateTime                         = $signIn.CreatedDateTime
                 UserDisplayName                  = $signIn.UserDisplayName
                 UserPrincipalName                = $signIn.UserPrincipalName
                 AppDisplayName                   = $signIn.AppDisplayName
@@ -500,10 +639,19 @@ function Get-MgAuditLogSignInDetails {
         }
     }
 
-    return $signsInList
+    if ($ExportToExcel.IsPresent) {
+        $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
+        $ExcelFilePath = "$($env:userprofile)\$now-MgAuditLogSignInDetail_Report.xlsx"
+        Write-Host -ForegroundColor Cyan "Exporting sign-in details to Excel file: $ExcelFilePath"
+        $signsInList | Export-Excel -Path $ExcelFilePath -AutoSize -AutoFilter -WorksheetName 'Entra-SignInLog'
+    }
+    else {
+        return $signsInList
+    }
+}
 
-    #to do - organize properties better
-    <#
+#to do - organize properties better
+<#
     $mgUsers = Get-MgUser -ConsistencyLevel eventual -All -Property @(
         'UserPrincipalName',
         'AccountEnabled',
@@ -546,4 +694,3 @@ function Get-MgAuditLogSignInDetails {
 
     $mgUsers | Sort-Object UserPrincipalName 
     #>
-}
