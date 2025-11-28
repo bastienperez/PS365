@@ -37,12 +37,16 @@
     The groups assignments are not retrieved because based on https://main.iam.ad.ext.azure.com
 
     .CHANGELOG
-    ## [1.3] - 2025-10-23
+    ## [1.4.0] - 2025-11-28
+    ### Added
+    - Add parameter `ExportToExcel` to export the report to an Excel file.
+
+    ## [1.3.0] - 2025-10-23
     ### Added
     - Added error handling when adding member to job
     - Add `DisplayName` parameter
     
-    ## [1.2] - 2025-xx-xx
+    ## [1.2.0] - 2025-xx-xx
     ### Added
     - Export functionality for synchronization job details
     - Support for additional synchronization job properties
@@ -234,14 +238,11 @@ function Get-MgApplicationSCIM {
         $synchronizationJobsDetailsArray.Add($job)
     }
 
-    if ($Export.IsPresent) {
-        $dateTimeStamp = Get-Date -Format 'yyyyMMdd-HHmm'
-        $tenantInfo = Get-MgContext
-        $tenantName = if ($tenantInfo.TenantId) { $tenantInfo.TenantId } else { 'notenant' }
-        $fileName = "$dateTimeStamp`_$tenantName`_SCIMConfigurations.csv"
-        
-        $synchronizationJobsDetailsArray | Export-Csv -Path $fileName -NoTypeInformation -Encoding UTF8
-        Write-Host "Data exported to: $fileName"
+    if ($ExportToExcel.IsPresent) {
+        $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
+        $ExcelFilePath = "$($env:userprofile)\$now-MgApplicationSCIM-SynchronizationJobsInfo.xlsx"
+        Write-Host -ForegroundColor Cyan "Exporting password information to Excel file: $ExcelFilePath"
+        $passwordsInfoArray | Export-Excel -Path $ExcelFilePath -AutoSize -AutoFilter -WorksheetName 'Entra-ApplicationSCIM'
     }
     else {
         return $synchronizationJobsDetailsArray
