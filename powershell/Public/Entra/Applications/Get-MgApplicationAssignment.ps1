@@ -14,6 +14,10 @@
     
     .EXAMPLE
     $apps = Get-MgApplicationAssignment -OnlyAssignedToAllUsers
+
+    .EXAMPLE
+    Get-MgApplicationAssignment -ExportToExcel
+    Gets all applications and exports them to an Excel file
     #>
     
 function Get-MgApplicationAssignment {
@@ -21,7 +25,9 @@ function Get-MgApplicationAssignment {
         [Parameter(Mandatory = $false)]
         [String[]]$ApplicationIds,
         [Parameter(Mandatory = $false)]
-        [switch]$OnlyAssignedToAllUsers
+        [switch]$OnlyAssignedToAllUsers,
+        [Parameter(Mandatory = $false)]
+        [switch]$ExportToExcel
     )
     
     # Get all service principals (enterprise applications)
@@ -106,5 +112,14 @@ function Get-MgApplicationAssignment {
         $applicationAssignmentsArray.Add($object)
     }
     
-    return $applicationAssignmentsArray
+    if ($ExportToExcel.IsPresent) {
+        $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
+        $excelFilePath = "$($env:userprofile)\$now-MgApplicationAssignment.xlsx"
+        Write-Host -ForegroundColor Cyan "Exporting application assignments to Excel file: $excelFilePath"
+        $applicationAssignmentsArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'EntraApplicationAssignments'
+        Write-Host -ForegroundColor Green "Export completed successfully!"
+    }
+    else {
+        return $applicationAssignmentsArray
+    }
 }

@@ -15,6 +15,10 @@
     Get-MgApplicationCredential -ForceNewToken
     Forces the function to disconnect and reconnect to Microsoft Graph to obtain a new access token.
 
+    .EXAMPLE
+    Get-MgApplicationCredential -ExportToExcel
+    Gets all application credentials and exports them to an Excel file.
+
     .NOTES
     Author: Bastien Perez
 
@@ -37,7 +41,9 @@ function Get-MgApplicationCredential {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $false)]
-        [switch]$ForceNewToken
+        [switch]$ForceNewToken,
+        [Parameter(Mandatory = $false)]
+        [switch]$ExportToExcel
     )
 
     try {
@@ -124,5 +130,14 @@ function Get-MgApplicationCredential {
         }
     }
 
-    return $credentialsArray
+    if ($ExportToExcel.IsPresent) {
+        $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
+        $excelFilePath = "$($env:userprofile)\$now-MgApplicationCredential.xlsx"
+        Write-Host -ForegroundColor Cyan "Exporting application credentials to Excel file: $excelFilePath"
+        $credentialsArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'EntraApplicationCredentials'
+        Write-Host -ForegroundColor Green "Export completed successfully!"
+    }
+    else {
+        return $credentialsArray
+    }
 }

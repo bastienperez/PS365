@@ -70,7 +70,7 @@ function Get-MgApplicationSCIM {
         [Parameter(Mandatory = $false)]
         [switch]$ForceNewToken,
         [Parameter(Mandatory = $false)]
-        [switch]$Export
+        [switch]$ExportToExcel
     )
 
     [System.Collections.Generic.List[PSCustomObject]]$synchronizationJobsArray = @()
@@ -240,9 +240,10 @@ function Get-MgApplicationSCIM {
 
     if ($ExportToExcel.IsPresent) {
         $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
-        $ExcelFilePath = "$($env:userprofile)\$now-MgApplicationSCIM-SynchronizationJobsInfo.xlsx"
-        Write-Host -ForegroundColor Cyan "Exporting password information to Excel file: $ExcelFilePath"
-        $passwordsInfoArray | Export-Excel -Path $ExcelFilePath -AutoSize -AutoFilter -WorksheetName 'Entra-ApplicationSCIM'
+        $excelFilePath = "$($env:userprofile)\$now-MgApplicationSCIM-SynchronizationJobsInfo.xlsx"
+        Write-Host -ForegroundColor Cyan "Exporting SCIM synchronization jobs to Excel file: $excelFilePath"
+        $synchronizationJobsDetailsArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'Entra-ApplicationSCIM'
+        Write-Host -ForegroundColor Green "Export completed successfully!"
     }
     else {
         return $synchronizationJobsDetailsArray

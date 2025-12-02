@@ -17,6 +17,11 @@
 
     Forces the function to disconnect and reconnect to Microsoft Graph to obtain a new access token.
 
+.EXAMPLE
+    Get-MgApplicationSAML -ExportToExcel
+
+    Gets all SAML applications and exports them to an Excel file.
+
 .NOTES
     This function requires the Microsoft.Graph.Beta.Applications module to be installed.
 
@@ -29,7 +34,7 @@
     ## [1.2] - 2025-04-04
     ### Changed
     - Change Write-Warning message in the catch block to Import-Module
-  
+
     ## [1.1] - 2025-02-26
     ### Changed
     - Transform the script into a function
@@ -47,7 +52,9 @@ function Get-MgApplicationSAML {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $false)]
-        [switch]$ForceNewToken
+        [switch]$ForceNewToken,
+        [Parameter(Mandatory = $false)]
+        [switch]$ExportToExcel
     )
     
     try {
@@ -109,5 +116,14 @@ function Get-MgApplicationSAML {
         $samlApplicationsArray.Add($object)
     }
 
-    return $samlApplicationsArray
+    if ($ExportToExcel.IsPresent) {
+        $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
+        $excelFilePath = "$($env:userprofile)\$now-MgApplicationSAML.xlsx"
+        Write-Host -ForegroundColor Cyan "Exporting SAML applications to Excel file: $excelFilePath"
+        $samlApplicationsArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'EntraSAMLApplications'
+        Write-Host -ForegroundColor Green "Export completed successfully!"
+    }
+    else {
+        return $samlApplicationsArray
+    }
 }

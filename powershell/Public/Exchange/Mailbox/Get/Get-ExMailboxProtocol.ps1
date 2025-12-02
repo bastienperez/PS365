@@ -2,8 +2,12 @@ function Get-ExMailboxProtocol {
     param (
         [Parameter(Mandatory = $false, Position = 0)]
         [string]$Identity,
+
         [Parameter(Mandatory = $false)]
-        [string]$ByDomain
+        [string]$ByDomain,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$ExportToExcel
     )
 
     [System.Collections.Generic.List[PSCustomObject]]$exoCasMailboxesArray = @()
@@ -71,5 +75,14 @@ function Get-ExMailboxProtocol {
         $exoCasMailboxesArray.Add($object)
     }
 
-    return $exoCasMailboxesArray
+    if ($ExportToExcel.IsPresent) {
+        $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
+        $excelFilePath = "$($env:userprofile)\$now-ExMailboxProtocol.xlsx"
+        Write-Host -ForegroundColor Cyan "Exporting mailbox protocols to Excel file: $excelFilePath"
+        $exoCasMailboxesArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'ExchangeMailboxProtocols'
+        Write-Host -ForegroundColor Green "Export completed successfully!"
+    }
+    else {
+        return $exoCasMailboxesArray
+    }
 }
