@@ -26,25 +26,21 @@
         Get-MgUserPasswordInfo -PasswordPoliciesByDomainOnly
         Retrieves password policies for all domains only.
 
-    .OUTPUTS
-        PSCustomObject
-            The script returns an array of custom PowerShell objects containing the following properties for each user:
-            - UserPrincipalName: The user's principal name.
-            - LastPasswordChangeDateTimeUTC: The last date and time the user's password was changed.
-            - OnPremisesLastSyncDateTimeUTC: The last date and time the user's on-premises directory was synchronized.
-            - OnPremisesSyncEnabled: Indicates whether on-premises synchronization is enabled for the user.
-            - ForceChangePasswordNextSignIn: Indicates whether the user is required to change their password at the next sign-in.
-            - ForceChangePasswordNextSignInWithMfa: Indicates whether the user is required to change their password at the next sign-in with multi-factor authentication.
-            - PasswordPolicies: The user's password policies. Can be : Empty, 'None' or 'DisablePasswordExpiration' (the last one is especially for synced users).
-            - PasswordNotificationWindowInDays: The number of days before the password expires that the user is notified.
-            - PasswordValidityPeriodInDays: The number of days before the password expires.
+    .EXAMPLE
+        Get-MgUserPasswordInfo -SimulatedMaxPasswordAgeDays 180
 
+        Retrieves password information for all users and simulates what would happen with a 180-day password expiration policy, showing both current and simulated expiration dates.
     .NOTES
     Ensure you have the necessary permissions and modules installed to run this script, such as the Microsoft Graph PowerShell module.
     The script assumes that the necessary authentication to Microsoft Graph has already been handled with the Connect-MgGraph function.
     Connect-MgGraph -Scopes 'User.Read.All', 'Domain.Read.All'
 
     .CHANGELOG
+    [2.1.0] - 2025-12-03
+    # Added
+    - Add parameter `SimulatedMaxPasswordAgeDays` to simulate password expiration with different password age policies.
+    - Add property `SimulatedPasswordExpirationDateUTC` to the output object showing simulated password expiration dates.
+
     [2.0.0] - 2025-11-27
     # Added
     - Add properties `ID`, `LastSignInDateTime` and `LastSuccessfulSignInDateTime ` to the output object.
@@ -75,7 +71,11 @@ function Get-MgUserPasswordInfo {
         [switch]$IncludeExchangeDetails,
 
         [Parameter(Mandatory = $false)]
-        [switch]$ExportToExcel
+        [switch]$ExportToExcel,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateRange(1, [int]::MaxValue)]
+        [int]$SimulatedMaxPasswordAgeDays
     )
     
     # Import required modules
@@ -234,6 +234,16 @@ function Get-MgUserPasswordInfo {
             $passwordExpirationDateUTC = $null
         }
 
+        # Calculate simulated password expiration if SimulatedMaxPasswordAgeDays is provided
+        $simulatedPasswordExpirationDateUTC = $null
+        $simulatedPasswordExpired = $false
+        if ($SimulatedMaxPasswordAgeDays -and $mgUser.LastPasswordChangeDateTime -and $mgUser.LastPasswordChangeDateTime -ne [datetime]::new(1601, 1, 1, 0, 0, 0, [DateTimeKind]::Utc)) {
+            $simulatedPasswordExpirationDateUTC = $mgUser.LastPasswordChangeDateTime.AddDays($SimulatedMaxPasswordAgeDays)
+            if ($mgUser.LastPasswordChangeDateTime -lt (Get-Date).AddDays(-$SimulatedMaxPasswordAgeDays)) {
+                $simulatedPasswordExpired = $true
+            }
+        }
+
         $object = [PSCustomObject][ordered]@{
             UserPrincipalName                    = $mgUser.UserPrincipalName
             DisplayName                          = $mgUser.DisplayName
@@ -255,6 +265,20 @@ function Get-MgUserPasswordInfo {
             PasswordValidityInheritedFrom        = $userDomainPolicy.PasswordValidityInheritedFrom
             PasswordNotificationWindowInDays     = $userDomainPolicy.PasswordNotificationWindowInDays
             CreatedDateTime                      = $mgUser.CreatedDateTime
+        }
+
+        # Add simulation columns only when parameter is provided, positioned after PasswordExpired
+        if ($SimulatedMaxPasswordAgeDays) {
+            # Create ordered hashtable with simulation columns inserted at correct position
+            $orderedProperties = [ordered]@{}
+            foreach ($prop in $object.PSObject.Properties) {
+                $orderedProperties[$prop.Name] = $prop.Value
+                if ($prop.Name -eq 'PasswordExpired') {
+                    $orderedProperties['SimulatedPasswordExpirationDateUTC'] = $simulatedPasswordExpirationDateUTC
+                    $orderedProperties['SimulatedPasswordExpired'] = $simulatedPasswordExpired
+                }
+            }
+            $object = [PSCustomObject]$orderedProperties
         }
     
         $passwordsInfoArray.Add($object)
