@@ -41,10 +41,8 @@ const config: Config = {
       {
         docs: {
           sidebarPath: './sidebars.ts',
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
-          editUrl:
-            'https://github.com/bastienperez/PS365/tree/main/website/',
+          // Edit links removed for cleaner documentation
+          editUrl: undefined,
         },
         blog: false,
         theme: {
