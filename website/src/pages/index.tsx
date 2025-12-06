@@ -14,14 +14,20 @@ function HomepageHeader() {
     <header className={clsx('hero hero--primary', styles.heroBanner)}>
       <div className="container">
         <Heading as="h1" className="hero__title">
-          {siteConfig.title}
+          🚀 {siteConfig.title}
         </Heading>
         <p className="hero__subtitle">{siteConfig.tagline}</p>
         <div className={styles.buttons}>
           <Link
             className="button button--secondary button--lg"
             to="/docs/intro">
-            Docusaurus Tutorial - 5min ⏱️
+            📚 Get Started - 2min ⏱️
+          </Link>
+          <Link
+            className="button button--outline button--secondary button--lg"
+            to="https://www.powershellgallery.com/packages/PS365"
+            style={{marginLeft: '1rem'}}>
+            📦 PowerShell Gallery
           </Link>
         </div>
       </div>
@@ -33,8 +39,8 @@ export default function Home(): ReactNode {
   const {siteConfig} = useDocusaurusContext();
   return (
     <Layout
-      title={`Hello from ${siteConfig.title}`}
-      description="Description will go into a meta tag in <head />">
+      title={`${siteConfig.title} - PowerShell Module for Microsoft 365`}
+      description="PowerShell functions to manage your Microsoft 365 tenant efficiently">
       <HomepageHeader />
       <main>
         <HomepageFeatures />

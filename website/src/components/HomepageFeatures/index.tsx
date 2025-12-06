@@ -11,32 +11,32 @@ type FeatureItem = {
 
 const FeatureList: FeatureItem[] = [
   {
-    title: 'Easy to Use',
+    title: '🛡️ Secure & Reliable',
     Svg: require('@site/static/img/undraw_docusaurus_mountain.svg').default,
     description: (
       <>
-        Docusaurus was designed from the ground up to be easily installed and
-        used to get your website up and running quickly.
+        PS365 provides secure PowerShell functions to manage your Microsoft 365 tenant
+        with confidence. Built following Microsoft best practices and security guidelines.
       </>
     ),
   },
   {
-    title: 'Focus on What Matters',
+    title: '⚡ Powerful Automation',
     Svg: require('@site/static/img/undraw_docusaurus_tree.svg').default,
     description: (
       <>
-        Docusaurus lets you focus on your docs, and we&apos;ll do the chores. Go
-        ahead and move your docs into the <code>docs</code> directory.
+        Automate complex Microsoft 365 administration tasks with ease.
+        From Exchange Online to Azure AD, streamline your tenant management workflows.
       </>
     ),
   },
   {
-    title: 'Powered by React',
+    title: '📚 Well Documented',
     Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
     description: (
       <>
-        Extend or customize your website layout by reusing React. Docusaurus can
-        be extended while reusing the same header and footer.
+        Every function comes with detailed documentation, examples, and parameter descriptions.
+        Get up and running quickly with comprehensive guides and usage scenarios.
       </>
     ),
   },
@@ -58,14 +58,38 @@ function Feature({title, Svg, description}: FeatureItem) {
 
 export default function HomepageFeatures(): ReactNode {
   return (
-    <section className={styles.features}>
-      <div className="container">
-        <div className="row">
-          {FeatureList.map((props, idx) => (
-            <Feature key={idx} {...props} />
-          ))}
+    <>
+      <section className={styles.features}>
+        <div className="container">
+          <div className="row">
+            {FeatureList.map((props, idx) => (
+              <Feature key={idx} {...props} />
+            ))}
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+      
+      <section className="margin-vert--lg">
+        <div className="container">
+          <div className="row">
+            <div className="col col--8 col--offset-2">
+              <div className="text--center margin-bottom--lg">
+                <Heading as="h2">🚀 Quick Start</Heading>
+                <p>Get started with PS365 in just a few steps</p>
+              </div>
+              <div className="card">
+                <div className="card__header">
+                  <h3>💻 Installation</h3>
+                </div>
+                <div className="card__body">
+                  <pre><code>Install-Module -Name PS365 -Scope CurrentUser</code></pre>
+                  <p>Install PS365 directly from the PowerShell Gallery</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </>
   );
 }
