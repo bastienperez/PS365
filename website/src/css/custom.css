@@ -149,82 +149,42 @@ main {
   --docusaurus-highlighted-code-line-bg: rgba(222, 118, 29, 0.2);
 }
 
-/* Custom PowerShell code styling */
-.language-powershell {
-  background-color: #f8f9fa !important;
-  border: 1px solid #dee2e6 !important;
-  border-radius: 8px !important;
-  padding: 1rem !important;
-  margin: 1rem 0 !important;
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
-  font-size: 14px !important;
-  line-height: 1.6 !important;
-  overflow-x: auto !important;
+/* PowerShell syntax clean styling */
+.ps-syntax {
+  background-color: #ffffff !important;
+  border: 1px solid #e1e5e9 !important;
+  border-radius: 6px !important;
+  padding: 16px !important;
+  margin: 16px 0 !important;
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace !important;
+  font-size: 15px !important;
+  line-height: 1.5 !important;
+  white-space: pre-wrap !important;
+  word-break: break-all !important;
 }
 
-/* PowerShell syntax highlighting */
-.language-powershell .token.function {
-  color: #0066cc !important;
+/* Function name - Blue */
+.ps-function {
+  color: #0969da !important;
   font-weight: 600 !important;
 }
 
-.language-powershell .token.parameter {
+/* Parameters - Orange PS365 */
+.ps-parameter {
   color: #de761d !important;
   font-weight: 500 !important;
 }
 
-.language-powershell .token.operator {
-  color: #666666 !important;
-}
-
-.language-powershell .token.string {
-  color: #008000 !important;
-}
-
-.language-powershell .token.keyword {
-  color: #0000ff !important;
-  font-weight: 500 !important;
-}
-
-.language-powershell .token.variable {
-  color: #800080 !important;
-}
-
-.language-powershell .token.comment {
-  color: #008000 !important;
-  font-style: italic !important;
-}
-
-/* Command signature styling */
-.command-signature {
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
-  border-left: 4px solid #de761d !important;
-  padding: 1rem 1.5rem !important;
-  margin: 1rem 0 !important;
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
-  font-size: 14px !important;
-  line-height: 1.8 !important;
-  border-radius: 8px !important;
-  box-shadow: 0 2px 8px rgba(0, 53, 63, 0.1) !important;
-}
-
-.command-signature .command-name {
-  color: #0066cc !important;
-  font-weight: 700 !important;
-}
-
-.command-signature .parameter {
-  color: #de761d !important;
-  font-weight: 500 !important;
-}
-
-.command-signature .parameter-type {
-  color: #008000 !important;
+/* Types - Green */
+.ps-type {
+  color: #1a7f37 !important;
   font-weight: 400 !important;
 }
 
-.command-signature .optional {
-  color: #666666 !important;
+/* Brackets and optional syntax - Gray */
+.ps-syntax-char {
+  color: #656d76 !important;
+  font-weight: 400 !important;
 }
 
 /* Inline code styling */
@@ -255,6 +215,56 @@ code:not([class*="language-"]) {
 [data-theme='dark'] code:not([class*="language-"]) {
   background-color: rgba(222, 118, 29, 0.2) !important;
   color: #ffab40 !important;
+}
+
+/* PowerShell syntax for dark mode */
+[data-theme='dark'] .ps-syntax {
+  background-color: #161b22 !important;
+  border: 1px solid #30363d !important;
+  color: #e6edf3 !important;
+}
+
+/* Dark mode colors for PowerShell syntax */
+[data-theme='dark'] .ps-function {
+  color: #79c0ff !important;
+}
+
+[data-theme='dark'] .ps-parameter {
+  color: #ffa657 !important;
+}
+
+[data-theme='dark'] .ps-type {
+  color: #7ee787 !important;
+}
+
+[data-theme='dark'] .ps-syntax-char {
+  color: #8b949e !important;
+}
+
+/* Main content text in dark mode */
+[data-theme='dark'] main {
+  --ifm-font-color-base: #e6edf3 !important;
+  --ifm-heading-color: #e6edf3 !important;
+}
+
+[data-theme='dark'] .markdown {
+  --ifm-font-color-base: #e6edf3 !important;
+  --ifm-heading-color: #e6edf3 !important;
+}
+
+[data-theme='dark'] .markdown h1, 
+[data-theme='dark'] .markdown h2, 
+[data-theme='dark'] .markdown h3, 
+[data-theme='dark'] .markdown h4, 
+[data-theme='dark'] .markdown h5, 
+[data-theme='dark'] .markdown h6 {
+  color: #ffa657 !important;
+}
+
+[data-theme='dark'] .markdown p, 
+[data-theme='dark'] .markdown li, 
+[data-theme='dark'] .markdown td {
+  color: #e6edf3 !important;
 }
 
 [data-theme='dark'] .hero--primary {
