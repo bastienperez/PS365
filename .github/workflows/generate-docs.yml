@@ -1,0 +1,37 @@
+name: Generate PowerShell Documentation
+
+on:
+  # workflow_dispatch allows manually triggering the workflow from the Actions tab
+  workflow_dispatch:
+
+# Permissions needed to commit and push changes
+permissions:
+  contents: write
+
+jobs:
+  generate-docs:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout the repository
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # Generate PowerShell documentation
+      - name: Update PowerShell Documentation
+        shell: pwsh
+        run: |
+          ./.build/Update-DocusaurusCommandDoc.ps1
+
+      # Commit and push documentation changes
+      - name: Commit and push documentation updates
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add website/docs/
+          if ! git diff --staged --quiet; then
+            git commit -m "Update PowerShell documentation"
+            git push
+          else
+            echo "No documentation changes to commit"
+          fi
