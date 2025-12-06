@@ -1,5 +1,4 @@
 <#
-
 	.SYNOPSIS
 	Retrieves all Exchange mailboxes for a specified domain.
 

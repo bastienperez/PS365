@@ -1,28 +1,28 @@
 <#
-.SYNOPSIS
-Get mailboxes based on a custom attribute and compare specified attributes.
+    .SYNOPSIS
+    Get mailboxes based on a custom attribute and compare specified attributes.
 
-.DESCRIPTION
-This function retrieves mailboxes based on a custom attribute and compares specified attributes. It returns a list of mailboxes along with their primary SMTP address, the custom attribute value, and whether the specified attributes match.
-It's more or less a Get-Mailbox with specific filter
+    .DESCRIPTION
+    This function retrieves mailboxes based on a custom attribute and compares specified attributes. It returns a list of mailboxes along with their primary SMTP address, the custom attribute value, and whether the specified attributes match.
+    It's more or less a Get-Mailbox with specific filter
 
-.PARAMETER Attribute
-The custom attribute to retrieve from the mailboxes.
+    .PARAMETER Attribute
+    The custom attribute to retrieve from the mailboxes.
 
-.PARAMETER CheckAttributes
-Optional. An array of two attributes to compare. If specified, the function checks if the values of these attributes match.
-Can be useful to compare two attributes for examples
+    .PARAMETER CheckAttributes
+    Optional. An array of two attributes to compare. If specified, the function checks if the values of these attributes match.
+    Can be useful to compare two attributes for examples
 
-.EXAMPLE
-Get-ExMailboxFromAttribute -Attribute "CustomAttribute" -CheckAttributes @("Attribute1", "Attribute2")
-This example retrieves mailboxes with the custom attribute "CustomAttribute" and compares the values of "Attribute1" and "Attribute2".
+    .EXAMPLE
+    Get-ExMailboxFromAttribute -Attribute "CustomAttribute" -CheckAttributes @("Attribute1", "Attribute2")
+    This example retrieves mailboxes with the custom attribute "CustomAttribute" and compares the values of "Attribute1" and "Attribute2".
 
-.EXAMPLE
-Get-ExMailboxFromAttribute -Attribute "CustomAttribute"
-This example retrieves mailboxes with the custom attribute "CustomAttribute" without comparing any attributes.
+    .EXAMPLE
+    Get-ExMailboxFromAttribute -Attribute "CustomAttribute"
+    This example retrieves mailboxes with the custom attribute "CustomAttribute" without comparing any attributes.
 
-.NOTES
-You can also use `Get-AttributeMatching` to compare two attributes directly in AD/Exchange/Entra ID
+    .NOTES
+    You can also use `Get-AttributeMatching` to compare two attributes directly in AD/Exchange/Entra ID
 
 #>
 

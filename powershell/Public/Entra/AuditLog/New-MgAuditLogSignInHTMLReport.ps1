@@ -1,18 +1,20 @@
-function New-MgAuditLogSignInHTMLReport {
-    <#
+<#
     .SYNOPSIS
-        Generate an HTML report from a collection of sign-in records using PSWriteHTML.
+    Generate an HTML report from a collection of sign-in records using PSWriteHTML.
 
     .DESCRIPTION
-        Accepts an array of sign-in objects (raw Graph objects or transformed PSCustomObjects)
-        and writes an HTML report with PSWriteHTML containing a chart and detailed table.
+    Accepts an array of sign-in objects (raw Graph objects or transformed PSCustomObjects)
+    and writes an HTML report with PSWriteHTML containing a chart and detailed table.
 
     .PARAMETER SignIns
-        Array of sign-in objects.
+    Array of sign-in objects.
 
     .PARAMETER OutputFile
-        Path to the HTML output file.
-    #>
+    Path to the HTML output file.
+#>
+
+function New-MgAuditLogSignInHTMLReport {
+
     param(
         [Parameter(Mandatory = $true)][object[]]$SignIns,
         [Parameter(Mandatory = $true)][string]$OutputFile

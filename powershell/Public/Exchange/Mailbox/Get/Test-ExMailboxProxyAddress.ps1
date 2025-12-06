@@ -1,56 +1,56 @@
 <#
     .SYNOPSIS
-        Test if a given proxy address exists in the proxy addresses of a mailbox.
+    Test if a given proxy address exists in the proxy addresses of a mailbox.
 
     .DESCRIPTION
-        This cmdlet checks whether a specified proxy address is present in the proxy addresses of a given mailbox.
-        It can process a single mailbox/proxy address pair or read multiple entries from a CSV file.
+    This cmdlet checks whether a specified proxy address is present in the proxy addresses of a given mailbox.
+    It can process a single mailbox/proxy address pair or read multiple entries from a CSV file.
 
     .PARAMETER Mailbox
-        The identity of the mailbox to check (e.g., email address, alias, or GUID).
-        This parameter is used when processing a single mailbox/proxy address pair.
+    The identity of the mailbox to check (e.g., email address, alias, or GUID).
+    This parameter is used when processing a single mailbox/proxy address pair.
 
     .PARAMETER ProxyAddress
-        The proxy address to check for in the mailbox's proxy addresses.
-        This parameter is used when processing a single mailbox/proxy address pair.
+    The proxy address to check for in the mailbox's proxy addresses.
+    This parameter is used when processing a single mailbox/proxy address pair.
 
     .PARAMETER CsvPath
-        The path to a CSV file containing mailbox and proxy address pairs.
-        This parameter is used when processing multiple entries from a CSV file.
+    The path to a CSV file containing mailbox and proxy address pairs.
+    This parameter is used when processing multiple entries from a CSV file.
 
     .PARAMETER MailboxColumn
-        The name of the column in the CSV file that contains mailbox identities.
-        Default is 'PrimarySmtpAddress'.
+    The name of the column in the CSV file that contains mailbox identities.
+    Default is 'PrimarySmtpAddress'.
 
     .PARAMETER ProxyAddressColumn
-        The name of the column in the CSV file that contains proxy addresses.
-        Default is 'OnMicrosoftAddress'.
+    The name of the column in the CSV file that contains proxy addresses.
+    Default is 'OnMicrosoftAddress'.
 
     .PARAMETER MatchOnly
-        If specified, only returns entries where the proxy address matches.
+    If specified, only returns entries where the proxy address matches.
 
     .PARAMETER NotMatchOnly
-        If specified, only returns entries where the proxy address does not match.
+    If specified, only returns entries where the proxy address does not match.
 
     .EXAMPLE
-        Test-ExMailboxProxyAddress -Mailbox "user@example.com" -ProxyAddress "alias@example.com"
+    Test-ExMailboxProxyAddress -Mailbox "user@example.com" -ProxyAddress "alias@example.com"
 
-        Tests if "alias@example.com" exists in the proxy addresses of the mailbox "user@example.com".
-
-    .EXAMPLE
-        Test-ExMailboxProxyAddress -CsvPath "C:\path\to\file.csv" -MailboxColumn "PrimarySmtpAddress" -ProxyAddressColumn "OnMicrosoftAddress"
-        
-        Reads mailbox and proxy address pairs from the specified CSV file and tests each pair.
+    Tests if "alias@example.com" exists in the proxy addresses of the mailbox "user@example.com".
 
     .EXAMPLE
-        Test-ExMailboxProxyAddress -CsvPath "C:\path\to\file.csv" -MatchOnly
-
-        Reads mailbox and proxy address pairs from the specified CSV file and returns only those that match.
+    Test-ExMailboxProxyAddress -CsvPath "C:\path\to\file.csv" -MailboxColumn "PrimarySmtpAddress" -ProxyAddressColumn "OnMicrosoftAddress"
+    
+    Reads mailbox and proxy address pairs from the specified CSV file and tests each pair.
 
     .EXAMPLE
-        Test-ExMailboxProxyAddress -CsvPath "C:\path\to\file.csv" -NotMatchOnly 
+    Test-ExMailboxProxyAddress -CsvPath "C:\path\to\file.csv" -MatchOnly
 
-        Reads mailbox and proxy address pairs from the specified CSV file and returns only those that do not match.
+    Reads mailbox and proxy address pairs from the specified CSV file and returns only those that match.
+
+    .EXAMPLE
+    Test-ExMailboxProxyAddress -CsvPath "C:\path\to\file.csv" -NotMatchOnly 
+
+    Reads mailbox and proxy address pairs from the specified CSV file and returns only those that do not match.
 #>
 
 function Test-ExMailboxProxyAddress {

@@ -3,40 +3,35 @@
 # TODO: Add Get-ManagementRoleAssignment to obtain permissions, as this is sometimes not done via a group
 #Get-ManagementRoleAssignment -RoleAssigneeType User
 
-.SYNOPSIS
-Get-ExRoleReport - Reports on Exchange RBAC roles and permissions.
+    .SYNOPSIS
+    Get-ExRoleReport - Reports on Exchange RBAC roles and permissions.
 
-.DESCRIPTION 
-This script produces a report of the membership of Exchange RBAC role groups.
-By default, the report contains only the groups with members.
+    .DESCRIPTION 
+    This script produces a report of the membership of Exchange RBAC role groups.
+    By default, the report contains only the groups with members.
 
-.OUTPUTS
-The report is output to an array contained all the audit logs found.
-To export in a csv, do Get-ExRoleReport | Export-CSV -NoTypeInformation "$(Get-Date -Format yyyyMMdd)_adminRoles.csv" -Encoding UTF8
+    .OUTPUTS
+    The report is output to an array contained all the audit logs found.
+    To export in a csv, do Get-ExRoleReport | Export-CSV -NoTypeInformation "$(Get-Date -Format yyyyMMdd)_adminRoles.csv" -Encoding UTF8
 
-.EXAMPLE
-Get-ExRoleReport
+    .EXAMPLE
+    Get-ExRoleReport
 
-.LINK
+    .NOTES
+    Version History:
+    ## [2.1] - 2025-07-03
+    ### Added
+    - Add OnPrem switch to use Get-RoleGroup instead
 
-.NOTES
-Written by Bastien Perez (Clidsys.com - ITPro-Tips.com)
+    ### Changed
+    - Use another method to detect if we are connected to Exchange Online or not
 
+    ## [2.0] - 2024-11-22
+    ### Added
+    - Add option to see permissions graph - not work by now
 
-Version History:
-## [2.1] - 2025-07-03
-### Added
-- Add OnPrem switch to use Get-RoleGroup instead
-
-### Changed
-- Use another method to detect if we are connected to Exchange Online or not
-
-## [2.0] - 2024-11-22
-### Added
-- Add option to see permissions graph - not work by now
-
-## [1.0] - 2024-11-22
-### Initial Release
+    ## [1.0] - 2024-11-22
+    ### Initial Release
 
 #>
 function Get-ExRoleReport {

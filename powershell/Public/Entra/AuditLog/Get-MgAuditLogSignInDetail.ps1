@@ -1,101 +1,101 @@
 <#
     .SYNOPSIS
-        Get Microsoft Entra ID (Azure AD) Audit Log Sign-In Details
+    Get Microsoft Entra ID (Azure AD) Audit Log Sign-In Details
 
     .DESCRIPTION
-        Get Microsoft Entra ID (Azure AD) Audit Log Sign-In Details with various filtering options.
+    Get Microsoft Entra ID (Azure AD) Audit Log Sign-In Details with various filtering options.
 
     .PARAMETER StartDate
-        The start date for filtering sign-in logs. Accepts either a DateTime object or a string in yyyy-MM-dd format.
+    The start date for filtering sign-in logs. Accepts either a DateTime object or a string in yyyy-MM-dd format.
 
     .PARAMETER EndDate  
-        The end date for filtering sign-in logs. Accepts either a DateTime object or a string in yyyy-MM-dd format.
+    The end date for filtering sign-in logs. Accepts either a DateTime object or a string in yyyy-MM-dd format.
 
     .PARAMETER Users
-        An array of user principal names to filter the sign-in logs.
+    An array of user principal names to filter the sign-in logs.
 
     .PARAMETER LastXSignIns
-        The number of most recent sign-ins to retrieve.
-        The other filters (StartDate, EndDate, Users, etc.) will still apply.
+    The number of most recent sign-ins to retrieve.
+    The other filters (StartDate, EndDate, Users, etc.) will still apply.
 
     .PARAMETER IPAddresses
-        A comma-separated list of IP addresses to filter the sign-in logs.
+    A comma-separated list of IP addresses to filter the sign-in logs.
 
     .PARAMETER BasicAuthenticationOnly
-        Switch to filter sign-ins using legacy authentication protocols.
+    Switch to filter sign-ins using legacy authentication protocols.
 
     .PARAMETER SingleFactorAuthenticationOnly
-        Switch to filter only single-factor authentication sign-in attempts.
+    Switch to filter only single-factor authentication sign-in attempts.
 
     .PARAMETER FailureOnly
-        Switch to filter only failed sign-in attempts.
-        
+    Switch to filter only failed sign-in attempts.
+
     .PARAMETER SuccessOnly
-        Switch to filter only successful sign-in attempts.
+    Switch to filter only successful sign-in attempts.
 
     .PARAMETER BadCredentialsOnly
-        Switch to filter sign-ins with bad username or password (error code 50126).
+    Switch to filter sign-ins with bad username or password (error code 50126).
 
     .PARAMETER LastLogonOnly
-        Switch to get only the last logon details for each user.
+    Switch to get only the last logon details for each user.
 
     .PARAMETER NonMFASignInsOnly
-        Switch to filter non-MFA sign-ins only.
+    Switch to filter non-MFA sign-ins only.
 
     .PARAMETER MFASignInsOnly
-        Switch to filter MFA sign-ins only.
+    Switch to filter MFA sign-ins only.
 
     .PARAMETER NonInteractiveSignIns
-        Switch to filter non-interactive sign-ins only.
+    Switch to filter non-interactive sign-ins only.
 
     .PARAMETER ServicePrincipalSignIns
-        Switch to filter service principal sign-ins only.
+    Switch to filter service principal sign-ins only.
 
     .PARAMETER ManagedIdentitySignIns
-        Switch to filter managed identity sign-ins only.
-    
+    Switch to filter managed identity sign-ins only.
+
     .PARAMETER ConditionalAccessPolicyName
-        Filter sign-ins by a specific Conditional Access Policy Name.
+    Filter sign-ins by a specific Conditional Access Policy Name.
 
     .PARAMETER ConditionalAccessPolicyNotApplied
-        Switch to filter sign-ins where the Conditional Access Policy was not applied.
+    Switch to filter sign-ins where the Conditional Access Policy was not applied.
 
     .PARAMETER ConditionalAccessPolicySuccessOnly
-        Switch to filter sign-ins where the Conditional Access Policy evaluation was successful.
+    Switch to filter sign-ins where the Conditional Access Policy evaluation was successful.
 
     .PARAMETER ConditionalAccessPolicyFailedOnly
-        Switch to filter sign-ins where the Conditional Access Policy evaluation failed.
+    Switch to filter sign-ins where the Conditional Access Policy evaluation failed.
 
     .PARAMETER AnalyzeCAPInReportOnly 
-        Switch to filter sign-ins with Conditional Access applied in ReportOnly mode.
-        Only sign-ins where the policy was used (exclude 'NotApplied') are returned.
+    Switch to filter sign-ins with Conditional Access applied in ReportOnly mode.
+    Only sign-ins where the policy was used (exclude 'NotApplied') are returned.
 
     .PARAMETER ExportToExcel
-        Switch to export the sign-in details report to an Excel file.
-        The file will be saved in the user's profile directory with a timestamped filename.
+    Switch to export the sign-in details report to an Excel file.
+    The file will be saved in the user's profile directory with a timestamped filename.
 
     .PARAMETER ForceNewToken
-        Switch to force the acquisition of a new authentication token.
+    Switch to force the acquisition of a new authentication token.
 
     .EXAMPLE
-        Get-MgAuditLogSignInDetail -StartDate '2024-01-01' -EndDate '2024-01-31' -Users 'user1@contoso.com', 'user2@contoso.com'
+    Get-MgAuditLogSignInDetail -StartDate '2024-01-01' -EndDate '2024-01-31' -Users 'user1@contoso.com', 'user2@contoso.com'
 
-        Retrieves sign-in logs for specified users between January 1, 2024, and January 31, 2024.
-
-    .EXAMPLE
-        Get-MgAuditLogSignInDetail -LastXSignIns 100 -FailureOnly
-
-        Retrieves the last 100 failed sign-in attempts.
+    Retrieves sign-in logs for specified users between January 1, 2024, and January 31, 2024.
 
     .EXAMPLE
-        Get-MgAuditLogSignInDetail -AnalyzeCAPInReportOnly
+    Get-MgAuditLogSignInDetail -LastXSignIns 100 -FailureOnly
 
-        Retrieves sign-in logs with Conditional Access applied in ReportOnly mode.
+    Retrieves the last 100 failed sign-in attempts.
 
     .EXAMPLE
-        Get-MgAuditLogSignInDetail -StartDate (Get-Date).AddHours(-1) -NonMFASignInsOnly
+    Get-MgAuditLogSignInDetail -AnalyzeCAPInReportOnly
 
-        Retrieves non-MFA sign-ins from the last hour.
+    Retrieves sign-in logs with Conditional Access applied in ReportOnly mode.
+
+    .EXAMPLE
+    Get-MgAuditLogSignInDetail -StartDate (Get-Date).AddHours(-1) -NonMFASignInsOnly
+
+    Retrieves non-MFA sign-ins from the last hour.
 
     .NOTES
 
@@ -112,7 +112,7 @@
     - Change StartDate/EndDate parameters to accept both DateTime objects and string dates
     - Update to use `Get-MgBetaAuditLogSignIn` to support `authenticationRequirement` in filter operations
     - Change `AnalyzeReportOnlyCA` to `AnalyzeCAPInReportOnly`
-    
+
     # Fixed
     - Fix DateTime parsing error when using DateTime objects as parameters 
 

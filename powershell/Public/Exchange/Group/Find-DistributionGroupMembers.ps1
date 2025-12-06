@@ -1,37 +1,36 @@
 ﻿<#
     .SYNOPSIS
-        Find members of distribution groups based on email address or domain.
+    Find members of distribution groups based on email address or domain.
 
     .DESCRIPTION
-        This function retrieves members of all distribution groups in Exchange Online that match specified criteria such as email addresses or domains.
+    This function retrieves members of all distribution groups in Exchange Online that match specified criteria such as email addresses or domains.
 
     .PARAMETER FilterByDomain
-        Specify a domain to filter distribution group members by their email addresses.
+    Specify a domain to filter distribution group members by their email addresses.
 
     .PARAMETER FilterByEmailAddresses
-        Provide specific email addresses to filter distribution group members.
+    Provide specific email addresses to filter distribution group members.
 
     .PARAMETER FilterByExternalDomains
-        If set to true, filters members whose email addresses belong to external domains not managed in the Exchange Online environment (based on accepted domains).
+    If set to true, filters members whose email addresses belong to external domains not managed in the Exchange Online environment (based on accepted domains).
 
     .PARAMETER FilterRecipientTypeDetails
-        Specify a recipient type detail to further filter the members (e.g., MailContact, MailUser).
+    Specify a recipient type detail to further filter the members (e.g., MailContact, MailUser).
 
     .EXAMPLE
-        Find-DistributionGroupMembers -FilterByDomain "contoso.com"
+    Find-DistributionGroupMembers -FilterByDomain "contoso.com"
 
-        Searches all distribution groups for members with email addresses containing "contoso.com" and exports the results to a CSV file.
+    Searches all distribution groups for members with email addresses containing "contoso.com" and exports the results to a CSV file.
     
     .EXAMPLE
-        Find-DistributionGroupMembers -FilterByEmailAddresses "user@contoso.com"
+    Find-DistributionGroupMembers -FilterByEmailAddresses "user@contoso.com"
 
-        Searches all distribution groups for members with the email address "user@contoso.com" and exports the results to a CSV file.   
+    Searches all distribution groups for members with the email address "user@contoso.com" and exports the results to a CSV file.   
 
     .EXAMPLE
-        Find-DistributionGroupMembers -FilterByExternalDomains -FilterRecipientTypeDetails "MailContact"
+    Find-DistributionGroupMembers -FilterByExternalDomains -FilterRecipientTypeDetails "MailContact"
 
-        Searches all distribution groups for members whose email addresses belong to external domains and are of the type "MailContact", then exports the results to a CSV file.
-
+    Searches all distribution groups for members whose email addresses belong to external domains and are of the type "MailContact", then exports the results to a CSV file.
 #>
 function Find-DistributionGroupMembers {
     param

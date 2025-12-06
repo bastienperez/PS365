@@ -1,118 +1,109 @@
 <#
-.SYNOPSIS
-Get-MgRoleReport.ps1 - Reports on Microsoft Entra ID (Azure AD) roles
+    .SYNOPSIS
+    Get-MgRoleReport.ps1 - Reports on Microsoft Entra ID (Azure AD) roles
 
-.DESCRIPTION 
-By default, the report contains only the roles with members.
-To get all the role, included empty roles, add -IncludeEmptyRoles $true
+    .DESCRIPTION 
+    By default, the report contains only the roles with members.
+    To get all the role, included empty roles, add -IncludeEmptyRoles $true
 
-.OUTPUTS
-The report is output to an array contained all the audit logs found.
-To export in a csv, do Get-MgRoleReport | Export-CSV -NoTypeInformation "$(Get-Date -Format yyyyMMdd)_adminRoles.csv" -Encoding UTF8
+    .OUTPUTS
+    The report is output to an array contained all the audit logs found.
+    To export in a csv, do Get-MgRoleReport | Export-CSV -NoTypeInformation "$(Get-Date -Format yyyyMMdd)_adminRoles.csv" -Encoding UTF8
 
-.PARAMETER IncludeEmptyRoles
-Switch parameter to include empty roles in the report
+    .PARAMETER IncludeEmptyRoles
+    Switch parameter to include empty roles in the report
 
-.PARAMETER IncludePIMEligibleAssignments
-Boolean parameter to include PIM eligible assignments in the report. Default is $true
+    .PARAMETER IncludePIMEligibleAssignments
+    Boolean parameter to include PIM eligible assignments in the report. Default is $true
 
-.PARAMETER ForceNewToken
-Switch parameter to force getting a new token from Microsoft Graph
+    .PARAMETER ForceNewToken
+    Switch parameter to force getting a new token from Microsoft Graph
 
-.PARAMETER MaesterMode
-Switch parameter to use with the Maester framework (internal process not presented here)
+    .PARAMETER MaesterMode
+    Switch parameter to use with the Maester framework (internal process not presented here)
 
-.EXAMPLE
-Get-MgRoleReport
+    .EXAMPLE
+    Get-MgRoleReport
 
-Get all the roles with members, including PIM eligible assignments but without empty roles
+    Get all the roles with members, including PIM eligible assignments but without empty roles
 
-.EXAMPLE
-Get-MgRoleReport -IncludeEmptyRoles
+    .EXAMPLE
+    Get-MgRoleReport -IncludeEmptyRoles
 
-Get all the roles, including the ones without members
+    Get all the roles, including the ones without members
 
-.EXAMPLE
-Get-MgRoleReport -IncludePIMEligibleAssignments $false
-Get all the roles with members (without empty roles), but without PIM eligible assignments
+    .EXAMPLE
+    Get-MgRoleReport -IncludePIMEligibleAssignments $false
+    Get all the roles with members (without empty roles), but without PIM eligible assignments
 
-.EXAMPLE
-Get-MgRoleReport | Export-CSV -NoTypeInformation "$(Get-Date -Format yyyyMMdd)_adminRoles.csv" -Encoding UTF8
+    .EXAMPLE
+    Get-MgRoleReport | Export-CSV -NoTypeInformation "$(Get-Date -Format yyyyMMdd)_adminRoles.csv" -Encoding UTF8
 
-.LINK
-https://itpro-tips.com/get-the-office-365-admin-roles-and-track-the-changes/
+    .LINK
+    https://itpro-tips.com/get-the-office-365-admin-roles-and-track-the-changes/
 
-.NOTES
-Written by Bastien Perez (Clidsys.com - ITPro-Tips.com)
-For more Office 365/Microsoft 365 tips and news, check out ITPro-Tips.com.
+    .NOTES
+    Written by Bastien Perez (Clidsys.com - ITPro-Tips.com)
+    For more Office 365/Microsoft 365 tips and news, check out ITPro-Tips.com.
 
-Version History:
-## [1.8.2] - 2025-10-17
-### Changed
-- Fix `onPremisesSyncEnabled` property
+    Version History:
+    ## [1.8.2] - 2025-10-17
+    ### Changed
+    - Fix `onPremisesSyncEnabled` property
 
-## [1.8.1] - 2025-10-17
-### Added
-- Add `RecommendationSync` property
+    ## [1.8.1] - 2025-10-17
+    ### Added
+    - Add `RecommendationSync` property
 
-## [1.8.0] - 2025-10-08
-### Added
-- Add `IncludeEmptyRoles` switch parameter to get all roles, even the ones without members
+    ## [1.8.0] - 2025-10-08
+    ### Added
+    - Add `IncludeEmptyRoles` switch parameter to get all roles, even the ones without members
 
-### Changed
-- Use List for mgRoles for better performance
+    ### Changed
+    - Use List for mgRoles for better performance
 
-## [1.7.0] - 2025-04-04
-### Changed
-- Add scopes for `RoleManagement.Read.All` and `AuditLog.Read.All` permissions
+    ## [1.7.0] - 2025-04-04
+    ### Changed
+    - Add scopes for `RoleManagement.Read.All` and `AuditLog.Read.All` permissions
 
-## [1.6] - 2025-02-26
-### Changed
-- Add `permissionsNeeded` variable
-- Add `onpremisesSyncEnabled` property for groups
-- Add all type objects in the cache array
-- Add `LastNonInteractiveSignInDateTime` property for users
+    ## [1.6] - 2025-02-26
+    ### Changed
+    - Add `permissionsNeeded` variable
+    - Add `onpremisesSyncEnabled` property for groups
+    - Add all type objects in the cache array
+    - Add `LastNonInteractiveSignInDateTime` property for users
 
-## [1.5.0] - 2025-02-25
-### Changed
-- Always return `true` or `false` for `onPremisesSyncEnabled` properties
-- Fix issues with `objectsCacheArray` that was not working
-- Sign-in activity tracking for service principals
+    ## [1.5.0] - 2025-02-25
+    ### Changed
+    - Always return `true` or `false` for `onPremisesSyncEnabled` properties
+    - Fix issues with `objectsCacheArray` that was not working
+    - Sign-in activity tracking for service principals
 
-### Plannned for next release
-- Switch to `Invoke-MgGraphRequest` instead of `Get-Mg*` CMDlets
+    ### Plannned for next release
+    - Switch to `Invoke-MgGraphRequest` instead of `Get-Mg*` CMDlets
 
-## [1.4.0] - 2025-02-13
-### Added
-- Sign-in activity tracking for users
-- Account enabled status.
-- On-premises sync enabled status.
-- Remove old parameters
-- Test if already connected to Microsoft Graph and with the right permissions
+    ## [1.4.0] - 2025-02-13
+    ### Added
+    - Sign-in activity tracking for users
+    - Account enabled status.
+    - On-premises sync enabled status.
+    - Remove old parameters
+    - Test if already connected to Microsoft Graph and with the right permissions
 
-## [1.3.0] - 2024-05-15
-### Changed
-- Changes not specified.
+    ## [1.3.0] - 2024-05-15
+    ### Changed
+    - Changes not specified.
 
-## [1.2.0] - 2024-03-13
-### Changed
-- Changes not specified.
+    ## [1.2.0] - 2024-03-13
+    ### Changed
+    - Changes not specified.
 
-## [1.1.0] - 2023-12-01
-### Changed
-- Changes not specified.
+    ## [1.1.0] - 2023-12-01
+    ### Changed
+    - Changes not specified.
 
-## [1.0.0] - 2023-10-19
-### Initial Release
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
-FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
-DEALINGS IN THE SOFTWARE.
-
+    ## [1.0.0] - 2023-10-19
+    ### Initial Release
 #>
 function Get-MgRoleReport {
     [CmdletBinding()]

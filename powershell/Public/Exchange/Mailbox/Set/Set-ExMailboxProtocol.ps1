@@ -1,3 +1,86 @@
+<#
+    .SYNOPSIS
+    Set Exchange mailbox protocol settings.
+
+    .DESCRIPTION
+    This function sets the protocol settings (MAPI, OWA, IMAP, POP, EWS, ActiveSync)
+    for Exchange Online mailboxes. It can target mailboxes by identity, by domain, from a CSV file, or all mailboxes in the organization.
+    It also allows enabling modern protocols only or modern protocols along with EWS.
+    Additionally, it can configure SMTP Client Authentication settings at the mailbox level.
+
+    .PARAMETER Identity
+    The identity of the mailbox(es) to set protocol settings for. This can be an array of email addresses, usernames, or display names.
+
+    .PARAMETER ByDomain
+    Filter mailboxes by domain name. All mailboxes with a primary SMTP address in this domain will be processed.
+
+    .PARAMETER FromCSV
+    The path to a CSV file containing mailbox identities to process.
+
+    .PARAMETER AllMailboxes
+    If specified, all mailboxes in the organization will be processed.
+
+    .PARAMETER GenerateCmdlets
+    If specified, the function will generate the Set-EXOCasMailbox cmdlets and save them to a file instead of executing them.
+
+    .PARAMETER OutputFile
+    The path to the output file where generated cmdlets will be saved. Default is a timestamped file in the current directory.
+
+    .PARAMETER ModernProtocolsOnly
+    If specified, enables only modern protocols (MAPI, OWA, Outlook Mobile) and disables legacy protocols (POP, IMAP, ActiveSync, EWS) along with disabling SMTP Client Authentication
+    at the mailbox level.
+
+    .PARAMETER ModernProtocolsAndEws
+    If specified, enables modern protocols (MAPI, OWA, Outlook Mobile) along with EWS, and disables legacy protocols (POP, IMAP, ActiveSync) along with disabling SMTP Client
+    Authentication at the mailbox level.
+
+    .PARAMETER MAPIEnabled
+    Set MAPI protocol enabled or disabled.
+
+    .PARAMETER OWAEnabled
+    Set OWA protocol enabled or disabled.
+
+    .PARAMETER PopEnabled
+    Set POP protocol enabled or disabled.
+
+    .PARAMETER ImapEnabled
+    Set IMAP protocol enabled or disabled.
+
+    .PARAMETER ActiveSyncEnabled
+    Set ActiveSync protocol enabled or disabled.
+
+    .PARAMETER EwsEnabled
+    Set EWS protocol enabled or disabled.
+
+    .PARAMETER SmtpClientAuthenticationDisabled
+    Set SMTP Client Authentication disabled or enabled at the mailbox level.
+
+    .PARAMETER UniversalOutlookEnabled
+    Set Universal Outlook (the built-in Mail and Calendar app in Windows) enabled or disabled.
+
+    .PARAMETER OutlookMobileEnabled
+    Set Outlook Mobile access enabled or disabled.
+
+    .EXAMPLE
+    Set-ExMailboxProtocol -Identity "user@example.com" -ModernProtocolsOnly
+
+    Sets modern protocols only for the specified mailbox.
+
+    .EXAMPLE
+    Set-ExMailboxProtocol -ByDomain "example.com" -GenerateCmdlets -OutputFile "C:\path\to\commands.ps1"
+
+    Generates the Set-EXOCasMailbox cmdlets for all mailboxes in the specified domain to enable modern protocols only and saves them to the specified file without executing them.
+
+    .EXAMPLE
+    Set-ExMailboxProtocol -FromCSV "C:\path\to\file.csv"
+
+    Sets protocol settings for mailboxes listed in the specified CSV file.
+
+    .EXAMPLE
+    Set-ExMailboxProtocol -AllMailboxes -ModernProtocolsAndEws
+
+    Sets modern protocols along with EWS for all mailboxes in the organization.
+#>
 function Set-ExMailboxProtocol {
     [CmdletBinding(SupportsShouldProcess)]
     param(

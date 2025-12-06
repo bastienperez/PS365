@@ -1,8 +1,23 @@
 <#
-.CHANGELOG
 
-[1.0.0] - 2025-03-17
-# Initial Version  
+    .SYNOPSIS
+    Retrieves password policy details for all verified domains in the Microsoft Entra tenant.
+
+    .DESCRIPTION
+    This function connects to Microsoft Entra (Azure AD) using the Microsoft Graph PowerShell module
+    and retrieves password policy details for all verified domains in the tenant. It provides information
+    such as the password validity period and notification window for each domain.
+
+    .EXAMPLE
+    Get-MgPasswordPolicyDetail
+
+    Retrieves password policy details for all verified domains in the tenant.
+
+    .NOTES
+    .CHANGELOG
+
+    [1.0.0] - 2025-03-17
+    # Initial Version  
 
 #>
 

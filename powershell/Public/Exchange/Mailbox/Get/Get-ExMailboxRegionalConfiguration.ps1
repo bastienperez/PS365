@@ -1,3 +1,35 @@
+<#
+    .SYNOPSIS
+    Get the regional configuration of Exchange Online mailboxes.
+
+    .DESCRIPTION
+    This function retrieves the regional configuration settings (language, time zone, date format, time format)
+    for Exchange Online mailboxes. It can filter mailboxes by identity or by domain.
+
+    .PARAMETER Identity
+    The identity of the mailbox to retrieve the regional configuration for.
+    If not specified, the function retrieves the configuration for all mailboxes.
+
+    .PARAMETER ByDomain
+    The domain to filter mailboxes by. Only mailboxes with a primary SMTP address in this
+    domain will be processed.
+
+    .EXAMPLE
+    Get-ExMailboxRegionalConfiguration
+
+    Retrieves the regional configuration for all Exchange Online mailboxes.
+
+    .EXAMPLE
+    Get-ExMailboxRegionalConfiguration -Identity "user@example.com"
+
+    Retrieves the regional configuration for the specified mailbox.
+
+    .EXAMPLE
+    Get-ExMailboxRegionalConfiguration -ByDomain "example.com"
+
+    Retrieves the regional configuration for all mailboxes in the specified domain.
+#>
+
 function Get-ExMailboxRegionalConfiguration {
     param (
         [Parameter(Mandatory = $false, Position = 0)]

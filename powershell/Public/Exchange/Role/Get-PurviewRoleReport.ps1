@@ -3,30 +3,29 @@
 # TODO: Add Get-ManagementRoleAssignment to obtain permissions, as this is sometimes not done via a group
 #Get-ManagementRoleAssignment -RoleAssigneeType User
     
-.SYNOPSIS
-Get-PurviewRoleReport - Reports on Purview RBAC roles and permissions.
+    .SYNOPSIS
+    Get-PurviewRoleReport - Reports on Purview RBAC roles and permissions.
 
-.DESCRIPTION 
-This script produces a report of the membership of Purview RBAC role groups.
-By default, the report contains only the groups with members.
+    .DESCRIPTION 
+    This script produces a report of the membership of Purview RBAC role groups.
+    By default, the report contains only the groups with members.
 
-.OUTPUTS
-The report is output to an array contained all the audit logs found.
-To export in a csv, do Get-PurviewRoleReport | Export-CSV -NoTypeInformation "$(Get-Date -Format yyyyMMdd)_adminRoles.csv" -Encoding UTF8
+    .OUTPUTS
+    The report is output to an array contained all the audit logs found.
+    To export in a csv, do Get-PurviewRoleReport | Export-CSV -NoTypeInformation "$(Get-Date -Format yyyyMMdd)_adminRoles.csv" -Encoding UTF8
 
-.EXAMPLE
-Get-PurviewRoleReport
+    .EXAMPLE
+    Get-PurviewRoleReport
 
-.LINK
+    .LINK
 
-.NOTES
-Written by Bastien Perez (Clidsys.com - ITPro-Tips.com)
-For more Office 365/Microsoft 365 tips and news, check out ITPro-Tips.com.
+    .NOTES
+    Written by Bastien Perez (Clidsys.com - ITPro-Tips.com)
+    For more Office 365/Microsoft 365 tips and news, check out ITPro-Tips.com.
 
-Version History:
-## [1.0] - 2025-07-03
-### Initial Release
-
+    Version History:
+    ## [1.0] - 2025-07-03
+    ### Initial Release
 #>
 function Get-PurviewRoleReport {
     [CmdletBinding()]

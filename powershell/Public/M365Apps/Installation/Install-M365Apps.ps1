@@ -1,31 +1,35 @@
 <#
 	.SYNOPSIS
-		Installs Microsoft 365 Apps using the Office Deployment Tool.
+	Installs Microsoft 365 Apps using the Office Deployment Tool.
 
 	.DESCRIPTION
-		Uses the Office Deployment Tool to install Microsoft 365 Apps with a specified configuration file.
+	Uses the Office Deployment Tool to install Microsoft 365 Apps with a specified configuration file.
 
 	.PARAMETER ODTFolderPath
-		The network-accessible location containing the Microsoft 365 Apps source files and the Office Deployment Tool `setup.exe`.
-		This can be a UNC path (e.g., \\server\share\Office) or a local path (e.g., C:\OfficeSource).
-		Can be a relative or absolute path.
+	The network-accessible location containing the Microsoft 365 Apps source files and the Office Deployment Tool `setup.exe`.
+	This can be a UNC path (e.g., \\server\share\Office) or a local path (e.g., C:\OfficeSource).
+	Can be a relative or absolute path.
 
 	.PARAMETER ConfigFilePath
-		The path to the configuration XML file used for the installation.
-		You can generate this file using the Office Customization Tool (OCT) at https://config.office.com/.
-		Can be a relative or absolute path.
+	The path to the configuration XML file used for the installation.
+	You can generate this file using the Office Customization Tool (OCT) at https://config.office.com/.
+	Can be a relative or absolute path.
 
 	.EXAMPLE
-		Install-M365Apps -ODTFolderPath '\\server\share\Office' -ConfigFilePath ".\Configuration-XX.xml"
+	Install-M365Apps -ODTFolderPath '\\server\share\Office' -ConfigFilePath ".\Configuration-XX.xml"
+
+	Installs Microsoft 365 Apps from the specified network share using the provided configuration file.
 
 	.EXAMPLE
-		Install-M365Apps -ODTFolderPath 'C:\Custom-OfficeDeploymentTool' -ConfigFilePath 'C:\Configs\OfficeConfig.xml'
+	Install-M365Apps -ODTFolderPath 'C:\Custom-OfficeDeploymentTool' -ConfigFilePath 'C:\Configs\OfficeConfig.xml'
+
+	Installs Microsoft 365 Apps from the specified local folder using the provided configuration file.
 
 	.NOTES
-		Ensure that the source path is accessible and that the configuration file is correctly formatted.
-		The script requires administrative privileges to run.
-		The Office Deployment Tool must be downloaded and extracted prior to running this script.
-		The ODT folder must contains the ODT setup.exe file and the source files for installation (see `Invoke-M365AppsDownload.ps1`).
+	Ensure that the source path is accessible and that the configuration file is correctly formatted.
+	The script requires administrative privileges to run.
+	The Office Deployment Tool must be downloaded and extracted prior to running this script.
+	The ODT folder must contains the ODT setup.exe file and the source files for installation (see `Invoke-M365AppsDownload.ps1`).
 #>
 
 function Install-M365Apps {

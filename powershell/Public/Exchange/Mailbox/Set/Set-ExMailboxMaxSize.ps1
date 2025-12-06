@@ -1,3 +1,49 @@
+<#
+	.SYNOPSIS
+	Set maximum mailbox size for specified mailboxes.
+
+	.DESCRIPTION
+	This function sets the maximum mailbox size (MaxReceiveSize and MaxSendSize) for Exchange Online mailboxes.
+	It can target mailboxes by identity, by domain, from a CSV file, or all mailboxes in the organization.
+	
+	.PARAMETER Identity
+	The identity of the mailbox(es) to set the maximum size for. This can be an array of email addresses, usernames, or display names.
+	
+	.PARAMETER ByDomain
+	Filter mailboxes by domain name. All mailboxes with a primary SMTP address in this domain will be processed.
+	
+	.PARAMETER FromCSV
+	The path to a CSV file containing mailbox identities to process.
+	
+	.PARAMETER AllMailboxes
+	If specified, all mailboxes in the organization will be processed.
+	
+	.PARAMETER GenerateCmdlets
+	If specified, the function will generate the Set-Mailbox cmdlets and save them to a file instead of executing them.
+	
+	.PARAMETER OutputFile
+	The path to the output file where generated cmdlets will be saved. Default is a timestamped file in the current directory.
+	
+	.EXAMPLE
+	Set-ExMailboxMaxSize -Identity "user@example.com" -MaxReceiveSize 150MB -MaxSendSize 150MB
+	Sets the maximum mailbox size for the specified mailbox.
+	
+	.EXAMPLE
+	Set-ExMailboxMaxSize -ByDomain "example.com"
+	Sets the maximum mailbox size for all mailboxes in the specified domain.
+	
+	.EXAMPLE
+	Set-ExMailboxMaxSize -AllMailboxes
+	Sets the maximum mailbox size for all mailboxes in the organization.
+	
+	.EXAMPLE
+	Set-ExMailboxMaxSize -FromCSV "C:\path\to\file.csv"
+	Sets the maximum mailbox size for mailboxes listed in the specified CSV file.
+	
+	.EXAMPLE
+	Set-ExMailboxMaxSize -ByDomain "example.com" -GenerateCmdlets -OutputFile "C:\path\to\commands.ps1"
+	Generates the Set-Mailbox cmdlets for all mailboxes in the specified domain and saves them to the specified file without executing them.
+#>
 function Set-ExMailboxMaxSize {
 	[CmdletBinding(SupportsShouldProcess)]
 	param(

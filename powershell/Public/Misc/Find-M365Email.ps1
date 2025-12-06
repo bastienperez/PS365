@@ -1,8 +1,34 @@
-﻿function Find-M365Email {
+﻿<#
+    .SYNOPSIS
+    Find email addresses across various services.
+
+    .DESCRIPTION
+    This function searches for email addresses across Exchange Online recipients,
+    Microsoft 365 users, and deleted users. It can filter results by specific email
+    addresses or by domain.
+
+    .PARAMETER SearchEmail
+    An array of email addresses to search for.
+
+    .PARAMETER ByDomain
+    An array of domains to search for.
+
+    .EXAMPLE
+    Find-M365Email -SearchEmail "user@example.com"
+
+    Searches for the specified email address and displays its details if found.
+
+    .EXAMPLE
+    Find-M365Email -ByDomain "example.com"
+
+    Searches for all email addresses within the specified domain and displays their details.
+#>
+
+function Find-M365Email {
     [CmdletBinding()]
     param(
-        [string[]]$SearchEmails,
-        [string[]]$SearchByDomain
+        [String[]]$SearchEmail,
+        [String]$ByDomain
     )
 
     function Add-EmailObjects {
@@ -19,8 +45,8 @@
                 $emailaddress = $emailaddress -replace 'sip:', ''
                 $emailaddress = $emailaddress -replace 'spo:', ''
 
-                if ($SearchByDomain) {
-                    if ($emailaddress -notlike "*$SearchByDomain") {
+                if ($ByDomain) {
+                    if ($emailaddress -notlike "*$ByDomain") {
                         continue
                     }
                 }
@@ -123,16 +149,16 @@
     Add-EmailObjects -EmailObjects $allM365EmailObjects -Users $entraIDDeletedUsersUPN 
     Add-EmailObjects -EmailObjects $allM365EmailObjects -Users $entraIDDeletedUsersEmails
 
-    if ($SearchEmails) {
-        foreach ($SearchEmail in $SearchEmails) {
-            $foundEmail = $allM365EmailObjects | Where-Object { $_.EmailAddress -eq $SearchEmail }
+    if ($SearchEmail) {
+        foreach ($email in $SearchEmail) {
+            $foundEmail = $allM365EmailObjects | Where-Object { $_.EmailAddress -eq $email }
             
             if ($foundEmail) {
-                Write-Host "$SearchEmail found:" -ForegroundColor Green
+                Write-Host "$email found:" -ForegroundColor Green
                 $foundEmail | Format-Table -AutoSize
             }
             else {
-                Write-Host "$SearchEmail not found" -ForegroundColor Red
+                Write-Host "$email not found" -ForegroundColor Red
             }
         }
     }

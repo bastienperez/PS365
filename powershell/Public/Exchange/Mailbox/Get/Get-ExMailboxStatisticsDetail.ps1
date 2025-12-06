@@ -1,35 +1,35 @@
 <#
-.SYNOPSIS
-    Gets detailed mailbox statistics for Exchange Online including item count by type.
+	.SYNOPSIS
+	Gets detailed mailbox statistics for Exchange Online including item count by type.
 
-.DESCRIPTION
-    This function retrieves comprehensive statistics for an Exchange Online mailbox, including:
-    - General statistics (size, total item count, etc.)
-    - Item count by folder (Inbox, Sent Items, etc.)
-    - Number of contacts
-    - Number of calendar items
-    - Number of tasks
-    - Number of notes
+	.DESCRIPTION
+	This function retrieves comprehensive statistics for an Exchange Online mailbox, including:
+	- General statistics (size, total item count, etc.)
+	- Item count by folder (Inbox, Sent Items, etc.)
+	- Number of contacts
+	- Number of calendar items
+	- Number of tasks
+	- Number of notes
 
-.PARAMETER Identity
-    Mailbox identity (email address, username, etc.)
+	.PARAMETER Identity
+	Mailbox identity (email address, username, etc.)
 
-.PARAMETER IncludeFolderDetails
-    Include folder details in the results
+	.PARAMETER IncludeFolderDetails
+	Include folder details in the results
 
-.EXAMPLE
-    Get-ExMailboxStatisticsDetail -Identity "user@domain.com"
-    
-    Gets detailed statistics for the specified mailbox.
+	.EXAMPLE
+	Get-ExMailboxStatisticsDetail -Identity "user@domain.com"
 
-.EXAMPLE
-    Get-ExMailboxStatisticsDetail -Identity "user@domain.com" -IncludeFolderDetails
-    
-    Gets statistics with folder details included.
+	Gets detailed statistics for the specified mailbox.
 
-.NOTES
-    Author: Bastien Perez
-    Version: 1.0.0
+	.EXAMPLE
+	Get-ExMailboxStatisticsDetail -Identity "user@domain.com" -IncludeFolderDetails
+
+	Gets statistics with folder details included.
+
+	.NOTES
+	Author: Bastien Perez
+	Version: 1.0.0
 #>
 
 function Get-ExMailboxStatisticsDetail {

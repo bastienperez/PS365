@@ -1,32 +1,28 @@
 <#
-.SYNOPSIS
+    .SYNOPSIS
     Retrieves detailed information about mobile devices associated with user mailboxes.
 
-.DESCRIPTION
+    .DESCRIPTION
     This script fetches mobile device details for specified user mailboxes or all mailboxes if none are specified.
 
-.PARAMETER UserPrincipalName
+    .PARAMETER UserPrincipalName
     An array of User Principal Names (UPNs) to retrieve mobile device details for.
     If not provided, details for all mailboxes will be retrieved.
 
-.EXAMPLE
+    .EXAMPLE
     Get-MobileDeviceDetail
 
     Retrieves mobile device details for all user mailboxes.
 
-.EXAMPLE
+    .EXAMPLE
     Get-MobileDeviceDetail -UserPrincipalName "<UserPrincipalName>"
 
     Retrieves mobile device details for the specified user.
 
-.NOTES
-Author: Bastien Perez
+    .NOTES
+    Author: Bastien Perez
 
-.NOTES
-Requires Exchange Online Management Module or Exchange Management Shell.
-
-Works with both Exchange Online and on-premises Exchange environments and uses the appropriate cmdlets based on the environment.
-
+    Works with both Exchange Online and on-premises Exchange environments and uses the appropriate cmdlets based on the environment.
 #>
 
 function Get-MobileDeviceDetail {

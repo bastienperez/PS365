@@ -1,35 +1,36 @@
 <#
     .SYNOPSIS
-        Retrieves and processes user password information from Microsoft Graph and get information about the user's password, such as the last password change date, on-premises sync status, and password policies.
+    Retrieves and processes user password information from Microsoft Graph and get information about the user's password, such as the last password change date, on-premises sync status, and password policies.
 
     .DESCRIPTION
-        The Get-MgUserPasswordInfo script collects details such as the user's principal name, last password change date, on-premises sync status, and password policies.
+    The Get-MgUserPasswordInfo script collects details such as the user's principal name, last password change date, on-premises sync status, and password policies.
 
     .PARAMETER UserPrincipalName
-        Specifies the user principal name(s) of the user(s) for which to retrieve password information.
-        
+    Specifies the user principal name(s) of the user(s) for which to retrieve password information.
+
     .PARAMETER PasswordPoliciesByDomainOnly
-        If specified, retrieves password policies for domains only, without retrieving individual user information.
+    If specified, retrieves password policies for domains only, without retrieving individual user information.
 
     .PARAMETER IncludeExchangeDetails
-        Include Exchange Online mailbox details in the output, useful to exclude shared mailboxes and others.
+    Include Exchange Online mailbox details in the output, useful to exclude shared mailboxes and others.
 
     .EXAMPLE
-        Get-MgUserPasswordInfo
-        Retrieves password information for all users and outputs it (default behavior).
+    Get-MgUserPasswordInfo
+    Retrieves password information for all users and outputs it (default behavior).
 
     .EXAMPLE
-        Get-MgUserPasswordInfo -UserPrincipalName xxx@domain.com
-        Retrieves password information for the specified user and outputs it.
+    Get-MgUserPasswordInfo -UserPrincipalName xxx@domain.com
+    Retrieves password information for the specified user and outputs it.
 
     .EXAMPLE
-        Get-MgUserPasswordInfo -PasswordPoliciesByDomainOnly
-        Retrieves password policies for all domains only.
+    Get-MgUserPasswordInfo -PasswordPoliciesByDomainOnly
+    Retrieves password policies for all domains only.
 
     .EXAMPLE
-        Get-MgUserPasswordInfo -SimulatedMaxPasswordAgeDays 180
+    Get-MgUserPasswordInfo -SimulatedMaxPasswordAgeDays 180
 
-        Retrieves password information for all users and simulates what would happen with a 180-day password expiration policy, showing both current and simulated expiration dates.
+    Retrieves password information for all users and simulates what would happen with a 180-day password expiration policy, showing both current and simulated expiration dates.
+    
     .NOTES
     Ensure you have the necessary permissions and modules installed to run this script, such as the Microsoft Graph PowerShell module.
     The script assumes that the necessary authentication to Microsoft Graph has already been handled with the Connect-MgGraph function.
@@ -47,7 +48,7 @@
     - Add parameter `ExportToExcel` to export the report to an Excel file.
     - Add parameter `IncludeGuestUsers` to include guest users in the report.
     - Add parameter `IncludeExchangeDetails` to include Exchange Online mailbox details in the output.
-    
+
     # Changed
     - Modified property `Enabled` to `AccountEnabled` in the output object.
 #>

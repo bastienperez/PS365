@@ -1,3 +1,44 @@
+<#
+    .SYNOPSIS
+    Compare two user attributes from different sources.
+
+    .DESCRIPTION
+    This function compares two specified user attributes from Active Directory, Entra ID (Microsoft Graph),
+    or Exchange. It can filter users based on email domain or specific user identities and returns users
+    whose attributes either match or do not match.
+
+    .PARAMETER Attribute1
+    The first user attribute to compare.
+
+    .PARAMETER Attribute2
+    The second user attribute to compare.
+
+    .PARAMETER Source
+    The source from which to retrieve user information.
+    Valid options are 'AD' for Active Directory, 'EntraID' for Microsoft Entra ID, and 'Exchange' for Exchange.
+
+    .PARAMETER User
+    An array of user identities to filter the comparison.
+
+    .PARAMETER ByDomain
+    An array of email domains to filter users.
+
+    .PARAMETER Return
+    Specifies whether to return users with 'Matching' or 'NotMatching' attributes.
+
+    .EXAMPLE
+    Compare-UserAttribute -Attribute1 "mail" -Attribute2 "proxyAddresses" -
+
+    Compares the 'mail' and 'proxyAddresses' attributes for users in Active Directory
+    and returns those with matching values.
+
+    .EXAMPLE
+    Compare-UserAttribute -Attribute1 "userPrincipalName" -Attribute2 "mail" -Source "EntraID" -Return "NotMatching"
+
+    Compares the 'userPrincipalName' and 'mail' attributes for users in Entra ID
+    and returns those with non-matching values.
+#>
+
 function Compare-UserAttribute {
     [CmdletBinding()]
     param (
@@ -15,7 +56,7 @@ function Compare-UserAttribute {
         [String[]]$User,
 
         [Parameter(Mandatory = $false)]
-        [String[]]$FromEmailDomain,
+        [String[]]$ByDomain,
 
         [Parameter(Mandatory = $true)]
         [ValidateSet('Matching', 'NotMatching')]
@@ -24,8 +65,8 @@ function Compare-UserAttribute {
 
     switch ($Source) {
         'AD' {
-            if ($FromEmailDomain) {
-                $users = Get-ADUser -LDAPFilter "(mail=*$FromEmailDomain)" -Properties $Attribute1, $Attribute2
+            if ($ByDomain) {
+                $users = Get-ADUser -LDAPFilter "(mail=*$ByDomain)" -Properties $Attribute1, $Attribute2
             }
             elseif ($User) {
                 [System.Collections.Generic.List[PSCustomObject]]$users = @()
@@ -44,8 +85,8 @@ function Compare-UserAttribute {
 
         'EntraID' {
             Write-Verbose "Using Microsoft Graph to compare attributes '$Attribute1' and '$Attribute2' in Entra ID."
-            if ($FromEmailDomain) {
-                $users = Get-MgUser -All | Where-Object { $_.mail -like "*$FromEmailDomain" }
+            if ($ByDomain) {
+                $users = Get-MgUser -All | Where-Object { $_.mail -like "*$ByDomain" }
             }
             elseif ($User) {
                 [System.Collections.Generic.List[PSCustomObject]]$users = @()
@@ -73,8 +114,8 @@ function Compare-UserAttribute {
                 $Attribute2 = 'WindowsLiveID'
             }
             
-            if ($FromEmailDomain) {
-                $users = Get-Recipient -Filter "EmailAddresses -like '*$FromEmailDomain'" -Properties $Attribute1, $Attribute2 | Where-Object { $_.PrimarySmtpAddress -like "*@$FromEmailDomain" }
+            if ($ByDomain) {
+                $users = Get-Recipient -Filter "EmailAddresses -like '*$ByDomain'" -Properties $Attribute1, $Attribute2 | Where-Object { $_.PrimarySmtpAddress -like "*@$ByDomain" }
             }
             elseif ($User) {
                 [System.Collections.Generic.List[PSCustomObject]]$users = @()

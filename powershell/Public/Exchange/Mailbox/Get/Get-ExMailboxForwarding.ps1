@@ -1,27 +1,39 @@
-# Priority 1: forwardingAddress
-# Priority 2: forwardingSMTPAddress
-# Priority 3: inbox rule
 
-# Autoforward works if forwardingAddress because it's an internal object
-# TODO: Add forwardWorks for inbox rules & if RemoteDomain enabled
-# label: enhancements
-
-<#
+	<#
 	.SYNOPSIS
-		Get mailbox forwarding configuration
+	Get mailbox forwarding configuration
 
 	.DESCRIPTION
-		Get mailbox forwarding configuration from ForwardingAddress, ForwardingSMTPAddress and Inbox Rules
+	Get mailbox forwarding configuration from ForwardingAddress, ForwardingSMTPAddress and Inbox Rules
 
 	.EXAMPLE
-		Get-ExMailboxForwarding
+	Get-ExMailboxForwarding
 
-		Returns all mailboxes with forwarding configuration.
+	Returns all mailboxes with forwarding configuration.
 
 	.EXAMPLE
-		Get-ExMailboxForwarding -Mailboxes "user1@example.com","user2@example.com"
+	Get-ExMailboxForwarding -Mailboxes "user1@example.com","user2@example.com"
 
-		Returns forwarding configuration for specified mailboxes.
+	Returns forwarding configuration for specified mailboxes.
+
+	.EXAMPLE
+	Get-ExMailboxForwarding -ForwardingAndForwardingSMTPOnly
+
+	Returns only mailboxes with ForwardingAddress or ForwardingSMTPAddress set.
+
+	.EXAMPLE
+	Get-ExMailboxForwarding -InboxRulesOnly
+
+	Returns only mailboxes with inbox rules that forward emails.
+
+	.NOTES
+	Priority 1: ForwardingAddress
+	Priority 2: ForwardingSMTPAddress
+	Priority 3: Inbox Rules
+
+	# Autoforward works if forwardingAddress because it's an internal object
+	# TODO: Add forwardWorks for inbox rules & if RemoteDomain enabled
+	# label: enhancements
 #>
 
 function Get-ExMailboxForwarding {

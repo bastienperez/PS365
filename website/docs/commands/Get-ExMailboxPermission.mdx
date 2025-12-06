@@ -15,7 +15,7 @@ Gets all permissions on an Exchange Online mailbox (Full Access, Send As, Send o
 ## SYNTAX
 
 ```powershell
-Get-ExMailboxPermission [[-Identity] <String>] [-ByDomain <String>] [-UserPermissions <String>]
+Get-ExMailboxPermission [[-Identity] <String>] [-ByDomain <String>] [-UserPermission <String>]
  [-ExportToExcel] [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
@@ -52,7 +52,7 @@ Gets all permissions for all mailboxes in the contoso.com domain
 ### EXAMPLE 4
 
 ```powershell
-Get-ExMailboxPermission -UserPermissions "john.doe@contoso.com"
+Get-ExMailboxPermission -UserPermission "john.doe@contoso.com"
 Finds all mailbox permissions that john.doe@contoso.com has across all mailboxes
 ```
 
@@ -90,7 +90,7 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -UserPermissions
+### -UserPermission
 
 Find all permissions that a specific user has across all mailboxes (reverse lookup)
 

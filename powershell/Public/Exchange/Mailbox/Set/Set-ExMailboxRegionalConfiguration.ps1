@@ -1,3 +1,63 @@
+<#
+	.SYNOPSIS
+	Sets the regional configuration for Exchange mailboxes, including language, time zone, date format, and time format.
+
+	.DESCRIPTION
+	This function sets the regional configuration settings (language, time zone, date format, time format)
+	for Exchange Online mailboxes. It can target mailboxes by identity, by domain, from a CSV file, or all mailboxes in the organization.
+	It also supports generating the corresponding Set-MailboxRegionalConfiguration cmdlets without executing them.
+
+	.PARAMETER Identity
+	The identity of the mailbox(es) to set the regional configuration for. This can be an array of email addresses, usernames, or display names.
+
+	.PARAMETER ByDomain
+	Filter mailboxes by domain name. All mailboxes with a primary SMTP address in this domain will be processed.
+
+	.PARAMETER FromCSV
+	The path to a CSV file containing mailbox identities and optional regional configuration settings to process.
+
+	.PARAMETER AllMailboxes
+	If specified, all mailboxes in the organization will be processed.
+
+	.PARAMETER Language
+	The language code to set for the mailbox regional configuration (e.g., 'en-US', 'fr-FR').
+	See the ValidateSet in the parameter definition for supported language codes.
+
+	.PARAMETER TimeZone
+	The time zone to set for the mailbox regional configuration. This can be a time zone ID (e.g., 'Pacific Standard Time')
+	or a simplified offset format (e.g., '+1', '-5').
+	See the ValidateSet in the parameter definition for supported offset values.
+
+	.PARAMETER DateFormat
+	The date format to set for the mailbox regional configuration (e.g., 'MM/dd/yyyy', 'dd/MM/yyyy').
+	Auto-detected based on the specified language if not provided.
+
+	.PARAMETER TimeFormat
+	The time format to set for the mailbox regional configuration (e.g., 'HH:mm', 'hh:mm tt').
+	Auto-detected based on the specified language if not provided.
+
+	.PARAMETER GenerateCmdlets
+	If specified, the function will generate the Set-MailboxRegionalConfiguration cmdlets and save them to a file instead of executing them.
+
+	.PARAMETER OutputFile
+	The path to the output file where generated cmdlets will be saved. Default is a timestamped file in the current directory.
+
+	.EXAMPLE
+	Set-ExMailboxRegionalConfiguration -Identity "user@example.com" -Language "en-US" -TimeZone "+1" -DateFormat "MM/dd/yyyy" -TimeFormat "HH:mm" -GenerateCmdlets -OutputFile "C:\temp\cmdlets.txt"
+
+	Generates the Set-MailboxRegionalConfiguration cmdlet for the specified mailbox with the given regional settings and saves it to the specified file without executing it.
+
+	.EXAMPLE
+	Set-ExMailboxRegionalConfiguration -ByDomain "example.com" -Language "fr-FR" -TimeZone "Romance Standard Time"
+
+	Sets the regional configuration for all mailboxes in the specified domain to French language and Romance Standard Time zone.
+
+	.EXAMPLE
+	Set-ExMailboxRegionalConfiguration -FromCSV "C:\path\to\file.csv" -GenerateCmdlets -OutputFile "C:\temp\cmdlets.txt"
+	
+	Generates the Set-MailboxRegionalConfiguration cmdlets for mailboxes listed in the specified CSV file and saves them to the specified file without executing them.
+#>
+
 function Set-ExMailboxRegionalConfiguration {
 	[CmdletBinding(SupportsShouldProcess)]
 	param(

@@ -1,44 +1,44 @@
 <#
-.SYNOPSIS
-Gets all permissions on an Exchange Online mailbox (Full Access, Send As, Send on Behalf)
+    .SYNOPSIS
+    Gets all permissions on an Exchange Online mailbox (Full Access, Send As, Send on Behalf)
 
-.DESCRIPTION
-This function retrieves and displays all permissions granted on a specific mailbox:
-- Full Access: Full access permissions to the mailbox
-- Send As: Permissions to send emails as the mailbox
-- Send on Behalf: Permissions to send emails on behalf of the mailbox
+    .DESCRIPTION
+    This function retrieves and displays all permissions granted on a specific mailbox:
+    - Full Access: Full access permissions to the mailbox
+    - Send As: Permissions to send emails as the mailbox
+    - Send on Behalf: Permissions to send emails on behalf of the mailbox
 
-.PARAMETER Identity
-The identity of the mailbox (email address, username, or display name)
+    .PARAMETER Identity
+    The identity of the mailbox (email address, username, or display name)
 
-.PARAMETER ByDomain
-Filter mailboxes by domain name
+    .PARAMETER ByDomain
+    Filter mailboxes by domain name
 
-.PARAMETER UserPermissions
-Find all permissions that a specific user has across all mailboxes (reverse lookup)
+    .PARAMETER UserPermission
+    Find all permissions that a specific user has across all mailboxes (reverse lookup)
 
-.PARAMETER ExportToExcel
-Export the mailbox permissions to an Excel file
+    .PARAMETER ExportToExcel
+    Export the mailbox permissions to an Excel file
 
-.EXAMPLE
-Get-ExMailboxPermission -Identity "john.doe@contoso.com"
-Gets all permissions for the mailbox john.doe@contoso.com
+    .EXAMPLE
+    Get-ExMailboxPermission -Identity "john.doe@contoso.com"
+    Gets all permissions for the mailbox john.doe@contoso.com
 
-.EXAMPLE
-Get-ExMailboxPermission -Identity "john.doe@contoso.com" -ExportToExcel
-Gets all permissions for the mailbox and exports them to an Excel file
+    .EXAMPLE
+    Get-ExMailboxPermission -Identity "john.doe@contoso.com" -ExportToExcel
+    Gets all permissions for the mailbox and exports them to an Excel file
 
-.EXAMPLE
-Get-ExMailboxPermission -ByDomain "contoso.com"
-Gets all permissions for all mailboxes in the contoso.com domain
+    .EXAMPLE
+    Get-ExMailboxPermission -ByDomain "contoso.com"
+    Gets all permissions for all mailboxes in the contoso.com domain
 
-.EXAMPLE
-Get-ExMailboxPermission -UserPermissions "john.doe@contoso.com"
-Finds all mailbox permissions that john.doe@contoso.com has across all mailboxes
+    .EXAMPLE
+    Get-ExMailboxPermission -UserPermission "john.doe@contoso.com"
+    Finds all mailbox permissions that john.doe@contoso.com has across all mailboxes
 
-.NOTES
-Requires the ExchangeOnlineManagement module and an active connection to Exchange Online
-For Excel export functionality, requires the ImportExcel module
+    .NOTES
+    Requires the ExchangeOnlineManagement module and an active connection to Exchange Online
+    For Excel export functionality, requires the ImportExcel module
 #>
 
 function Get-ExMailboxPermission {
@@ -50,7 +50,7 @@ function Get-ExMailboxPermission {
         [string]$ByDomain,
 
         [Parameter(Mandatory = $false)]
-        [string]$UserPermissions,
+        [string]$UserPermission,
 
         [Parameter(Mandatory = $false)]
         [switch]$ExportToExcel
@@ -59,8 +59,8 @@ function Get-ExMailboxPermission {
     [System.Collections.Generic.List[PSCustomObject]] $allPermissions = @()
 
     # Determine which mailboxes to process
-    if ($UserPermissions) {
-        Write-Host "Finding all permissions for user: $UserPermissions" -ForegroundColor Green
+    if ($UserPermission) {
+        Write-Host "Finding all permissions for user: $UserPermission" -ForegroundColor Green
         
         # Get all mailboxes to check permissions against
         $mailboxes = Get-EXOMailbox -ResultSize Unlimited
@@ -111,8 +111,8 @@ function Get-ExMailboxPermission {
                 })
             
             foreach ($perm in $fullAccessPerms) {
-                # If UserPermissions mode, only add permissions for the specified user
-                if ($isUserPermissionLookup -and $perm.User -ne $UserPermissions) {
+                # If UserPermission mode, only add permissions for the specified user
+                if ($isUserPermissionLookup -and $perm.User -ne $UserPermission) {
                     continue
                 }
                 
@@ -136,8 +136,8 @@ function Get-ExMailboxPermission {
                 })
             
             foreach ($perm in $sendAsPerms) {
-                # If UserPermissions mode, only add permissions for the specified user
-                if ($isUserPermissionLookup -and $perm.Trustee -ne $UserPermissions) {
+                # If UserPermission mode, only add permissions for the specified user
+                if ($isUserPermissionLookup -and $perm.Trustee -ne $UserPermission) {
                     continue
                 }
                 
@@ -157,8 +157,8 @@ function Get-ExMailboxPermission {
             $sendOnBehalfUsers = @($mailbox.GrantSendOnBehalfTo)
             if ($sendOnBehalfUsers -and $sendOnBehalfUsers.Count -gt 0) {
                 foreach ($user in $sendOnBehalfUsers) {
-                    # If UserPermissions mode, only add permissions for the specified user
-                    if ($isUserPermissionLookup -and $user -ne $UserPermissions) {
+                    # If UserPermission mode, only add permissions for the specified user
+                    if ($isUserPermissionLookup -and $user -ne $UserPermission) {
                         continue
                     }
                     
@@ -184,7 +184,7 @@ function Get-ExMailboxPermission {
     if ($allPermissions.Count -gt 0) {
         if ($ExportToExcel.IsPresent) {
             $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
-            $filenameSuffix = if ($UserPermissions) { "User-$($UserPermissions -replace '[<>:"/\\|?*]', '_')" } elseif ($ByDomain) { "Domain-$($ByDomain -replace '[<>:"/\\|?*]', '_')" } elseif ($Identity) { $Identity -replace '[<>:"/\\|?*]', '_' } else { 'AllMailboxes' }
+            $filenameSuffix = if ($UserPermission) { "User-$($UserPermission -replace '[<>:"/\\|?*]', '_')" } elseif ($ByDomain) { "Domain-$($ByDomain -replace '[<>:"/\\|?*]', '_')" } elseif ($Identity) { $Identity -replace '[<>:"/\\|?*]', '_' } else { 'AllMailboxes' }
             $excelFilePath = "$($env:userprofile)\$now-ExMailboxPermissions-$filenameSuffix.xlsx"
             Write-Host -ForegroundColor Cyan "Exporting mailbox permissions to Excel file: $excelFilePath"
             $allPermissions | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'ExchangeMailboxPermissions'

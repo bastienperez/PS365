@@ -1,3 +1,45 @@
+<#
+    .SYNOPSIS
+    Retrieves mailbox protocol settings for Exchange Online mailboxes.
+
+    .DESCRIPTION
+    This function retrieves the protocol settings (MAPI, OWA, IMAP, POP, EWS, ActiveSync)
+    for Exchange Online mailboxes. It can filter mailboxes by identity or by domain.
+    Additionally, it provides information about SMTP Client Authentication settings
+    at both the mailbox and tenant levels.
+
+    .PARAMETER Identity
+    The identity of the mailbox to retrieve protocol settings for.
+    If not specified, the function retrieves settings for all mailboxes.
+
+    .PARAMETER ByDomain
+    The domain to filter mailboxes by. Only mailboxes with a primary SMTP address in this
+    domain will be processed.
+
+    .PARAMETER ExportToExcel
+    If specified, exports the results to an Excel file in the user's profile directory.
+
+    .EXAMPLE
+    Get-ExMailboxProtocol
+
+    Retrieves mailbox protocol settings for all Exchange Online mailboxes.
+
+    .EXAMPLE
+    Get-ExMailboxProtocol -Identity "user@example.com"
+
+    Retrieves mailbox protocol settings for the specified mailbox.
+
+    .EXAMPLE
+    Get-ExMailboxProtocol -ByDomain "example.com"
+
+    Retrieves mailbox protocol settings for all mailboxes in the specified domain.
+
+    .EXAMPLE
+    Get-ExMailboxProtocol -ExportToExcel
+
+    Exports mailbox protocol settings for all Exchange Online mailboxes to an Excel file in the user's profile directory.
+#>
+
 function Get-ExMailboxProtocol {
     param (
         [Parameter(Mandatory = $false, Position = 0)]
