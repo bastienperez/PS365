@@ -1,4 +1,4 @@
-name: generate powershell documentation
+name: 📚 Generate PowerShell Documentation
 
 on:
   # workflow_dispatch allows manually triggering the workflow from the Actions tab
@@ -18,13 +18,13 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       # Generate PowerShell documentation
-      - name: Update PowerShell Documentation
+      - name: 📝 Update PowerShell Documentation
         shell: pwsh
         run: |
           ./.build/Update-DocusaurusCommandDoc.ps1
 
       # Commit and push documentation changes
-      - name: Commit and push documentation updates
+      - name: 🚀 Commit and push documentation updates
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"

@@ -1,4 +1,4 @@
-name: publish to powershell gallery
+name: 📦 Publish to PowerShell Gallery
 
 on:
   workflow_dispatch:

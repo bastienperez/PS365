@@ -1,4 +1,4 @@
-name: deploy website to cloudflare pages
+name: 🌐 Deploy Website to Cloudflare Pages
 
 on:
   # workflow_dispatch allows manually triggering the workflow from the Actions tab
@@ -23,19 +23,19 @@ jobs:
           node-version: '20'
 
       # Install project dependencies
-      - name: Install Dependencies
+      - name: 📦 Install Dependencies
         run: |
           cd website
           npm install --legacy-peer-deps
 
       # Build the Docusaurus site
-      - name: Build
+      - name: 🔨 Build Docusaurus Site
         run: |
           cd website
           npm run build
 
       # Deploy to Cloudflare Pages
-      - name: Deploy to Cloudflare Pages
+      - name: 🚀 Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
