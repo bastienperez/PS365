@@ -1,0 +1,109 @@
+---
+sidebar_class_name: hidden
+description: Installs Microsoft 365 Apps using the Office Deployment Tool.
+id: Install-M365Apps
+title: Install-M365Apps
+hide_title: false
+hide_table_of_contents: false
+custom_edit_url: https://github.com/bastienperez/ps365/blob/main/powershell/public/Install-M365Apps.ps1
+---
+
+## SYNOPSIS
+
+Installs Microsoft 365 Apps using the Office Deployment Tool.
+
+## SYNTAX
+
+```powershell
+Install-M365Apps [-ODTFolderPath] <String> [-ConfigFilePath] <String> [-ProgressAction <ActionPreference>]
+ [<CommonParameters>]
+```
+
+## DESCRIPTION
+
+Uses the Office Deployment Tool to install Microsoft 365 Apps with a specified configuration file.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Install-M365Apps -ODTFolderPath '\\server\share\Office' -ConfigFilePath ".\Configuration-XX.xml"
+```
+
+### EXAMPLE 2
+
+```powershell
+Install-M365Apps -ODTFolderPath 'C:\Custom-OfficeDeploymentTool' -ConfigFilePath 'C:\Configs\OfficeConfig.xml'
+```
+
+## PARAMETERS
+
+### -ODTFolderPath
+
+The network-accessible location containing the Microsoft 365 Apps source files and the Office Deployment Tool `setup.exe`.
+This can be a UNC path (e.g., \\\\server\share\Office) or a local path (e.g., C:\OfficeSource).
+Can be a relative or absolute path.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ConfigFilePath
+
+The path to the configuration XML file used for the installation.
+You can generate this file using the Office Customization Tool (OCT) at https://config.office.com/.
+Can be a relative or absolute path.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 2
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ProgressAction
+
+\{\{ Fill ProgressAction Description \}\}
+
+```yaml
+Type: ActionPreference
+Parameter Sets: (All)
+Aliases: proga
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+## NOTES
+
+Ensure that the source path is accessible and that the configuration file is correctly formatted.
+The script requires administrative privileges to run.
+The Office Deployment Tool must be downloaded and extracted prior to running this script.
+The ODT folder must contains the ODT setup.exe file and the source files for installation (see `Invoke-M365AppsDownload.ps1`).
+
+## RELATED LINKS

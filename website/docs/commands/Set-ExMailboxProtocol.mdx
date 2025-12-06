@@ -1,0 +1,404 @@
+---
+sidebar_class_name: hidden
+description: \{\{ Fill in the Synopsis \}\}
+id: Set-ExMailboxProtocol
+title: Set-ExMailboxProtocol
+hide_title: false
+hide_table_of_contents: false
+custom_edit_url: https://github.com/bastienperez/ps365/blob/main/powershell/public/Set-ExMailboxProtocol.ps1
+---
+
+## SYNOPSIS
+
+\{\{ Fill in the Synopsis \}\}
+
+## SYNTAX
+
+### Identity
+
+```powershell
+Set-ExMailboxProtocol -Identity <String[]> [-GenerateCmdlets] [-OutputFile <String>] [-ModernProtocolsOnly]
+ [-ModernProtocolsAndEws] [-MAPIEnabled <Boolean>] [-OWAEnabled <Boolean>] [-PopEnabled <Boolean>]
+ [-ImapEnabled <Boolean>] [-ActiveSyncEnabled <Boolean>] [-EwsEnabled <Boolean>]
+ [-SmtpClientAuthenticationDisabled <Boolean>] [-UniversalOutlookEnabled <Boolean>]
+ [-OutlookMobileEnabled <Boolean>] [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm]
+ [<CommonParameters>]
+```
+
+### ByDomain
+
+```powershell
+Set-ExMailboxProtocol -ByDomain <String> [-GenerateCmdlets] [-OutputFile <String>] [-ModernProtocolsOnly]
+ [-ModernProtocolsAndEws] [-MAPIEnabled <Boolean>] [-OWAEnabled <Boolean>] [-PopEnabled <Boolean>]
+ [-ImapEnabled <Boolean>] [-ActiveSyncEnabled <Boolean>] [-EwsEnabled <Boolean>]
+ [-SmtpClientAuthenticationDisabled <Boolean>] [-UniversalOutlookEnabled <Boolean>]
+ [-OutlookMobileEnabled <Boolean>] [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm]
+ [<CommonParameters>]
+```
+
+### FromCSV
+
+```powershell
+Set-ExMailboxProtocol -FromCSV <String> [-GenerateCmdlets] [-OutputFile <String>] [-ModernProtocolsOnly]
+ [-ModernProtocolsAndEws] [-MAPIEnabled <Boolean>] [-OWAEnabled <Boolean>] [-PopEnabled <Boolean>]
+ [-ImapEnabled <Boolean>] [-ActiveSyncEnabled <Boolean>] [-EwsEnabled <Boolean>]
+ [-SmtpClientAuthenticationDisabled <Boolean>] [-UniversalOutlookEnabled <Boolean>]
+ [-OutlookMobileEnabled <Boolean>] [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm]
+ [<CommonParameters>]
+```
+
+### AllMailboxes
+
+```powershell
+Set-ExMailboxProtocol [-AllMailboxes] [-GenerateCmdlets] [-OutputFile <String>] [-ModernProtocolsOnly]
+ [-ModernProtocolsAndEws] [-MAPIEnabled <Boolean>] [-OWAEnabled <Boolean>] [-PopEnabled <Boolean>]
+ [-ImapEnabled <Boolean>] [-ActiveSyncEnabled <Boolean>] [-EwsEnabled <Boolean>]
+ [-SmtpClientAuthenticationDisabled <Boolean>] [-UniversalOutlookEnabled <Boolean>]
+ [-OutlookMobileEnabled <Boolean>] [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm]
+ [<CommonParameters>]
+```
+
+## DESCRIPTION
+
+\{\{ Fill in the Description \}\}
+
+## EXAMPLES
+
+## PARAMETERS
+
+### -ActiveSyncEnabled
+
+\{\{ Fill ActiveSyncEnabled Description \}\}
+
+```yaml
+Type: Boolean
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -AllMailboxes
+
+\{\{ Fill AllMailboxes Description \}\}
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: AllMailboxes
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ByDomain
+
+\{\{ Fill ByDomain Description \}\}
+
+```yaml
+Type: String
+Parameter Sets: ByDomain
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Confirm
+
+Prompts you for confirmation before running the cmdlet.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases: cf
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -EwsEnabled
+
+\{\{ Fill EwsEnabled Description \}\}
+
+```yaml
+Type: Boolean
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -FromCSV
+
+\{\{ Fill FromCSV Description \}\}
+
+```yaml
+Type: String
+Parameter Sets: FromCSV
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -GenerateCmdlets
+
+\{\{ Fill GenerateCmdlets Description \}\}
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Identity
+
+\{\{ Fill Identity Description \}\}
+
+```yaml
+Type: String[]
+Parameter Sets: Identity
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ImapEnabled
+
+\{\{ Fill ImapEnabled Description \}\}
+
+```yaml
+Type: Boolean
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -MAPIEnabled
+
+\{\{ Fill MAPIEnabled Description \}\}
+
+```yaml
+Type: Boolean
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ModernProtocolsAndEws
+
+\{\{ Fill ModernProtocolsAndEws Description \}\}
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ModernProtocolsOnly
+
+\{\{ Fill ModernProtocolsOnly Description \}\}
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -OWAEnabled
+
+\{\{ Fill OWAEnabled Description \}\}
+
+```yaml
+Type: Boolean
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -OutlookMobileEnabled
+
+\{\{ Fill OutlookMobileEnabled Description \}\}
+
+```yaml
+Type: Boolean
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -OutputFile
+
+\{\{ Fill OutputFile Description \}\}
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PopEnabled
+
+\{\{ Fill PopEnabled Description \}\}
+
+```yaml
+Type: Boolean
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -SmtpClientAuthenticationDisabled
+
+\{\{ Fill SmtpClientAuthenticationDisabled Description \}\}
+
+```yaml
+Type: Boolean
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -UniversalOutlookEnabled
+
+\{\{ Fill UniversalOutlookEnabled Description \}\}
+
+```yaml
+Type: Boolean
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -WhatIf
+
+Shows what would happen if the cmdlet runs.
+The cmdlet is not run.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases: wi
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ProgressAction
+
+\{\{ Fill ProgressAction Description \}\}
+
+```yaml
+Type: ActionPreference
+Parameter Sets: (All)
+Aliases: proga
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+### None
+
+## OUTPUTS
+
+### System.Object
+
+## NOTES
+
+## RELATED LINKS

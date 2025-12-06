@@ -1,0 +1,282 @@
+---
+sidebar_class_name: hidden
+description: \{\{ Fill in the Synopsis \}\}
+id: Set-ExMailboxRegionalConfiguration
+title: Set-ExMailboxRegionalConfiguration
+hide_title: false
+hide_table_of_contents: false
+custom_edit_url: https://github.com/bastienperez/ps365/blob/main/powershell/public/Set-ExMailboxRegionalConfiguration.ps1
+---
+
+## SYNOPSIS
+
+\{\{ Fill in the Synopsis \}\}
+
+## SYNTAX
+
+### Identity
+
+```powershell
+Set-ExMailboxRegionalConfiguration -Identity <String[]> [-Language <String>] [-TimeZone <String>]
+ [-DateFormat <String>] [-TimeFormat <String>] [-GenerateCmdlets] [-OutputFile <String>]
+ [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]
+```
+
+### ByDomain
+
+```powershell
+Set-ExMailboxRegionalConfiguration -ByDomain <String> [-Language <String>] [-TimeZone <String>]
+ [-DateFormat <String>] [-TimeFormat <String>] [-GenerateCmdlets] [-OutputFile <String>]
+ [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]
+```
+
+### FromCSV
+
+```powershell
+Set-ExMailboxRegionalConfiguration -FromCSV <String> [-DateFormat <String>] [-TimeFormat <String>]
+ [-GenerateCmdlets] [-OutputFile <String>] [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm]
+ [<CommonParameters>]
+```
+
+### AllMailboxes
+
+```powershell
+Set-ExMailboxRegionalConfiguration [-AllMailboxes] [-Language <String>] [-TimeZone <String>]
+ [-DateFormat <String>] [-TimeFormat <String>] [-GenerateCmdlets] [-OutputFile <String>]
+ [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]
+```
+
+## DESCRIPTION
+
+\{\{ Fill in the Description \}\}
+
+## EXAMPLES
+
+## PARAMETERS
+
+### -AllMailboxes
+
+\{\{ Fill AllMailboxes Description \}\}
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: AllMailboxes
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ByDomain
+
+\{\{ Fill ByDomain Description \}\}
+
+```yaml
+Type: String
+Parameter Sets: ByDomain
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Confirm
+
+Prompts you for confirmation before running the cmdlet.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases: cf
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DateFormat
+
+\{\{ Fill DateFormat Description \}\}
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -FromCSV
+
+\{\{ Fill FromCSV Description \}\}
+
+```yaml
+Type: String
+Parameter Sets: FromCSV
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -GenerateCmdlets
+
+\{\{ Fill GenerateCmdlets Description \}\}
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Identity
+
+\{\{ Fill Identity Description \}\}
+
+```yaml
+Type: String[]
+Parameter Sets: Identity
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Language
+
+\{\{ Fill Language Description \}\}
+
+```yaml
+Type: String
+Parameter Sets: Identity, ByDomain, AllMailboxes
+Aliases:
+Accepted values: af-ZA, am-ET, ar-AE, ar-BH, ar-DZ, ar-EG, ar-IQ, ar-JO, ar-KW, ar-LB, ar-LY, ar-MA, ar-OM, ar-QA, ar-SA, ar-SY, ar-TN, ar-YE, as-IN, az-Cyrl-AZ, az-Latn-AZ, ba-RU, be-BY, bg-BG, bn-BD, bn-IN, bo-CN, br-FR, bs-Cyrl-BA, bs-Latn-BA, ca-ES, co-FR, cs-CZ, cy-GB, da-DK, de-AT, de-CH, de-DE, de-LI, de-LU, el-GR, en-029, en-AU, en-BZ, en-CA, en-GB, en-IE, en-IN, en-JM, en-MY, en-NZ, en-PH, en-SG, en-TT, en-US, en-ZA, en-ZW, es-AR, es-BO, es-CL, es-CO, es-CR, es-DO, es-EC, es-ES, es-GT, es-HN, es-MX, es-NI, es-PA, es-PE, es-PR, es-PY, es-SV, es-US, es-UY, es-VE, et-EE, eu-ES, fa-IR, fi-FI, fil-PH, fo-FO, fr-BE, fr-CA, fr-CH, fr-FR, fr-LU, fr-MC, fy-NL, ga-IE, gd-GB, gl-ES, gu-IN, ha-Latn-NG, he-IL, hi-IN, hr-BA, hr-HR, hu-HU, hy-AM, id-ID, ig-NG, is-IS, it-CH, it-IT, ja-JP, ka-GE, kk-KZ, km-KH, kn-IN, ko-KR, ky-KG, lb-LU, lo-LA, lt-LT, lv-LV, mi-NZ, mk-MK, ml-IN, mn-MN, mr-IN, ms-BN, ms-MY, mt-MT, nb-NO, ne-NP, nl-BE, nl-NL, nn-NO, or-IN, pa-IN, pl-PL, ps-AF, pt-BR, pt-PT, rm-CH, ro-RO, ru-RU, rw-RW, sa-IN, se-FI, se-NO, se-SE, si-LK, sk-SK, sl-SI, sq-AL, sr-Cyrl-BA, sr-Cyrl-RS, sr-Latn-BA, sr-Latn-RS, sv-FI, sv-SE, sw-KE, ta-IN, te-IN, th-TH, tk-TM, tr-TR, tt-RU, uk-UA, ur-PK, uz-Cyrl-UZ, uz-Latn-UZ, vi-VN, wo-SN, xh-ZA, yo-NG, zh-CN, zh-HK, zh-MO, zh-SG, zh-TW, zu-ZA
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -OutputFile
+
+\{\{ Fill OutputFile Description \}\}
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -TimeFormat
+
+\{\{ Fill TimeFormat Description \}\}
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -TimeZone
+
+\{\{ Fill TimeZone Description \}\}
+
+```yaml
+Type: String
+Parameter Sets: Identity, ByDomain, AllMailboxes
+Aliases:
+Accepted values: +1, +2, +3, +4, +5, +6, +7, +8, +9, +10, +11, +12, 0, -1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11, -12
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -WhatIf
+
+Shows what would happen if the cmdlet runs.
+The cmdlet is not run.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases: wi
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ProgressAction
+
+\{\{ Fill ProgressAction Description \}\}
+
+```yaml
+Type: ActionPreference
+Parameter Sets: (All)
+Aliases: proga
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+### None
+
+## OUTPUTS
+
+### System.Object
+
+## NOTES
+
+## RELATED LINKS
