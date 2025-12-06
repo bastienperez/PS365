@@ -126,28 +126,7 @@ main {
   color: #de761d !important;
 }
 
-/* Dark mode theme */
-[data-theme='dark'] {
-  /* Primary colors in dark mode - using orange as primary for better visibility */
-  --ifm-color-primary: #de761d !important;
-  --ifm-color-primary-dark: #c7661a !important;
-  --ifm-color-primary-darker: #bc6018 !important;
-  --ifm-color-primary-darkest: #9b5015 !important;
-  --ifm-color-primary-light: #e1861e !important;
-  --ifm-color-primary-lighter: #e48c1f !important;
-  --ifm-color-primary-lightest: #e99c22 !important;
-  
-  /* Background colors */
-  --ifm-background-color: #1b1b1d !important;
-  --ifm-background-surface-color: #00353f !important;
-  
-  /* Navbar and footer in dark mode */
-  --ifm-navbar-background-color: #000000 !important;
-  --ifm-footer-background-color: #000000 !important;
-  
-  /* Code highlighting */
-  --docusaurus-highlighted-code-line-bg: rgba(222, 118, 29, 0.2);
-}
+
 
 /* PowerShell syntax clean styling */
 .ps-syntax {
@@ -198,76 +177,4 @@ code:not([class*="language-"]) {
   font-weight: 500 !important;
 }
 
-/* PowerShell code blocks in dark theme */
-[data-theme='dark'] .language-powershell {
-  background-color: #1e1e1e !important;
-  border-color: #404040 !important;
-  color: #d4d4d4 !important;
-}
 
-[data-theme='dark'] .command-signature {
-  background: linear-gradient(135deg, #1e1e1e 0%, #252526 100%) !important;
-  border-left-color: #de761d !important;
-  color: #d4d4d4 !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
-}
-
-[data-theme='dark'] code:not([class*="language-"]) {
-  background-color: rgba(222, 118, 29, 0.2) !important;
-  color: #ffab40 !important;
-}
-
-/* PowerShell syntax for dark mode */
-[data-theme='dark'] .ps-syntax {
-  background-color: #161b22 !important;
-  border: 1px solid #30363d !important;
-  color: #e6edf3 !important;
-}
-
-/* Dark mode colors for PowerShell syntax */
-[data-theme='dark'] .ps-function {
-  color: #79c0ff !important;
-}
-
-[data-theme='dark'] .ps-parameter {
-  color: #ffa657 !important;
-}
-
-[data-theme='dark'] .ps-type {
-  color: #7ee787 !important;
-}
-
-[data-theme='dark'] .ps-syntax-char {
-  color: #8b949e !important;
-}
-
-/* Main content text in dark mode */
-[data-theme='dark'] main {
-  --ifm-font-color-base: #e6edf3 !important;
-  --ifm-heading-color: #e6edf3 !important;
-}
-
-[data-theme='dark'] .markdown {
-  --ifm-font-color-base: #e6edf3 !important;
-  --ifm-heading-color: #e6edf3 !important;
-}
-
-[data-theme='dark'] .markdown h1, 
-[data-theme='dark'] .markdown h2, 
-[data-theme='dark'] .markdown h3, 
-[data-theme='dark'] .markdown h4, 
-[data-theme='dark'] .markdown h5, 
-[data-theme='dark'] .markdown h6 {
-  color: #ffa657 !important;
-}
-
-[data-theme='dark'] .markdown p, 
-[data-theme='dark'] .markdown li, 
-[data-theme='dark'] .markdown td {
-  color: #e6edf3 !important;
-}
-
-[data-theme='dark'] .hero--primary {
-  background: #00353f !important;
-  background: linear-gradient(135deg, #00353f 0%, #000000 100%) !important;
-}
