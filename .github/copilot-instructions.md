@@ -20,7 +20,6 @@ PROJECT LAYOUT
 
 ENVIRONMENT
 - Supported OS: Windows, Linux, macOS with pwsh.
-- Required environment variables: <list if applicable> (for Microsoft 365 authentication or API access).
 
 POWERSHELL STYLE RULES
 - Use full command names (Get-ChildItem instead of gci).
@@ -32,3 +31,5 @@ POWERSHELL STYLE RULES
 - Use structured exception handling and explicit typing for arrays.
 - Write clear English comments: block comments for sections, inline comments for short lines.
 - Avoid over-commenting.
+- Follow best practices for PowerShell module development.
+- Comment functions with .SYNOPSIS, .DESCRIPTION, .PARAMETER, .EXAMPLE, and .NOTES.

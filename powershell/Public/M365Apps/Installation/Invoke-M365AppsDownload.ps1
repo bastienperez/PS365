@@ -1,23 +1,23 @@
 <#
     .SYNOPSIS
-        Downloads the Microsoft 365 Apps binary using the Office Deployment Tool (ODT).
+	Downloads the Microsoft 365 Apps binary using the Office Deployment Tool (ODT).
 
     .DESCRIPTION
-        This script downloads the Office Deployment Tool from Microsoft's official site,
-        extracts it, and uses a specified configuration XML file to download the Microsoft 365 Apps binary.
+	This script downloads the Office Deployment Tool from Microsoft's official site,
+	extracts it, and uses a specified configuration XML file to download the Microsoft 365 Apps binary.
 
     .PARAMETER ConfigFilePath
-        The path to the configuration XML file used for the download.
-        You can generate this file using the Office Customization Tool (OCT) at https://config.office.com/.
-        Can be a relative or absolute path.
+	The path to the configuration XML file used for the download.
+	You can generate this file using the Office Customization Tool (OCT) at https://config.office.com/.
+	Can be a relative or absolute path.
 
     .EXAMPLE
-        Invoke-M365AppsDownload -ConfigFilePath .\Configuration-XX.xml
+	Invoke-M365AppsDownload -ConfigFilePath .\Configuration-XX.xml
 
-        Runs the script to download the Microsoft 365 Apps binary.
+	Runs the script to download the Microsoft 365 Apps binary.
 
     .NOTES
-        Ensure that you have a valid configuration XML file in the ConfigFiles folder.
+	Ensure that you have a valid configuration XML file in the ConfigFiles folder.
 #>
 
 function Invoke-M365AppsDownload {

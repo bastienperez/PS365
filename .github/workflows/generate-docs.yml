@@ -1,4 +1,4 @@
-name: Generate PowerShell Documentation
+name: generate powershell documentation
 
 on:
   # workflow_dispatch allows manually triggering the workflow from the Actions tab

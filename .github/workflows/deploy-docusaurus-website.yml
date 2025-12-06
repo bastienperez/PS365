@@ -1,4 +1,4 @@
-name: Deploy Docusaurus Site to Cloudflare Pages
+name: deploy website to cloudflare pages
 
 on:
   # workflow_dispatch allows manually triggering the workflow from the Actions tab

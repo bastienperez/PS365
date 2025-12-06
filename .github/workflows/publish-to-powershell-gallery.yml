@@ -1,4 +1,4 @@
-name: 🚀 Publish PowerShell Module to Gallery
+name: publish to powershell gallery
 
 on:
   workflow_dispatch:
