@@ -6,52 +6,130 @@
 
 /* Custom PS365 branding colors */
 :root {
-  /* Primary color - Dark teal (#00353f) */
-  --ifm-color-primary: #00353f;
-  --ifm-color-primary-dark: #002a33;
-  --ifm-color-primary-darker: #00262e;
-  --ifm-color-primary-darkest: #001f26;
-  --ifm-color-primary-light: #00404b;
-  --ifm-color-primary-lighter: #004450;
-  --ifm-color-primary-lightest: #004d5a;
+  /* Primary color - Orange for better visibility */
+  --ifm-color-primary: #de761d !important;
+  --ifm-color-primary-dark: #c7661a !important;
+  --ifm-color-primary-darker: #bc6018 !important;
+  --ifm-color-primary-darkest: #9b5015 !important;
+  --ifm-color-primary-light: #e1861e !important;
+  --ifm-color-primary-lighter: #e48c1f !important;
+  --ifm-color-primary-lightest: #e99c22 !important;
   
-  /* Orange accent color */
-  --ifm-color-secondary: #de761d;
-  --ifm-color-warning: #de761d;
+  /* Secondary color - Dark teal */
+  --ifm-color-secondary: #00353f !important;
+  --ifm-color-warning: #de761d !important;
   
   /* Navbar and footer styling */
-  --ifm-navbar-background-color: #00353f;
-  --ifm-footer-background-color: #000000;
-  --ifm-footer-color: #ffffff;
+  --ifm-navbar-background-color: #ffffff !important;
+  --ifm-navbar-link-color: #00353f !important;
+  --ifm-footer-background-color: #00353f !important;
+  --ifm-footer-color: #ffffff !important;
   
   /* Code styling */
   --ifm-code-font-size: 95%;
   --docusaurus-highlighted-code-line-bg: rgba(222, 118, 29, 0.1);
   
   /* Link colors */
-  --ifm-link-color: #de761d;
-  --ifm-link-hover-color: #c7661a;
+  --ifm-link-color: #de761d !important;
+  --ifm-link-hover-color: #c7661a !important;
+  
+  /* Text colors for better readability */
+  --ifm-font-color-base: #ffffff !important;
+  --ifm-heading-color: #ffffff !important;
+}
+
+/* Force hero background with better contrast */
+.hero--primary {
+  background: linear-gradient(135deg, #00353f 0%, #004d5a 100%) !important;
+  color: #ffffff !important;
+}
+
+.hero--primary .hero__title {
+  color: #ffffff !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.hero--primary .hero__subtitle {
+  color: #ffffff !important;
+  opacity: 0.9;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Force button colors with better contrast */
+.button--secondary {
+  background-color: #de761d !important;
+  border-color: #de761d !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  box-shadow: 0 2px 8px rgba(222, 118, 29, 0.3);
+}
+
+.button--secondary:hover {
+  background-color: #f08527 !important;
+  border-color: #f08527 !important;
+  color: #ffffff !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(222, 118, 29, 0.4);
+}
+
+.button--outline.button--secondary {
+  background-color: transparent !important;
+  border-color: #de761d !important;
+  color: #de761d !important;
+  font-weight: 600 !important;
+  backdrop-filter: blur(10px);
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.button--outline.button--secondary:hover {
+  background-color: #de761d !important;
+  color: #ffffff !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(222, 118, 29, 0.4);
+}
+
+/* Navbar styling for better visibility */
+.navbar {
+  background-color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(0, 53, 63, 0.1);
+}
+
+.navbar__brand, .navbar__item {
+  color: #00353f !important;
+}
+
+.navbar__link {
+  color: #00353f !important;
+}
+
+.navbar__link:hover {
+  color: #de761d !important;
 }
 
 /* Dark mode theme */
 [data-theme='dark'] {
   /* Primary colors in dark mode - using orange as primary for better visibility */
-  --ifm-color-primary: #de761d;
-  --ifm-color-primary-dark: #c7661a;
-  --ifm-color-primary-darker: #bc6018;
-  --ifm-color-primary-darkest: #9b5015;
-  --ifm-color-primary-light: #e1861e;
-  --ifm-color-primary-lighter: #e48c1f;
-  --ifm-color-primary-lightest: #e99c22;
+  --ifm-color-primary: #de761d !important;
+  --ifm-color-primary-dark: #c7661a !important;
+  --ifm-color-primary-darker: #bc6018 !important;
+  --ifm-color-primary-darkest: #9b5015 !important;
+  --ifm-color-primary-light: #e1861e !important;
+  --ifm-color-primary-lighter: #e48c1f !important;
+  --ifm-color-primary-lightest: #e99c22 !important;
   
   /* Background colors */
-  --ifm-background-color: #1b1b1d;
-  --ifm-background-surface-color: #00353f;
+  --ifm-background-color: #1b1b1d !important;
+  --ifm-background-surface-color: #00353f !important;
   
   /* Navbar and footer in dark mode */
-  --ifm-navbar-background-color: #000000;
-  --ifm-footer-background-color: #000000;
+  --ifm-navbar-background-color: #000000 !important;
+  --ifm-footer-background-color: #000000 !important;
   
   /* Code highlighting */
   --docusaurus-highlighted-code-line-bg: rgba(222, 118, 29, 0.2);
+}
+
+[data-theme='dark'] .hero--primary {
+  background: #00353f !important;
+  background: linear-gradient(135deg, #00353f 0%, #000000 100%) !important;
 }
