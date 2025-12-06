@@ -1,6 +1,6 @@
 ---
 sidebar_class_name: hidden
-description: \{\{ Fill in the Synopsis \}\}
+description: Sets the regional configuration for Exchange mailboxes, including language, time zone, date format, and time format.
 id: Set-ExMailboxRegionalConfiguration
 title: Set-ExMailboxRegionalConfiguration
 hide_title: false
@@ -10,7 +10,7 @@ custom_edit_url: https://github.com/bastienperez/ps365/blob/main/powershell/publ
 
 ## SYNOPSIS
 
-\{\{ Fill in the Synopsis \}\}
+Sets the regional configuration for Exchange mailboxes, including language, time zone, date format, and time format.
 
 ## SYNTAX
 
@@ -48,111 +48,43 @@ Set-ExMailboxRegionalConfiguration [-AllMailboxes] [-Language <String>] [-TimeZo
 
 ## DESCRIPTION
 
-\{\{ Fill in the Description \}\}
+This function sets the regional configuration settings (language, time zone, date format, time format)
+for Exchange Online mailboxes.
+It can target mailboxes by identity, by domain, from a CSV file, or all mailboxes in the organization.
+It also supports generating the corresponding Set-MailboxRegionalConfiguration cmdlets without executing them.
 
 ## EXAMPLES
 
+### EXAMPLE 1
+
+```powershell
+Set-ExMailboxRegionalConfiguration -Identity "user@example.com" -Language "en-US" -TimeZone "+1" -DateFormat "MM/dd/yyyy" -TimeFormat "HH:mm" -GenerateCmdlets -OutputFile "C:\temp\cmdlets.txt"
+```
+
+Generates the Set-MailboxRegionalConfiguration cmdlet for the specified mailbox with the given regional settings and saves it to the specified file without executing it.
+
+### EXAMPLE 2
+
+```powershell
+Set-ExMailboxRegionalConfiguration -ByDomain "example.com" -Language "fr-FR" -TimeZone "Romance Standard Time"
+```
+
+Sets the regional configuration for all mailboxes in the specified domain to French language and Romance Standard Time zone.
+
+### EXAMPLE 3
+
+```powershell
+Set-ExMailboxRegionalConfiguration -FromCSV "C:\path\to\file.csv" -GenerateCmdlets -OutputFile "C:\temp\cmdlets.txt"
+```
+
+Generates the Set-MailboxRegionalConfiguration cmdlets for mailboxes listed in the specified CSV file and saves them to the specified file without executing them.
+
 ## PARAMETERS
-
-### -AllMailboxes
-
-\{\{ Fill AllMailboxes Description \}\}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: AllMailboxes
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ByDomain
-
-\{\{ Fill ByDomain Description \}\}
-
-```yaml
-Type: String
-Parameter Sets: ByDomain
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Confirm
-
-Prompts you for confirmation before running the cmdlet.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases: cf
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -DateFormat
-
-\{\{ Fill DateFormat Description \}\}
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -FromCSV
-
-\{\{ Fill FromCSV Description \}\}
-
-```yaml
-Type: String
-Parameter Sets: FromCSV
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -GenerateCmdlets
-
-\{\{ Fill GenerateCmdlets Description \}\}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
 
 ### -Identity
 
-\{\{ Fill Identity Description \}\}
+The identity of the mailbox(es) to set the regional configuration for.
+This can be an array of email addresses, usernames, or display names.
 
 ```yaml
 Type: String[]
@@ -166,15 +98,64 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -ByDomain
+
+Filter mailboxes by domain name.
+All mailboxes with a primary SMTP address in this domain will be processed.
+
+```yaml
+Type: String
+Parameter Sets: ByDomain
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -FromCSV
+
+The path to a CSV file containing mailbox identities and optional regional configuration settings to process.
+
+```yaml
+Type: String
+Parameter Sets: FromCSV
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -AllMailboxes
+
+If specified, all mailboxes in the organization will be processed.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: AllMailboxes
+Aliases:
+
+Required: True
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -Language
 
-\{\{ Fill Language Description \}\}
+The language code to set for the mailbox regional configuration (e.g., 'en-US', 'fr-FR').
+See the ValidateSet in the parameter definition for supported language codes.
 
 ```yaml
 Type: String
 Parameter Sets: Identity, ByDomain, AllMailboxes
 Aliases:
-Accepted values: af-ZA, am-ET, ar-AE, ar-BH, ar-DZ, ar-EG, ar-IQ, ar-JO, ar-KW, ar-LB, ar-LY, ar-MA, ar-OM, ar-QA, ar-SA, ar-SY, ar-TN, ar-YE, as-IN, az-Cyrl-AZ, az-Latn-AZ, ba-RU, be-BY, bg-BG, bn-BD, bn-IN, bo-CN, br-FR, bs-Cyrl-BA, bs-Latn-BA, ca-ES, co-FR, cs-CZ, cy-GB, da-DK, de-AT, de-CH, de-DE, de-LI, de-LU, el-GR, en-029, en-AU, en-BZ, en-CA, en-GB, en-IE, en-IN, en-JM, en-MY, en-NZ, en-PH, en-SG, en-TT, en-US, en-ZA, en-ZW, es-AR, es-BO, es-CL, es-CO, es-CR, es-DO, es-EC, es-ES, es-GT, es-HN, es-MX, es-NI, es-PA, es-PE, es-PR, es-PY, es-SV, es-US, es-UY, es-VE, et-EE, eu-ES, fa-IR, fi-FI, fil-PH, fo-FO, fr-BE, fr-CA, fr-CH, fr-FR, fr-LU, fr-MC, fy-NL, ga-IE, gd-GB, gl-ES, gu-IN, ha-Latn-NG, he-IL, hi-IN, hr-BA, hr-HR, hu-HU, hy-AM, id-ID, ig-NG, is-IS, it-CH, it-IT, ja-JP, ka-GE, kk-KZ, km-KH, kn-IN, ko-KR, ky-KG, lb-LU, lo-LA, lt-LT, lv-LV, mi-NZ, mk-MK, ml-IN, mn-MN, mr-IN, ms-BN, ms-MY, mt-MT, nb-NO, ne-NP, nl-BE, nl-NL, nn-NO, or-IN, pa-IN, pl-PL, ps-AF, pt-BR, pt-PT, rm-CH, ro-RO, ru-RU, rw-RW, sa-IN, se-FI, se-NO, se-SE, si-LK, sk-SK, sl-SI, sq-AL, sr-Cyrl-BA, sr-Cyrl-RS, sr-Latn-BA, sr-Latn-RS, sv-FI, sv-SE, sw-KE, ta-IN, te-IN, th-TH, tk-TM, tr-TR, tt-RU, uk-UA, ur-PK, uz-Cyrl-UZ, uz-Latn-UZ, vi-VN, wo-SN, xh-ZA, yo-NG, zh-CN, zh-HK, zh-MO, zh-SG, zh-TW, zu-ZA
 
 Required: False
 Position: Named
@@ -183,9 +164,29 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -OutputFile
+### -TimeZone
 
-\{\{ Fill OutputFile Description \}\}
+The time zone to set for the mailbox regional configuration.
+This can be a time zone ID (e.g., 'Pacific Standard Time')
+or a simplified offset format (e.g., '+1', '-5').
+See the ValidateSet in the parameter definition for supported offset values.
+
+```yaml
+Type: String
+Parameter Sets: Identity, ByDomain, AllMailboxes
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DateFormat
+
+The date format to set for the mailbox regional configuration (e.g., 'MM/dd/yyyy', 'dd/MM/yyyy').
+Auto-detected based on the specified language if not provided.
 
 ```yaml
 Type: String
@@ -201,7 +202,8 @@ Accept wildcard characters: False
 
 ### -TimeFormat
 
-\{\{ Fill TimeFormat Description \}\}
+The time format to set for the mailbox regional configuration (e.g., 'HH:mm', 'hh:mm tt').
+Auto-detected based on the specified language if not provided.
 
 ```yaml
 Type: String
@@ -215,19 +217,35 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -TimeZone
+### -GenerateCmdlets
 
-\{\{ Fill TimeZone Description \}\}
+If specified, the function will generate the Set-MailboxRegionalConfiguration cmdlets and save them to a file instead of executing them.
 
 ```yaml
-Type: String
-Parameter Sets: Identity, ByDomain, AllMailboxes
+Type: SwitchParameter
+Parameter Sets: (All)
 Aliases:
-Accepted values: +1, +2, +3, +4, +5, +6, +7, +8, +9, +10, +11, +12, 0, -1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11, -12
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -OutputFile
+
+The path to the output file where generated cmdlets will be saved.
+Default is a timestamped file in the current directory.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: "$(Get-Date -Format 'yyyy-MM-dd_HHmmss')-SetMailboxRegionalConfig_Commands.txt"
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -241,6 +259,22 @@ The cmdlet is not run.
 Type: SwitchParameter
 Parameter Sets: (All)
 Aliases: wi
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Confirm
+
+Prompts you for confirmation before running the cmdlet.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases: cf
 
 Required: False
 Position: Named
@@ -271,11 +305,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
-
-### System.Object
 
 ## NOTES
 

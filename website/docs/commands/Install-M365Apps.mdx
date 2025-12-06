@@ -31,11 +31,15 @@ Uses the Office Deployment Tool to install Microsoft 365 Apps with a specified c
 Install-M365Apps -ODTFolderPath '\\server\share\Office' -ConfigFilePath ".\Configuration-XX.xml"
 ```
 
+Installs Microsoft 365 Apps from the specified network share using the provided configuration file.
+
 ### EXAMPLE 2
 
 ```powershell
 Install-M365Apps -ODTFolderPath 'C:\Custom-OfficeDeploymentTool' -ConfigFilePath 'C:\Configs\OfficeConfig.xml'
 ```
+
+Installs Microsoft 365 Apps from the specified local folder using the provided configuration file.
 
 ## PARAMETERS
 

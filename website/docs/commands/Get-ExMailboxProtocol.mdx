@@ -1,6 +1,6 @@
 ---
 sidebar_class_name: hidden
-description: \{\{ Fill in the Synopsis \}\}
+description: Retrieves mailbox protocol settings for Exchange Online mailboxes.
 id: Get-ExMailboxProtocol
 title: Get-ExMailboxProtocol
 hide_title: false
@@ -10,7 +10,7 @@ custom_edit_url: https://github.com/bastienperez/ps365/blob/main/powershell/publ
 
 ## SYNOPSIS
 
-\{\{ Fill in the Synopsis \}\}
+Retrieves mailbox protocol settings for Exchange Online mailboxes.
 
 ## SYNTAX
 
@@ -21,15 +21,70 @@ Get-ExMailboxProtocol [[-Identity] <String>] [-ByDomain <String>] [-ExportToExce
 
 ## DESCRIPTION
 
-\{\{ Fill in the Description \}\}
+This function retrieves the protocol settings (MAPI, OWA, IMAP, POP, EWS, ActiveSync)
+for Exchange Online mailboxes.
+It can filter mailboxes by identity or by domain.
+Additionally, it provides information about SMTP Client Authentication settings
+at both the mailbox and tenant levels.
 
 ## EXAMPLES
 
+### EXAMPLE 1
+
+```powershell
+Get-ExMailboxProtocol
+```
+
+Retrieves mailbox protocol settings for all Exchange Online mailboxes.
+
+### EXAMPLE 2
+
+```powershell
+Get-ExMailboxProtocol -Identity "user@example.com"
+```
+
+Retrieves mailbox protocol settings for the specified mailbox.
+
+### EXAMPLE 3
+
+```powershell
+Get-ExMailboxProtocol -ByDomain "example.com"
+```
+
+Retrieves mailbox protocol settings for all mailboxes in the specified domain.
+
+### EXAMPLE 4
+
+```powershell
+Get-ExMailboxProtocol -ExportToExcel
+```
+
+Exports mailbox protocol settings for all Exchange Online mailboxes to an Excel file in the user's profile directory.
+
 ## PARAMETERS
+
+### -Identity
+
+The identity of the mailbox to retrieve protocol settings for.
+If not specified, the function retrieves settings for all mailboxes.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
 
 ### -ByDomain
 
-\{\{ Fill ByDomain Description \}\}
+The domain to filter mailboxes by.
+Only mailboxes with a primary SMTP address in this
+domain will be processed.
 
 ```yaml
 Type: String
@@ -45,7 +100,7 @@ Accept wildcard characters: False
 
 ### -ExportToExcel
 
-\{\{ Fill ExportToExcel Description \}\}
+If specified, exports the results to an Excel file in the user's profile directory.
 
 ```yaml
 Type: SwitchParameter
@@ -54,23 +109,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Identity
-
-\{\{ Fill Identity Description \}\}
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 0
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -97,11 +136,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
-
-### System.Object
 
 ## NOTES
 

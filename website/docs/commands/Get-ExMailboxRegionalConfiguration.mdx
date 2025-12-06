@@ -1,6 +1,6 @@
 ---
 sidebar_class_name: hidden
-description: \{\{ Fill in the Synopsis \}\}
+description: Get the regional configuration of Exchange Online mailboxes.
 id: Get-ExMailboxRegionalConfiguration
 title: Get-ExMailboxRegionalConfiguration
 hide_title: false
@@ -10,7 +10,7 @@ custom_edit_url: https://github.com/bastienperez/ps365/blob/main/powershell/publ
 
 ## SYNOPSIS
 
-\{\{ Fill in the Synopsis \}\}
+Get the regional configuration of Exchange Online mailboxes.
 
 ## SYNTAX
 
@@ -21,15 +21,60 @@ Get-ExMailboxRegionalConfiguration [[-Identity] <String>] [-ByDomain <String>]
 
 ## DESCRIPTION
 
-\{\{ Fill in the Description \}\}
+This function retrieves the regional configuration settings (language, time zone, date format, time format)
+for Exchange Online mailboxes.
+It can filter mailboxes by identity or by domain.
 
 ## EXAMPLES
 
+### EXAMPLE 1
+
+```powershell
+Get-ExMailboxRegionalConfiguration
+```
+
+Retrieves the regional configuration for all Exchange Online mailboxes.
+
+### EXAMPLE 2
+
+```powershell
+Get-ExMailboxRegionalConfiguration -Identity "user@example.com"
+```
+
+Retrieves the regional configuration for the specified mailbox.
+
+### EXAMPLE 3
+
+```powershell
+Get-ExMailboxRegionalConfiguration -ByDomain "example.com"
+```
+
+Retrieves the regional configuration for all mailboxes in the specified domain.
+
 ## PARAMETERS
+
+### -Identity
+
+The identity of the mailbox to retrieve the regional configuration for.
+If not specified, the function retrieves the configuration for all mailboxes.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
 
 ### -ByDomain
 
-\{\{ Fill ByDomain Description \}\}
+The domain to filter mailboxes by.
+Only mailboxes with a primary SMTP address in this
+domain will be processed.
 
 ```yaml
 Type: String
@@ -38,22 +83,6 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Identity
-
-\{\{ Fill Identity Description \}\}
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 0
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -81,11 +110,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
-
-### System.Object
 
 ## NOTES
 

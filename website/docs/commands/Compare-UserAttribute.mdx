@@ -1,6 +1,6 @@
 ---
 sidebar_class_name: hidden
-description: \{\{ Fill in the Synopsis \}\}
+description: Compare two user attributes from different sources.
 id: Compare-UserAttribute
 title: Compare-UserAttribute
 hide_title: false
@@ -10,7 +10,7 @@ custom_edit_url: https://github.com/bastienperez/ps365/blob/main/powershell/publ
 
 ## SYNOPSIS
 
-\{\{ Fill in the Synopsis \}\}
+Compare two user attributes from different sources.
 
 ## SYNTAX
 
@@ -21,31 +21,36 @@ Compare-UserAttribute [-Attribute1] <String> [-Attribute2] <String> [-Source] <S
 
 ## DESCRIPTION
 
-\{\{ Fill in the Description \}\}
+This function compares two specified user attributes from Active Directory, Entra ID (Microsoft Graph),
+or Exchange.
+It can filter users based on email domain or specific user identities and returns users
+whose attributes either match or do not match.
 
 ## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Compare-UserAttribute -Attribute1 "mail" -Attribute2 "proxyAddresses" -
+```
+
+Compares the 'mail' and 'proxyAddresses' attributes for users in Active Directory
+and returns those with matching values.
+
+### EXAMPLE 2
+
+```powershell
+Compare-UserAttribute -Attribute1 "userPrincipalName" -Attribute2 "mail" -Source "EntraID" -Return "NotMatching"
+```
+
+Compares the 'userPrincipalName' and 'mail' attributes for users in Entra ID
+and returns those with non-matching values.
 
 ## PARAMETERS
 
 ### -Attribute1
 
-\{\{ Fill Attribute1 Description \}\}
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: 0
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Attribute2
-
-\{\{ Fill Attribute2 Description \}\}
+The first user attribute to compare.
 
 ```yaml
 Type: String
@@ -59,9 +64,42 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -ByDomain
+### -Attribute2
 
-\{\{ Fill ByDomain Description \}\}
+The second user attribute to compare.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 2
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Source
+
+The source from which to retrieve user information.
+Valid options are 'AD' for Active Directory, 'EntraID' for Microsoft Entra ID, and 'Exchange' for Exchange.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 3
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -User
+
+An array of user identities to filter the comparison.
 
 ```yaml
 Type: String[]
@@ -75,43 +113,9 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Return
+### -ByDomain
 
-\{\{ Fill Return Description \}\}
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-Accepted values: Matching, NotMatching
-
-Required: True
-Position: 5
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Source
-
-\{\{ Fill Source Description \}\}
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-Accepted values: AD, EntraID, Exchange
-
-Required: True
-Position: 2
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -User
-
-\{\{ Fill User Description \}\}
+An array of email domains to filter users.
 
 ```yaml
 Type: String[]
@@ -119,7 +123,23 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 3
+Position: 5
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Return
+
+Specifies whether to return users with 'Matching' or 'NotMatching' attributes.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 6
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -147,11 +167,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
-
-### System.Object
 
 ## NOTES
 

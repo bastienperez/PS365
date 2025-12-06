@@ -41,6 +41,22 @@ Get-ExMailboxForwarding -Mailboxes "user1@example.com","user2@example.com"
 
 Returns forwarding configuration for specified mailboxes.
 
+### EXAMPLE 3
+
+```powershell
+Get-ExMailboxForwarding -ForwardingAndForwardingSMTPOnly
+```
+
+Returns only mailboxes with ForwardingAddress or ForwardingSMTPAddress set.
+
+### EXAMPLE 4
+
+```powershell
+Get-ExMailboxForwarding -InboxRulesOnly
+```
+
+Returns only mailboxes with inbox rules that forward emails.
+
 ## PARAMETERS
 
 ### -Mailboxes
@@ -148,5 +164,14 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## OUTPUTS
 
 ## NOTES
+
+Priority 1: ForwardingAddress
+Priority 2: ForwardingSMTPAddress
+Priority 3: Inbox Rules
+
+# Autoforward works if forwardingAddress because it's an internal object
+
+# TODO: Add forwardWorks for inbox rules & if RemoteDomain enabled
+# label: enhancements
 
 ## RELATED LINKS

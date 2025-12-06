@@ -1,6 +1,6 @@
 ---
 sidebar_class_name: hidden
-description: \{\{ Fill in the Synopsis \}\}
+description: Find email addresses across various services.
 id: Find-M365Email
 title: Find-M365Email
 hide_title: false
@@ -10,26 +10,45 @@ custom_edit_url: https://github.com/bastienperez/ps365/blob/main/powershell/publ
 
 ## SYNOPSIS
 
-\{\{ Fill in the Synopsis \}\}
+Find email addresses across various services.
 
 ## SYNTAX
 
 ```powershell
-Find-M365Email [[-SearchEmails] <String[]>] [[-ByDomain] <String[]>] [-ProgressAction <ActionPreference>]
+Find-M365Email [[-SearchEmail] <String[]>] [[-ByDomain] <String>] [-ProgressAction <ActionPreference>]
  [<CommonParameters>]
 ```
 
 ## DESCRIPTION
 
-\{\{ Fill in the Description \}\}
+This function searches for email addresses across Exchange Online recipients,
+Microsoft 365 users, and deleted users.
+It can filter results by specific email
+addresses or by domain.
 
 ## EXAMPLES
 
+### EXAMPLE 1
+
+```powershell
+Find-M365Email -SearchEmail "user@example.com"
+```
+
+Searches for the specified email address and displays its details if found.
+
+### EXAMPLE 2
+
+```powershell
+Find-M365Email -ByDomain "example.com"
+```
+
+Searches for all email addresses within the specified domain and displays their details.
+
 ## PARAMETERS
 
-### -ByDomain
+### -SearchEmail
 
-\{\{ Fill ByDomain Description \}\}
+An array of email addresses to search for.
 
 ```yaml
 Type: String[]
@@ -43,17 +62,17 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -SearchEmails
+### -ByDomain
 
-\{\{ Fill SearchEmails Description \}\}
+An array of domains to search for.
 
 ```yaml
-Type: String[]
+Type: String
 Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 0
+Position: 2
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -81,11 +100,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
-
-### System.Object
 
 ## NOTES
 
