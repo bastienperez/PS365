@@ -149,6 +149,114 @@ main {
   --docusaurus-highlighted-code-line-bg: rgba(222, 118, 29, 0.2);
 }
 
+/* Custom PowerShell code styling */
+.language-powershell {
+  background-color: #f8f9fa !important;
+  border: 1px solid #dee2e6 !important;
+  border-radius: 8px !important;
+  padding: 1rem !important;
+  margin: 1rem 0 !important;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+  overflow-x: auto !important;
+}
+
+/* PowerShell syntax highlighting */
+.language-powershell .token.function {
+  color: #0066cc !important;
+  font-weight: 600 !important;
+}
+
+.language-powershell .token.parameter {
+  color: #de761d !important;
+  font-weight: 500 !important;
+}
+
+.language-powershell .token.operator {
+  color: #666666 !important;
+}
+
+.language-powershell .token.string {
+  color: #008000 !important;
+}
+
+.language-powershell .token.keyword {
+  color: #0000ff !important;
+  font-weight: 500 !important;
+}
+
+.language-powershell .token.variable {
+  color: #800080 !important;
+}
+
+.language-powershell .token.comment {
+  color: #008000 !important;
+  font-style: italic !important;
+}
+
+/* Command signature styling */
+.command-signature {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+  border-left: 4px solid #de761d !important;
+  padding: 1rem 1.5rem !important;
+  margin: 1rem 0 !important;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+  font-size: 14px !important;
+  line-height: 1.8 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 2px 8px rgba(0, 53, 63, 0.1) !important;
+}
+
+.command-signature .command-name {
+  color: #0066cc !important;
+  font-weight: 700 !important;
+}
+
+.command-signature .parameter {
+  color: #de761d !important;
+  font-weight: 500 !important;
+}
+
+.command-signature .parameter-type {
+  color: #008000 !important;
+  font-weight: 400 !important;
+}
+
+.command-signature .optional {
+  color: #666666 !important;
+}
+
+/* Inline code styling */
+code:not([class*="language-"]) {
+  background-color: rgba(222, 118, 29, 0.1) !important;
+  color: #de761d !important;
+  padding: 2px 6px !important;
+  border-radius: 4px !important;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+  font-size: 0.9em !important;
+  font-weight: 500 !important;
+}
+
+/* PowerShell code blocks in dark theme */
+[data-theme='dark'] .language-powershell {
+  background-color: #1e1e1e !important;
+  border-color: #404040 !important;
+  color: #d4d4d4 !important;
+}
+
+[data-theme='dark'] .command-signature {
+  background: linear-gradient(135deg, #1e1e1e 0%, #252526 100%) !important;
+  border-left-color: #de761d !important;
+  color: #d4d4d4 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+}
+
+[data-theme='dark'] code:not([class*="language-"]) {
+  background-color: rgba(222, 118, 29, 0.2) !important;
+  color: #ffab40 !important;
+}
+
 [data-theme='dark'] .hero--primary {
   background: #00353f !important;
   background: linear-gradient(135deg, #00353f 0%, #000000 100%) !important;
