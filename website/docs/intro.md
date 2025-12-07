@@ -2,46 +2,82 @@
 sidebar_position: 1
 ---
 
-# Tutorial Intro
+# Getting Started with PS365
 
-Let's discover **Docusaurus in less than 5 minutes**.
+Welcome to **PS365** - the comprehensive PowerShell module for managing your **Microsoft 365 tenant** efficiently and securely.
 
-## Getting Started
+## What is PS365?
 
-Get started by **creating a new site**.
+PS365 is a collection of PowerShell functions designed to simplify and automate Microsoft 365 administration tasks. Whether you're managing Exchange Online, Azure AD, or other Microsoft 365 services, PS365 provides you with the tools you need.
 
-Or **try Docusaurus immediately** with **[docusaurus.new](https://docusaurus.new)**.
+### Key Features
 
-### What you'll need
+- 🛡️ **Secure & Reliable** - Built following Microsoft best practices
+- ⚡ **Powerful Automation** - Streamline complex administration tasks  
+- 📚 **Well Documented** - Comprehensive guides and examples
+- 🔧 **Easy to Use** - Simple PowerShell cmdlets with intuitive parameters
 
-- [Node.js](https://nodejs.org/en/download/) version 20.0 or above:
-  - When installing Node.js, you are recommended to check all checkboxes related to dependencies.
+## Installation
 
-## Generate a new site
+### Prerequisites
 
-Generate a new Docusaurus site using the **classic template**.
+- **PowerShell 7.0** or later
+- **Microsoft 365 tenant** with appropriate permissions
+- **Required modules** (automatically installed with PS365):
+  - ExchangeOnlineManagement
+  - Microsoft.Graph
+  - AzureAD (or Microsoft.Graph)
 
-The classic template will automatically be added to your project after you run the command:
+### Install from PowerShell Gallery
 
-```bash
-npm init docusaurus@latest my-website classic
+The easiest way to install PS365 is directly from the PowerShell Gallery:
+
+```powershell
+Install-Module -Name PS365 -Scope CurrentUser
 ```
 
-You can type this command into Command Prompt, Powershell, Terminal, or any other integrated terminal of your code editor.
+### Import the Module
 
-The command also installs all necessary dependencies you need to run Docusaurus.
+Once installed, import the module in your PowerShell session:
 
-## Start your site
-
-Run the development server:
-
-```bash
-cd my-website
-npm run start
+```powershell
+Import-Module PS365
 ```
 
-The `cd` command changes the directory you're working with. In order to work with your newly created Docusaurus site, you'll need to navigate the terminal there.
+## Quick Start
 
-The `npm run start` command builds your website locally and serves it through a development server, ready for you to view at http://localhost:3000/.
+### 1. Connect to Microsoft 365 Services
 
-Open `docs/intro.md` (this page) and edit some lines: the site **reloads automatically** and displays your changes.
+Before using PS365 functions, establish connections to the required services:
+
+```powershell
+# Connect to Exchange Online
+Connect-ExchangeOnline
+
+# Connect to Microsoft Graph
+Connect-MgGraph -Scopes "Directory.Read.All", "User.Read.All"
+```
+
+### 2. Explore Available Commands
+
+List all available PS365 commands:
+
+```powershell
+Get-Command -Module PS365
+```
+
+### 3. Get Help for Any Function
+
+Each function includes comprehensive help:
+
+```powershell
+Get-Help Find-DistributionGroupMembers -Full
+```
+
+## What's Next?
+
+Explore the **[Commands](/docs/commands/Compare-UserAttribute)** section to discover all available PS365 functions with detailed examples and parameter descriptions.
+
+---
+
+**Created and maintained by [Bastien Perez](https://www.linkedin.com/in/perez-bastien/) and powered by [Clidsys](https://clidsys.com)**

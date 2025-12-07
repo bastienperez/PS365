@@ -77,7 +77,7 @@ export default function HomepageFeatures(): ReactNode {
                 <Heading as="h2">🚀 Quick Start</Heading>
                 <p>Get started with PS365 in just a few steps</p>
               </div>
-              <div className="card">
+              <div className="card ps365-installation-card">
                 <div className="card__header">
                   <h3>💻 Installation</h3>
                 </div>
@@ -85,6 +85,12 @@ export default function HomepageFeatures(): ReactNode {
                   <pre><code>Install-Module -Name PS365 -Scope CurrentUser</code></pre>
                   <p>Install PS365 directly from the PowerShell Gallery</p>
                 </div>
+              </div>
+              
+              <div className="text--center margin-top--lg">
+                <p style={{fontSize: '0.9rem', color: '#666', fontStyle: 'italic'}}>
+                  Created and maintained by <a href="https://www.linkedin.com/in/perez-bastien/" target="_blank">Bastien Perez</a> and powered by <a href="https://clidsys.com" target="_blank">Clidsys</a>
+                </p>
               </div>
             </div>
           </div>

@@ -38,9 +38,9 @@
   --ifm-heading-color: #333333 !important;
 }
 
-/* Force hero background with better contrast */
+/* Force hero background with PS365 orange */
 .hero--primary {
-  background: linear-gradient(135deg, #00353f 0%, #004d5a 100%) !important;
+  background: linear-gradient(135deg, #de761d 0%, #f08527 100%) !important;
   color: #ffffff !important;
 }
 
@@ -75,37 +75,37 @@ main {
   color: #333333 !important;
 }
 
-/* Force button colors with better contrast */
+/* Force button colors with teal */
 .button--secondary {
-  background-color: #de761d !important;
-  border-color: #de761d !important;
+  background-color: #00353f !important;
+  border-color: #00353f !important;
   color: #ffffff !important;
   font-weight: 600 !important;
-  box-shadow: 0 2px 8px rgba(222, 118, 29, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 53, 63, 0.3);
 }
 
 .button--secondary:hover {
-  background-color: #f08527 !important;
-  border-color: #f08527 !important;
+  background-color: #004d5a !important;
+  border-color: #004d5a !important;
   color: #ffffff !important;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(222, 118, 29, 0.4);
+  box-shadow: 0 4px 12px rgba(0, 53, 63, 0.4);
 }
 
 .button--outline.button--secondary {
-  background-color: transparent !important;
-  border-color: #de761d !important;
-  color: #de761d !important;
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  border-color: #00353f !important;
+  color: #00353f !important;
   font-weight: 600 !important;
   backdrop-filter: blur(10px);
-  background-color: rgba(255, 255, 255, 0.1) !important;
+  border-width: 2px !important;
 }
 
 .button--outline.button--secondary:hover {
-  background-color: #de761d !important;
+  background-color: #00353f !important;
   color: #ffffff !important;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(222, 118, 29, 0.4);
+  box-shadow: 0 4px 12px rgba(0, 53, 63, 0.4);
 }
 
 /* Navbar styling for better visibility */
@@ -154,9 +154,9 @@ main {
   font-weight: 500 !important;
 }
 
-/* Types - Green */
+/* Types - Purple */
 .ps-type {
-  color: #1a7f37 !important;
+  color: #7c3aed !important;
   font-weight: 400 !important;
 }
 
@@ -164,6 +164,36 @@ main {
 .ps-syntax-char {
   color: #656d76 !important;
   font-weight: 400 !important;
+}
+
+/* PowerShell language syntax highlighting */
+.language-powershell .token.function {
+  color: #0969da !important;
+  font-weight: 600 !important;
+}
+
+.language-powershell .token.parameter {
+  color: #de761d !important;
+  font-weight: 500 !important;
+}
+
+.language-powershell .token.string {
+  color: #7c3aed !important;
+  font-weight: 400 !important;
+}
+
+.language-powershell .token.keyword {
+  color: #0969da !important;
+  font-weight: 500 !important;
+}
+
+.language-powershell .token.variable {
+  color: #de761d !important;
+}
+
+.language-powershell .token.comment {
+  color: #656d76 !important;
+  font-style: italic !important;
 }
 
 /* Inline code styling */
@@ -175,6 +205,212 @@ code:not([class*="language-"]) {
   font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
   font-size: 0.9em !important;
   font-weight: 500 !important;
+}
+
+/* Hide edit this page links completely */
+.theme-edit-this-page {
+  display: none !important;
+}
+
+.edit-page-link {
+  display: none !important;
+}
+
+.docusaurus-mt-lg {
+  display: none !important;
+}
+
+a[href*="edit"] {
+  display: none !important;
+}
+
+/* Dark mode theme */
+[data-theme='dark'] {
+  /* Primary colors optimized for dark mode */
+  --ifm-color-primary: #ffa657 !important;
+  --ifm-color-primary-dark: #ff9534 !important;
+  --ifm-color-primary-darker: #ff8a1f !important;
+  --ifm-color-primary-darkest: #e6761c !important;
+  --ifm-color-primary-light: #ffb76f !important;
+  --ifm-color-primary-lighter: #ffc182 !important;
+  --ifm-color-primary-lightest: #ffcc95 !important;
+  
+  /* Background colors */
+  --ifm-background-color: #1b1b1d !important;
+  --ifm-background-surface-color: #242526 !important;
+  
+  /* Navbar and footer */
+  --ifm-navbar-background-color: #242526 !important;
+  --ifm-footer-background-color: #00353f !important;
+  
+  /* Text colors */
+  --ifm-font-color-base: #e3e3e3 !important;
+  --ifm-heading-color: #ffffff !important;
+  
+  /* Link colors */
+  --ifm-link-color: #ffa657 !important;
+  --ifm-link-hover-color: #ff9534 !important;
+}
+
+/* Hero section in dark mode */
+[data-theme='dark'] .hero--primary {
+  background: linear-gradient(135deg, #de761d 0%, #c7661a 100%) !important;
+  color: #ffffff !important;
+}
+
+/* Main content in dark mode */
+[data-theme='dark'] main {
+  --ifm-font-color-base: #e3e3e3 !important;
+  --ifm-heading-color: #ffffff !important;
+}
+
+[data-theme='dark'] .markdown {
+  --ifm-font-color-base: #e3e3e3 !important;
+  --ifm-heading-color: #ffffff !important;
+}
+
+[data-theme='dark'] .markdown h1, 
+[data-theme='dark'] .markdown h2, 
+[data-theme='dark'] .markdown h3, 
+[data-theme='dark'] .markdown h4, 
+[data-theme='dark'] .markdown h5, 
+[data-theme='dark'] .markdown h6 {
+  color: #ffa657 !important;
+}
+
+[data-theme='dark'] .markdown p, 
+[data-theme='dark'] .markdown li, 
+[data-theme='dark'] .markdown td {
+  color: #e3e3e3 !important;
+}
+
+/* Navbar in dark mode */
+[data-theme='dark'] .navbar {
+  background-color: #242526 !important;
+  border-bottom: 1px solid #30363d;
+}
+
+[data-theme='dark'] .navbar__brand, 
+[data-theme='dark'] .navbar__item {
+  color: #e3e3e3 !important;
+}
+
+[data-theme='dark'] .navbar__link {
+  color: #e3e3e3 !important;
+}
+
+[data-theme='dark'] .navbar__link:hover {
+  color: #ffa657 !important;
+}
+
+/* PowerShell syntax in dark mode */
+[data-theme='dark'] .ps-syntax {
+  background-color: #1f2937 !important;
+  border: 1px solid #374151 !important;
+  color: #f9fafb !important;
+}
+
+[data-theme='dark'] .ps-function {
+  color: #93c5fd !important;
+}
+
+[data-theme='dark'] .ps-parameter {
+  color: #ffa657 !important;
+}
+
+[data-theme='dark'] .ps-type {
+  color: #a855f7 !important;
+}
+
+[data-theme='dark'] .ps-syntax-char {
+  color: #8b949e !important;
+}
+
+/* Inline code in dark mode */
+[data-theme='dark'] code:not([class*="language-"]) {
+  background-color: rgba(255, 166, 87, 0.15) !important;
+  color: #ffa657 !important;
+}
+
+/* Homepage features cards styling */
+.card {
+  background: linear-gradient(135deg, #de761d 0%, #f08527 100%) !important;
+  border: none !important;
+  color: #ffffff !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 16px rgba(222, 118, 29, 0.3) !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.card:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: 0 8px 24px rgba(222, 118, 29, 0.4) !important;
+}
+
+.card__header h3 {
+  color: #ffffff !important;
+  font-weight: 600 !important;
+}
+
+.card__body {
+  color: #ffffff !important;
+}
+
+.card__body p {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.card__body pre {
+  background-color: rgba(0, 0, 0, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: #ffffff !important;
+}
+
+.card__body code {
+  background-color: rgba(0, 0, 0, 0.2) !important;
+  color: #ffffff !important;
+}
+
+/* PS365 installation card specific styling */
+.ps365-installation-card {
+  background: linear-gradient(135deg, #de761d 0%, #f08527 100%) !important;
+  border: none !important;
+  color: #ffffff !important;
+  border-radius: 12px !important;
+  box-shadow: 0 6px 20px rgba(222, 118, 29, 0.4) !important;
+  transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+.ps365-installation-card:hover {
+  transform: translateY(-6px) !important;
+  box-shadow: 0 12px 32px rgba(222, 118, 29, 0.5) !important;
+}
+
+.ps365-installation-card .card__header h3 {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.ps365-installation-card .card__body {
+  color: #ffffff !important;
+}
+
+.ps365-installation-card .card__body p {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+.ps365-installation-card .card__body pre {
+  background-color: rgba(0, 53, 63, 0.3) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  color: #ffffff !important;
+  border-radius: 6px !important;
+}
+
+.ps365-installation-card .card__body code {
+  background-color: transparent !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
 }
 
 

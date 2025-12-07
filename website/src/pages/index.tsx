@@ -14,7 +14,7 @@ function HomepageHeader() {
     <header className={clsx('hero hero--primary', styles.heroBanner)}>
       <div className="container">
         <Heading as="h1" className="hero__title">
-          🚀 {siteConfig.title}
+          {siteConfig.title}
         </Heading>
         <p className="hero__subtitle">{siteConfig.tagline}</p>
         <div className={styles.buttons}>
@@ -24,7 +24,7 @@ function HomepageHeader() {
             📖 Browse Commands
           </Link>
           <Link
-            className="button button--outline button--secondary button--lg"
+            className="button button--secondary button--lg"
             to="https://www.powershellgallery.com/packages/PS365"
             style={{marginLeft: '1rem'}}>
             📦 PowerShell Gallery
