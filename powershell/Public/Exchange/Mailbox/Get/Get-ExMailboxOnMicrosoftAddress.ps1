@@ -48,7 +48,7 @@ function Get-ExMailboxOnMicrosoftAddress {
                 $orderedIdentities.Add($id)
                 try {
                     Write-Verbose "Getting mailbox: $id"
-                    $mailbox = Get-EXOMailbox -Identity $id -ErrorAction Stop
+                    $mailbox = Get-EXOMailbox -Identity $id -ErrorAction Stop -Properties WhenCreated, WhenChanged
                     $mailboxes.Add($mailbox)
                 }
                 catch {
@@ -60,6 +60,8 @@ function Get-ExMailboxOnMicrosoftAddress {
                             ExchangeObjectId   = $null
                             EmailAddresses     = @()
                             NotFound           = $true
+                            WhenCreated        = $null
+                            WhenChanged       = $null
                         })
                 }
             }
@@ -71,12 +73,12 @@ function Get-ExMailboxOnMicrosoftAddress {
         if ($mailboxes.Count -eq 0) {
             if ($ByDomain) {
                 Write-Verbose "Getting mailboxes for domain: $ByDomain"
-                $mailboxes = Get-EXOMailbox -ResultSize Unlimited -Filter "EmailAddresses -like '*@$ByDomain'" | 
+                $mailboxes = Get-EXOMailbox -ResultSize Unlimited -Filter "EmailAddresses -like '*@$ByDomain'"  -Properties WhenCreated, WhenChanged | 
                 Where-Object { $_.PrimarySmtpAddress -like "*@$ByDomain" }
             }
             else {
                 Write-Verbose 'Getting all mailboxes'
-                $mailboxes = Get-EXOMailbox -ResultSize Unlimited
+                $mailboxes = Get-EXOMailbox -ResultSize Unlimited -Properties WhenCreated, WhenChanged
             }
         }
 
@@ -90,10 +92,14 @@ function Get-ExMailboxOnMicrosoftAddress {
                 if ($mailbox.NotFound) {
                     # Mailbox doesn't exist
                     $object = [PSCustomObject][ordered]@{
-                        PrimarySmtpAddress = $id
-                        DisplayName        = $null
-                        ExchangeObjectId   = $null
-                        OnMicrosoftAddress = $null
+                        PrimarySmtpAddress  = $id
+                        DisplayName         = $null
+                        ExchangeObjectId    = $null
+                        WhenCreated         = $null
+                        WhenChanged         = $null
+                        OnMicrosoftAddress  = $null
+                        MailboxWhenCreated  = $null
+                        MailboxWhenModified = $null
                     }
                     $results.Add($object)
                 }
@@ -105,10 +111,12 @@ function Get-ExMailboxOnMicrosoftAddress {
                             $cleanEmail = $email -replace '^(SMTP|smtp):', ''
                             
                             $object = [PSCustomObject][ordered]@{
-                                PrimarySmtpAddress = $mailbox.PrimarySmtpAddress
-                                DisplayName        = $mailbox.DisplayName
-                                ExchangeObjectId   = $mailbox.Id
-                                OnMicrosoftAddress = $cleanEmail
+                                PrimarySmtpAddress  = $mailbox.PrimarySmtpAddress
+                                DisplayName         = $mailbox.DisplayName
+                                ExchangeObjectId    = $mailbox.Id
+                                OnMicrosoftAddress  = $cleanEmail
+                                MailboxWhenCreated  = $mailbox.WhenCreated
+                                MailboxWhenModified = $mailbox.WhenChanged
                             }
                             $results.Add($object)
                             
@@ -118,10 +126,12 @@ function Get-ExMailboxOnMicrosoftAddress {
                     else {
                         # No onmicrosoft.com address found
                         $object = [PSCustomObject][ordered]@{
-                            PrimarySmtpAddress = $mailbox.PrimarySmtpAddress
-                            DisplayName        = $mailbox.DisplayName
-                            ExchangeObjectId   = $mailbox.Id
-                            OnMicrosoftAddress = $null
+                            PrimarySmtpAddress  = $mailbox.PrimarySmtpAddress
+                            DisplayName         = $mailbox.DisplayName
+                            ExchangeObjectId    = $mailbox.Id
+                            OnMicrosoftAddress  = $null
+                            MailboxWhenCreated  = $mailbox.WhenCreated
+                            MailboxWhenModified = $mailbox.WhenChanged
                         }
                         $results.Add($object)
                     }
@@ -138,10 +148,12 @@ function Get-ExMailboxOnMicrosoftAddress {
                         $cleanEmail = $email -replace '^(SMTP|smtp):', ''
                         
                         $object = [PSCustomObject][ordered]@{
-                            PrimarySmtpAddress = $mailbox.PrimarySmtpAddress
-                            DisplayName        = $mailbox.DisplayName
-                            ExchangeObjectId   = $mailbox.Id
-                            OnMicrosoftAddress = $cleanEmail
+                            PrimarySmtpAddress  = $mailbox.PrimarySmtpAddress
+                            DisplayName         = $mailbox.DisplayName
+                            ExchangeObjectId    = $mailbox.Id
+                            OnMicrosoftAddress  = $cleanEmail
+                            MailboxWhenCreated  = $mailbox.WhenCreated
+                            MailboxWhenModified = $mailbox.WhenChanged
                         }
                         $results.Add($object)
                         
@@ -151,10 +163,12 @@ function Get-ExMailboxOnMicrosoftAddress {
                 else {
                     # No onmicrosoft.com address found
                     $object = [PSCustomObject][ordered]@{
-                        PrimarySmtpAddress = $mailbox.PrimarySmtpAddress
-                        DisplayName        = $mailbox.DisplayName
-                        ExchangeObjectId   = $mailbox.Id
-                        OnMicrosoftAddress = $null
+                        PrimarySmtpAddress  = $mailbox.PrimarySmtpAddress
+                        DisplayName         = $mailbox.DisplayName
+                        ExchangeObjectId    = $mailbox.Id
+                        OnMicrosoftAddress  = $null
+                        MailboxWhenCreated  = $mailbox.WhenCreated
+                        MailboxWhenModified = $mailbox.WhenChanged
                     }
                     $results.Add($object)
                 }

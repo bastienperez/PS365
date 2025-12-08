@@ -56,11 +56,13 @@ function Get-ExMailboxMaxSize {
     foreach ($mbx in $exoMailboxes) {
     
         $object = [PSCustomObject][ordered]@{ 
-            PrimarySmtpAddress = $mbx.PrimarySmtpAddress
-            DisplayName        = $mbx.DisplayName
-            ExchangeObjectId   = $mbx.ExchangeObjectId
-            MaxReceiveSize     = $mbx.MaxReceiveSize
-            MaxSendSize        = $mbx.MaxSendSize
+            PrimarySmtpAddress  = $mbx.PrimarySmtpAddress
+            DisplayName         = $mbx.DisplayName
+            ExchangeObjectId    = $mbx.ExchangeObjectId
+            MaxReceiveSize      = $mbx.MaxReceiveSize
+            MaxSendSize         = $mbx.MaxSendSize
+            MailboxWhenCreated  = $mbx.WhenCreated
+            MailboxWhenModified = $mbx.WhenChanged
         }
 
         $exoMailboxesMaxSizeArray.Add($object)

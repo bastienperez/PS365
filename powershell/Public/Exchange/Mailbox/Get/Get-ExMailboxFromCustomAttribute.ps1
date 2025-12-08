@@ -4,7 +4,7 @@
 
     .DESCRIPTION
     This function retrieves mailboxes based on a custom attribute and compares specified attributes. It returns a list of mailboxes along with their primary SMTP address, the custom attribute value, and whether the specified attributes match.
-    It's more or less a Get-Mailbox with specific filter
+    It's more or less a `Get-ExoMailbox with specific filter
 
     .PARAMETER Attribute
     The custom attribute to retrieve from the mailboxes.
@@ -38,7 +38,7 @@ function Get-ExMailboxFromAttribute {
 
     # Attribute allows to get PrimarySMTPAddress and this specific attribute (for example forwardingSMTPAddress) and compare
     try {
-        $allmbx = Get-EXOMailbox -ResultSize unlimited -Properties $Attribute  -ErrorAction Stop | Where-Object { $_.$Attribute -ne $null }
+        $allmbx = Get-EXOMailbox -ResultSize unlimited -Properties $Attribute -ErrorAction Stop -Properties WhenCreated, WhenModified | Where-Object { $null -ne $_.$Attribute }
     }
     catch {
         Write-Warning $_.Exception.Message
@@ -58,7 +58,9 @@ function Get-ExMailboxFromAttribute {
             $attributesMatch = $firstAttribute -eq $secondAttribute
         }
 
-        $object | Add-Member -MemberType NoteProperty -Name "Match" -Value $attributesMatch
+        $object | Add-Member -MemberType NoteProperty -Name 'Match' -Value $attributesMatch
+        $object | Add-Member -MemberType NoteProperty -Name 'MailboxWhenCreated' -Value $_.WhenCreated
+        $object | Add-Member -MemberType NoteProperty -Name 'MailboxWhenModified' -Value $_.WhenChanged
 
         $mailboxesFound.Add($object)
     }

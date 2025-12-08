@@ -23,7 +23,7 @@ function Get-ExMailboxByDomain {
 		[string]$RecipientTypeDetails
 	)
 
-	$mailboxesArray = Get-Mailbox -ResultSize Unlimited -Filter "EmailAddresses -like '*@$Domain'" | Where-Object { $_.PrimarySmtpAddress -like "*@$Domain" }
+	$mailboxesArray = Get-ExoMailbox -ResultSize Unlimited -Filter "EmailAddresses -like '*@$Domain'" -Properties WhenCreated, WhenChanged | Where-Object { $_.PrimarySmtpAddress -like "*@$Domain" }
     
 	if ($RecipientTypeDetails) {
 		$mailboxesArray = $mailboxesArray | Where-Object { $RecipientTypeDetails -contains $_.RecipientTypeDetails }

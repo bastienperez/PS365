@@ -1,5 +1,5 @@
 
-	<#
+<#
 	.SYNOPSIS
 	Get mailbox forwarding configuration
 
@@ -53,8 +53,8 @@ function Get-ExMailboxForwarding {
 		[switch]$ExchangeOnPremise
 	)
 
-	function Translate-Recipient {
-		Param (
+	function ConvertFrom-Recipient {
+		param (
 			[Parameter(Mandatory = $true)]
 			[string]$Recipient
 		)
@@ -164,12 +164,6 @@ function Get-ExMailboxForwarding {
 		}
 	}
 	else {
-		<#
-		Get-Mailbox -ResultSize Unlimited | ForEach-Object {
-			$hashRecipients.Add($_.LegacyExchangeDN, $_.PrimarySmtpAddress)
-		}
-		#>
-
 		Get-Mailbox -ResultSize Unlimited | Select-Object $properties | ForEach-Object {
 			$mailboxesList.Add($_)
 			$hashRecipients.Add($_.LegacyExchangeDN, $_.PrimarySmtpAddress)
@@ -389,13 +383,13 @@ function Get-ExMailboxForwarding {
 				foreach ($forwardTo in $inboxForwardRule.ForwardTo) {
 					
 					if ($ExchangeOnPremise) {
-						$inboxForwardRuleDescription = $inboxForwardRule.description.ToString().replace("`t", "") # delete line breaks and tabs
+						$inboxForwardRuleDescription = $inboxForwardRule.description.ToString().replace("`t", '') # delete line breaks and tabs
 					}
 					else {
-						$inboxForwardRuleDescription = $inboxForwardRule.description.replace("`r`n", " ").replace("`t", "") # delete line breaks and tabs
+						$inboxForwardRuleDescription = $inboxForwardRule.description.replace("`r`n", ' ').replace("`t", '') # delete line breaks and tabs
 					}
 
-					$recipientConverted = Translate-Recipient -Recipient $forwardTo
+					$recipientConverted = ConvertFrom-Recipient -Recipient $forwardTo
 
 					$object = [PSCustomObject][ordered]@{
 						Identity                               = $mailbox.Identity
@@ -403,6 +397,8 @@ function Get-ExMailboxForwarding {
 						DisplayName                            = $mailbox.DisplayName	
 						PrimarySmtpAddress                     = $mailbox.PrimarySmtpAddress
 						UserPrincipalName                      = $mailbox.UserPrincipalName
+						WhenCreated                            = $mailbox.WhenCreated
+						WhenChanged                            = $mailbox.WhenChanged
 						ForwardingAddressConverted             = $recipientConverted
 						ForwardType                            = 'InboxRule'
 						ForwardScope                           = $forwardingScope
@@ -428,13 +424,13 @@ function Get-ExMailboxForwarding {
 			
 				foreach ($forwardAsAttachmentTo in $inboxForwardRule.ForwardAsAttachmentTo) {
 					if ($ExchangeOnPremise) {
-						$inboxForwardRuleDescription = $inboxForwardRule.description.ToString().("`r`n", " ").replace("`t", "") # delete line breaks and tabs
+						$inboxForwardRuleDescription = $inboxForwardRule.description.ToString().("`r`n", ' ').replace("`t", '') # delete line breaks and tabs
 					}
 					else {
-						$inboxForwardRuleDescription = $inboxForwardRule.description.replace("`r`n", " ").replace("`t", "") # delete line breaks and tabs
+						$inboxForwardRuleDescription = $inboxForwardRule.description.replace("`r`n", ' ').replace("`t", '') # delete line breaks and tabs
 					}
 					
-					$recipientConverted = Translate-Recipient -Recipient $forwardAsAttachmentTo
+					$recipientConverted = ConvertFrom-Recipient -Recipient $forwardAsAttachmentTo
 						
 					$object = [PSCustomObject][ordered]@{
 						Identity                               = $mailbox.Identity
@@ -458,6 +454,8 @@ function Get-ExMailboxForwarding {
 						InboxRuleForwardAsAttachmentTo         = $forwardAsAttachmentTo
 						InboxRuleSendTextMessageNotificationTo = '-'
 						InboxRuleDescription                   = $inboxForwardRuleDescription
+						MailboxWhenCreated                     = $mailbox.WhenCreated
+						MailboxWhenModified                    = $mailbox.WhenChanged
 					}
 			
 					#Add object to an array
@@ -468,13 +466,13 @@ function Get-ExMailboxForwarding {
 				foreach ($redirectTo in $inboxForwardRule.RedirectTo) {
 					
 					if ($ExchangeOnPremise) {
-						$inboxForwardRuleDescription = $inboxForwardRule.description.ToString().replace("`r`n", " ").replace("`t", "") # delete line breaks and tabs
+						$inboxForwardRuleDescription = $inboxForwardRule.description.ToString().replace("`r`n", ' ').replace("`t", '') # delete line breaks and tabs
 					}
 					else {
-						$inboxForwardRuleDescription = $inboxForwardRule.description.replace("`r`n", " ").replace("`t", "") # delete line breaks and tabs
+						$inboxForwardRuleDescription = $inboxForwardRule.description.replace("`r`n", ' ').replace("`t", '') # delete line breaks and tabs
 					}
 					
-					$recipientConverted = Translate-Recipient -Recipient $redirectTo
+					$recipientConverted = ConvertFrom-Recipient -Recipient $redirectTo
 			
 					$object = [PSCustomObject][ordered]@{
 						Identity                               = $mailbox.Identity
@@ -498,6 +496,8 @@ function Get-ExMailboxForwarding {
 						InboxRuleForwardAsAttachmentTo         = '-'
 						InboxRuleSendTextMessageNotificationTo = '-'
 						InboxRuleDescription                   = $inboxForwardRuleDescription
+						MailboxWhenCreated                     = $mailbox.WhenCreated
+						MailboxWhenModified                    = $mailbox.WhenChanged
 					}
 						
 					#Add object to an array
@@ -508,10 +508,10 @@ function Get-ExMailboxForwarding {
 				foreach ($sendTextMessageNotificationTo in $inboxForwardRule.SendTextMessageNotificationTo) {
 
 					if ($ExchangeOnPremise) {
-						$sendTextMessageNotificationToDescription = $sendTextMessageNotificationTo.Description.ToString().("`r`n", " ").replace("`t", "") # delete line breaks and tabs
+						$sendTextMessageNotificationToDescription = $sendTextMessageNotificationTo.Description.ToString().("`r`n", ' ').replace("`t", '') # delete line breaks and tabs
 					}
 					else {
-						$sendTextMessageNotificationToDescription = $sendTextMessageNotificationTo.Description.replace("`r`n", " ").replace("`t", "") # delete line breaks and tabs
+						$sendTextMessageNotificationToDescription = $sendTextMessageNotificationTo.Description.replace("`r`n", ' ').replace("`t", '') # delete line breaks and tabs
 					}
 
 					$forwardingScope = 'External'
@@ -533,6 +533,8 @@ function Get-ExMailboxForwarding {
 						InboxRuleForwardAsAttachmentTo         = '-'
 						InboxRuleSendTextMessageNotificationTo = $sendTextMessageNotificationTo
 						InboxRuleDescription                   = $sendTextMessageNotificationToDescription
+						MailboxWhenCreated                     = $mailbox.WhenCreated
+						MailboxWhenModified                    = $mailbox.WhenChanged
 					}
 									
 					#Add object to an array
@@ -559,10 +561,10 @@ function Get-ExMailboxForwarding {
 	}
 
 	if ($ExportResults) {
-		$filepath = "$($env:temp)\$(Get-Date -format yyyyMMdd_hhmm)_forward.csv"
+		$filepath = "$($env:temp)\$(Get-Date -Format yyyyMMdd_hhmm)_forward.csv"
 		Write-Host -ForegroundColor green "Export results to $filepath"
 				
-		$forwardList | Export-CSV -NoTypeInformation -Encoding UTF8 $filepath
+		$forwardList | Export-Csv -NoTypeInformation -Encoding UTF8 $filepath
 
 		Invoke-Item $filepath
 	}

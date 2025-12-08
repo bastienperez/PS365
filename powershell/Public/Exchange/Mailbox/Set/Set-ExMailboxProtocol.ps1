@@ -250,10 +250,12 @@ function Set-ExMailboxProtocol {
         return 1
     }
 
-    $Commands = @()
-
+    $commands = @()
+    $totalCount = @($Mailboxes).Count
+    $currentCount = 0
 
     foreach ($casMailbox in $Mailboxes) {
+        $currentCount++
         $cmdParams = @{
             Identity = $casMailbox.PrimarySmtpAddress
         }
@@ -288,13 +290,13 @@ function Set-ExMailboxProtocol {
         $Commands += $command
 
         if (-not $GenerateCmdlets -and $PSCmdlet.ShouldProcess($casMailbox.PrimarySmtpAddress, 'Set EXO Mailbox Protocols')) {
-            Write-Host -ForegroundColor Cyan "$($casMailbox.PrimarySmtpAddress) - Setting protocols..."
+            Write-Host -ForegroundColor Cyan "[$currentCount/$totalCount] $($casMailbox.PrimarySmtpAddress) - Setting protocols..."
             try {
                 Set-CasMailbox @cmdParams -ErrorAction Stop
-                Write-Host "$($casMailbox.PrimarySmtpAddress) - Configuration applied successfully." -ForegroundColor Green
+                Write-Host "[$currentCount/$totalCount] $($casMailbox.PrimarySmtpAddress) - Configuration applied successfully." -ForegroundColor Green
             }
             catch {
-                Write-Host "$($casMailbox.PrimarySmtpAddress) - $($_.Exception.Message)" -ForegroundColor Red
+                Write-Host "[$currentCount/$totalCount] $($casMailbox.PrimarySmtpAddress) - $($_.Exception.Message)" -ForegroundColor Red
             }
         }
     }

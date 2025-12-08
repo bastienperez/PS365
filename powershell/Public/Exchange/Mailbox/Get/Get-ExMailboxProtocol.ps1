@@ -112,6 +112,8 @@ function Get-ExMailboxProtocol {
             # we invert the value to provide SMTPClientAuthenticationEnabled because by default the cmdlet returns SMTPClientAuthentication*Disabled*
             SMTPClientAuthenticationEnabled       = if ($null -ne $casMailbox.SMTPClientAuthenticationDisabled) { -not $casMailbox.SMTPClientAuthenticationDisabled }else { '-' }
             TenantSmtpClientAuthenticationEnabled = $tenantSmtpClientAuthenticationEnabled
+            MailboxWhenCreated                    = $casMailbox.WhenCreated
+            MailboxWhenModified                   = $casMailbox.WhenChanged
         }
 
         $exoCasMailboxesArray.Add($object)
@@ -122,7 +124,7 @@ function Get-ExMailboxProtocol {
         $excelFilePath = "$($env:userprofile)\$now-ExMailboxProtocol.xlsx"
         Write-Host -ForegroundColor Cyan "Exporting mailbox protocols to Excel file: $excelFilePath"
         $exoCasMailboxesArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'ExchangeMailboxProtocols'
-        Write-Host -ForegroundColor Green "Export completed successfully!"
+        Write-Host -ForegroundColor Green 'Export completed successfully!'
     }
     else {
         return $exoCasMailboxesArray

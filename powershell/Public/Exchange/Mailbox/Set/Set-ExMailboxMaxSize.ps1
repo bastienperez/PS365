@@ -96,9 +96,12 @@ function Set-ExMailboxMaxSize {
 		return 1
 	}
 
-	$Commands = @()
+	$commands = @()
+	$totalCount = @($Mailboxes).Count
+	$currentCount = 0
 
 	foreach ($mbx in $Mailboxes) {
+		$currentCount++
 		$cmdParams = @{
 			Identity = $mbx.PrimarySmtpAddress
 		}
@@ -112,13 +115,13 @@ function Set-ExMailboxMaxSize {
 		}
 
 		if (-not $GenerateCmdlets -and $PSCmdlet.ShouldProcess($mbx.PrimarySmtpAddress, 'Set regional configuration')) {
-			Write-Host -ForegroundColor Cyan "$($mbx.PrimarySmtpAddress) - Setting configuration..."
+			Write-Host -ForegroundColor Cyan "[$CurrentCount/$TotalCount] $($mbx.PrimarySmtpAddress) - Setting configuration..."
 			try {
 				Set-Mailbox -Identity $mbx.PrimarySmtpAddress -MaxReceiveSize 150MB -MaxSendSize 150MB -ErrorAction Stop
-				Write-Host "$($mbx.PrimarySmtpAddress) - Configuration applied successfully." -ForegroundColor Green
+				Write-Host "[$CurrentCount/$TotalCount] $($mbx.PrimarySmtpAddress) - Configuration applied successfully." -ForegroundColor Green
 			}
 			catch {
-				Write-Host "$($mbx.PrimarySmtpAddress) - $($_.Exception.Message)" -ForegroundColor Red
+				Write-Host "[$CurrentCount/$TotalCount] $($mbx.PrimarySmtpAddress) - $($_.Exception.Message)" -ForegroundColor Red
 			}
 		}
 	}

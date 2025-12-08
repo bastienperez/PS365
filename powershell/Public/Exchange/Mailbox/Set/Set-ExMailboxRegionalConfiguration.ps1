@@ -36,6 +36,10 @@
 	The time format to set for the mailbox regional configuration (e.g., 'HH:mm', 'hh:mm tt').
 	Auto-detected based on the specified language if not provided.
 
+	.PARAMETER OnlyIfLanguageEmpty
+	If specified, the function will only modify mailboxes that currently have no language configured (empty Language property).
+	Useful to avoid overwriting existing configurations set by users or administrators.
+
 	.PARAMETER GenerateCmdlets
 	If specified, the function will generate the Set-MailboxRegionalConfiguration cmdlets and save them to a file instead of executing them.
 
@@ -56,6 +60,11 @@
 	Set-ExMailboxRegionalConfiguration -FromCSV "C:\path\to\file.csv" -GenerateCmdlets -OutputFile "C:\temp\cmdlets.txt"
 	
 	Generates the Set-MailboxRegionalConfiguration cmdlets for mailboxes listed in the specified CSV file and saves them to the specified file without executing them.
+
+	.EXAMPLE
+	Set-ExMailboxRegionalConfiguration -ByDomain "example.com" -Language "en-US" -TimeZone "+1" -OnlyIfLanguageEmpty
+
+	Sets the regional configuration only for mailboxes in the specified domain that currently have no language configured.
 #>
 
 function Set-ExMailboxRegionalConfiguration {
@@ -96,6 +105,9 @@ function Set-ExMailboxRegionalConfiguration {
 		[Parameter(Mandatory = $false, ParameterSetName = 'AllMailboxes')]
 		[Parameter(Mandatory = $false)]
 		[string]$TimeFormat,
+
+		[Parameter(Mandatory = $false)]
+		[switch]$OnlyIfLanguageEmpty,
 
 		[Parameter(Mandatory = $false)]
 		[switch]$GenerateCmdlets,
@@ -191,9 +203,28 @@ function Set-ExMailboxRegionalConfiguration {
 		return 1
 	}
 
-	$Commands = @()
+	$commands = @()
+	$totalCount = @($Mailboxes).Count
+	$currentCount = 0
 
 	foreach ($mbx in $Mailboxes) {
+		$currentCount++
+
+		# Check if OnlyIfLanguageEmpty is specified and skip if language is already configured
+		if ($OnlyIfLanguageEmpty) {
+			try {
+				$currentConfig = Get-MailboxRegionalConfiguration -Identity $mbx.PrimarySmtpAddress -ErrorAction Stop
+				if ($currentConfig.Language -and $currentConfig.Language -ne '') {
+					Write-Host "[$currentCount/$totalCount] $($mbx.PrimarySmtpAddress) - Skipped (Language already configured: $($currentConfig.Language))" -ForegroundColor Yellow
+					continue
+				}
+			}
+			catch {
+				Write-Warning "[$currentCount/$totalCount] $($mbx.PrimarySmtpAddress) - Could not retrieve current configuration: $($_.Exception.Message)"
+				continue
+			}
+		}
+
 		$cmdParams = @{
 			Identity = $mbx.PrimarySmtpAddress
 		}
@@ -277,13 +308,13 @@ function Set-ExMailboxRegionalConfiguration {
 		}
 
 		if (-not $GenerateCmdlets -and $PSCmdlet.ShouldProcess($mbx.PrimarySmtpAddress, 'Set regional configuration')) {
-			Write-Host -ForegroundColor Cyan "$($mbx.PrimarySmtpAddress) - Setting configuration..."
+			Write-Host -ForegroundColor Cyan "[$currentCount/$totalCount] $($mbx.PrimarySmtpAddress) - Setting configuration..."
 			try {
 				Set-MailboxRegionalConfiguration @cmdParams -ErrorAction Stop
-				Write-Host "$($mbx.PrimarySmtpAddress) - Configuration applied successfully." -ForegroundColor Green
+				Write-Host "[$currentCount/$totalCount] $($mbx.PrimarySmtpAddress) - Configuration applied successfully." -ForegroundColor Green
 			}
 			catch {
-				Write-Host "$($mbx.PrimarySmtpAddress) - $($_.Exception.Message)" -ForegroundColor Red
+				Write-Host "[$currentCount/$totalCount] $($mbx.PrimarySmtpAddress) - $($_.Exception.Message)" -ForegroundColor Red
 			}
 		}
 	}

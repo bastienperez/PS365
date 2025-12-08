@@ -188,6 +188,8 @@ function Get-ExResourceMailbox {
                 ScheduleOnlyDuringWorkHours         = $calProc.ScheduleOnlyDuringWorkHours
                 ObjectState                         = $calProc.ObjectState
                 MailboxOwnerId                      = $calProc.MailboxOwnerId
+                MailboxWhenCreated                  = $resource.WhenCreated
+                MailboxWhenModified                 = $resource.WhenChanged
             }
         }
     }

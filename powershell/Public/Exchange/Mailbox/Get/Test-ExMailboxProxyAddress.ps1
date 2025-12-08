@@ -108,7 +108,7 @@ function Test-ExMailboxProxyAddress {
         $statusValue = 'ERROR'
         
         try {
-            $mb = Get-Mailbox -Identity $item.Mailbox -ErrorAction Stop
+            $mb = Get-EXOMailbox -Identity $item.Mailbox -ErrorAction Stop
             
             if ($mb.EmailAddresses -contains "smtp:$($item.ProxyAddress)") {
                 $statusValue = 'MATCH'

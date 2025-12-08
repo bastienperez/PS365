@@ -63,7 +63,7 @@ function Get-ExMailboxPermission {
         Write-Host "Finding all permissions for user: $UserPermission" -ForegroundColor Green
         
         # Get all mailboxes to check permissions against
-        $mailboxes = Get-EXOMailbox -ResultSize Unlimited
+        $mailboxes = Get-EXOMailbox -ResultSize Unlimited -Properties WhenCreated, WhenChanged
         Write-Host "Checking permissions across $($mailboxes.Count) mailbox(es)" -ForegroundColor Yellow
         
         # Set flag for reverse lookup mode
@@ -71,14 +71,14 @@ function Get-ExMailboxPermission {
     }
     elseif ($ByDomain) {
         Write-Host "Retrieving permissions for all mailboxes in domain: $ByDomain" -ForegroundColor Green
-        $mailboxes = Get-EXOMailbox -ResultSize Unlimited -Filter "EmailAddresses -like '*@$ByDomain'" | Where-Object { $_.PrimarySmtpAddress -like "*@$ByDomain" }
+        $mailboxes = Get-EXOMailbox -ResultSize Unlimited -Filter "EmailAddresses -like '*@$ByDomain'" -Properties WhenCreated, WhenChanged | Where-Object { $_.PrimarySmtpAddress -like "*@$ByDomain" }
         Write-Host "Found $($mailboxes.Count) mailbox(es) in domain $ByDomain" -ForegroundColor Yellow
         $isUserPermissionLookup = $false
     }
     elseif ($Identity) {
         Write-Host "Retrieving permissions for mailbox: $Identity" -ForegroundColor Green
         try {
-            $mailboxes = @(Get-EXOMailbox -Identity $Identity -ErrorAction Stop)
+            $mailboxes = @(Get-EXOMailbox -Identity $Identity -ErrorAction Stop -Properties WhenCreated, WhenChanged)
             Write-Host "Mailbox found: $($mailboxes[0].DisplayName) ($($mailboxes[0].PrimarySmtpAddress))" -ForegroundColor Yellow
         }
         catch {
@@ -89,7 +89,7 @@ function Get-ExMailboxPermission {
     }
     else {
         Write-Host 'Retrieving permissions for all mailboxes' -ForegroundColor Green
-        $mailboxes = Get-EXOMailbox -ResultSize Unlimited
+        $mailboxes = Get-EXOMailbox -ResultSize Unlimited -Properties WhenCreated, WhenChanged
         Write-Host "Found $($mailboxes.Count) mailbox(es)" -ForegroundColor Yellow
         $isUserPermissionLookup = $false
     }
@@ -103,7 +103,7 @@ function Get-ExMailboxPermission {
 
         try {
             # 1. Get Full Access permissions
-            $fullAccessPerms = @(Get-EXOMailboxPermission -Identity $mailbox.PrimarySmtpAddress | Where-Object {
+            $fullAccessPerms = @(Get-EXOMailboxPermission -Identity $mailbox.PrimarySmtpAddress -Properties WhenCreated, WhenChanged | Where-Object {
                     $_.AccessRights -contains 'FullAccess' -and 
                     $_.User -notlike 'NT AUTHORITY\*' -and 
                     $_.User -notlike 'S-1-*' -and
@@ -117,14 +117,16 @@ function Get-ExMailboxPermission {
                 }
                 
                 $allPermissions.Add([PSCustomObject]@{
-                        MailboxIdentity    = $mailbox.PrimarySmtpAddress
-                        MailboxDisplayName = $mailbox.DisplayName
-                        MailboxEmail       = $mailbox.PrimarySmtpAddress
-                        PermissionType     = 'Full Access'
-                        User               = $perm.User
-                        AccessRights       = ($perm.AccessRights -join ', ')
-                        InheritanceType    = $perm.InheritanceType
-                        IsInherited        = $perm.IsInherited
+                        MailboxIdentity     = $mailbox.PrimarySmtpAddress
+                        MailboxDisplayName  = $mailbox.DisplayName
+                        MailboxEmail        = $mailbox.PrimarySmtpAddress
+                        PermissionType      = 'Full Access'
+                        User                = $perm.User
+                        AccessRights        = ($perm.AccessRights -join ', ')
+                        InheritanceType     = $perm.InheritanceType
+                        IsInherited         = $perm.IsInherited
+                        MailboxWhenCreated  = $mailbox.WhenCreated
+                        MailboxWhenModified = $mailbox.WhenChanged
                     })
             }
             
@@ -142,14 +144,16 @@ function Get-ExMailboxPermission {
                 }
                 
                 $allPermissions.Add([PSCustomObject]@{
-                        MailboxIdentity    = $mailbox.PrimarySmtpAddress
-                        MailboxDisplayName = $mailbox.DisplayName
-                        MailboxEmail       = $mailbox.PrimarySmtpAddress
-                        PermissionType     = 'Send As'
-                        User               = $perm.Trustee
-                        AccessRights       = ($perm.AccessRights -join ', ')
-                        InheritanceType    = $perm.InheritanceType
-                        IsInherited        = $perm.IsInherited
+                        MailboxIdentity     = $mailbox.PrimarySmtpAddress
+                        MailboxDisplayName  = $mailbox.DisplayName
+                        MailboxEmail        = $mailbox.PrimarySmtpAddress
+                        PermissionType      = 'Send As'
+                        User                = $perm.Trustee
+                        AccessRights        = ($perm.AccessRights -join ', ')
+                        InheritanceType     = $perm.InheritanceType
+                        IsInherited         = $perm.IsInherited
+                        MailboxWhenCreated  = $mailbox.WhenCreated
+                        MailboxWhenModified = $mailbox.WhenChanged
                     })
             }
             
@@ -163,14 +167,16 @@ function Get-ExMailboxPermission {
                     }
                     
                     $allPermissions.Add([PSCustomObject]@{
-                            MailboxIdentity    = $mailbox.PrimarySmtpAddress
-                            MailboxDisplayName = $mailbox.DisplayName
-                            MailboxEmail       = $mailbox.PrimarySmtpAddress
-                            PermissionType     = 'Send on Behalf'
-                            User               = $user
-                            AccessRights       = 'SendOnBehalf'
-                            InheritanceType    = 'None'
-                            IsInherited        = $false
+                            MailboxIdentity     = $mailbox.PrimarySmtpAddress
+                            MailboxDisplayName  = $mailbox.DisplayName
+                            MailboxEmail        = $mailbox.PrimarySmtpAddress
+                            PermissionType      = 'Send on Behalf'
+                            User                = $user
+                            AccessRights        = 'SendOnBehalf'
+                            InheritanceType     = 'None'
+                            IsInherited         = $false
+                            MailboxWhenCreated  = $mailbox.WhenCreated
+                            MailboxWhenModified = $mailbox.WhenChanged
                         })
                 }
             }

@@ -113,6 +113,8 @@ function Get-ExMailboxStatisticsDetail {
 				DatabaseName         = $mailboxStats.Database
 				ServerName           = $mailboxStats.ServerName
 				MailboxGuid          = $mailboxStats.MailboxGuid
+				MailboxWhenCreated   = $mailboxStats.WhenCreated
+				MailboxWhenModified  = $mailboxStats.WhenChanged
 			}
             
 			# Add folder details if requested

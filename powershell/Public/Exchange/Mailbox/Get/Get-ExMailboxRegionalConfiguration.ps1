@@ -42,7 +42,7 @@ function Get-ExMailboxRegionalConfiguration {
 
     # PropertySets All because by default SMTPClientAuthenticationDisabled is not returned
     if ($ByDomain) {
-        $mailboxes = Get-EXOMailbox -ResultSize Unlimited -Filter "EmailAddresses -like '*@$ByDomain'" | Where-Object { $_.PrimarySmtpAddress -like "*@$ByDomain" }
+        $mailboxes = Get-EXOMailbox -ResultSize Unlimited -Filter "EmailAddresses -like '*@$ByDomain'" -Properties WhenCreated, WhenChanged | Where-Object { $_.PrimarySmtpAddress -like "*@$ByDomain" }
     }
     elseif ($Identity) {
         [System.Collections.Generic.List[PSCustomObject]]$mailboxes = @()
@@ -55,7 +55,7 @@ function Get-ExMailboxRegionalConfiguration {
         }
     }
     else {
-        $mailboxes = Get-EXOMailbox -ResultSize Unlimited
+        $mailboxes = Get-EXOMailbox -ResultSize Unlimited -Properties WhenCreated, WhenChanged
     }
 
     <#
@@ -72,13 +72,15 @@ function Get-ExMailboxRegionalConfiguration {
         $regionalConfig = Get-MailboxRegionalConfiguration -Identity $mbx.PrimarySmtpAddress
 
         $object = [PSCustomObject][ordered]@{ 
-            DisplayName        = $mbx.DisplayName
-            PrimarySmtpAddress = $mbx.PrimarySmtpAddress
-            ExchangeObjectId   = $regionalConfig.Identity
-            Language           = $regionalConfig.Language
-            TimeZone           = $regionalConfig.TimeZone
-            DateFormat         = $regionalConfig.DateFormat
-            TimeFormat         = $regionalConfig.TimeFormat
+            DisplayName         = $mbx.DisplayName
+            PrimarySmtpAddress  = $mbx.PrimarySmtpAddress
+            ExchangeObjectId    = $regionalConfig.Identity
+            Language            = $regionalConfig.Language
+            TimeZone            = $regionalConfig.TimeZone
+            DateFormat          = $regionalConfig.DateFormat
+            TimeFormat          = $regionalConfig.TimeFormat
+            MailboxWhenCreated  = $mbx.WhenCreated
+            MailboxWhenModified = $mbx.WhenChanged
         }
 
         $exoMbxRegionalConfigArray.Add($object)
