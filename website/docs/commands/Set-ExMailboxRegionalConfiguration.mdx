@@ -18,7 +18,7 @@ Sets the regional configuration for Exchange mailboxes, including language, time
 
 ```powershell
 Set-ExMailboxRegionalConfiguration -Identity <String[]> [-Language <String>] [-TimeZone <String>]
- [-DateFormat <String>] [-TimeFormat <String>] [-GenerateCmdlets] [-OutputFile <String>]
+ [-DateFormat <String>] [-TimeFormat <String>] [-OnlyIfLanguageEmpty] [-GenerateCmdlets] [-OutputFile <String>]
  [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
@@ -26,7 +26,7 @@ Set-ExMailboxRegionalConfiguration -Identity <String[]> [-Language <String>] [-T
 
 ```powershell
 Set-ExMailboxRegionalConfiguration -ByDomain <String> [-Language <String>] [-TimeZone <String>]
- [-DateFormat <String>] [-TimeFormat <String>] [-GenerateCmdlets] [-OutputFile <String>]
+ [-DateFormat <String>] [-TimeFormat <String>] [-OnlyIfLanguageEmpty] [-GenerateCmdlets] [-OutputFile <String>]
  [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
@@ -34,15 +34,15 @@ Set-ExMailboxRegionalConfiguration -ByDomain <String> [-Language <String>] [-Tim
 
 ```powershell
 Set-ExMailboxRegionalConfiguration -FromCSV <String> [-DateFormat <String>] [-TimeFormat <String>]
- [-GenerateCmdlets] [-OutputFile <String>] [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm]
- [<CommonParameters>]
+ [-OnlyIfLanguageEmpty] [-GenerateCmdlets] [-OutputFile <String>] [-ProgressAction <ActionPreference>]
+ [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ### AllMailboxes
 
 ```powershell
 Set-ExMailboxRegionalConfiguration [-AllMailboxes] [-Language <String>] [-TimeZone <String>]
- [-DateFormat <String>] [-TimeFormat <String>] [-GenerateCmdlets] [-OutputFile <String>]
+ [-DateFormat <String>] [-TimeFormat <String>] [-OnlyIfLanguageEmpty] [-GenerateCmdlets] [-OutputFile <String>]
  [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
@@ -78,6 +78,14 @@ Set-ExMailboxRegionalConfiguration -FromCSV "C:\path\to\file.csv" -GenerateCmdle
 ```
 
 Generates the Set-MailboxRegionalConfiguration cmdlets for mailboxes listed in the specified CSV file and saves them to the specified file without executing them.
+
+### EXAMPLE 4
+
+```powershell
+Set-ExMailboxRegionalConfiguration -ByDomain "example.com" -Language "en-US" -TimeZone "+1" -OnlyIfLanguageEmpty
+```
+
+Sets the regional configuration only for mailboxes in the specified domain that currently have no language configured.
 
 ## PARAMETERS
 
@@ -213,6 +221,23 @@ Aliases:
 Required: False
 Position: Named
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -OnlyIfLanguageEmpty
+
+If specified, the function will only modify mailboxes that currently have no language configured (empty Language property).
+Useful to avoid overwriting existing configurations set by users or administrators.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
