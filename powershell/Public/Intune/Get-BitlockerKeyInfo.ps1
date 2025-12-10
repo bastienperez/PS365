@@ -21,6 +21,12 @@
     Switch to display BitLocker recovery keys in plain text format in the CSV export.
     ⚠️  WARNING: This will expose sensitive BitLocker recovery keys in the output file!
     Use only when necessary and ensure secure storage of the exported file.
+    
+    .PARAMETER BackupToKeyVault
+    Specify the name of Azure Key Vault to backup BitLocker recovery keys.
+    Requires Azure PowerShell module and appropriate permissions to access Key Vault.
+    Keys will be stored with device name and BitLocker key ID as the secret name.
+    Example: -BackupToKeyVault "MyBitLockerVault"
 
     .EXAMPLE
     Get-BitlockerKeyFromIntune -IncludeDeviceInfo -IncludeDeviceOwner
@@ -37,6 +43,11 @@
 
     This command generates a comprehensive report with BitLocker keys visible in plain text and exports to Excel.
     ⚠️  WARNING: Use with extreme caution as this exposes sensitive recovery keys!
+    
+    .EXAMPLE
+    Get-BitlockerKeyFromIntune -IncludeDeviceInfo -BackupToKeyVault "MyBitLockerVault" -ExportToExcel
+
+    This command retrieves BitLocker keys, backs them up to the specified Azure Key Vault, and exports to Excel.
 
     .NOTES
     Author: Bastien Perez (adapted from Vasil Michev)
@@ -71,7 +82,11 @@ function Get-BitlockerKeyInfo {
         [switch]$ExportToExcel,
         
         [Parameter(HelpMessage = 'Show BitLocker recovery keys in plain text (/!\ SECURITY RISK: Use with caution!)')]
-        [switch]$RevealKeys
+        [switch]$RevealKeys,
+        
+        [Parameter(HelpMessage = 'Specify Azure Key Vault name to backup BitLocker keys')]
+        [ValidateNotNullOrEmpty()]
+        [string]$BackupToKeyVault
     )
 
     function Get-DriveTypeName {
@@ -133,6 +148,54 @@ function Get-BitlockerKeyInfo {
     }
     catch {
         Write-Error "Failed to verify permissions: $($_.Exception.Message)" -ErrorAction Stop
+    }
+    
+    # Setup Azure Key Vault connection if backup is requested
+    if ($PSBoundParameters['BackupToKeyVault']) {
+        Write-Verbose 'Setting up Azure Key Vault connection for BitLocker keys backup...'
+        
+        # Key Vault configuration from parameter
+        $keyVaultName = $BackupToKeyVault
+        Write-Verbose "Using Key Vault: $keyVaultName"
+        
+        try {
+            # Check if Azure PowerShell module is available
+            if (-not (Get-Module -ListAvailable -Name Az.KeyVault)) {
+                Write-Error 'Az.KeyVault module is required for Key Vault backup. Install it with: Install-Module Az.KeyVault' -ErrorAction Stop
+            }
+            
+            # Connect to Azure (assumes Managed Identity or existing connection)
+            Write-Verbose 'Connecting to Azure for Key Vault access...'
+            try {
+                # Try to get current context first
+                $azContext = Get-AzContext -ErrorAction SilentlyContinue
+                if (-not $azContext) {
+                    # Attempt Managed Identity connection
+                    Connect-AzAccount -Identity -ErrorAction Stop
+                    Write-Verbose 'Connected to Azure using Managed Identity'
+                }
+                else {
+                    Write-Verbose 'Using existing Azure connection'
+                }
+            }
+            catch {
+                Write-Warning 'Failed to connect to Azure automatically. Please ensure you are logged in with Connect-AzAccount or using Managed Identity.'
+                Write-Error "Azure connection required for Key Vault backup: $($_.Exception.Message)" -ErrorAction Stop
+            }
+            
+            # Verify Key Vault access
+            Write-Verbose "Verifying access to Key Vault: $keyVaultName"
+            try {
+                $keyVault = Get-AzKeyVault -VaultName $keyVaultName -ErrorAction Stop
+                Write-Verbose "Successfully verified access to Key Vault: $($keyVault.VaultName)"
+            }
+            catch {
+                Write-Error "Cannot access Key Vault '$keyVaultName'. Please ensure it exists and you have appropriate permissions: $($_.Exception.Message)" -ErrorAction Stop
+            }
+        }
+        catch {
+            Write-Error "Failed to setup Azure Key Vault connection: $($_.Exception.Message)" -ErrorAction Stop
+        }
     }
 
     # Retrieve device details if requested
@@ -200,14 +263,46 @@ function Get-BitlockerKeyInfo {
             continue
         }
 
-        # Get the BitLocker key details (plain text only if explicitly requested)
-        if ($PSBoundParameters['RevealKeys']) {
+        # Get the BitLocker key details (plain text required for Key Vault backup or if explicitly requested)
+        if ($PSBoundParameters['RevealKeys'] -or $PSBoundParameters['BackupToKeyVault']) {
             Write-Verbose "[$KeyCounter/$TotalKeys] Retrieving plain text BitLocker key for device $($Key.DeviceId)..."
             $RecoveryKey = Get-MgInformationProtectionBitlockerRecoveryKey -BitlockerRecoveryKeyId $Key.Id -Property key -ErrorAction Stop -Verbose:$false
-            $KeyValue = if ($RecoveryKey.Key) { $RecoveryKey.Key } else { 'N/A' }
+            $ActualKeyValue = if ($RecoveryKey.Key) { $RecoveryKey.Key } else { 'N/A' }
+            
+            # For display purposes, hide the key unless explicitly requested
+            if ($PSBoundParameters['RevealKeys']) {
+                $KeyValue = $ActualKeyValue
+            }
+            else {
+                $KeyValue = '[HIDDEN - Backed up to Key Vault]'
+            }
         }
         else {
             $KeyValue = '[HIDDEN - Use -RevealKeys to display]'
+            $ActualKeyValue = $null
+        }
+        
+        # Backup to Key Vault if requested
+        if ($PSBoundParameters['BackupToKeyVault'] -and $ActualKeyValue -and $ActualKeyValue -ne 'N/A') {
+            try {
+                Write-Verbose "[$KeyCounter/$TotalKeys] Backing up BitLocker key to Key Vault..."
+                
+                # Get device information for Key Vault secret name
+                $deviceInfo = Get-MgDevice -Filter "DeviceId eq '$($Key.DeviceId)'" -ErrorAction SilentlyContinue
+                $deviceName = if ($deviceInfo -and $deviceInfo.DisplayName) { $deviceInfo.DisplayName } else { "UnknownDevice-$($Key.DeviceId)" }
+                
+                # Create Key Vault secret name: DeviceName-BitLockerKeyID-KeyId
+                $secretName = "$deviceName-BitLockerKeyID-$($Key.Id)"
+                
+                # Convert to secure string and save to Key Vault
+                $secretValue = ConvertTo-SecureString $ActualKeyValue -AsPlainText -Force
+                Set-AzKeyVaultSecret -VaultName $keyVaultName -Name $secretName -SecretValue $secretValue -ErrorAction Continue
+                
+                Write-Verbose "[$KeyCounter/$TotalKeys] Successfully backed up key for device $deviceName to Key Vault"
+            }
+            catch {
+                Write-Warning "[$KeyCounter/$TotalKeys] Failed to backup BitLocker key to Key Vault for device $($Key.DeviceId): $($_.Exception.Message)"
+            }
         }
         
         $Key.Key = $KeyValue
