@@ -77,6 +77,16 @@ function Test-ExMailboxProxyAddress {
         [switch]$NotMatchOnly
     )
 
+    # Validation: If Mailbox or ProxyAddress is provided, both must be provided
+    if ($PSCmdlet.ParameterSetName -eq 'Single') {
+        if (($Mailbox -and -not $ProxyAddress) -or (-not $Mailbox -and $ProxyAddress)) {
+            throw 'Mailbox and ProxyAddress parameters must be used together. If you specify one, you must specify the other.'
+        }
+        if (-not $Mailbox -and -not $ProxyAddress -and -not $CsvPath) {
+            throw 'You must specify either Mailbox and ProxyAddress together, or CsvPath.'
+        }
+    }
+
     [System.Collections.Generic.List[PSCustomObject]]$results = @()
     
     # Direct processing based on parameter type
