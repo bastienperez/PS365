@@ -278,31 +278,36 @@ function Set-ExMailboxProtocol {
             }
         }
 
-        $command = 'Set-EXOCasMailbox ' + ($cmdParams.GetEnumerator() | ForEach-Object { 
-                $value = if ($_.Value -is [bool]) { 
-                    if ($_.Value) { '$true' } else { '$false' }
+        if ($GenerateCmdlets) {
+            Write-Host -ForegroundColor Cyan "[$currentCount/$totalCount] $($casMailbox.PrimarySmtpAddress) - Generating command..."
+            $command = 'Set-EXOCasMailbox ' + ($cmdParams.GetEnumerator() | ForEach-Object { 
+                    $value = if ($_.Value -is [bool]) { 
+                        if ($_.Value) { '$true' } else { '$false' }
+                    }
+                    else { 
+                        "`"$($_.Value)`"" 
+                    }
+                    "-$($_.Key) $value"
+                }) -join ' '
+        
+            $commands += $command
+        }
+        else {
+            if ($PSCmdlet.ShouldProcess($casMailbox.PrimarySmtpAddress, 'Set EXO Mailbox Protocols')) {
+                Write-Host -ForegroundColor Cyan "[$currentCount/$totalCount] $($casMailbox.PrimarySmtpAddress) - Setting protocols..."
+                try {
+                    Set-CasMailbox @cmdParams -ErrorAction Stop
+                    Write-Host "[$currentCount/$totalCount] $($casMailbox.PrimarySmtpAddress) - Configuration applied successfully." -ForegroundColor Green
                 }
-                else { 
-                    "`"$($_.Value)`"" 
+                catch {
+                    Write-Host "[$currentCount/$totalCount] $($casMailbox.PrimarySmtpAddress) - $($_.Exception.Message)" -ForegroundColor Red
                 }
-                "-$($_.Key) $value"
-            }) -join ' '
-        $Commands += $command
-
-        if (-not $GenerateCmdlets -and $PSCmdlet.ShouldProcess($casMailbox.PrimarySmtpAddress, 'Set EXO Mailbox Protocols')) {
-            Write-Host -ForegroundColor Cyan "[$currentCount/$totalCount] $($casMailbox.PrimarySmtpAddress) - Setting protocols..."
-            try {
-                Set-CasMailbox @cmdParams -ErrorAction Stop
-                Write-Host "[$currentCount/$totalCount] $($casMailbox.PrimarySmtpAddress) - Configuration applied successfully." -ForegroundColor Green
-            }
-            catch {
-                Write-Host "[$currentCount/$totalCount] $($casMailbox.PrimarySmtpAddress) - $($_.Exception.Message)" -ForegroundColor Red
             }
         }
-    }
 
-    if ($GenerateCmdlets) {
-        $Commands | Out-File -FilePath $OutputFile -Encoding UTF8
-        Write-Host "Generated cmdlets saved to $OutputFile" -ForegroundColor Yellow
+        if ($GenerateCmdlets) {
+            $Commands | Out-File -FilePath $OutputFile -Encoding UTF8
+            Write-Host "Generated cmdlets saved to $OutputFile" -ForegroundColor Yellow
+        }
     }
 }
