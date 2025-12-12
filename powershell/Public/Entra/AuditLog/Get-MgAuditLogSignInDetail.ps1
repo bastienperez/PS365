@@ -541,9 +541,7 @@ function Get-MgAuditLogSignInDetail {
                 # values can be any of the following: 'success', 'failure', 'notApplied', 'reportOnlySuccess', 'reportOnlyFailure', 'reportOnlyNotApplied' and 'notEnabled'
                 # reportOnlySuccess: All configured policy conditions, required non-interactive grant controls, and session controls were satisfied. For example, a multifactor authentication requirement is satisfied by an MFA claim already present in the token, or a compliant device policy is satisfied by performing a device check on a compliant device.
                 # reportOnlyFailure: All configured policy conditions were satisfied but not all the required non-interactive grant controls or session controls were satisfied. For example, a policy applies to a user where a block control is configured, or a device fails a compliant device policy.
-                # reportOnlyInterrupted :
-                
-                # Report-only User action required (dont know what is is) : All configured policy conditions were satisfied but user action would be required to satisfy the required grant controls or session controls. With report-only mode, the user isn't prompted to satisfy the required controls. For example, users aren't prompted for multifactor authentication challenges or terms of use.
+                # reportOnlyInterrupted  = Report-only User action required : All configured policy conditions were satisfied but user action would be required to satisfy the required grant controls or session controls. With report-only mode, the user isn't prompted to satisfy the required controls. For example, users aren't prompted for multifactor authentication challenges or terms of use.
                 # Report-only: Not applied : Not all configured policy conditions were satisfied. For example, the user is excluded from the policy or the policy only applies to certain trusted named locations.
 
                 # source: https://learn.microsoft.com/en-us/entra/identity/conditional-access/concept-conditional-access-report-only#policy-evaluation-results
