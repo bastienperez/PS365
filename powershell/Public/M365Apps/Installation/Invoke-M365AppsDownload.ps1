@@ -60,15 +60,15 @@ function Invoke-M365AppsDownload {
 	Write-Host -ForegroundColor Cyan "Downloading the Office Deployment Tool to $odtFolder"
 
 	$url = 'https://www.microsoft.com/en-us/download/details.aspx?id=49117'
-	#$response = Invoke-WebRequest -Uri $url
+
 	$response = Invoke-RestMethod -Uri $url
-	# content has https://download.microsoft.com/download/6c1eeb25-cf8b-41d9-8d0d-cc1dbc032140/officedeploymenttool_19029-20278.exe
+	# content haslink `https://download.microsoft.com/download/6c1eeb25-cf8b-41d9-8d0d-cc1dbc032140/officedeploymenttool_19029-20278.exe`
 
 	$regex = 'https:\/\/download\.microsoft\.com\/download\/[a-z0-9\-\/]+\/officedeploymenttool_[0-9\-]+\.exe'
 	$downloadLink = [regex]::Match($response, $regex).Value
     
 	Write-Host -ForegroundColor Cyan "Downloading the Office Deployment Tool from $downloadLink"
-	Invoke-WebRequest -Uri $downloadLink -OutFile "$odtFolder\officedeploymenttool.exe"
+	Invoke-WebRequest -Uri $downloadLink -OutFile "$odtFolder\officedeploymenttool.exe" -UseBasicParsing
 
 	Write-Host -ForegroundColor Cyan "Extracting the Office Deployment Tool to $odtFolder"
 	. $odtFolder\officedeploymenttool.exe /extract:$odtFolder /quiet
