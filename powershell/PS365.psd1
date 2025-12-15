@@ -12,7 +12,7 @@
 RootModule = 'PS365.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.0.39'
+ModuleVersion = '0.0.41'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -75,13 +75,13 @@ FunctionsToExport = 'Switch-AzureCliAuthMode', 'Switch-AzurePowerShellMode',
                'Get-MgApplicationSAML', 'Get-MgApplicationSCIM', 
                'Get-MgRegisteredApp', 'Set-MgEnterpriseAppStatus', 
                'Set-MgRegisteredAppStatus', 'Get-MgAuditLogSignInDetail', 
-               'New-MgAuditLogSignInHTMLReport', 'Get-MgPasswordPolicyDetail', 
-               'Get-MgUserPasswordInfo', 'Get-MgRoleReport', 
-               'Find-DistributionGroupMembers', 'Get-ExMailboxByDomain', 
-               'Get-ExMailboxForwarding', 'Get-ExMailboxFromAttribute', 
-               'Get-ExMailboxMaxSize', 'Get-ExMailboxOnMicrosoftAddress', 
-               'Get-ExMailboxPermission', 'Get-ExMailboxProtocol', 
-               'Get-ExMailboxRegionalConfiguration', 
+               'New-MgAuditLogSignInHTMLReport', 'Get-DynamicGroupsInM365', 
+               'Get-MgPasswordPolicyDetail', 'Get-MgUserPasswordInfo', 
+               'Get-MgRoleReport', 'Find-DistributionGroupMembers', 
+               'Get-ExMailboxByDomain', 'Get-ExMailboxForwarding', 
+               'Get-ExMailboxFromAttribute', 'Get-ExMailboxMaxSize', 
+               'Get-ExMailboxOnMicrosoftAddress', 'Get-ExMailboxPermission', 
+               'Get-ExMailboxProtocol', 'Get-ExMailboxRegionalConfiguration', 
                'Get-ExMailboxStatisticsDetail', 'Get-ExResourceMailbox', 
                'Test-ExMailboxProxyAddress', 'Set-ExMailboxMaxSize', 
                'Set-ExMailboxProtocol', 'Set-ExMailboxRegionalConfiguration', 
