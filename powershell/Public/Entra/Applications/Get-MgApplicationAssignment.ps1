@@ -54,12 +54,12 @@ function Get-MgApplicationAssignment {
     # Initialize results array
     [System.Collections.Generic.List[PSCustomObject]]$applicationAssignmentsArray = @()
     
-    Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] Début de l'analyse de $($servicePrincipals.Count) applications..." -ForegroundColor Cyan
+    Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] Starting analysis of $($servicePrincipals.Count) applications..." -ForegroundColor Cyan
     $counter = 0
     
     foreach ($sp in $servicePrincipals) {
         $counter++
-        Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] [$counter/$($servicePrincipals.Count)] Analyse de l'application: $($sp.DisplayName)" -ForegroundColor Cyan
+        Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] [$counter/$($servicePrincipals.Count)] Analyzing application: $($sp.DisplayName)" -ForegroundColor Cyan
         
         # Get app role assignments for this service principal
         $appRoleAssignments = Get-MgServicePrincipalAppRoleAssignedTo -ServicePrincipalId $sp.Id
@@ -70,38 +70,38 @@ function Get-MgApplicationAssignment {
                 # Initialize assignment properties in logical order for readability
                 $assignmentProps = [ordered]@{
                     # Application info (most important first)
-                    ApplicationName              = $sp.DisplayName
-                    AssignmentType               = ''
-                    PrincipalType                = ''
-                    IsRoleAssignableGroup        = $null
+                    ApplicationName            = $sp.DisplayName
+                    AssignmentType             = ''
+                    PrincipalType              = ''
+                    IsRoleAssignableGroup      = $null
                     
                     # Principal details (User, Group, or Service Principal)
-                    UserName                     = $null
-                    UserPrincipalName            = $null
-                    GroupName                    = $null
-                    GroupType                    = $null
-                    ServicePrincipalName         = $null
-                    ServicePrincipalType         = $null
-                    PrincipalDisplayName         = $null
+                    UserName                   = $null
+                    UserPrincipalName          = $null
+                    GroupName                  = $null
+                    GroupType                  = $null
+                    ServicePrincipalName       = $null
+                    ServicePrincipalType       = $null
+                    PrincipalDisplayName       = $null
                     
                     # Role and permission details
-                    AppRoleValue                 = ($sp.AppRoles | Where-Object { $_.Id -eq $assignment.AppRoleId }).Value
-                    AppRoleId                    = $assignment.AppRoleId
-                    AppRoleAssignmentRequired    = $sp.AppRoleAssignmentRequired
+                    AppRoleValue               = ($sp.AppRoles | Where-Object { $_.Id -eq $assignment.AppRoleId }).Value
+                    AppRoleId                  = $assignment.AppRoleId
+                    AppRoleAssignmentRequired  = $sp.AppRoleAssignmentRequired
                     
                     # Technical IDs (less important, at the end)
-                    ApplicationId                = $sp.AppId
-                    ServicePrincipalId           = $sp.Id
-                    UserId                       = $null
-                    GroupId                      = $null
-                    AssignedServicePrincipalId   = $null
-                    PrincipalId                  = $null
-                    IsAssignableToRole           = $null
-                    ServicePrincipalAppId        = $null
+                    ApplicationId              = $sp.AppId
+                    ServicePrincipalId         = $sp.Id
+                    UserId                     = $null
+                    GroupId                    = $null
+                    AssignedServicePrincipalId = $null
+                    PrincipalId                = $null
+                    IsAssignableToRole         = $null
+                    ServicePrincipalAppId      = $null
                     
                     # Metadata (at the end)
-                    ApplicationPublisher         = $sp.PublisherName
-                    CreatedDate                  = $assignment.CreatedDateTime
+                    ApplicationPublisher       = $sp.PublisherName
+                    CreatedDate                = $assignment.CreatedDateTime
                 }
                 
                 if ($assignment.PrincipalType -eq 'User') {
@@ -111,7 +111,7 @@ function Get-MgApplicationAssignment {
                     try {
                         $user = Get-MgUser -UserId $assignment.PrincipalId -ErrorAction SilentlyContinue
                         if ($user) {
-                            Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')]   -> Utilisateur trouvé: $($user.DisplayName)" -ForegroundColor Green
+                            Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')]   -> User found: $($user.DisplayName)" -ForegroundColor Green
                             
                             $assignmentProps.UserName = $user.DisplayName
                             $assignmentProps.UserPrincipalName = $user.UserPrincipalName
@@ -125,7 +125,7 @@ function Get-MgApplicationAssignment {
                         }
                     }
                     catch {
-                        Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')]   -> Erreur lors de la récupération de l'utilisateur $($assignment.PrincipalId): $($_.Exception.Message)" -ForegroundColor Red
+                        Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')]   -> Error retrieving user $($assignment.PrincipalId): $($_.Exception.Message)" -ForegroundColor Red
                         
                         $assignmentProps.AssignmentType = 'User Assignment (Error)'
                         $assignmentProps.UserName = "User ID: $($assignment.PrincipalId)"
@@ -140,8 +140,8 @@ function Get-MgApplicationAssignment {
                     try {
                         $group = Get-MgGroup -GroupId $assignment.PrincipalId -ErrorAction SilentlyContinue
                         if ($group) {
-                            $protectedStatus = if ($null -ne $group.IsAssignableToRole) { $group.IsAssignableToRole } else { "N/A" }
-                            Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')]   -> Groupe trouvé: $($group.DisplayName) (Protected: $protectedStatus)" -ForegroundColor Green
+                            $protectedStatus = if ($null -ne $group.IsAssignableToRole) { $group.IsAssignableToRole } else { 'N/A' }
+                            Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')]   -> Group found: $($group.DisplayName) (Protected: $protectedStatus)" -ForegroundColor Green
                             
                             $assignmentProps.GroupName = $group.DisplayName
                             $assignmentProps.GroupId = $group.Id
@@ -159,7 +159,7 @@ function Get-MgApplicationAssignment {
                         }
                     }
                     catch {
-                        Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')]   -> Erreur lors de la récupération du groupe $($assignment.PrincipalId): $($_.Exception.Message)" -ForegroundColor Red
+                        Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')]   -> Error retrieving group $($assignment.PrincipalId): $($_.Exception.Message)" -ForegroundColor Red
                         
                         $assignmentProps.AssignmentType = 'Group Assignment (Error)'
                         $assignmentProps.GroupName = "Group ID: $($assignment.PrincipalId)"
@@ -176,7 +176,7 @@ function Get-MgApplicationAssignment {
                     try {
                         $servicePrincipal = Get-MgServicePrincipal -ServicePrincipalId $assignment.PrincipalId -ErrorAction SilentlyContinue
                         if ($servicePrincipal) {
-                            Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')]   -> Service Principal trouvé: $($servicePrincipal.DisplayName)" -ForegroundColor Magenta
+                            Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')]   -> Service Principal found: $($servicePrincipal.DisplayName)" -ForegroundColor Magenta
                             
                             $assignmentProps.ServicePrincipalName = $servicePrincipal.DisplayName
                             $assignmentProps.ServicePrincipalAppId = $servicePrincipal.AppId
@@ -192,7 +192,7 @@ function Get-MgApplicationAssignment {
                         }
                     }
                     catch {
-                        Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')]   -> Erreur lors de la récupération du Service Principal $($assignment.PrincipalId): $($_.Exception.Message)" -ForegroundColor Red
+                        Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')]   -> Error retrieving Service Principal $($assignment.PrincipalId): $($_.Exception.Message)" -ForegroundColor Red
                         
                         $assignmentProps.AssignmentType = 'Service Principal Assignment (Error)'
                         $assignmentProps.ServicePrincipalName = "Service Principal ID: $($assignment.PrincipalId)"
@@ -208,7 +208,7 @@ function Get-MgApplicationAssignment {
                     $assignmentProps.PrincipalId = $assignment.PrincipalId
                     $assignmentProps.PrincipalDisplayName = "Unknown $($assignment.PrincipalType)"
                     
-                    Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')]   -> Type de principal non géré: $($assignment.PrincipalType) (ID: $($assignment.PrincipalId))" -ForegroundColor DarkYellow
+                    Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')]   -> Unhandled principal type: $($assignment.PrincipalType) (ID: $($assignment.PrincipalId))" -ForegroundColor DarkYellow
                 }
                 
                 # Create and add the assignment object
@@ -220,49 +220,49 @@ function Get-MgApplicationAssignment {
             # No assignments found - create one entry using the same complete structure
             $assignmentProps = [ordered]@{
                 # Application info (most important first)
-                ApplicationName              = $sp.DisplayName
-                AssignmentType               = ''
-                PrincipalType                = ''
-                IsRoleAssignableGroup        = $null
+                ApplicationName            = $sp.DisplayName
+                AssignmentType             = ''
+                PrincipalType              = ''
+                IsRoleAssignableGroup      = $null
                 
                 # Principal details (User, Group, or Service Principal)
-                UserName                     = $null
-                UserPrincipalName            = $null
-                GroupName                    = $null
-                GroupType                    = $null
-                ServicePrincipalName         = $null
-                ServicePrincipalType         = $null
-                PrincipalDisplayName         = $null
+                UserName                   = $null
+                UserPrincipalName          = $null
+                GroupName                  = $null
+                GroupType                  = $null
+                ServicePrincipalName       = $null
+                ServicePrincipalType       = $null
+                PrincipalDisplayName       = $null
                 
                 # Role and permission details
-                AppRoleValue                 = $null
-                AppRoleId                    = $null
-                AppRoleAssignmentRequired    = $sp.AppRoleAssignmentRequired
+                AppRoleValue               = $null
+                AppRoleId                  = $null
+                AppRoleAssignmentRequired  = $sp.AppRoleAssignmentRequired
                 
                 # Technical IDs (less important, at the end)
-                ApplicationId                = $sp.AppId
-                ServicePrincipalId           = $sp.Id
-                UserId                       = $null
-                GroupId                      = $null
-                AssignedServicePrincipalId   = $null
-                PrincipalId                  = $null
-                IsAssignableToRole           = $null
-                ServicePrincipalAppId        = $null
+                ApplicationId              = $sp.AppId
+                ServicePrincipalId         = $sp.Id
+                UserId                     = $null
+                GroupId                    = $null
+                AssignedServicePrincipalId = $null
+                PrincipalId                = $null
+                IsAssignableToRole         = $null
+                ServicePrincipalAppId      = $null
                 
                 # Metadata (at the end)
-                ApplicationPublisher         = $sp.PublisherName
-                CreatedDate                  = $sp.CreatedDateTime
+                ApplicationPublisher       = $sp.PublisherName
+                CreatedDate                = $sp.CreatedDateTime
             }
             
             if ($sp.AppRoleAssignmentRequired -eq $false) {
                 $assignmentProps.AssignmentType = 'All Users (No Assignment Required)'
                 $assignmentProps.PrincipalType = 'All Users'
-                Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')]   -> Application disponible pour tous les utilisateurs (aucune assignation requise)" -ForegroundColor Yellow
+                Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')]   -> Application available to all users (no assignment required)" -ForegroundColor Yellow
             }
             else {
                 $assignmentProps.AssignmentType = 'Not Assigned'
                 $assignmentProps.PrincipalType = 'None'
-                Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')]   -> Aucune assignation trouvée" -ForegroundColor Gray
+                Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')]   -> No assignments found" -ForegroundColor Gray
             }
             
             # Create and add the no-assignment object
@@ -271,7 +271,7 @@ function Get-MgApplicationAssignment {
         }
     }
     
-    Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] Analyse terminée. Total d'éléments trouvés: $($applicationAssignmentsArray.Count)" -ForegroundColor Cyan
+    Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] Analysis completed. Total items found: $($applicationAssignmentsArray.Count)" -ForegroundColor Cyan
     
     # Apply filtering if requested
     if ($OnlyAssignedToAllUsers.IsPresent) {
@@ -279,7 +279,7 @@ function Get-MgApplicationAssignment {
         $applicationAssignmentsArray = $applicationAssignmentsArray | Where-Object { 
             $_.AssignmentType -eq 'All Users (No Assignment Required)' 
         }
-        Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] Filtrage appliqué (OnlyAssignedToAllUsers): $($applicationAssignmentsArray.Count)/$beforeCount éléments conservés" -ForegroundColor Cyan
+        Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] Filtering applied (OnlyAssignedToAllUsers): $($applicationAssignmentsArray.Count)/$beforeCount items retained" -ForegroundColor Cyan
     }
     
     if ($ExportToExcel.IsPresent) {
