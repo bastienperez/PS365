@@ -1,56 +1,117 @@
 ---
-title: "Introduction"
-description: "Welcome to PS365 documentation"
+title: "PS365 - PowerShell for Microsoft 365"
+description: "Comprehensive PowerShell module for Microsoft 365 tenant management and automation"
 ---
 
-## Setting up
+# PS365 - PowerShell for Microsoft 365
 
-Get your documentation site up and running in minutes.
+PowerShell module for Microsoft 365 tenant management
 
-<Card title="Start here" icon="rocket" horizontal href="/quickstart">
-  Follow our three step quickstart guide.
-</Card>
+PS365 is a comprehensive collection of PowerShell functions designed to simplify and automate Microsoft 365 administration tasks. Whether you're managing Exchange Online, Azure AD, or other Microsoft 365 services, PS365 provides you with secure and reliable tools for efficient tenant management.
 
-## Make it yours
+## 🚀 Features
 
-Design a docs site that looks great and empowers your users.
+- **Powerful Automation** - Streamline complex Microsoft 365 administration tasks
+- **Well Documented** - Comprehensive guides, examples, and parameter descriptions  
+- **Easy to Use** - Simple PowerShell cmdlets with intuitive parameters
+- **Multi-Service Support** - Works with Exchange Online, Entra ID, Teams, and more
 
-<Columns cols={2}>
-  <Card title="Edit locally" icon="pen-to-square" href="/development">
-    Edit your docs locally and preview them in real time.
-  </Card>
-  <Card title="Customize your site" icon="palette" href="/essentials/settings">
-    Customize the design and colors of your site to match your brand.
-  </Card>
-  <Card title="Set up navigation" icon="map" href="/essentials/navigation">
-    Organize your docs to help users find what they need and succeed with your product.
-  </Card>
-  <Card title="API documentation" icon="terminal" href="/api-reference/introduction">
-    Auto-generate API documentation from OpenAPI specifications.
-  </Card>
-</Columns>
+## 📊 Key Capabilities
 
-## Create beautiful pages
+### Authentication & Identity Management
+- **Authentication Methods Analysis** - Deep insights into user MFA configurations
+- **User Authentication Reporting** - Comprehensive reports with Excel export capabilities
+- **Method ID tracking** - Track and analyze authentication method usage patterns
+- **Duplicate Detection** - Identify shared phone numbers and authentication overlaps
 
-Everything you need to create world-class documentation.
+### Exchange Online Management
+- **Mailbox Administration** - Efficient mailbox management and reporting
+- **Recipient Analysis** - Detailed recipient type detection and classification
+- **Integration Ready** - Seamless integration with Exchange Online PowerShell
 
-<Columns cols={2}>
-  <Card title="Write with MDX" icon="pen-fancy" href="/essentials/markdown">
-    Use MDX to style your docs pages.
-  </Card>
-  <Card title="Code samples" icon="code" href="/essentials/code">
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card title="Images" icon="image" href="/essentials/images">
-    Display images and other media.
-  </Card>
-  <Card title="Reusable snippets" icon="recycle" href="/essentials/reusable-snippets">
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
+### Microsoft Graph Integration
+- **Beta API Support** - Access to latest Microsoft Graph Beta endpoints
+- **Enhanced Properties** - Get LastUsedDateTime, CreatedDateTime, and clientAppName
+- **Bulk Operations** - Efficient parallel processing for large tenants
+- **Error Handling** - Robust error management and logging
 
-## Need inspiration?
+## 🔧 Core Functions
 
-<Card title="See complete examples" icon="stars" href="https://mintlify.com/customers">
-  Browse our showcase of exceptional documentation sites.
-</Card>
+### `Get-MgAuthNMethodInfo`
+Advanced authentication method analysis for Microsoft 365 users with comprehensive reporting capabilities.
+
+**Key Features:**
+- Support for all authentication method types (Phone, Authenticator, FIDO2, etc.)
+- Excel export with multiple analysis sheets
+- Duplicate phone number detection
+- Method ID tracking and analysis
+- Beta API integration for enhanced data
+
+**Example:**
+```powershell
+# Get detailed authentication methods for all users
+Get-MgAuthNMethodInfo -IncludeDetails -ExportToExcel
+
+# Analyze specific users with last used information
+Get-MgAuthNMethodInfo -Identity @('user1@contoso.com', 'user2@contoso.com') -IncludeLastUsedMethod
+```
+
+## 📈 Reporting & Analytics
+
+### Excel Integration
+- **Multi-Sheet Reports** - Organized data across multiple Excel worksheets
+- **Shared Phone Analysis** - Identify phone numbers used by multiple users  
+- **Visual Analytics** - Auto-sized columns and filtering for easy analysis
+- **Empty Sheet Handling** - Consistent sheet structure even when no data exists
+
+### Data Export Formats
+- **PowerShell Objects** - Native PowerShell object output for scripting
+- **Excel Files** - Professional Excel reports with multiple worksheets
+- **Structured Data** - Properly formatted data with consistent schemas
+
+## 🛡️ Security & Compliance
+
+### Authentication & Permissions
+- **Microsoft Graph Scopes** - Proper scope management for secure access
+- **Token Management** - Efficient token handling and renewal
+- **Multi-Tenant Support** - Works across different Microsoft 365 tenants
+
+### Data Protection
+- **Secure Data Handling** - No credential storage or logging
+- **Privacy Focused** - Minimal data collection and processing
+- **Audit Ready** - Comprehensive logging for compliance requirements
+
+## 📚 Use Cases
+
+### IT Administrators
+- **Security Audits** - Comprehensive authentication method analysis
+- **Compliance Reporting** - Generate reports for security compliance
+- **User Management** - Efficient bulk user operations and analysis
+
+### Security Teams  
+- **Risk Assessment** - Identify users with weak authentication setups
+- **Shared Resource Detection** - Find shared phone numbers across users
+- **Authentication Monitoring** - Track authentication method usage patterns
+
+### Microsoft 365 Consultants
+- **Tenant Assessment** - Quick analysis of client Microsoft 365 environments
+- **Migration Planning** - Understanding current authentication landscapes
+- **Best Practice Implementation** - Guidance based on comprehensive data
+
+## 🔄 Continuous Development
+
+PS365 is actively maintained and regularly updated with:
+- New Microsoft Graph API features
+- Enhanced reporting capabilities  
+- Additional Microsoft 365 service support
+- Performance improvements and bug fixes
+- Community-driven feature requests
+
+## 📞 Support & Community
+
+- **Documentation** - Comprehensive guides and examples
+- **GitHub Issues** - Bug reports and feature requests
+
+---
+
+*PS365 - Making Microsoft 365 administration simple and efficient.*
