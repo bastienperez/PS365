@@ -29,8 +29,12 @@ Install-Module -Name PS365 -Scope CurrentUser
 
 ### Verify Installation
 
-After installation, verify that the module is available:
+**PowerShell 7+:**
+```powershell
+Get-PSResource PS365
+```
 
+**Windows PowerShell 5.1:**
 ```powershell
 Get-Module PS365 -ListAvailable
 ```
