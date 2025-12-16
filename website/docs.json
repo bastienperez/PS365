@@ -3,89 +3,61 @@
   "theme": "mint",
   "name": "PS365",
   "colors": {
-    "primary": "#16A34A",
+    "primary": "#de761d",
     "light": "#07C983",
     "dark": "#15803D"
   },
   "favicon": "/favicon.svg",
   "navigation": {
-    "tabs": [
+    "groups": [
       {
-        "tab": "Guides",
-        "groups": [
-          {
-            "group": "Getting started",
-            "pages": [
-              "index",
-              "quickstart"
-            ]
-          },
-          {
-            "group": "AI tools",
-            "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
-            ]
-          }
-          ,
-          {
-            "group": "Commands",
-            "pages": [
-              "docs/commands/Compare-UserAttribute",
-              "docs/commands/Disable-MSSelfServicePurchase",
-              "docs/commands/Find-DistributionGroupMembers", 
-              "docs/commands/Find-M365Email",
-              "docs/commands/Get-ExMailboxByDomain",
-              "docs/commands/Get-ExMailboxForwarding",
-              "docs/commands/Get-ExMailboxFromAttribute",
-              "docs/commands/Get-ExMailboxMaxSize",
-              "docs/commands/Get-ExMailboxOnMicrosoftAddress",
-              "docs/commands/Get-ExMailboxPermission",
-              "docs/commands/Get-ExMailboxProtocol",
-              "docs/commands/Get-ExMailboxRegionalConfiguration",
-              "docs/commands/Get-ExMailboxStatisticsDetail",
-              "docs/commands/Get-ExResourceMailbox",
-              "docs/commands/Get-ExRoleReport",
-              "docs/commands/Get-MessageTraceInfo",
-              "docs/commands/Get-MgApplicationAssignment",
-              "docs/commands/Get-MgApplicationCredential",
-              "docs/commands/Get-MgApplicationSAML",
-              "docs/commands/Get-MgApplicationSCIM",
-              "docs/commands/Get-MgAuditLogSignInDetail",
-              "docs/commands/Get-MgPasswordPolicyDetail",
-              "docs/commands/Get-MgRoleReport",
-              "docs/commands/Get-MgUserPasswordInfo",
-              "docs/commands/Get-MobileDeviceDetail",
-              "docs/commands/Get-PurviewRoleReport",
-              "docs/commands/Install-M365Apps",
-              "docs/commands/Invoke-M365AppsDownload",
-              "docs/commands/New-MgAuditLogSignInHTMLReport",
-              "docs/commands/Set-ExMailboxMaxSize",
-              "docs/commands/Set-ExMailboxProtocol",
-              "docs/commands/Set-ExMailboxRegionalConfiguration",
-              "docs/commands/Switch-AzureCliAuthMode",
-              "docs/commands/Switch-AzurePowerShellMode",
-              "docs/commands/Test-ExMailboxProxyAddress"
-            ]
-          }
+        "group": "Getting started",
+        "pages": [
+          "index",
+          "quickstart"
+        ]
+      },
+      {
+        "group": "Commands",
+        "pages": [
+          "docs/commands/Compare-UserAttribute",
+          "docs/commands/Disable-MSSelfServicePurchase",
+          "docs/commands/Find-DistributionGroupMembers",
+          "docs/commands/Find-M365Email",
+          "docs/commands/Get-ExMailboxByDomain",
+          "docs/commands/Get-ExMailboxForwarding",
+          "docs/commands/Get-ExMailboxFromAttribute",
+          "docs/commands/Get-ExMailboxMaxSize",
+          "docs/commands/Get-ExMailboxOnMicrosoftAddress",
+          "docs/commands/Get-ExMailboxPermission",
+          "docs/commands/Get-ExMailboxProtocol",
+          "docs/commands/Get-ExMailboxRegionalConfiguration",
+          "docs/commands/Get-ExMailboxStatisticsDetail",
+          "docs/commands/Get-ExResourceMailbox",
+          "docs/commands/Get-ExRoleReport",
+          "docs/commands/Get-MessageTraceInfo",
+          "docs/commands/Get-MgApplicationAssignment",
+          "docs/commands/Get-MgApplicationCredential",
+          "docs/commands/Get-MgApplicationSAML",
+          "docs/commands/Get-MgApplicationSCIM",
+          "docs/commands/Get-MgAuditLogSignInDetail",
+          "docs/commands/Get-MgPasswordPolicyDetail",
+          "docs/commands/Get-MgRoleReport",
+          "docs/commands/Get-MgUserPasswordInfo",
+          "docs/commands/Get-MobileDeviceDetail",
+          "docs/commands/Get-PurviewRoleReport",
+          "docs/commands/Install-M365Apps",
+          "docs/commands/Invoke-M365AppsDownload",
+          "docs/commands/New-MgAuditLogSignInHTMLReport",
+          "docs/commands/Set-ExMailboxMaxSize",
+          "docs/commands/Set-ExMailboxProtocol",
+          "docs/commands/Set-ExMailboxRegionalConfiguration",
+          "docs/commands/Switch-AzureCliAuthMode",
+          "docs/commands/Switch-AzurePowerShellMode",
+          "docs/commands/Test-ExMailboxProxyAddress"
         ]
       }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
+    ]
   },
   "logo": {
     "light": "/logo/light.svg",
@@ -95,26 +67,26 @@
     "links": [
       {
         "label": "Support",
-        "href": "mailto:hi@mintlify.com"
+        "href": "https://github.com/bastienperez/PS365/issues"
       }
     ],
     "primary": {
       "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
+      "label": "Github",
+      "href": "https://github.com/bastienperez/PS365"
     }
   },
   "contextual": {
     "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
+      "copy",
+      "view",
+      "chatgpt",
+      "claude",
+      "perplexity",
+      "mcp",
+      "cursor",
+      "vscode"
+    ]
   },
   "footer": {
     "socials": {
