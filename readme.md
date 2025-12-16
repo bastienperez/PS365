@@ -14,7 +14,7 @@ PS365 is a comprehensive collection of PowerShell functions designed to simplify
 
 Complete documentation, installation guide, and command reference is available at:
 
-**[https://ps365.dev](https://ps365.dev)**
+**[https://ps365.clidsys.com](https://ps365.clidsys.com)**
 
 ## ⚡ Quick Start
 
@@ -42,7 +42,7 @@ Get-Command -Module PS365
 
 ## 🔗 Links
 
-- **Documentation**: [ps365.dev](https://ps365.dev)
+- **Documentation**: [ps365.clidsys.com](https://ps365.clidsys.com)
 - **PowerShell Gallery**: [PS365 Module](https://www.powershellgallery.com/packages/PS365)
 - **Issues & Support**: [GitHub Issues](https://github.com/bastienperez/PS365/issues)
 
