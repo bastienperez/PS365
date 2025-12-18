@@ -19,7 +19,7 @@
     
     .PARAMETER RevealKeys
     Switch to display BitLocker recovery keys in plain text format in the CSV export.
-    ⚠️  WARNING: This will expose sensitive BitLocker recovery keys in the output file!
+    WARNING: This will expose sensitive BitLocker recovery keys in the output file!
     Use only when necessary and ensure secure storage of the exported file.
     
     .PARAMETER BackupToKeyVault
@@ -42,7 +42,7 @@
     Get-BitlockerKeyFromIntune -IncludeDeviceInfo -IncludeDeviceOwner -RevealKeys -ExportToExcel
 
     This command generates a comprehensive report with BitLocker keys visible in plain text and exports to Excel.
-    ⚠️  WARNING: Use with extreme caution as this exposes sensitive recovery keys!
+    WARNING: Use with extreme caution as this exposes sensitive recovery keys!
     
     .EXAMPLE
     Get-BitlockerKeyFromIntune -IncludeDeviceInfo -BackupToKeyVault "MyBitLockerVault" -ExportToExcel
@@ -65,7 +65,7 @@
     - Application context: Can read BitLocker keys for all devices in the organization (requires admin consent)
     - Managed Identity: Same as application context when properly configured with admin consent
     
-    ⚠️  SECURITY WARNING: The exported CSV file contains sensitive BitLocker recovery keys. 
+    SECURITY WARNING: The exported CSV file contains sensitive BitLocker recovery keys. 
     Store it in a secure location and limit access appropriately!
 #>
 
@@ -377,11 +377,11 @@ function Get-BitlockerKeyInfo {
             Write-Host "✅ Report successfully exported to: $ExcelFilePath" -ForegroundColor Green
             
             if ($PSBoundParameters['RevealKeys']) {
-                Write-Warning '⚠️  SECURITY ALERT: The Excel file contains BitLocker recovery keys in PLAIN TEXT!'
-                Write-Warning '⚠️  Ensure this file is stored securely and access is properly restricted!'
+                Write-Warning 'SECURITY ALERT: The Excel file contains BitLocker recovery keys in PLAIN TEXT!'
+                Write-Warning 'Ensure this file is stored securely and access is properly restricted!'
             }
             else {
-                Write-Host '🔒 BitLocker keys are hidden in the export. Use -RevealKeys to display them.' -ForegroundColor Cyan
+                Write-Host 'BitLocker keys are hidden in the export. Use -RevealKeys to display them.' -ForegroundColor Cyan
             }
         }
         catch {
