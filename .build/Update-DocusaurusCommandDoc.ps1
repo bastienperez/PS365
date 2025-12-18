@@ -48,7 +48,7 @@ foreach ($file in $cmdMarkdownFiles) {
     $updatedContent = $updatedContent -replace "hide_table_of_contents:.*(\r?\n)", ''
     
     # Remove the entire ProgressAction section
-    $updatedContent = $updatedContent -replace "### -ProgressAction.*?(?=^###|\z)", '', 'Singleline'
+    $updatedContent = [regex]::Replace($updatedContent, "(?s)### -ProgressAction.*?(?=^###|\z)", '')
 
     Set-Content $file $updatedContent
 
