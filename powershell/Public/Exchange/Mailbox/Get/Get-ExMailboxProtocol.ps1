@@ -38,6 +38,9 @@
     Get-ExMailboxProtocol -ExportToExcel
 
     Exports mailbox protocol settings for all Exchange Online mailboxes to an Excel file in the user's profile directory.
+
+    .LINK
+    https://ps365.clidsys.com/docs/commands/Get-ExMailboxProtocol
 #>
 
 function Get-ExMailboxProtocol {

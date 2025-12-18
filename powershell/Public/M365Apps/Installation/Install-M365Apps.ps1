@@ -25,6 +25,9 @@
 
 	Installs Microsoft 365 Apps from the specified local folder using the provided configuration file.
 
+	.LINK
+	https://ps365.clidsys.com/docs/commands/Install-M365Apps
+
 	.NOTES
 	Ensure that the source path is accessible and that the configuration file is correctly formatted.
 	The script requires administrative privileges to run.

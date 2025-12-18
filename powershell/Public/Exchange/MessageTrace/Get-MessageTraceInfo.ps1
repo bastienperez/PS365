@@ -34,6 +34,9 @@
     Get-MessageTraceInfo -RecipientAddress "jane.doe@example.com" -StartDate (Get-Date).AddDays(-30) -EndDate (Get-Date) -ByTransportRuleName "Confidential" -UsingConnector
     Retrieves message trace information for messages received by "jane.doe@example.com" within the last 30 days, filtered by the "Confidential" transport rule, using a connector.
 
+    .LINK
+    https://ps365.clidsys.com/docs/commands/Get-MessageTraceInfo
+
     .NOTES
     This function requires the Exchange Online PowerShell module to be installed and connected to an Exchange Online organization.
 

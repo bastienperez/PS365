@@ -31,6 +31,9 @@
     Find-DistributionGroupMembers -FilterByExternalDomains -FilterRecipientTypeDetails "MailContact"
 
     Searches all distribution groups for members whose email addresses belong to external domains and are of the type "MailContact", then exports the results to a CSV file.
+
+    .LINK
+    https://ps365.clidsys.com/docs/commands/Find-DistributionGroupMembers
 #>
 function Find-DistributionGroupMembers {
     param

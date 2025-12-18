@@ -27,6 +27,9 @@
 
 	Gets statistics with folder details included.
 
+	.LINK
+	https://ps365.clidsys.com/docs/commands/Get-ExMailboxStatisticsDetail
+
 	.NOTES
 	Author: Bastien Perez
 	Version: 1.0.0

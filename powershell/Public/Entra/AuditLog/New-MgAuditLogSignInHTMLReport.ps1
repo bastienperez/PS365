@@ -11,6 +11,9 @@
 
     .PARAMETER OutputFile
     Path to the HTML output file.
+
+    .LINK
+    https://ps365.clidsys.com/docs/commands/New-MgAuditLogSignInHTMLReport
 #>
 
 function New-MgAuditLogSignInHTMLReport {

@@ -36,6 +36,9 @@
     Get-ExMailboxPermission -UserPermission "john.doe@contoso.com"
     Finds all mailbox permissions that john.doe@contoso.com has across all mailboxes
 
+    .LINK
+    https://ps365.clidsys.com/docs/commands/Get-ExMailboxPermission
+
     .NOTES
     Requires the ExchangeOnlineManagement module and an active connection to Exchange Online
     For Excel export functionality, requires the ImportExcel module

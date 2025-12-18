@@ -38,6 +38,9 @@
     .EXAMPLE
     Switch-AzurePowerShellMode -GetCurrent
     Displays the current authentication mode.
+
+    .LINK
+    https://ps365.clidsys.com/docs/commands/Switch-AzurePowerShellMode
 #>
 
 function Switch-AzurePowerShellMode {

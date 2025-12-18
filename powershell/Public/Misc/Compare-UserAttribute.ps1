@@ -37,6 +37,9 @@
 
     Compares the 'userPrincipalName' and 'mail' attributes for users in Entra ID
     and returns those with non-matching values.
+
+    .LINK
+    https://ps365.clidsys.com/docs/commands/Compare-UserAttribute
 #>
 
 function Compare-UserAttribute {

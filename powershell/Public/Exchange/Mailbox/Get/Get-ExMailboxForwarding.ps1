@@ -26,6 +26,9 @@
 
 	Returns only mailboxes with inbox rules that forward emails.
 
+	.LINK
+	https://ps365.clidsys.com/docs/commands/Get-ExMailboxForwarding
+
 	.NOTES
 	Priority 1: ForwardingAddress
 	Priority 2: ForwardingSMTPAddress

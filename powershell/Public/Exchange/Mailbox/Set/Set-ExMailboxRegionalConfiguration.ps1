@@ -65,6 +65,9 @@
 	Set-ExMailboxRegionalConfiguration -ByDomain "example.com" -Language "en-US" -TimeZone "+1" -OnlyIfLanguageEmpty
 
 	Sets the regional configuration only for mailboxes in the specified domain that currently have no language configured.
+
+	.LINK
+	https://ps365.clidsys.com/docs/commands/Set-ExMailboxRegionalConfiguration
 #>
 
 function Set-ExMailboxRegionalConfiguration {

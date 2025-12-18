@@ -97,6 +97,9 @@
 
     Retrieves non-MFA sign-ins from the last hour.
 
+    .LINK
+    https://ps365.clidsys.com/docs/commands/Get-MgAuditLogSignInDetail
+
     .NOTES
 
     .CHANGELOG

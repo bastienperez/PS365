@@ -11,6 +11,9 @@
     Disable-MSSelfServicePurchase
 
     Disables self-service purchase for all products in the Microsoft 365 tenant.
+
+    .LINK
+    https://ps365.clidsys.com/docs/commands/Disable-MSSelfServicePurchase
 #>
 
 function Disable-MSSelfServicePurchase {

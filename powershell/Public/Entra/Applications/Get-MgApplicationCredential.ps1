@@ -22,6 +22,9 @@
     .NOTES
     Author: Bastien Perez
 
+    .LINK
+    https://ps365.clidsys.com/docs/commands/Get-MgApplicationCredential
+
     .CHANGELOG
     ## [1.2] - 2025-04-04
     ### Changed

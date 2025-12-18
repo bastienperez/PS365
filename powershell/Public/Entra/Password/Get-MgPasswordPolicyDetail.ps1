@@ -13,6 +13,9 @@
 
     Retrieves password policy details for all verified domains in the tenant.
 
+    .LINK
+    https://ps365.clidsys.com/docs/commands/Get-MgPasswordPolicyDetail
+
     .NOTES
     .CHANGELOG
 

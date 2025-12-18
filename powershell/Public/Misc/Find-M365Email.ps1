@@ -22,6 +22,9 @@
     Find-M365Email -ByDomain "example.com"
 
     Searches for all email addresses within the specified domain and displays their details.
+
+    .LINK
+    https://ps365.clidsys.com/docs/commands/Find-M365Email
 #>
 
 function Find-M365Email {

@@ -49,6 +49,9 @@
 
     This command retrieves BitLocker keys, backs them up to the specified Azure Key Vault, and exports to Excel.
 
+    .LINK
+    https://ps365.clidsys.com/docs/commands/Get-BitlockerKeyInfo
+    
     .NOTES
     Author: Bastien Perez (adapted from Vasil Michev)
     Source: https://github.com/michevnew/PowerShell/blob/master/GraphSDK_Bitlocker_report.ps1
@@ -374,7 +377,7 @@ function Get-BitlockerKeyInfo {
                 Export-Excel -Path $ExcelFilePath -AutoSize -AutoFilter -WorksheetName 'BitLocker-Keys'
             }
             
-            Write-Host "✅ Report successfully exported to: $ExcelFilePath" -ForegroundColor Green
+            Write-Host "Report successfully exported to: $ExcelFilePath" -ForegroundColor Green
             
             if ($PSBoundParameters['RevealKeys']) {
                 Write-Warning 'SECURITY ALERT: The Excel file contains BitLocker recovery keys in PLAIN TEXT!'

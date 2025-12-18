@@ -49,8 +49,10 @@
     This function identifies attributes in the "Personal-Information" property set that users can
     modify themselves, potentially allowing unauthorized group membership. Review warnings carefully.
 
+    More information on: https://itpro-tips.com/property-set-personal-information-and-active-directory-security-and-governance/
+
 .LINK
-    https://itpro-tips.com/property-set-personal-information-and-active-directory-security-and-governance/
+    https://ps365.clidsys.com/docs/commands/Get-DynamicGroupsInM365
 #>
 
 <#

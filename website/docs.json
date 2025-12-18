@@ -18,43 +18,134 @@
         ]
       },
       {
-        "group": "Commands",
+        "group": "Azure",
         "pages": [
-          "docs/commands/test/Compare-UserAttribute",
-          "docs/commands/Disable-MSSelfServicePurchase",
-          "docs/commands/Find-DistributionGroupMembers",
-          "docs/commands/Find-M365Email",
-          "docs/commands/Get-ExMailboxByDomain",
-          "docs/commands/Get-ExMailboxForwarding",
-          "docs/commands/Get-ExMailboxFromAttribute",
-          "docs/commands/Get-ExMailboxMaxSize",
-          "docs/commands/Get-ExMailboxOnMicrosoftAddress",
-          "docs/commands/Get-ExMailboxPermission",
-          "docs/commands/Get-ExMailboxProtocol",
-          "docs/commands/Get-ExMailboxRegionalConfiguration",
-          "docs/commands/Get-ExMailboxStatisticsDetail",
-          "docs/commands/Get-ExResourceMailbox",
-          "docs/commands/Get-ExRoleReport",
-          "docs/commands/Get-MessageTraceInfo",
-          "docs/commands/Get-MgApplicationAssignment",
-          "docs/commands/Get-MgApplicationCredential",
-          "docs/commands/Get-MgApplicationSAML",
-          "docs/commands/Get-MgApplicationSCIM",
-          "docs/commands/Get-MgAuditLogSignInDetail",
-          "docs/commands/Get-MgPasswordPolicyDetail",
-          "docs/commands/Get-MgRoleReport",
-          "docs/commands/Get-MgUserPasswordInfo",
-          "docs/commands/Get-MobileDeviceDetail",
-          "docs/commands/Get-PurviewRoleReport",
-          "docs/commands/Install-M365Apps",
-          "docs/commands/Invoke-M365AppsDownload",
-          "docs/commands/New-MgAuditLogSignInHTMLReport",
-          "docs/commands/Set-ExMailboxMaxSize",
-          "docs/commands/Set-ExMailboxProtocol",
-          "docs/commands/Set-ExMailboxRegionalConfiguration",
           "docs/commands/Switch-AzureCliAuthMode",
-          "docs/commands/Switch-AzurePowerShellMode",
-          "docs/commands/Test-ExMailboxProxyAddress"
+          "docs/commands/Switch-AzurePowerShellMode"
+        ]
+      },
+      {
+        "group": "Entra ID",
+        "pages": [
+          {
+            "group": "Applications",
+            "pages": [
+              "docs/commands/Get-MgApplicationAssignment",
+              "docs/commands/Get-MgApplicationCredential",
+              "docs/commands/Get-MgApplicationSAML",
+              "docs/commands/Get-MgApplicationSCIM",
+              "docs/commands/Get-MgRegisteredApp",
+              "docs/commands/Set-MgEnterpriseAppStatus",
+              "docs/commands/Set-MgRegisteredAppStatus"
+            ]
+          },
+          {
+            "group": "Audit Log",
+            "pages": [
+              "docs/commands/Get-MgAuditLogSignInDetail",
+              "docs/commands/New-MgAuditLogSignInHTMLReport"
+            ]
+          },
+          {
+            "group": "Groups",
+            "pages": [
+              "docs/commands/Get-DynamicGroupsInM365"
+            ]
+          },
+          {
+            "group": "Password",
+            "pages": [
+              "docs/commands/Get-MgPasswordPolicyDetail",
+              "docs/commands/Get-MgUserPasswordInfo"
+            ]
+          },
+          {
+            "group": "Roles",
+            "pages": [
+              "docs/commands/Get-MgRoleReport"
+            ]
+          }
+        ]
+      },
+      {
+        "group": "Exchange",
+        "pages": [
+          {
+            "group": "Calendar",
+            "pages": [
+              "docs/commands/Get-ExResourceMailbox"
+            ]
+          },
+          {
+            "group": "Group",
+            "pages": [
+              "docs/commands/Find-DistributionGroupMembers"
+            ]
+          },
+          {
+            "group": "Mailbox",
+            "pages": [
+              "docs/commands/Get-ExMailboxByDomain",
+              "docs/commands/Get-ExMailboxForwarding",
+              "docs/commands/Get-ExMailboxFromAttribute",
+              "docs/commands/Get-ExMailboxMaxSize",
+              "docs/commands/Get-ExMailboxOnMicrosoftAddress",
+              "docs/commands/Get-ExMailboxPermission",
+              "docs/commands/Get-ExMailboxProtocol",
+              "docs/commands/Get-ExMailboxRegionalConfiguration",
+              "docs/commands/Get-ExMailboxStatisticsDetail",
+              "docs/commands/Set-ExMailboxMaxSize",
+              "docs/commands/Set-ExMailboxProtocol",
+              "docs/commands/Set-ExMailboxRegionalConfiguration",
+              "docs/commands/Test-ExMailboxProxyAddress"
+            ]
+          },
+          {
+            "group": "Message Trace",
+            "pages": [
+              "docs/commands/Get-MessageTraceInfo"
+            ]
+          },
+          {
+            "group": "Mobile",
+            "pages": [
+              "docs/commands/Get-MobileDeviceDetail"
+            ]
+          },
+          {
+            "group": "Role",
+            "pages": [
+              "docs/commands/Get-ExRoleReport",
+              "docs/commands/Get-PurviewRoleReport"
+            ]
+          }
+        ]
+      },
+      {
+        "group": "Intune",
+        "pages": [
+          "docs/commands/Get-BitlockerKeyInfo",
+          "docs/commands/New-IntuneEnrollmentServicePrincipal"
+        ]
+      },
+      {
+        "group": "M365 Apps",
+        "pages": [
+          "docs/commands/Install-M365Apps",
+          "docs/commands/Invoke-M365AppsDownload"
+        ]
+      },
+      {
+        "group": "Misc",
+        "pages": [
+          "docs/commands/Compare-UserAttribute",
+          "docs/commands/Find-M365Email"
+        ]
+      },
+      {
+        "group": "MSCommerce",
+        "pages": [
+          "docs/commands/Disable-MSSelfServicePurchase"
         ]
       }
     ]

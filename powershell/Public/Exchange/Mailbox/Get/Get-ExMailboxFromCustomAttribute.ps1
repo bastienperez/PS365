@@ -21,6 +21,9 @@
     Get-ExMailboxFromAttribute -Attribute "CustomAttribute"
     This example retrieves mailboxes with the custom attribute "CustomAttribute" without comparing any attributes.
 
+    .LINK
+    https://ps365.clidsys.com/docs/commands/Get-ExMailboxFromAttribute
+
     .NOTES
     You can also use `Get-AttributeMatching` to compare two attributes directly in AD/Exchange/Entra ID
 

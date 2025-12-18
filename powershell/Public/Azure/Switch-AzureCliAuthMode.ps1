@@ -41,6 +41,9 @@
     .EXAMPLE
     Switch-AzureCliAuthMode -GetCurrent
     Displays the current authentication mode.
+
+    .LINK
+    https://ps365.clidsys.com/docs/commands/Switch-AzureCliAuthMode
 #>
 
 function Switch-AzureCliAuthMode {

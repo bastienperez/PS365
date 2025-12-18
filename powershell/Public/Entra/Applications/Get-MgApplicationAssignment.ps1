@@ -18,6 +18,9 @@
     .EXAMPLE
     Get-MgApplicationAssignment -ExportToExcel
     Gets all applications and exports them to an Excel file
+
+    .LINK
+    https://ps365.clidsys.com/docs/commands/Get-MgApplicationAssignment
     #>
     
 function Get-MgApplicationAssignment {

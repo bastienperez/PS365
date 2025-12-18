@@ -28,6 +28,9 @@
 
     This command enables the enterprise application with the specified display name.
 
+    .LINK
+    https://ps365.clidsys.com/docs/commands/Set-MgEnterpriseAppStatus
+
     .NOTES  
     To modify a registered application, use the `Set-MgRegisteredAppStatus` function instead.
 #>

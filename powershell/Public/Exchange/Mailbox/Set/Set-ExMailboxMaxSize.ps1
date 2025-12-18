@@ -43,6 +43,9 @@
 	.EXAMPLE
 	Set-ExMailboxMaxSize -ByDomain "example.com" -GenerateCmdlets -OutputFile "C:\path\to\commands.ps1"
 	Generates the Set-Mailbox cmdlets for all mailboxes in the specified domain and saves them to the specified file without executing them.
+
+	.LINK
+	https://ps365.clidsys.com/docs/commands/Set-ExMailboxMaxSize
 #>
 function Set-ExMailboxMaxSize {
 	[CmdletBinding(SupportsShouldProcess)]

@@ -40,9 +40,11 @@
     Get-MgRoleReport | Export-CSV -NoTypeInformation "$(Get-Date -Format yyyyMMdd)_adminRoles.csv" -Encoding UTF8
 
     .LINK
-    https://itpro-tips.com/get-the-office-365-admin-roles-and-track-the-changes/
+    https://ps365.clidsys.com/docs/commands/Get-MgRoleReport
 
     .NOTES
+    https://itpro-tips.com/get-the-office-365-admin-roles-and-track-the-changes/
+    
     Written by Bastien Perez (Clidsys.com - ITPro-Tips.com)
     For more Office 365/Microsoft 365 tips and news, check out ITPro-Tips.com.
 

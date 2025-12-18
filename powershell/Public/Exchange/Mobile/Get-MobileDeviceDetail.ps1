@@ -19,6 +19,9 @@
 
     Retrieves mobile device details for the specified user.
 
+    .LINK
+    https://ps365.clidsys.com/docs/commands/Get-MobileDeviceDetail
+
     .NOTES
     Author: Bastien Perez
 

@@ -28,6 +28,9 @@
     Get-ExMailboxRegionalConfiguration -ByDomain "example.com"
 
     Retrieves the regional configuration for all mailboxes in the specified domain.
+
+    .LINK
+    https://ps365.clidsys.com/docs/commands/Get-ExMailboxRegionalConfiguration
 #>
 
 function Get-ExMailboxRegionalConfiguration {

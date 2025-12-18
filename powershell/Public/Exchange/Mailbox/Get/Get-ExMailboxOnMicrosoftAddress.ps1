@@ -24,6 +24,8 @@
     .EXAMPLE
     $mailboxes | Get-ExMailboxOnMicrosoftAddress
 
+    .LINK
+    https://ps365.clidsys.com/docs/commands/Get-ExMailboxOnMicrosoftAddress
 #>
 
 function Get-ExMailboxOnMicrosoftAddress {

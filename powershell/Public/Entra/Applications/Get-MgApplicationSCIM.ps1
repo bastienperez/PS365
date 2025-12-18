@@ -36,6 +36,9 @@
     .LIMITATIONS
     The groups assignments are not retrieved because based on https://main.iam.ad.ext.azure.com
 
+    .LINK
+    https://ps365.clidsys.com/docs/commands/Get-MgApplicationSCIM
+
     .CHANGELOG
     ## [1.4.0] - 2025-11-28
     ### Added

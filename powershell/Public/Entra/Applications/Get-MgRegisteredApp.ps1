@@ -19,6 +19,9 @@ Get-MgRegisteredApp
 
 This command retrieves all registered applications.
 
+.LINK
+https://ps365.clidsys.com/docs/commands/Get-MgRegisteredApp
+
 .NOTES
 Same as the function `Get-MgApplication` but with a simplified output.
 #>

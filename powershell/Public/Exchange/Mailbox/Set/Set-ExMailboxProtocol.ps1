@@ -80,6 +80,9 @@
     Set-ExMailboxProtocol -AllMailboxes -ModernProtocolsAndEws
 
     Sets modern protocols along with EWS for all mailboxes in the organization.
+
+    .LINK
+    https://ps365.clidsys.com/docs/commands/Set-ExMailboxProtocol
 #>
 function Set-ExMailboxProtocol {
     [CmdletBinding(SupportsShouldProcess)]

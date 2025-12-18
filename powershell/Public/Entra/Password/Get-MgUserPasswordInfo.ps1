@@ -36,6 +36,9 @@
     The script assumes that the necessary authentication to Microsoft Graph has already been handled with the Connect-MgGraph function.
     Connect-MgGraph -Scopes 'User.Read.All', 'Domain.Read.All'
 
+    .LINK
+    https://ps365.clidsys.com/docs/commands/Get-MgUserPasswordInfo
+
     .CHANGELOG
     [2.1.0] - 2025-12-03
     # Added

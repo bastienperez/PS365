@@ -16,6 +16,9 @@
 
 	Runs the script to download the Microsoft 365 Apps binary.
 
+    .LINK
+	https://ps365.clidsys.com/docs/commands/Invoke-M365AppsDownload
+
     .NOTES
 	Ensure that you have a valid configuration XML file in the ConfigFiles folder.
 #>

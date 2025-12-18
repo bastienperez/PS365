@@ -34,6 +34,8 @@
 
     Exports resource mailboxes from the contoso.com domain with group expansion.
 
+    .LINK
+    https://ps365.clidsys.com/docs/commands/Get-ExResourceMailbox
     #>
     
 function Get-ExResourceMailbox {

@@ -18,6 +18,7 @@
     Get-PurviewRoleReport
 
     .LINK
+    https://ps365.clidsys.com/docs/commands/Get-PurviewRoleReport
 
     .NOTES
     Written by Bastien Perez (Clidsys.com - ITPro-Tips.com)

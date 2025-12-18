@@ -17,6 +17,9 @@
     .EXAMPLE
     Get-ExRoleReport
 
+    .LINK
+    https://ps365.clidsys.com/docs/commands/Get-ExRoleReport
+
     .NOTES
     Version History:
     ## [2.1] - 2025-07-03

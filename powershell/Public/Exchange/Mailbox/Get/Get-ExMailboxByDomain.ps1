@@ -13,6 +13,9 @@
 	Get-ExMailboxByDomain -Domain "example.com"
 
 	Returns all Exchange mailboxes associated with the domain "example.com".
+
+	.LINK
+	https://ps365.clidsys.com/docs/commands/Get-ExMailboxByDomain
 #>
 function Get-ExMailboxByDomain {
 	param (

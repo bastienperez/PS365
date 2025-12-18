@@ -51,6 +51,9 @@
     Test-ExMailboxProxyAddress -CsvPath "C:\path\to\file.csv" -NotMatchOnly 
 
     Reads mailbox and proxy address pairs from the specified CSV file and returns only those that do not match.
+
+    .LINK
+    https://ps365.clidsys.com/docs/commands/Test-ExMailboxProxyAddress
 #>
 
 function Test-ExMailboxProxyAddress {

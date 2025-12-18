@@ -25,6 +25,9 @@
     Get-ExMailboxMaxSize -Identity "user@contoso.com"
     
     Retrieves the max send and receive size limits for the specified mailbox.
+
+    .LINK
+    https://ps365.clidsys.com/docs/commands/Get-ExMailboxMaxSize
 #>
 function Get-ExMailboxMaxSize {
     param (
