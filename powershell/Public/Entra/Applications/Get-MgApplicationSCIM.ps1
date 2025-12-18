@@ -35,28 +35,7 @@
 
     This function requires the Microsoft.Graph.Applications and Microsoft.Graph.Authentication modules.
 
-    CHANGELOG
-    ## [1.4.0] - 2025-11-28
-    ### Added
-    - Add parameter `ExportToExcel` to export the report to an Excel file.
 
-    ## [1.3.0] - 2025-10-23
-    ### Added
-    - Added error handling when adding member to job
-    - Add `DisplayName` parameter
-    
-    ## [1.2.0] - 2025-xx-xx
-    ### Added
-    - Export functionality for synchronization job details
-    - Support for additional synchronization job properties
-
-    ## [1.1] - 2025-02-26
-    ### Changed
-    - Transform the script into a function
-    - Replace `Write-Host` with `Write-Verbose`
-
-    ## [1.0] - 2024-xx-xx
-    ### Initial Release
 #>
 
 function Get-MgApplicationSCIM {

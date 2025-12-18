@@ -33,20 +33,6 @@
     Limitations:
     The information about the SAML applications clams is not available in the Microsoft Graph API v1 but in https://main.iam.ad.ext.azure.com/api/ApplicationSso/<service-principal-id>/FederatedSsoV2 so we don't get them
 
-    CHANGELOG
-    ## [1.2.0] - 2025-04-04
-    ### Changed
-    - Change Write-Warning message in the catch block to Import-Module
-
-    ## [1.1.0] - 2025-02-26
-    ### Changed
-    - Transform the script into a function
-    - Add `ForceNewToken` parameter
-    - Test if already connected to Microsoft Graph and with the right permissions
-
-    ## [1.0.0] - 2024-xx-xx
-    ### Initial Release
-
     .LINK
     https://ps365.clidsys.com/docs/commands/Get-MgApplicationSAML
 #>

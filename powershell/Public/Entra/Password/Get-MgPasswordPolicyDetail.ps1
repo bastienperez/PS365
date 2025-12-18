@@ -16,11 +16,6 @@
     https://ps365.clidsys.com/docs/commands/Get-MgPasswordPolicyDetail
 
     .NOTES
-    CHANGELOG
-
-    [1.0.0] - 2025-03-17
-    # Initial Version  
-
 #>
 
 function Get-MgPasswordPolicyDetail { 

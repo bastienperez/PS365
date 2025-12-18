@@ -27,21 +27,6 @@
 
     .NOTES
 #>
-<#
-    CHANGELOG
-    ## [1.2] - 2025-04-04
-    ### Changed
-    - Format output for Owners property
-
-    ## [1.1] - 2025-02-26
-    ### Changed
-    - Transform the script into a function
-    - Add `ForceNewToken` parameter
-    - Test if already connected to Microsoft Graph and with the right permissions
-
-    ## [1.0] - 2024-xx-xx
-    ### Initial Release
-#>
 
 function Get-MgApplicationCredential {
     [CmdletBinding()]

@@ -16,7 +16,7 @@
     The status to set for the enterprise application. Valid values are 'Enabled' or 'Disabled'.
 
     .PARAMETER GenerateCmdlets
-    If specified, the function will generate the Set-EXOCasMailbox cmdlets and save them to a file instead of executing them.
+    If specified, the function will generate the cmdlets and save them to a file instead of executing them.
 
     .EXAMPLE
     Set-MgEnterpriseAppStatus -ApplicationID "12345678-1234-1234-1234-123456789012" -Status "Disabled"
@@ -107,7 +107,7 @@ function Set-MgEnterpriseAppStatus {
     }
 
     if ($GenerateCmdlets) {
-        $commandes = @()
+        $commands = @()
         $bodyJson = ConvertTo-Json -InputObject $body -Compress
         $command = "Invoke-MgGraphRequest -Uri `"$statusUri`" -Method PATCH -Body '$bodyJson'"
         $commands += $command

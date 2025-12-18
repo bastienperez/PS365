@@ -101,25 +101,6 @@
     https://ps365.clidsys.com/docs/commands/Get-MgAuditLogSignInDetail
 
     .NOTES
-    CHANGELOG
-
-    [2.0.0] - 2025-11-27
-    # Added
-    - Add parameters `NonInteractiveSignIns`, `ServicePrincipalSignIns`, `ManagedIdentitySignIns` to filter by sign-in event types
-    - Add parameters `ConditionalAccessPolicyName`, `ConditionalAccessPolicyNotApplied`, `ConditionalAccessPolicySuccessOnly`, `ConditionalAccessPolicyFailedOnly` to filter by Conditional Access policy details
-    - Add parameters `NonMFASignInsOnly` and `MFASignInsOnly` to filter by MFA status
-    - Add parameter `ExportToExcel` to export the report to an Excel file.
-
-    # Changed
-    - Change StartDate/EndDate parameters to accept both DateTime objects and string dates
-    - Update to use `Get-MgBetaAuditLogSignIn` to support `authenticationRequirement` in filter operations
-    - Change `AnalyzeReportOnlyCA` to `AnalyzeCAPInReportOnly`
-
-    # Fixed
-    - Fix DateTime parsing error when using DateTime objects as parameters 
-
-    # Breaking Changes
-    - Switch from `Get-MgAuditLogSignIn` to `Get-MgBetaAuditLogSignIn` (Microsoft Graph Beta module required)
 #>
 
 function Get-MgAuditLogSignInDetail {

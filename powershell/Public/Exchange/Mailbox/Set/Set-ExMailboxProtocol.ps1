@@ -21,7 +21,7 @@
     If specified, all mailboxes in the organization will be processed.
 
     .PARAMETER GenerateCmdlets
-    If specified, the function will generate the Set-EXOCasMailbox cmdlets and save them to a file instead of executing them.
+    If specified, the function will generate the cmdlets and save them to a file instead of executing them.
 
     .PARAMETER OutputFile
     The path to the output file where generated cmdlets will be saved. Default is a timestamped file in the current directory.

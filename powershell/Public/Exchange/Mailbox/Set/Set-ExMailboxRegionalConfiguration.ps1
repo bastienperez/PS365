@@ -41,7 +41,7 @@
 	Useful to avoid overwriting existing configurations set by users or administrators.
 
 	.PARAMETER GenerateCmdlets
-	If specified, the function will generate the Set-MailboxRegionalConfiguration cmdlets and save them to a file instead of executing them.
+	If specified, the function will generate the cmdlets and save them to a file instead of executing them.
 
 	.PARAMETER OutputFile
 	The path to the output file where generated cmdlets will be saved. Default is a timestamped file in the current directory.

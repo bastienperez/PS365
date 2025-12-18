@@ -16,7 +16,7 @@
     The status to set for the registered application. Valid values are 'Enabled' or 'Disabled'.
     
     .PARAMETER GenerateCmdlets
-    If specified, the function will generate the Set-EXOCasMailbox cmdlets and save them to a file instead of executing them.
+    If specified, the function will generate the cmdlets and save them to a file instead of executing them.
 
     .EXAMPLE
     Set-MgRegisteredAppStatus -ApplicationID "your-application-id" -Status "Disabled"
