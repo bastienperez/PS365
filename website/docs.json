@@ -20,7 +20,7 @@
       {
         "group": "Commands",
         "pages": [
-          "docs/commands/Compare-UserAttribute",
+          "docs/commands/test/Compare-UserAttribute",
           "docs/commands/Disable-MSSelfServicePurchase",
           "docs/commands/Find-DistributionGroupMembers",
           "docs/commands/Find-M365Email",
