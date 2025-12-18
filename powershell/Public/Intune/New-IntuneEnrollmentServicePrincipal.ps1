@@ -20,6 +20,7 @@
     .NOTES
     Scope(s) required:
     - ServicePrincipal.ReadWrite.All
+    
 #>
 
 function New-IntuneEnrollmentServicePrincipal {
