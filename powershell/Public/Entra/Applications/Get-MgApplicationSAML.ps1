@@ -1,28 +1,28 @@
 <#
-.SYNOPSIS
+    .SYNOPSIS
     Retrieves all Entra ID applications configured for SAML SSO.
 
-.DESCRIPTION
+    .DESCRIPTION
     This function returns a list of all Entra ID applications configured for SAML Single Sign-On
     along with their SAML-related properties, including the PreferredTokenSigningKeyEndDateTime
     and its validity status.
 
-.EXAMPLE
+.   
     Get-MgApplicationSAML
 
     Retrieves all Entra ID applications configured for SAML SSO.
 
-.EXAMPLE
+    .EXAMPLE
     Get-MgApplicationSAML -ForceNewToken
 
     Forces the function to disconnect and reconnect to Microsoft Graph to obtain a new access token.
 
-.EXAMPLE
+    .EXAMPLE
     Get-MgApplicationSAML -ExportToExcel
 
     Gets all SAML applications and exports them to an Excel file.
 
-.NOTES
+    .NOTES
     More information on: https://itpro-tips.com/get-azure-ad-saml-certificate-details/
 
     This function requires the Microsoft.Graph.Beta.Applications module to be installed.
