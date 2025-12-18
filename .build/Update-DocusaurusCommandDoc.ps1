@@ -26,10 +26,11 @@ New-DocusaurusHelp -Module "./$powershellModuleFolder/$powershellModuleName" -Do
 # Update the markdown to include the synopsis as description so it can be displayed correctly in the doc links.
 $cmdMarkdownFiles = Get-ChildItem ./website/docs/commands
 foreach ($file in $cmdMarkdownFiles) {
-    $content = Get-Content $file
+    $contentLines = Get-Content $file
+    $content = Get-Content $file -Raw
     $updatedContent = $content
     
-    $synopsis = $content[($content.IndexOf('## SYNOPSIS') + 2)] # Get the synopsis
+    $synopsis = $contentLines[($contentLines.IndexOf('## SYNOPSIS') + 2)] # Get the synopsis
     if (-not [string]::IsNullOrWhiteSpace($synopsis)) {
         # Check if description already exists in the frontmatter
         if ($content -notmatch '^description:') {
@@ -50,8 +51,7 @@ foreach ($file in $cmdMarkdownFiles) {
     # Remove the entire ProgressAction section
     $updatedContent = [regex]::Replace($updatedContent, "(?s)### -ProgressAction.*?(?=^###|\z)", '')
 
-    Set-Content $file $updatedContent
-
+    Set-Content $file $updatedContent -NoNewline
 }
 
 #Set-Content $commandsIndexFile $readmeContent  # Restore the readme content
