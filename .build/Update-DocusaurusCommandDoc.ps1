@@ -26,32 +26,46 @@ New-DocusaurusHelp -Module "./$powershellModuleFolder/$powershellModuleName" -Do
 # Update the markdown to include the synopsis as description so it can be displayed correctly in the doc links.
 $cmdMarkdownFiles = Get-ChildItem ./website/docs/commands
 foreach ($file in $cmdMarkdownFiles) {
-    $contentLines = Get-Content $file
-    $content = Get-Content $file -Raw
-    $updatedContent = $content
+    # Read file as array of lines for indexing
+    $contentLines = Get-Content -Path $file.FullName
     
-    $synopsis = $contentLines[($contentLines.IndexOf('## SYNOPSIS') + 2)] # Get the synopsis
+    # Get the synopsis line
+    $synopsisIndex = $contentLines.IndexOf('## SYNOPSIS')
+    $synopsis = $null
+    if ($synopsisIndex -ge 0 -and ($synopsisIndex + 2) -lt $contentLines.Count) {
+        $synopsis = $contentLines[$synopsisIndex + 2]
+    }
+    
+    # Add description to frontmatter if synopsis exists and description doesn't
     if (-not [string]::IsNullOrWhiteSpace($synopsis)) {
-        # Check if description already exists in the frontmatter
-        if ($content -notmatch '^description:') {
-            $updatedContent = $updatedContent.Replace('id:', "description: $($synopsis)`nid:")
+        $hasDescription = $contentLines | Where-Object { $_ -match '^description:' }
+        if (-not $hasDescription) {
+            $idLineIndex = $contentLines.IndexOf(($contentLines | Where-Object { $_ -match '^id:' } | Select-Object -First 1))
+            if ($idLineIndex -ge 0) {
+                $contentLines = @($contentLines[0..($idLineIndex - 1)]) + @("description: $synopsis") + @($contentLines[$idLineIndex..($contentLines.Count - 1)])
+            }
         }
     }
-
+    
     <# Custom for mintlify
     Remove sidebar_class_name:
     Remove hide_title:
     Remove hide_table_of_contents:    
     #>
-
-    $updatedContent = $updatedContent -replace "sidebar_class_name:.*\r?\n", ''
-    $updatedContent = $updatedContent -replace "hide_title:.*\r?\n", ''
-    $updatedContent = $updatedContent -replace "hide_table_of_contents:.*\r?\n", ''
+    
+    # Filter out unwanted lines
+    $contentLines = $contentLines | Where-Object { 
+        $_ -notmatch '^sidebar_class_name:' -and 
+        $_ -notmatch '^hide_title:' -and 
+        $_ -notmatch '^hide_table_of_contents:' 
+    }
     
     # Remove the entire ProgressAction section
-    $updatedContent = [regex]::Replace($updatedContent, "(?s)### -ProgressAction.*?(?=^###|\z)", '')
-
-    Set-Content $file $updatedContent -NoNewline
+    $updatedContent = $contentLines -join "`n"
+    $updatedContent = [regex]::Replace($updatedContent, '(?s)### -ProgressAction.*?(?=###|\z)', '')
+    
+    # Write back to file
+    Set-Content -Path $file.FullName -Value $updatedContent -NoNewline
 }
 
 #Set-Content $commandsIndexFile $readmeContent  # Restore the readme content
