@@ -2,6 +2,9 @@
 description: Creates the Microsoft Intune Enrollment Service Principal if it does not already exist.
 id: New-IntuneEnrollmentServicePrincipal
 title: New-IntuneEnrollmentServicePrincipal
+hide_title: false
+hide_table_of_contents: false
+custom_edit_url: https://github.com/bastienperez/ps365/blob/main/powershell/public/New-IntuneEnrollmentServicePrincipal.ps1
 ---
 
 ## SYNOPSIS
@@ -18,7 +21,7 @@ New-IntuneEnrollmentServicePrincipal
 
 Creates the Microsoft Intune Enrollment Service Principal if it does not already exist in your Microsoft 365 tenant.
 
-The Microsoft Intune Enrollment Service Principal (App ID: d4ebce55-015a-49b5-a083-c84d1797ae8c) is essential for
+The Microsoft Intune Enrollment Service Principal (Application ID: d4ebce55-015a-49b5-a083-c84d1797ae8c) is essential for
 properly configuring Conditional Access policies that target device enrollment scenarios
 
 ## EXAMPLES
@@ -39,7 +42,7 @@ Creates the Microsoft Intune Enrollment Service Principal if it doesn't already 
 
 ## NOTES
 
-Scopes required:
+Scope(s) required:
 - ServicePrincipal.ReadWrite.All
 
 ## RELATED LINKS

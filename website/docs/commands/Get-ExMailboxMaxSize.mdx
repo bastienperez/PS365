@@ -2,6 +2,9 @@
 description: Get Exchange Mailbox Max Send and Receive Size limits.
 id: Get-ExMailboxMaxSize
 title: Get-ExMailboxMaxSize
+hide_title: false
+hide_table_of_contents: false
+custom_edit_url: https://github.com/bastienperez/ps365/blob/main/powershell/public/Get-ExMailboxMaxSize.ps1
 ---
 
 ## SYNOPSIS
@@ -72,6 +75,22 @@ The domain to filter mailboxes by their primary SMTP address.
 Type: String
 Parameter Sets: (All)
 Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ProgressAction
+
+\{\{ Fill ProgressAction Description \}\}
+
+```yaml
+Type: ActionPreference
+Parameter Sets: (All)
+Aliases: proga
 
 Required: False
 Position: Named
