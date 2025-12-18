@@ -26,20 +26,15 @@
 
     Retrieves the SCIM configuration for a specific application by its ObjectID.
 
-    .NOTES
-    .REQUIREMENTS
-    This function requires the Microsoft.Graph.Applications and Microsoft.Graph.Authentication modules.
-
-    .AUTHOR
-    Bastien Perez
-
-    .LIMITATIONS
-    The groups assignments are not retrieved because based on https://main.iam.ad.ext.azure.com
-
     .LINK
     https://ps365.clidsys.com/docs/commands/Get-MgApplicationSCIM
 
     .NOTES
+    LIMITATIONS
+    The groups assignments are not retrieved because based on https://main.iam.ad.ext.azure.com
+
+    This function requires the Microsoft.Graph.Applications and Microsoft.Graph.Authentication modules.
+
     CHANGELOG
     ## [1.4.0] - 2025-11-28
     ### Added

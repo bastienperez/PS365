@@ -33,7 +33,7 @@
     Limitations:
     The information about the SAML applications clams is not available in the Microsoft Graph API v1 but in https://main.iam.ad.ext.azure.com/api/ApplicationSso/<service-principal-id>/FederatedSsoV2 so we don't get them
 
-    .CHANGELOG
+    CHANGELOG
     ## [1.2.0] - 2025-04-04
     ### Changed
     - Change Write-Warning message in the catch block to Import-Module

@@ -33,7 +33,9 @@
 
     .OUTPUTS
     System.Collections.Generic.List[Object]
-    
+
+    .NOTES
+    OUTPUT PROPERTIES
     Returns a collection of custom objects with the following properties:
     - Name: Display name of the group
     - Type: Type of dynamic group (Exchange Dynamic Distribution Group, M365 Dynamic Group, Entra ID Dynamic Security Group)
@@ -44,7 +46,6 @@
     - DeviceAttributes: Pipe-separated list of device attributes referenced in the membership rule (Entra ID only)
     - Warning: Security warning if any attribute is in the "Personal-Information" property set
 
-    .NOTES
     Security Considerations:
     This function identifies attributes in the "Personal-Information" property set that users can
     modify themselves, potentially allowing unauthorized group membership. Review warnings carefully.
