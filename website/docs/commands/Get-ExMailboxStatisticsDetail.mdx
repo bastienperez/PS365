@@ -1,0 +1,114 @@
+---
+description: Gets detailed mailbox statistics for Exchange Online including item count by type.
+id: Get-ExMailboxStatisticsDetail
+title: Get-ExMailboxStatisticsDetail
+hide_title: false
+hide_table_of_contents: false
+custom_edit_url: https://github.com/bastienperez/ps365/blob/main/powershell/public/Get-ExMailboxStatisticsDetail.ps1
+---
+
+## SYNOPSIS
+
+Gets detailed mailbox statistics for Exchange Online including item count by type.
+
+## SYNTAX
+
+```powershell
+Get-ExMailboxStatisticsDetail [-Identity] <String> [-IncludeFolderDetails] [-ProgressAction <ActionPreference>]
+ [<CommonParameters>]
+```
+
+## DESCRIPTION
+
+This function retrieves comprehensive statistics for an Exchange Online mailbox, including:
+- General statistics (size, total item count, etc.)
+- Item count by folder (Inbox, Sent Items, etc.)
+- Number of contacts
+- Number of calendar items
+- Number of tasks
+- Number of notes
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Get-ExMailboxStatisticsDetail -Identity "user@domain.com"
+```
+
+Gets detailed statistics for the specified mailbox.
+
+### EXAMPLE 2
+
+```powershell
+Get-ExMailboxStatisticsDetail -Identity "user@domain.com" -IncludeFolderDetails
+```
+
+Gets statistics with folder details included.
+
+## PARAMETERS
+
+### -Identity
+
+Mailbox identity (email address, username, etc.)
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 1
+Default value: None
+Accept pipeline input: True (ByPropertyName, ByValue)
+Accept wildcard characters: False
+```
+
+### -IncludeFolderDetails
+
+Include folder details in the results
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ProgressAction
+
+\{\{ Fill ProgressAction Description \}\}
+
+```yaml
+Type: ActionPreference
+Parameter Sets: (All)
+Aliases: proga
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+## NOTES
+
+Author: Bastien Perez
+Version: 1.0.0
+
+## RELATED LINKS
+
+[https://ps365.clidsys.com/docs/commands/Get-ExMailboxStatisticsDetail](https://ps365.clidsys.com/docs/commands/Get-ExMailboxStatisticsDetail)

@@ -1,0 +1,144 @@
+---
+description: Switches Azure PowerShell authentication between browser and WAM modes.
+id: Switch-AzurePowerShellMode
+title: Switch-AzurePowerShellMode
+hide_title: false
+hide_table_of_contents: false
+custom_edit_url: https://github.com/bastienperez/ps365/blob/main/powershell/public/Switch-AzurePowerShellMode.ps1
+---
+
+## SYNOPSIS
+
+Switches Azure PowerShell authentication between browser and WAM modes.
+
+## SYNTAX
+
+### Toggle (Default)
+
+```powershell
+Switch-AzurePowerShellMode [-ProgressAction <ActionPreference>] [<CommonParameters>]
+```
+
+### Specify
+
+```powershell
+Switch-AzurePowerShellMode [-Mode <String>] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+```
+
+### GetCurrent
+
+```powershell
+Switch-AzurePowerShellMode [-GetCurrent] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+```
+
+## DESCRIPTION
+
+Toggles the Windows broker (WAM) setting when using `Connect-AzAccount`.
+If no mode is specified, it toggles between modes.
+If a mode is specified, it switches to that mode.
+
+Using WAM has several benefits:
+- Enhanced security.
+See Conditional Access: Token protection (preview).
+- Support for Windows Hello, conditional access policies, and FIDO keys.
+- Streamlined single sign-on.
+- Bug fixes and enhancements shipped with Windows.
+
+Technically this opens a window for login.
+But, in some cases, especially when connecting to client environments, it might be preferable to use the browser-based authentication method.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Switch-AzurePowerShellMode
+Toggles between browser and WAM authentication modes.
+```
+
+### EXAMPLE 2
+
+```powershell
+Switch-AzurePowerShellMode -Mode Browser
+Switches to browser-based authentication.
+```
+
+### EXAMPLE 3
+
+```powershell
+Switch-AzurePowerShellMode -Mode WAM
+Switches to Web Account Manager authentication.
+```
+
+### EXAMPLE 4
+
+```powershell
+Switch-AzurePowerShellMode -GetCurrent
+Displays the current authentication mode.
+```
+
+## PARAMETERS
+
+### -Mode
+
+The authentication mode to switch to.
+Valid values are 'Browser' or 'WAM'.
+If not specified, the function will toggle between the current modes.
+
+```yaml
+Type: String
+Parameter Sets: Specify
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -GetCurrent
+
+Displays the current authentication mode without making any changes.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: GetCurrent
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ProgressAction
+
+\{\{ Fill ProgressAction Description \}\}
+
+```yaml
+Type: ActionPreference
+Parameter Sets: (All)
+Aliases: proga
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+## NOTES
+
+## RELATED LINKS
+
+[https://ps365.clidsys.com/docs/commands/Switch-AzurePowerShellMode](https://ps365.clidsys.com/docs/commands/Switch-AzurePowerShellMode)
