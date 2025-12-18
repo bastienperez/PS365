@@ -27,9 +27,14 @@ New-DocusaurusHelp -Module "./$powershellModuleFolder/$powershellModuleName" -Do
 $cmdMarkdownFiles = Get-ChildItem ./website/docs/commands
 foreach ($file in $cmdMarkdownFiles) {
     $content = Get-Content $file
+    $updatedContent = $content
+    
     $synopsis = $content[($content.IndexOf('## SYNOPSIS') + 2)] # Get the synopsis
     if (-not [string]::IsNullOrWhiteSpace($synopsis)) {
-        $updatedContent = $content.Replace('id:', "description: $($synopsis)`nid:")
+        # Check if description already exists in the frontmatter
+        if ($content -notmatch '^description:') {
+            $updatedContent = $updatedContent.Replace('id:', "description: $($synopsis)`nid:")
+        }
     }
 
     <# Custom for mintlify
@@ -41,6 +46,9 @@ foreach ($file in $cmdMarkdownFiles) {
     $updatedContent = $updatedContent -replace "sidebar_class_name:.*`n", ''
     $updatedContent = $updatedContent -replace "hide_title:.*`n", ''
     $updatedContent = $updatedContent -replace "hide_table_of_contents:.*`n", ''
+    
+    # Remove the entire ProgressAction section
+    $updatedContent = $updatedContent -replace "### -ProgressAction[\s\S]*?(?=###|\z)", ''
 
     Set-Content $file $updatedContent
 
