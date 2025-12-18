@@ -8,7 +8,6 @@
     The Microsoft Intune Enrollment Service Principal (App ID: d4ebce55-015a-49b5-a083-c84d1797ae8c) is essential for
     properly configuring Conditional Access policies that target device enrollment scenarios
 
-
     .EXAMPLE
     New-IntuneEnrollmentServicePrincipal
 
