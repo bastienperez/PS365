@@ -4,8 +4,8 @@
   "name": "PS365",
   "colors": {
     "primary": "#de761d",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "light": "#de761d",
+    "dark": "#de761d"
   },
   "favicon": "/favicon.svg",
   "navigation": {
