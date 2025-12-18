@@ -101,8 +101,7 @@
     https://ps365.clidsys.com/docs/commands/Get-MgAuditLogSignInDetail
 
     .NOTES
-
-    .CHANGELOG
+    CHANGELOG
 
     [2.0.0] - 2025-11-27
     # Added

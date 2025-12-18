@@ -39,7 +39,8 @@
     .LINK
     https://ps365.clidsys.com/docs/commands/Get-MgApplicationSCIM
 
-    .CHANGELOG
+    .NOTES
+    CHANGELOG
     ## [1.4.0] - 2025-11-28
     ### Added
     - Add parameter `ExportToExcel` to export the report to an Excel file.

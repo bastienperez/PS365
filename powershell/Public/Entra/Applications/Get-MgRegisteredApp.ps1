@@ -1,29 +1,28 @@
 <#
-.SYNOPSIS
-Get registered application in Microsoft Graph
+    .SYNOPSIS
+    Get registered application in Microsoft Graph
 
-.DESCRIPTION
-Retrieves registered applications from Microsoft Graph. If no ApplicationID is provided, returns all applications with selected properties.
+    .DESCRIPTION
+    Retrieves registered applications from Microsoft Graph. If no ApplicationID is provided, returns all applications with selected properties.
 
+    .PARAMETER ApplicationID
+    The unique identifier of the registered application to retrieve. If not provided, all applications are returned.
 
-.PARAMETER ApplicationID
-The unique identifier of the registered application to retrieve. If not provided, all applications are returned.
+    .EXAMPLE
+    Get-MgRegisteredApp -ApplicationID "your-application-id"
 
-.EXAMPLE
-Get-MgRegisteredApp -ApplicationID "your-application-id"
+    This command retrieves the registered application with the specified Application ID.
 
-This command retrieves the registered application with the specified Application ID.
+    .EXAMPLE
+    Get-MgRegisteredApp
 
-.EXAMPLE
-Get-MgRegisteredApp
+    This command retrieves all registered applications.
 
-This command retrieves all registered applications.
+    .LINK
+    https://ps365.clidsys.com/docs/commands/Get-MgRegisteredApp
 
-.LINK
-https://ps365.clidsys.com/docs/commands/Get-MgRegisteredApp
-
-.NOTES
-Same as the function `Get-MgApplication` but with a simplified output.
+    .NOTES
+    Same as the function `Get-MgApplication` but with a simplified output.
 #>
 
 function Get-MgRegisteredApp {

@@ -39,7 +39,8 @@
     .LINK
     https://ps365.clidsys.com/docs/commands/Get-MgUserPasswordInfo
 
-    .CHANGELOG
+    .NOTES
+    CHANGELOG
     [2.1.0] - 2025-12-03
     # Added
     - Add parameter `SimulatedMaxPasswordAgeDays` to simulate password expiration with different password age policies.

@@ -48,6 +48,7 @@
     Written by Bastien Perez (Clidsys.com - ITPro-Tips.com)
     For more Office 365/Microsoft 365 tips and news, check out ITPro-Tips.com.
 
+    CHANGELOG
     Version History:
     ## [1.8.2] - 2025-10-17
     ### Changed

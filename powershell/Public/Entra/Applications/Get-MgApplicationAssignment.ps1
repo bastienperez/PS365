@@ -21,7 +21,7 @@
 
     .LINK
     https://ps365.clidsys.com/docs/commands/Get-MgApplicationAssignment
-    #>
+#>
     
 function Get-MgApplicationAssignment {
     param(

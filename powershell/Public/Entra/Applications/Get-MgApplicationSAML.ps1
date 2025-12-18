@@ -7,7 +7,7 @@
     along with their SAML-related properties, including the PreferredTokenSigningKeyEndDateTime
     and its validity status.
 
-.   
+    .EXAMPLE
     Get-MgApplicationSAML
 
     Retrieves all Entra ID applications configured for SAML SSO.
@@ -29,7 +29,8 @@
 
     Author: Bastien Perez
 
-    .LIMITATIONS
+    .NOTES
+    Limitations:
     The information about the SAML applications clams is not available in the Microsoft Graph API v1 but in https://main.iam.ad.ext.azure.com/api/ApplicationSso/<service-principal-id>/FederatedSsoV2 so we don't get them
 
     .CHANGELOG
