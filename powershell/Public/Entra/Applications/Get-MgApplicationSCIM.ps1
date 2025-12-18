@@ -1,17 +1,17 @@
 <#
-.SYNOPSIS
+    .SYNOPSIS
     Retrieves all Entra ID applications configured for SCIM provisioning.
 
-.DESCRIPTION
+    .DESCRIPTION
     This function returns a list of all Entra ID applications with SCIM provisioning enabled,
     along with their synchronization job details and settings.
 
-.EXAMPLE
+    .EXAMPLE
     $scimApps = Get-MgApplicationSCIM
 
     Retrieves all Entra ID applications with SCIM provisioning enabled.
 
-.EXAMPLE
+    .EXAMPLE
     Get-MgApplicationSCIM -ForceNewToken
 
     Forces the function to disconnect and reconnect to Microsoft Graph to obtain a new access token.

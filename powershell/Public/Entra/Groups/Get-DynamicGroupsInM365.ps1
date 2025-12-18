@@ -1,37 +1,37 @@
 <#
-.SYNOPSIS
+    .SYNOPSIS
     Retrieves dynamic groups from Microsoft 365, Exchange Online, and Entra ID with attribute analysis.
 
-.DESCRIPTION
+    .DESCRIPTION
     The Get-DynamicGroupsInM365 function retrieves all dynamic groups from Microsoft 365 environments,
     including Exchange Online Dynamic Distribution Groups and Entra ID Dynamic Security/M365 Groups.
     It analyzes membership rules to extract attributes and provides security warnings for attributes
     in the "Personal-Information" property set that users can modify themselves.
 
-.PARAMETER ExchangeOnlineOnly
+    .PARAMETER ExchangeOnlineOnly
     When specified, retrieves only Exchange Online Dynamic Distribution Groups.
     Requires an active Exchange Online session (use Connect-ExchangeOnline).
 
-.PARAMETER EntraIDOnly
+    .PARAMETER EntraIDOnly
     When specified, retrieves only Entra ID Dynamic Groups (Security and M365 groups).
     Requires an active Microsoft Graph connection (use Connect-MgGraph).
 
-.EXAMPLE
+    .EXAMPLE
     PS C:\> Get-DynamicGroupsInM365
     
     Retrieves all dynamic groups from both Exchange Online and Entra ID.
 
-.EXAMPLE
+    .EXAMPLE
     PS C:\> Get-DynamicGroupsInM365 -ExchangeOnlineOnly
     
     Retrieves only Exchange Online Dynamic Distribution Groups.
 
-.EXAMPLE
+    .EXAMPLE
     PS C:\> Get-DynamicGroupsInM365 -EntraIDOnly
     
     Retrieves only Entra ID Dynamic Groups.
 
-.OUTPUTS
+    .OUTPUTS
     System.Collections.Generic.List[Object]
     
     Returns a collection of custom objects with the following properties:
@@ -44,14 +44,14 @@
     - DeviceAttributes: Pipe-separated list of device attributes referenced in the membership rule (Entra ID only)
     - Warning: Security warning if any attribute is in the "Personal-Information" property set
 
-.NOTES
+    .NOTES
     Security Considerations:
     This function identifies attributes in the "Personal-Information" property set that users can
     modify themselves, potentially allowing unauthorized group membership. Review warnings carefully.
 
     More information on: https://itpro-tips.com/property-set-personal-information-and-active-directory-security-and-governance/
 
-.LINK
+    .LINK
     https://ps365.clidsys.com/docs/commands/Get-DynamicGroupsInM365
 #>
 

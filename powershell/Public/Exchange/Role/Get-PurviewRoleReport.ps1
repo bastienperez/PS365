@@ -1,8 +1,4 @@
 <#
-
-# TODO: Add Get-ManagementRoleAssignment to obtain permissions, as this is sometimes not done via a group
-#Get-ManagementRoleAssignment -RoleAssigneeType User
-    
     .SYNOPSIS
     Get-PurviewRoleReport - Reports on Purview RBAC roles and permissions.
 
@@ -27,6 +23,10 @@
     Version History:
     ## [1.0] - 2025-07-03
     ### Initial Release
+    
+    # TODO: Add Get-ManagementRoleAssignment to obtain permissions, as this is sometimes not done via a group
+    #Get-ManagementRoleAssignment -RoleAssigneeType User
+    
 #>
 function Get-PurviewRoleReport {
     [CmdletBinding()]

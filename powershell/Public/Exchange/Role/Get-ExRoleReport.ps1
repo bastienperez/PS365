@@ -1,8 +1,4 @@
 <#
-# TODO: add MFA state
-# TODO: Add Get-ManagementRoleAssignment to obtain permissions, as this is sometimes not done via a group
-#Get-ManagementRoleAssignment -RoleAssigneeType User
-
     .SYNOPSIS
     Get-ExRoleReport - Reports on Exchange RBAC roles and permissions.
 
@@ -35,6 +31,10 @@
 
     ## [1.0] - 2024-11-22
     ### Initial Release
+
+    # TODO: add MFA state
+    # TODO: Add Get-ManagementRoleAssignment to obtain permissions, as this is sometimes not done via a group
+    #Get-ManagementRoleAssignment -RoleAssigneeType User
 
 #>
 function Get-ExRoleReport {

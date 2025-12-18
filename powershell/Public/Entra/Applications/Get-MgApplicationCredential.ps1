@@ -1,8 +1,8 @@
 <#
-.SYNOPSIS
+    .SYNOPSIS
     Retrieves all Entra ID applications and their credentials (key and password).
 
-.DESCRIPTION
+    .DESCRIPTION
     This function returns a list of all Entra ID applications with their credentials information,
     including key credentials and password credentials, along with their validity status.
     The function also retrieves the owners of each application.

@@ -1,5 +1,4 @@
 <#
-
     .SYNOPSIS
     Retrieves password policy details for all verified domains in the Microsoft Entra tenant.
 
