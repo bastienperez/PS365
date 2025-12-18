@@ -1,5 +1,5 @@
 ---
-description: \{\{ Fill in the Synopsis \}\}
+description: Retrieves all Entra ID applications configured for SCIM provisioning.
 id: Get-MgApplicationSCIM
 title: Get-MgApplicationSCIM
 hide_title: false
@@ -9,7 +9,7 @@ custom_edit_url: https://github.com/bastienperez/ps365/blob/main/powershell/publ
 
 ## SYNOPSIS
 
-\{\{ Fill in the Synopsis \}\}
+Retrieves all Entra ID applications configured for SCIM provisioning.
 
 ## SYNTAX
 
@@ -36,19 +36,52 @@ Get-MgApplicationSCIM [-DisplayName <String>] [-ForceNewToken] [-ExportToExcel]
 
 ## DESCRIPTION
 
-\{\{ Fill in the Description \}\}
+This function returns a list of all Entra ID applications with SCIM provisioning enabled,
+along with their synchronization job details and settings.
 
 ## EXAMPLES
 
+### EXAMPLE 1
+
+```powershell
+$scimApps = Get-MgApplicationSCIM
+```
+
+Retrieves all Entra ID applications with SCIM provisioning enabled.
+
+### EXAMPLE 2
+
+```powershell
+Get-MgApplicationSCIM -ForceNewToken
+```
+
+Forces the function to disconnect and reconnect to Microsoft Graph to obtain a new access token.
+
+### EXAMPLE 3
+
+```powershell
+Get-MgApplicationSCIM -Export
+```
+
+Exports the SCIM configuration details to a CSV file.
+
+### EXAMPLE 4
+
+```powershell
+Get-MgApplicationSCIM -ObjectID "xxx-xxx-xxx"
+```
+
+Retrieves the SCIM configuration for a specific application by its ObjectID.
+
 ## PARAMETERS
 
-### -DisplayName
+### -ObjectID
 
-\{\{ Fill DisplayName Description \}\}
+\{\{ Fill ObjectID Description \}\}
 
 ```yaml
 Type: String
-Parameter Sets: ByDisplayName
+Parameter Sets: ByObjectId
 Aliases:
 
 Required: False
@@ -58,13 +91,13 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -ExportToExcel
+### -DisplayName
 
-\{\{ Fill ExportToExcel Description \}\}
+\{\{ Fill DisplayName Description \}\}
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
+Type: String
+Parameter Sets: ByDisplayName
 Aliases:
 
 Required: False
@@ -85,23 +118,23 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -ObjectID
+### -ExportToExcel
 
-\{\{ Fill ObjectID Description \}\}
+\{\{ Fill ExportToExcel Description \}\}
 
 ```yaml
-Type: String
-Parameter Sets: ByObjectId
+Type: SwitchParameter
+Parameter Sets: (All)
 Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -128,12 +161,42 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
-
-### System.Object
 
 ## NOTES
 
+LIMITATIONS
+The groups assignments are not retrieved because based on https://main.iam.ad.ext.azure.com
+
+This function requires the Microsoft.Graph.Applications and Microsoft.Graph.Authentication modules.
+
+CHANGELOG
+## [1.4.0] - 2025-11-28
+### Added
+- Add parameter `ExportToExcel` to export the report to an Excel file.
+
+## [1.3.0] - 2025-10-23
+
+### Added
+- Added error handling when adding member to job
+- Add `DisplayName` parameter
+
+## [1.2.0] - 2025-xx-xx
+
+### Added
+- Export functionality for synchronization job details
+- Support for additional synchronization job properties
+
+## [1.1] - 2025-02-26
+
+### Changed
+- Transform the script into a function
+- Replace `Write-Host` with `Write-Verbose`
+
+## [1.0] - 2024-xx-xx
+
+### Initial Release
+
 ## RELATED LINKS
+
+[https://ps365.clidsys.com/docs/commands/Get-MgApplicationSCIM](https://ps365.clidsys.com/docs/commands/Get-MgApplicationSCIM)

@@ -1,5 +1,5 @@
 ---
-description: \{\{ Fill in the Synopsis \}\}
+description: Retrieves all Entra ID applications configured for SAML SSO.
 id: Get-MgApplicationSAML
 title: Get-MgApplicationSAML
 hide_title: false
@@ -9,7 +9,7 @@ custom_edit_url: https://github.com/bastienperez/ps365/blob/main/powershell/publ
 
 ## SYNOPSIS
 
-\{\{ Fill in the Synopsis \}\}
+Retrieves all Entra ID applications configured for SAML SSO.
 
 ## SYNTAX
 
@@ -20,27 +20,37 @@ Get-MgApplicationSAML [-ForceNewToken] [-ExportToExcel] [-ProgressAction <Action
 
 ## DESCRIPTION
 
-\{\{ Fill in the Description \}\}
+This function returns a list of all Entra ID applications configured for SAML Single Sign-On
+along with their SAML-related properties, including the PreferredTokenSigningKeyEndDateTime
+and its validity status.
 
 ## EXAMPLES
 
-## PARAMETERS
+### EXAMPLE 1
 
-### -ExportToExcel
-
-\{\{ Fill ExportToExcel Description \}\}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+```powershell
+Get-MgApplicationSAML
 ```
+
+Retrieves all Entra ID applications configured for SAML SSO.
+
+### EXAMPLE 2
+
+```powershell
+Get-MgApplicationSAML -ForceNewToken
+```
+
+Forces the function to disconnect and reconnect to Microsoft Graph to obtain a new access token.
+
+### EXAMPLE 3
+
+```powershell
+Get-MgApplicationSAML -ExportToExcel
+```
+
+Gets all SAML applications and exports them to an Excel file.
+
+## PARAMETERS
 
 ### -ForceNewToken
 
@@ -53,7 +63,23 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ExportToExcel
+
+\{\{ Fill ExportToExcel Description \}\}
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -80,12 +106,29 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
-
-### System.Object
 
 ## NOTES
 
+Limitations:
+The information about the SAML applications clams is not available in the Microsoft Graph API v1 but in https://main.iam.ad.ext.azure.com/api/ApplicationSso/&lt;service-principal-id&gt;/FederatedSsoV2 so we don't get them
+
+CHANGELOG
+## [1.2.0] - 2025-04-04
+### Changed
+- Change Write-Warning message in the catch block to Import-Module
+
+## [1.1.0] - 2025-02-26
+
+### Changed
+- Transform the script into a function
+- Add `ForceNewToken` parameter
+- Test if already connected to Microsoft Graph and with the right permissions
+
+## [1.0.0] - 2024-xx-xx
+
+### Initial Release
+
 ## RELATED LINKS
+
+[https://ps365.clidsys.com/docs/commands/Get-MgApplicationSAML](https://ps365.clidsys.com/docs/commands/Get-MgApplicationSAML)
