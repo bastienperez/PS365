@@ -5,8 +5,8 @@
 
 $powershellModuleFolder = './powershell'
 $powershellModuleName = 'PS365.psm1'
-$websiteFolder = "./website/docs"
-$githubURL = "https://github.com/bastienperez/ps365"
+$websiteFolder = './website/docs'
+$githubURL = 'https://github.com/bastienperez/ps365'
 if (-not (Get-Module Alt3.Docusaurus.Powershell -ListAvailable)) { Install-Module Alt3.Docusaurus.Powershell -Scope CurrentUser -Force -SkipPublisherCheck }
 if (-not (Get-Module PlatyPS -ListAvailable)) { Install-Module PlatyPS -Scope CurrentUser -Force -SkipPublisherCheck }
 if (-not (Get-Module Pester -ListAvailable)) { Install-Module Pester -Scope CurrentUser -Force -SkipPublisherCheck }
@@ -20,17 +20,30 @@ Import-Module PlatyPS
 
 # Get all the filenames in the ./powershell/internal folder without the extension
 $internalCommands = Get-ChildItem @("./$powershellModuleFolder/Public") -Filter *.ps1 | ForEach-Object { $_.BaseName }
-New-DocusaurusHelp -Module "./$powershellModuleFolder/$powershellModuleName" -DocsFolder "./$websiteFolder" -NoPlaceHolderExamples -EditUrl "$githubURL/blob/main/powershell/public/" -Exclude $internalCommands
+#New-DocusaurusHelp -Module "./$powershellModuleFolder/$powershellModuleName" -DocsFolder "./$websiteFolder" -NoPlaceHolderExamples -EditUrl "$githubURL/blob/main/powershell/public/" -Exclude $internalCommands
+New-DocusaurusHelp -Module "./$powershellModuleFolder/$powershellModuleName" -DocsFolder "./$websiteFolder" -NoPlaceHolderExamples -Exclude $internalCommands
 
 # Update the markdown to include the synopsis as description so it can be displayed correctly in the doc links.
 $cmdMarkdownFiles = Get-ChildItem ./website/docs/commands
 foreach ($file in $cmdMarkdownFiles) {
     $content = Get-Content $file
-    $synopsis = $content[($content.IndexOf("## SYNOPSIS") + 2)] # Get the synopsis
-    if (![string]::IsNullOrWhiteSpace($synopsis)) {
-        $updatedContent = $content.Replace("id:", "sidebar_class_name: hidden`ndescription: $($synopsis)`nid:")
-        Set-Content $file $updatedContent
+    $synopsis = $content[($content.IndexOf('## SYNOPSIS') + 2)] # Get the synopsis
+    if (-not [string]::IsNullOrWhiteSpace($synopsis)) {
+        $updatedContent = $content.Replace('id:', "description: $($synopsis)`nid:")
     }
+
+    <# Custom for mintlify
+    Remove sidebar_class_name:
+    Remove hide_title:
+    Remove hide_table_of_contents:    
+    #>
+
+    $updatedContent = $updatedContent -replace "sidebar_class_name:.*`n", ''
+    $updatedContent = $updatedContent -replace "hide_title:.*`n", ''
+    $updatedContent = $updatedContent -replace "hide_table_of_contents:.*`n", ''
+
+    Set-Content $file $updatedContent
+
 }
 
 #Set-Content $commandsIndexFile $readmeContent  # Restore the readme content
