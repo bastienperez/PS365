@@ -1,5 +1,5 @@
 ---
-description: \{\{ Fill in the Synopsis \}\}
+description: Get-PurviewRoleReport - Reports on Purview RBAC roles and permissions.
 id: Get-PurviewRoleReport
 title: Get-PurviewRoleReport
 hide_title: false
@@ -9,7 +9,7 @@ custom_edit_url: https://github.com/bastienperez/ps365/blob/main/powershell/publ
 
 ## SYNOPSIS
 
-\{\{ Fill in the Synopsis \}\}
+Get-PurviewRoleReport - Reports on Purview RBAC roles and permissions.
 
 ## SYNTAX
 
@@ -19,9 +19,16 @@ Get-PurviewRoleReport [-ShowGraph] [-ProgressAction <ActionPreference>] [<Common
 
 ## DESCRIPTION
 
-\{\{ Fill in the Description \}\}
+This script produces a report of the membership of Purview RBAC role groups.
+By default, the report contains only the groups with members.
 
 ## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Get-PurviewRoleReport
+```
 
 ## PARAMETERS
 
@@ -36,7 +43,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -63,12 +70,23 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
+### The report is output to an array contained all the audit logs found.
 
+### To export in a csv, do Get-PurviewRoleReport | Export-CSV -NoTypeInformation "$(Get-Date -Format yyyyMMdd)_adminRoles.csv" -Encoding UTF8
 ## NOTES
+Written by Bastien Perez (Clidsys.com - ITPro-Tips.com)
+For more Office 365/Microsoft 365 tips and news, check out ITPro-Tips.com.
+
+Version History:
+## [1.0] - 2025-07-03
+### Initial Release
+
+# TODO: Add Get-ManagementRoleAssignment to obtain permissions, as this is sometimes not done via a group
+
+#Get-ManagementRoleAssignment -RoleAssigneeType User
 
 ## RELATED LINKS
+
+[https://ps365.clidsys.com/docs/commands/Get-PurviewRoleReport](https://ps365.clidsys.com/docs/commands/Get-PurviewRoleReport)
