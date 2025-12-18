@@ -43,12 +43,12 @@ foreach ($file in $cmdMarkdownFiles) {
     Remove hide_table_of_contents:    
     #>
 
-    $updatedContent = $updatedContent -replace "sidebar_class_name:.*`n", ''
-    $updatedContent = $updatedContent -replace "hide_title:.*`n", ''
-    $updatedContent = $updatedContent -replace "hide_table_of_contents:.*`n", ''
+    $updatedContent = $updatedContent -replace "sidebar_class_name:.*(\r?\n)", ''
+    $updatedContent = $updatedContent -replace "hide_title:.*(\r?\n)", ''
+    $updatedContent = $updatedContent -replace "hide_table_of_contents:.*(\r?\n)", ''
     
     # Remove the entire ProgressAction section
-    $updatedContent = $updatedContent -replace "### -ProgressAction[\s\S]*?(?=###|\z)", ''
+    $updatedContent = $updatedContent -replace "### -ProgressAction.*?(?=^###|\z)", '', 'Singleline'
 
     Set-Content $file $updatedContent
 
