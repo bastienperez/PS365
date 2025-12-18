@@ -1,2 +1,97 @@
---- description: Get the regional configuration of Exchange Online mailboxes.
-id: Get-ExMailboxRegionalConfiguration title: Get-ExMailboxRegionalConfiguration hide_title: false hide_table_of_contents: false ---  ## SYNOPSIS  Get the regional configuration of Exchange Online mailboxes.  ## SYNTAX  ```powershell Get-ExMailboxRegionalConfiguration [[-Identity] <String>] [-ByDomain <String>]  [-ProgressAction <ActionPreference>] [<CommonParameters>] ```  ## DESCRIPTION  This function retrieves the regional configuration settings (language, time zone, date format, time format) for Exchange Online mailboxes. It can filter mailboxes by identity or by domain.  ## EXAMPLES  ### EXAMPLE 1  ```powershell Get-ExMailboxRegionalConfiguration ```  Retrieves the regional configuration for all Exchange Online mailboxes.  ### EXAMPLE 2  ```powershell Get-ExMailboxRegionalConfiguration -Identity "user@example.com" ```  Retrieves the regional configuration for the specified mailbox.  ### EXAMPLE 3  ```powershell Get-ExMailboxRegionalConfiguration -ByDomain "example.com" ```  Retrieves the regional configuration for all mailboxes in the specified domain.  ## PARAMETERS  ### -Identity  The identity of the mailbox to retrieve the regional configuration for. If not specified, the function retrieves the configuration for all mailboxes.  ```yaml Type: String Parameter Sets: (All) Aliases:  Required: False Position: 1 Default value: None Accept pipeline input: False Accept wildcard characters: False ```  ### -ByDomain  The domain to filter mailboxes by. Only mailboxes with a primary SMTP address in this domain will be processed.  ```yaml Type: String Parameter Sets: (All) Aliases:  Required: False Position: Named Default value: None Accept pipeline input: False Accept wildcard characters: False ```  
+---
+description: Get the regional configuration of Exchange Online mailboxes.
+id: Get-ExMailboxRegionalConfiguration
+title: Get-ExMailboxRegionalConfiguration
+---
+
+## SYNOPSIS
+
+Get the regional configuration of Exchange Online mailboxes.
+
+## SYNTAX
+
+```powershell
+Get-ExMailboxRegionalConfiguration [[-Identity] <String>] [-ByDomain <String>]
+ [-ProgressAction <ActionPreference>] [<CommonParameters>]
+```
+
+## DESCRIPTION
+
+This function retrieves the regional configuration settings (language, time zone, date format, time format)
+for Exchange Online mailboxes.
+It can filter mailboxes by identity or by domain.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Get-ExMailboxRegionalConfiguration
+```
+
+Retrieves the regional configuration for all Exchange Online mailboxes.
+
+### EXAMPLE 2
+
+```powershell
+Get-ExMailboxRegionalConfiguration -Identity "user@example.com"
+```
+
+Retrieves the regional configuration for the specified mailbox.
+
+### EXAMPLE 3
+
+```powershell
+Get-ExMailboxRegionalConfiguration -ByDomain "example.com"
+```
+
+Retrieves the regional configuration for all mailboxes in the specified domain.
+
+## PARAMETERS
+
+### -Identity
+
+The identity of the mailbox to retrieve the regional configuration for.
+If not specified, the function retrieves the configuration for all mailboxes.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ByDomain
+
+The domain to filter mailboxes by.
+Only mailboxes with a primary SMTP address in this
+domain will be processed.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+## NOTES
+
+## RELATED LINKS

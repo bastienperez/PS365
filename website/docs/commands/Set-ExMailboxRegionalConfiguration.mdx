@@ -1,2 +1,317 @@
---- description: Sets the regional configuration for Exchange mailboxes, including language, time zone, date format, and time format.
-id: Set-ExMailboxRegionalConfiguration title: Set-ExMailboxRegionalConfiguration hide_title: false hide_table_of_contents: false ---  ## SYNOPSIS  Sets the regional configuration for Exchange mailboxes, including language, time zone, date format, and time format.  ## SYNTAX  ### Identity  ```powershell Set-ExMailboxRegionalConfiguration -Identity <String[]> [-Language <String>] [-TimeZone <String>]  [-DateFormat <String>] [-TimeFormat <String>] [-OnlyIfLanguageEmpty] [-GenerateCmdlets] [-OutputFile <String>]  [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>] ```  ### ByDomain  ```powershell Set-ExMailboxRegionalConfiguration -ByDomain <String> [-Language <String>] [-TimeZone <String>]  [-DateFormat <String>] [-TimeFormat <String>] [-OnlyIfLanguageEmpty] [-GenerateCmdlets] [-OutputFile <String>]  [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>] ```  ### FromCSV  ```powershell Set-ExMailboxRegionalConfiguration -FromCSV <String> [-DateFormat <String>] [-TimeFormat <String>]  [-OnlyIfLanguageEmpty] [-GenerateCmdlets] [-OutputFile <String>] [-ProgressAction <ActionPreference>]  [-WhatIf] [-Confirm] [<CommonParameters>] ```  ### AllMailboxes  ```powershell Set-ExMailboxRegionalConfiguration [-AllMailboxes] [-Language <String>] [-TimeZone <String>]  [-DateFormat <String>] [-TimeFormat <String>] [-OnlyIfLanguageEmpty] [-GenerateCmdlets] [-OutputFile <String>]  [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>] ```  ## DESCRIPTION  This function sets the regional configuration settings (language, time zone, date format, time format) for Exchange Online mailboxes. It can target mailboxes by identity, by domain, from a CSV file, or all mailboxes in the organization. It also supports generating the corresponding Set-MailboxRegionalConfiguration cmdlets without executing them.  ## EXAMPLES  ### EXAMPLE 1  ```powershell Set-ExMailboxRegionalConfiguration -Identity "user@example.com" -Language "en-US" -TimeZone "+1" -DateFormat "MM/dd/yyyy" -TimeFormat "HH:mm" -GenerateCmdlets -OutputFile "C:\temp\cmdlets.txt" ```  Generates the Set-MailboxRegionalConfiguration cmdlet for the specified mailbox with the given regional settings and saves it to the specified file without executing it.  ### EXAMPLE 2  ```powershell Set-ExMailboxRegionalConfiguration -ByDomain "example.com" -Language "fr-FR" -TimeZone "Romance Standard Time" ```  Sets the regional configuration for all mailboxes in the specified domain to French language and Romance Standard Time zone.  ### EXAMPLE 3  ```powershell Set-ExMailboxRegionalConfiguration -FromCSV "C:\path\to\file.csv" -GenerateCmdlets -OutputFile "C:\temp\cmdlets.txt" ```  Generates the Set-MailboxRegionalConfiguration cmdlets for mailboxes listed in the specified CSV file and saves them to the specified file without executing them.  ### EXAMPLE 4  ```powershell Set-ExMailboxRegionalConfiguration -ByDomain "example.com" -Language "en-US" -TimeZone "+1" -OnlyIfLanguageEmpty ```  Sets the regional configuration only for mailboxes in the specified domain that currently have no language configured.  ## PARAMETERS  ### -Identity  The identity of the mailbox(es) to set the regional configuration for. This can be an array of email addresses, usernames, or display names.  ```yaml Type: String[] Parameter Sets: Identity Aliases:  Required: True Position: Named Default value: None Accept pipeline input: False Accept wildcard characters: False ```  ### -ByDomain  Filter mailboxes by domain name. All mailboxes with a primary SMTP address in this domain will be processed.  ```yaml Type: String Parameter Sets: ByDomain Aliases:  Required: True Position: Named Default value: None Accept pipeline input: False Accept wildcard characters: False ```  ### -FromCSV  The path to a CSV file containing mailbox identities and optional regional configuration settings to process.  ```yaml Type: String Parameter Sets: FromCSV Aliases:  Required: True Position: Named Default value: None Accept pipeline input: False Accept wildcard characters: False ```  ### -AllMailboxes  If specified, all mailboxes in the organization will be processed.  ```yaml Type: SwitchParameter Parameter Sets: AllMailboxes Aliases:  Required: True Position: Named Default value: False Accept pipeline input: False Accept wildcard characters: False ```  ### -Language  The language code to set for the mailbox regional configuration (e.g., 'en-US', 'fr-FR'). See the ValidateSet in the parameter definition for supported language codes.  ```yaml Type: String Parameter Sets: Identity, ByDomain, AllMailboxes Aliases:  Required: False Position: Named Default value: None Accept pipeline input: False Accept wildcard characters: False ```  ### -TimeZone  The time zone to set for the mailbox regional configuration. This can be a time zone ID (e.g., 'Pacific Standard Time') or a simplified offset format (e.g., '+1', '-5'). See the ValidateSet in the parameter definition for supported offset values.  ```yaml Type: String Parameter Sets: Identity, ByDomain, AllMailboxes Aliases:  Required: False Position: Named Default value: None Accept pipeline input: False Accept wildcard characters: False ```  ### -DateFormat  The date format to set for the mailbox regional configuration (e.g., 'MM/dd/yyyy', 'dd/MM/yyyy'). Auto-detected based on the specified language if not provided.  ```yaml Type: String Parameter Sets: (All) Aliases:  Required: False Position: Named Default value: None Accept pipeline input: False Accept wildcard characters: False ```  ### -TimeFormat  The time format to set for the mailbox regional configuration (e.g., 'HH:mm', 'hh:mm tt'). Auto-detected based on the specified language if not provided.  ```yaml Type: String Parameter Sets: (All) Aliases:  Required: False Position: Named Default value: None Accept pipeline input: False Accept wildcard characters: False ```  ### -OnlyIfLanguageEmpty  If specified, the function will only modify mailboxes that currently have no language configured (empty Language property). Useful to avoid overwriting existing configurations set by users or administrators.  ```yaml Type: SwitchParameter Parameter Sets: (All) Aliases:  Required: False Position: Named Default value: False Accept pipeline input: False Accept wildcard characters: False ```  ### -GenerateCmdlets  If specified, the function will generate the Set-MailboxRegionalConfiguration cmdlets and save them to a file instead of executing them.  ```yaml Type: SwitchParameter Parameter Sets: (All) Aliases:  Required: False Position: Named Default value: False Accept pipeline input: False Accept wildcard characters: False ```  ### -OutputFile  The path to the output file where generated cmdlets will be saved. Default is a timestamped file in the current directory.  ```yaml Type: String Parameter Sets: (All) Aliases:  Required: False Position: Named Default value: "$(Get-Date -Format 'yyyy-MM-dd_HHmmss')-SetMailboxRegionalConfig_Commands.txt" Accept pipeline input: False Accept wildcard characters: False ```  ### -WhatIf  Shows what would happen if the cmdlet runs. The cmdlet is not run.  ```yaml Type: SwitchParameter Parameter Sets: (All) Aliases: wi  Required: False Position: Named Default value: None Accept pipeline input: False Accept wildcard characters: False ```  ### -Confirm  Prompts you for confirmation before running the cmdlet.  ```yaml Type: SwitchParameter Parameter Sets: (All) Aliases: cf  Required: False Position: Named Default value: None Accept pipeline input: False Accept wildcard characters: False ```  
+---
+description: Sets the regional configuration for Exchange mailboxes, including language, time zone, date format, and time format.
+id: Set-ExMailboxRegionalConfiguration
+title: Set-ExMailboxRegionalConfiguration
+---
+
+## SYNOPSIS
+
+Sets the regional configuration for Exchange mailboxes, including language, time zone, date format, and time format.
+
+## SYNTAX
+
+### Identity
+
+```powershell
+Set-ExMailboxRegionalConfiguration -Identity <String[]> [-Language <String>] [-TimeZone <String>]
+ [-DateFormat <String>] [-TimeFormat <String>] [-OnlyIfLanguageEmpty] [-GenerateCmdlets] [-OutputFile <String>]
+ [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]
+```
+
+### ByDomain
+
+```powershell
+Set-ExMailboxRegionalConfiguration -ByDomain <String> [-Language <String>] [-TimeZone <String>]
+ [-DateFormat <String>] [-TimeFormat <String>] [-OnlyIfLanguageEmpty] [-GenerateCmdlets] [-OutputFile <String>]
+ [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]
+```
+
+### FromCSV
+
+```powershell
+Set-ExMailboxRegionalConfiguration -FromCSV <String> [-DateFormat <String>] [-TimeFormat <String>]
+ [-OnlyIfLanguageEmpty] [-GenerateCmdlets] [-OutputFile <String>] [-ProgressAction <ActionPreference>]
+ [-WhatIf] [-Confirm] [<CommonParameters>]
+```
+
+### AllMailboxes
+
+```powershell
+Set-ExMailboxRegionalConfiguration [-AllMailboxes] [-Language <String>] [-TimeZone <String>]
+ [-DateFormat <String>] [-TimeFormat <String>] [-OnlyIfLanguageEmpty] [-GenerateCmdlets] [-OutputFile <String>]
+ [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]
+```
+
+## DESCRIPTION
+
+This function sets the regional configuration settings (language, time zone, date format, time format)
+for Exchange Online mailboxes.
+It can target mailboxes by identity, by domain, from a CSV file, or all mailboxes in the organization.
+It also supports generating the corresponding Set-MailboxRegionalConfiguration cmdlets without executing them.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Set-ExMailboxRegionalConfiguration -Identity "user@example.com" -Language "en-US" -TimeZone "+1" -DateFormat "MM/dd/yyyy" -TimeFormat "HH:mm" -GenerateCmdlets -OutputFile "C:\temp\cmdlets.txt"
+```
+
+Generates the Set-MailboxRegionalConfiguration cmdlet for the specified mailbox with the given regional settings and saves it to the specified file without executing it.
+
+### EXAMPLE 2
+
+```powershell
+Set-ExMailboxRegionalConfiguration -ByDomain "example.com" -Language "fr-FR" -TimeZone "Romance Standard Time"
+```
+
+Sets the regional configuration for all mailboxes in the specified domain to French language and Romance Standard Time zone.
+
+### EXAMPLE 3
+
+```powershell
+Set-ExMailboxRegionalConfiguration -FromCSV "C:\path\to\file.csv" -GenerateCmdlets -OutputFile "C:\temp\cmdlets.txt"
+```
+
+Generates the Set-MailboxRegionalConfiguration cmdlets for mailboxes listed in the specified CSV file and saves them to the specified file without executing them.
+
+### EXAMPLE 4
+
+```powershell
+Set-ExMailboxRegionalConfiguration -ByDomain "example.com" -Language "en-US" -TimeZone "+1" -OnlyIfLanguageEmpty
+```
+
+Sets the regional configuration only for mailboxes in the specified domain that currently have no language configured.
+
+## PARAMETERS
+
+### -Identity
+
+The identity of the mailbox(es) to set the regional configuration for.
+This can be an array of email addresses, usernames, or display names.
+
+```yaml
+Type: String[]
+Parameter Sets: Identity
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ByDomain
+
+Filter mailboxes by domain name.
+All mailboxes with a primary SMTP address in this domain will be processed.
+
+```yaml
+Type: String
+Parameter Sets: ByDomain
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -FromCSV
+
+The path to a CSV file containing mailbox identities and optional regional configuration settings to process.
+
+```yaml
+Type: String
+Parameter Sets: FromCSV
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -AllMailboxes
+
+If specified, all mailboxes in the organization will be processed.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: AllMailboxes
+Aliases:
+
+Required: True
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Language
+
+The language code to set for the mailbox regional configuration (e.g., 'en-US', 'fr-FR').
+See the ValidateSet in the parameter definition for supported language codes.
+
+```yaml
+Type: String
+Parameter Sets: Identity, ByDomain, AllMailboxes
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -TimeZone
+
+The time zone to set for the mailbox regional configuration.
+This can be a time zone ID (e.g., 'Pacific Standard Time')
+or a simplified offset format (e.g., '+1', '-5').
+See the ValidateSet in the parameter definition for supported offset values.
+
+```yaml
+Type: String
+Parameter Sets: Identity, ByDomain, AllMailboxes
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DateFormat
+
+The date format to set for the mailbox regional configuration (e.g., 'MM/dd/yyyy', 'dd/MM/yyyy').
+Auto-detected based on the specified language if not provided.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -TimeFormat
+
+The time format to set for the mailbox regional configuration (e.g., 'HH:mm', 'hh:mm tt').
+Auto-detected based on the specified language if not provided.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -OnlyIfLanguageEmpty
+
+If specified, the function will only modify mailboxes that currently have no language configured (empty Language property).
+Useful to avoid overwriting existing configurations set by users or administrators.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -GenerateCmdlets
+
+If specified, the function will generate the Set-MailboxRegionalConfiguration cmdlets and save them to a file instead of executing them.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -OutputFile
+
+The path to the output file where generated cmdlets will be saved.
+Default is a timestamped file in the current directory.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: "$(Get-Date -Format 'yyyy-MM-dd_HHmmss')-SetMailboxRegionalConfig_Commands.txt"
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -WhatIf
+
+Shows what would happen if the cmdlet runs.
+The cmdlet is not run.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases: wi
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Confirm
+
+Prompts you for confirmation before running the cmdlet.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases: cf
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+## NOTES
+
+## RELATED LINKS

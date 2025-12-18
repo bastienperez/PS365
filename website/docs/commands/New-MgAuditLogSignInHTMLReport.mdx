@@ -1,2 +1,69 @@
---- description: Generate an HTML report from a collection of sign-in records using PSWriteHTML.
-id: New-MgAuditLogSignInHTMLReport title: New-MgAuditLogSignInHTMLReport hide_title: false hide_table_of_contents: false ---  ## SYNOPSIS  Generate an HTML report from a collection of sign-in records using PSWriteHTML.  ## SYNTAX  ```powershell New-MgAuditLogSignInHTMLReport [-SignIns] <Object[]> [-OutputFile] <String>  [-ProgressAction <ActionPreference>] [<CommonParameters>] ```  ## DESCRIPTION  Accepts an array of sign-in objects (raw Graph objects or transformed PSCustomObjects) and writes an HTML report with PSWriteHTML containing a chart and detailed table.  ## EXAMPLES  ## PARAMETERS  ### -SignIns  Array of sign-in objects.  ```yaml Type: Object[] Parameter Sets: (All) Aliases:  Required: True Position: 1 Default value: None Accept pipeline input: False Accept wildcard characters: False ```  ### -OutputFile  Path to the HTML output file.  ```yaml Type: String Parameter Sets: (All) Aliases:  Required: True Position: 2 Default value: None Accept pipeline input: False Accept wildcard characters: False ```  
+---
+description: Generate an HTML report from a collection of sign-in records using PSWriteHTML.
+id: New-MgAuditLogSignInHTMLReport
+title: New-MgAuditLogSignInHTMLReport
+---
+
+## SYNOPSIS
+
+Generate an HTML report from a collection of sign-in records using PSWriteHTML.
+
+## SYNTAX
+
+```powershell
+New-MgAuditLogSignInHTMLReport [-SignIns] <Object[]> [-OutputFile] <String>
+ [-ProgressAction <ActionPreference>] [<CommonParameters>]
+```
+
+## DESCRIPTION
+
+Accepts an array of sign-in objects (raw Graph objects or transformed PSCustomObjects)
+and writes an HTML report with PSWriteHTML containing a chart and detailed table.
+
+## EXAMPLES
+
+## PARAMETERS
+
+### -SignIns
+
+Array of sign-in objects.
+
+```yaml
+Type: Object[]
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -OutputFile
+
+Path to the HTML output file.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 2
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+## NOTES
+
+## RELATED LINKS
