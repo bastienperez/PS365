@@ -66,6 +66,12 @@ foreach ($file in $cmdMarkdownFiles) {
     
     # Write back to file
     Set-Content -Path $file.FullName -Value $updatedContent -NoNewline
+
+    # Remove the docusaurus.sidebar.js file if it exists
+    $sidebarFile = Join-Path -Path $file.DirectoryName -ChildPath 'docusaurus.sidebar.js'
+    if (Test-Path -Path $sidebarFile) {
+        Remove-Item -Path $sidebarFile -Force
+    }
 }
 
 #Set-Content $commandsIndexFile $readmeContent  # Restore the readme content
