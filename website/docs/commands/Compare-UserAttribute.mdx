@@ -1,8 +1,7 @@
 ---
 title: Compare-UserAttribute
+description: Compare two user attributes from different sources.
 ---
-
-# Compare-UserAttribute
 
 ## SYNOPSIS
 
@@ -10,12 +9,11 @@ Compare two user attributes from different sources.
 
 ## SYNTAX
 
-### __AllParameterSets
+```powershell
+Compare-UserAttribute [-Attribute1] <String> [-Attribute2] <String> [-Source] <String> [[-User] <String[]>]
+ [[-ByDomain] <String[]>] [-Return] <String> [-ProgressAction <ActionPreference>] [<CommonParameters>]
+```
 
-```
-Compare-UserAttribute [-Attribute1] <string> [-Attribute2] <string> [-Source] <string>
- [[-User] <string[]>] [[-ByDomain] <string[]>] [-Return] <string> [<CommonParameters>]
-```
 ## DESCRIPTION
 
 This function compares two specified user attributes from Active Directory, Entra ID (Microsoft Graph),
@@ -27,14 +25,18 @@ whose attributes either match or do not match.
 
 ### EXAMPLE 1
 
+```powershell
 Compare-UserAttribute -Attribute1 "mail" -Attribute2 "proxyAddresses" -
+```
 
 Compares the 'mail' and 'proxyAddresses' attributes for users in Active Directory
 and returns those with matching values.
 
 ### EXAMPLE 2
 
+```powershell
 Compare-UserAttribute -Attribute1 "userPrincipalName" -Attribute2 "mail" -Source "EntraID" -Return "NotMatching"
+```
 
 Compares the 'userPrincipalName' and 'mail' attributes for users in Entra ID
 and returns those with non-matching values.
@@ -46,20 +48,15 @@ and returns those with non-matching values.
 The first user attribute to compare.
 
 ```yaml
-Type: System.String
-DefaultValue: ''
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: (All)
-  Position: 0
-  IsRequired: true
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
 ```
 
 ### -Attribute2
@@ -67,62 +64,15 @@ HelpMessage: ''
 The second user attribute to compare.
 
 ```yaml
-Type: System.String
-DefaultValue: ''
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: (All)
-  Position: 1
-  IsRequired: true
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
+Type: String
+Parameter Sets: (All)
+Aliases:
 
-### -ByDomain
-
-An array of email domains to filter users.
-
-```yaml
-Type: System.String[]
-DefaultValue: ''
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: (All)
-  Position: 4
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
-### -Return
-
-Specifies whether to return users with 'Matching' or 'NotMatching' attributes.
-
-```yaml
-Type: System.String
-DefaultValue: ''
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: (All)
-  Position: 5
-  IsRequired: true
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
+Required: True
+Position: 2
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
 ```
 
 ### -Source
@@ -131,20 +81,15 @@ The source from which to retrieve user information.
 Valid options are 'AD' for Active Directory, 'EntraID' for Microsoft Entra ID, and 'Exchange' for Exchange.
 
 ```yaml
-Type: System.String
-DefaultValue: ''
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: (All)
-  Position: 2
-  IsRequired: true
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 3
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
 ```
 
 ### -User
@@ -152,28 +97,68 @@ HelpMessage: ''
 An array of user identities to filter the comparison.
 
 ```yaml
-Type: System.String[]
-DefaultValue: ''
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: (All)
-  Position: 3
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
+Type: String[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 4
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ByDomain
+
+An array of email domains to filter users.
+
+```yaml
+Type: String[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 5
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Return
+
+Specifies whether to return users with 'Matching' or 'NotMatching' attributes.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 6
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ProgressAction
+
+\{\{ Fill ProgressAction Description \}\}
+
+```yaml
+Type: ActionPreference
+Parameter Sets: (All)
+Aliases: proga
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
 ```
 
 ### CommonParameters
 
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
--InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
--ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
-[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
@@ -182,6 +167,3 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
-
-{{ Fill in the related links here }}
-
