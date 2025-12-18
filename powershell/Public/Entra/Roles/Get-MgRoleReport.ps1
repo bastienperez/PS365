@@ -47,67 +47,8 @@
     
     Written by Bastien Perez (Clidsys.com - ITPro-Tips.com)
     For more Office 365/Microsoft 365 tips and news, check out ITPro-Tips.com.
-
-    CHANGELOG
-    Version History:
-    ## [1.8.2] - 2025-10-17
-    ### Changed
-    - Fix `onPremisesSyncEnabled` property
-
-    ## [1.8.1] - 2025-10-17
-    ### Added
-    - Add `RecommendationSync` property
-
-    ## [1.8.0] - 2025-10-08
-    ### Added
-    - Add `IncludeEmptyRoles` switch parameter to get all roles, even the ones without members
-
-    ### Changed
-    - Use List for mgRoles for better performance
-
-    ## [1.7.0] - 2025-04-04
-    ### Changed
-    - Add scopes for `RoleManagement.Read.All` and `AuditLog.Read.All` permissions
-
-    ## [1.6] - 2025-02-26
-    ### Changed
-    - Add `permissionsNeeded` variable
-    - Add `onpremisesSyncEnabled` property for groups
-    - Add all type objects in the cache array
-    - Add `LastNonInteractiveSignInDateTime` property for users
-
-    ## [1.5.0] - 2025-02-25
-    ### Changed
-    - Always return `true` or `false` for `onPremisesSyncEnabled` properties
-    - Fix issues with `objectsCacheArray` that was not working
-    - Sign-in activity tracking for service principals
-
-    ### Plannned for next release
-    - Switch to `Invoke-MgGraphRequest` instead of `Get-Mg*` CMDlets
-
-    ## [1.4.0] - 2025-02-13
-    ### Added
-    - Sign-in activity tracking for users
-    - Account enabled status.
-    - On-premises sync enabled status.
-    - Remove old parameters
-    - Test if already connected to Microsoft Graph and with the right permissions
-
-    ## [1.3.0] - 2024-05-15
-    ### Changed
-    - Changes not specified.
-
-    ## [1.2.0] - 2024-03-13
-    ### Changed
-    - Changes not specified.
-
-    ## [1.1.0] - 2023-12-01
-    ### Changed
-    - Changes not specified.
-
-    ## [1.0.0] - 2023-10-19
-    ### Initial Release
 #>
+
 function Get-MgRoleReport {
     [CmdletBinding()]
     param (
