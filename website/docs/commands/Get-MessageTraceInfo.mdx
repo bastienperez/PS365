@@ -1,2 +1,177 @@
---- description: Retrieves message trace information based on specified criteria.
-id: Get-MessageTraceInfo title: Get-MessageTraceInfo hide_title: false hide_table_of_contents: false ---  ## SYNOPSIS  Retrieves message trace information based on specified criteria.  ## SYNTAX  ```powershell Get-MessageTraceInfo [[-SenderAddress] <String[]>] [[-RecipientAddress] <String[]>] [[-StartDate] <DateTime>]  [[-EndDate] <DateTime>] [[-ByConnectorName] <String>] [[-ByTransportRuleName] <String>] [-UsingConnector]  [-ProgressAction <ActionPreference>] [<CommonParameters>] ```  ## DESCRIPTION  This function retrieves message trace information from Exchange Online based on the specified criteria. It supports filtering by sender address, recipient address, start date, end date, connector name, transport rule name, and using connector flag.  ## EXAMPLES  ### EXAMPLE 1  ```powershell Get-MessageTraceInfo -SenderAddress "john.doe@example.com" -RecipientAddress "jane.doe@example.com" -StartDate (Get-Date).AddDays(-7) -EndDate (Get-Date) -ByConnectorName "OutboundConnector" -UsingConnector Retrieves message trace information for messages sent by "john.doe@example.com" to "jane.doe@example.com" within the last 7 days, using the "OutboundConnector" connector. ```  ### EXAMPLE 2  ```powershell Get-MessageTraceInfo -RecipientAddress "jane.doe@example.com" -StartDate (Get-Date).AddDays(-30) -EndDate (Get-Date) -ByTransportRuleName "Confidential" -UsingConnector Retrieves message trace information for messages received by "jane.doe@example.com" within the last 30 days, filtered by the "Confidential" transport rule, using a connector. ```  ## PARAMETERS  ### -SenderAddress  Specifies the sender address to filter the message trace. This parameter accepts a string or an array of strings. Wildcards (*) can be used to match multiple sender addresses.  ```yaml Type: String[] Parameter Sets: (All) Aliases:  Required: False Position: 1 Default value: None Accept pipeline input: False Accept wildcard characters: False ```  ### -RecipientAddress  Specifies the recipient address to filter the message trace. This parameter accepts a string or an array of strings. Wildcards (*) can be used to match multiple recipient addresses.  ```yaml Type: String[] Parameter Sets: (All) Aliases:  Required: False Position: 2 Default value: None Accept pipeline input: False Accept wildcard characters: False ```  ### -StartDate  Specifies the start date to filter the message trace. This parameter accepts a DateTime object.  ```yaml Type: DateTime Parameter Sets: (All) Aliases:  Required: False Position: 3 Default value: None Accept pipeline input: False Accept wildcard characters: False ```  ### -EndDate  Specifies the end date to filter the message trace. This parameter accepts a DateTime object.  ```yaml Type: DateTime Parameter Sets: (All) Aliases:  Required: False Position: 4 Default value: None Accept pipeline input: False Accept wildcard characters: False ```  ### -ByConnectorName  Specifies the connector name to filter the message trace. This parameter accepts a string.  ```yaml Type: String Parameter Sets: (All) Aliases:  Required: False Position: 5 Default value: None Accept pipeline input: False Accept wildcard characters: False ```  ### -ByTransportRuleName  Specifies the transport rule name to filter the message trace. This parameter accepts a string.  ```yaml Type: String Parameter Sets: (All) Aliases:  Required: False Position: 6 Default value: None Accept pipeline input: False Accept wildcard characters: False ```  ### -UsingConnector  Specifies whether to filter the message trace using a connector. This parameter is a switch parameter.  ```yaml Type: SwitchParameter Parameter Sets: (All) Aliases:  Required: False Position: Named Default value: False Accept pipeline input: False Accept wildcard characters: False ```  
+---
+description: Retrieves message trace information based on specified criteria.
+id: Get-MessageTraceInfo
+title: Get-MessageTraceInfo
+---
+
+## SYNOPSIS
+
+Retrieves message trace information based on specified criteria.
+
+## SYNTAX
+
+```powershell
+Get-MessageTraceInfo [[-SenderAddress] <String[]>] [[-RecipientAddress] <String[]>] [[-StartDate] <DateTime>]
+ [[-EndDate] <DateTime>] [[-ByConnectorName] <String>] [[-ByTransportRuleName] <String>] [-UsingConnector]
+ [-ProgressAction <ActionPreference>] [<CommonParameters>]
+```
+
+## DESCRIPTION
+
+This function retrieves message trace information from Exchange Online based on the specified criteria.
+It supports filtering by sender address, recipient address, start date, end date, connector name, transport rule name, and using connector flag.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Get-MessageTraceInfo -SenderAddress "john.doe@example.com" -RecipientAddress "jane.doe@example.com" -StartDate (Get-Date).AddDays(-7) -EndDate (Get-Date) -ByConnectorName "OutboundConnector" -UsingConnector
+Retrieves message trace information for messages sent by "john.doe@example.com" to "jane.doe@example.com" within the last 7 days, using the "OutboundConnector" connector.
+```
+
+### EXAMPLE 2
+
+```powershell
+Get-MessageTraceInfo -RecipientAddress "jane.doe@example.com" -StartDate (Get-Date).AddDays(-30) -EndDate (Get-Date) -ByTransportRuleName "Confidential" -UsingConnector
+Retrieves message trace information for messages received by "jane.doe@example.com" within the last 30 days, filtered by the "Confidential" transport rule, using a connector.
+```
+
+## PARAMETERS
+
+### -SenderAddress
+
+Specifies the sender address to filter the message trace.
+This parameter accepts a string or an array of strings.
+Wildcards (*) can be used to match multiple sender addresses.
+
+```yaml
+Type: String[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -RecipientAddress
+
+Specifies the recipient address to filter the message trace.
+This parameter accepts a string or an array of strings.
+Wildcards (*) can be used to match multiple recipient addresses.
+
+```yaml
+Type: String[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 2
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -StartDate
+
+Specifies the start date to filter the message trace.
+This parameter accepts a DateTime object.
+
+```yaml
+Type: DateTime
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 3
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -EndDate
+
+Specifies the end date to filter the message trace.
+This parameter accepts a DateTime object.
+
+```yaml
+Type: DateTime
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 4
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ByConnectorName
+
+Specifies the connector name to filter the message trace.
+This parameter accepts a string.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 5
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ByTransportRuleName
+
+Specifies the transport rule name to filter the message trace.
+This parameter accepts a string.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 6
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -UsingConnector
+
+Specifies whether to filter the message trace using a connector.
+This parameter is a switch parameter.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+## NOTES
+
+This function requires the Exchange Online PowerShell module to be installed and connected to an Exchange Online organization.
+
+For some event, it will fail to get messagetracedetail
+
+## RELATED LINKS
