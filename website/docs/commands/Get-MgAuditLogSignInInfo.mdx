@@ -1,10 +1,10 @@
 ---
 description: Get Microsoft Entra ID (Azure AD) Audit Log Sign-In Details
-id: Get-MgAuditLogSignInDetail
-title: Get-MgAuditLogSignInDetail
+id: Get-MgAuditLogSignInInfo
+title: Get-MgAuditLogSignInInfo
 hide_title: false
 hide_table_of_contents: false
-custom_edit_url: https://github.com/bastienperez/ps365/blob/main/powershell/public/Get-MgAuditLogSignInDetail.ps1
+custom_edit_url: https://github.com/bastienperez/ps365/blob/main/powershell/public/Get-MgAuditLogSignInInfo.ps1
 ---
 
 ## SYNOPSIS
@@ -14,7 +14,7 @@ Get Microsoft Entra ID (Azure AD) Audit Log Sign-In Details
 ## SYNTAX
 
 ```powershell
-Get-MgAuditLogSignInDetail [[-StartDate] <Object>] [[-EndDate] <Object>] [[-Users] <String[]>]
+Get-MgAuditLogSignInInfo [[-StartDate] <Object>] [[-EndDate] <Object>] [[-Users] <String[]>]
  [[-LastXSignIns] <Int32>] [[-IPAddresses] <Int32>] [-BasicAuthenticationOnly] [-SuccessOnly] [-FailureOnly]
  [-BadCredentialsOnly] [-LastLogonOnly] [-NonMFASignInsOnly] [-MFASignInsOnly] [-NonInteractiveSignIns]
  [-ServicePrincipalSignIns] [-ManagedIdentitySignIns] [[-ConditionalAccessPolicyName] <String>]
@@ -32,7 +32,7 @@ Get Microsoft Entra ID (Azure AD) Audit Log Sign-In Details with various filteri
 ### EXAMPLE 1
 
 ```powershell
-Get-MgAuditLogSignInDetail -StartDate '2024-01-01' -EndDate '2024-01-31' -Users 'user1@contoso.com', 'user2@contoso.com'
+Get-MgAuditLogSignInInfo -StartDate '2024-01-01' -EndDate '2024-01-31' -Users 'user1@contoso.com', 'user2@contoso.com'
 ```
 
 Retrieves sign-in logs for specified users between January 1, 2024, and January 31, 2024.
@@ -40,7 +40,7 @@ Retrieves sign-in logs for specified users between January 1, 2024, and January 
 ### EXAMPLE 2
 
 ```powershell
-Get-MgAuditLogSignInDetail -LastXSignIns 100 -FailureOnly
+Get-MgAuditLogSignInInfo -LastXSignIns 100 -FailureOnly
 ```
 
 Retrieves the last 100 failed sign-in attempts.
@@ -48,7 +48,7 @@ Retrieves the last 100 failed sign-in attempts.
 ### EXAMPLE 3
 
 ```powershell
-Get-MgAuditLogSignInDetail -AnalyzeCAPInReportOnly
+Get-MgAuditLogSignInInfo -AnalyzeCAPInReportOnly
 ```
 
 Retrieves sign-in logs with Conditional Access applied in ReportOnly mode.
@@ -56,7 +56,7 @@ Retrieves sign-in logs with Conditional Access applied in ReportOnly mode.
 ### EXAMPLE 4
 
 ```powershell
-Get-MgAuditLogSignInDetail -StartDate (Get-Date).AddHours(-1) -NonMFASignInsOnly
+Get-MgAuditLogSignInInfo -StartDate (Get-Date).AddHours(-1) -NonMFASignInsOnly
 ```
 
 Retrieves non-MFA sign-ins from the last hour.
@@ -464,4 +464,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## RELATED LINKS
 
-[https://ps365.clidsys.com/docs/commands/Get-MgAuditLogSignInDetail](https://ps365.clidsys.com/docs/commands/Get-MgAuditLogSignInDetail)
+[https://ps365.clidsys.com/docs/commands/Get-MgAuditLogSignInInfo](https://ps365.clidsys.com/docs/commands/Get-MgAuditLogSignInInfo)

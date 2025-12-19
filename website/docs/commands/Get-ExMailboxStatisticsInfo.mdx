@@ -1,10 +1,10 @@
 ---
 description: Gets detailed mailbox statistics for Exchange Online including item count by type.
-id: Get-ExMailboxStatisticsDetail
-title: Get-ExMailboxStatisticsDetail
+id: Get-ExMailboxStatisticsInfo
+title: Get-ExMailboxStatisticsInfo
 hide_title: false
 hide_table_of_contents: false
-custom_edit_url: https://github.com/bastienperez/ps365/blob/main/powershell/public/Get-ExMailboxStatisticsDetail.ps1
+custom_edit_url: https://github.com/bastienperez/ps365/blob/main/powershell/public/Get-ExMailboxStatisticsInfo.ps1
 ---
 
 ## SYNOPSIS
@@ -14,7 +14,7 @@ Gets detailed mailbox statistics for Exchange Online including item count by typ
 ## SYNTAX
 
 ```powershell
-Get-ExMailboxStatisticsDetail [-Identity] <String> [-IncludeFolderDetails] [-ProgressAction <ActionPreference>]
+Get-ExMailboxStatisticsInfo [-Identity] <String> [-IncludeFolderDetails] [-ProgressAction <ActionPreference>]
  [<CommonParameters>]
 ```
 
@@ -33,7 +33,7 @@ This function retrieves comprehensive statistics for an Exchange Online mailbox,
 ### EXAMPLE 1
 
 ```powershell
-Get-ExMailboxStatisticsDetail -Identity "user@domain.com"
+Get-ExMailboxStatisticsInfo -Identity "user@domain.com"
 ```
 
 Gets detailed statistics for the specified mailbox.
@@ -41,7 +41,7 @@ Gets detailed statistics for the specified mailbox.
 ### EXAMPLE 2
 
 ```powershell
-Get-ExMailboxStatisticsDetail -Identity "user@domain.com" -IncludeFolderDetails
+Get-ExMailboxStatisticsInfo -Identity "user@domain.com" -IncludeFolderDetails
 ```
 
 Gets statistics with folder details included.
@@ -111,4 +111,4 @@ Version: 1.0.0
 
 ## RELATED LINKS
 
-[https://ps365.clidsys.com/docs/commands/Get-ExMailboxStatisticsDetail](https://ps365.clidsys.com/docs/commands/Get-ExMailboxStatisticsDetail)
+[https://ps365.clidsys.com/docs/commands/Get-ExMailboxStatisticsInfo](https://ps365.clidsys.com/docs/commands/Get-ExMailboxStatisticsInfo)
