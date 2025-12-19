@@ -25,7 +25,7 @@
         ]
       },
       {
-        "group": "Entra ID",
+        "group": "Entra",
         "pages": [
           {
             "group": "Applications",
@@ -42,7 +42,7 @@
           {
             "group": "Audit Log",
             "pages": [
-              "docs/commands/Get-MgAuditLogSignInDetail",
+              "docs/commands/Get-MgAuditLogSignInInfo",
               "docs/commands/New-MgAuditLogSignInHTMLReport"
             ]
           },
@@ -55,7 +55,7 @@
           {
             "group": "Password",
             "pages": [
-              "docs/commands/Get-MgPasswordPolicyDetail",
+              "docs/commands/Get-MgPasswordPolicyInfo",
               "docs/commands/Get-MgUserPasswordInfo"
             ]
           },
@@ -71,33 +71,9 @@
         "group": "Exchange",
         "pages": [
           {
-            "group": "Calendar",
-            "pages": [
-              "docs/commands/Get-ExResourceMailbox"
-            ]
-          },
-          {
             "group": "Group",
             "pages": [
               "docs/commands/Find-DistributionGroupMembers"
-            ]
-          },
-          {
-            "group": "Mailbox",
-            "pages": [
-              "docs/commands/Get-ExMailboxByDomain",
-              "docs/commands/Get-ExMailboxForwarding",
-              "docs/commands/Get-ExMailboxFromAttribute",
-              "docs/commands/Get-ExMailboxMaxSize",
-              "docs/commands/Get-ExMailboxOnMicrosoftAddress",
-              "docs/commands/Get-ExMailboxPermission",
-              "docs/commands/Get-ExMailboxProtocol",
-              "docs/commands/Get-ExMailboxRegionalConfiguration",
-              "docs/commands/Get-ExMailboxStatisticsDetail",
-              "docs/commands/Set-ExMailboxMaxSize",
-              "docs/commands/Set-ExMailboxProtocol",
-              "docs/commands/Set-ExMailboxRegionalConfiguration",
-              "docs/commands/Test-ExMailboxProxyAddress"
             ]
           },
           {
@@ -109,7 +85,7 @@
           {
             "group": "Mobile",
             "pages": [
-              "docs/commands/Get-MobileDeviceDetail"
+              "docs/commands/Get-MobileDeviceInfo"
             ]
           },
           {
@@ -131,8 +107,13 @@
       {
         "group": "M365 Apps",
         "pages": [
-          "docs/commands/Install-M365Apps",
-          "docs/commands/Invoke-M365AppsDownload"
+          {
+            "group": "Installation",
+            "pages": [
+              "docs/commands/Install-M365Apps",
+              "docs/commands/Invoke-M365AppsDownload"
+            ]
+          }
         ]
       },
       {
@@ -143,7 +124,7 @@
         ]
       },
       {
-        "group": "MSCommerce",
+        "group": "M S Commerce",
         "pages": [
           "docs/commands/Disable-MSSelfServicePurchase"
         ]

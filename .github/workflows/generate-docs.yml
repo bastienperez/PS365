@@ -21,7 +21,7 @@ jobs:
       - name: 📝 update powershell documentation
         shell: pwsh
         run: |
-          ./.build/Update-DocusaurusCommandDoc.ps1
+          ./.build/Build-CommandReference.ps1
 
       # Commit and push documentation changes
       - name: 🚀 commit and push documentation updates

@@ -56,12 +56,12 @@ Import-Module .\PS365\PS365.psd1
 
 #### Audit & Reporting
 
-- `Get-MgAuditLogSignInDetails` - Get detailed sign-in logs with filtering options
+- `Get-MgAuditLogSigninInfo` - Get detailed sign-in logs with filtering options
 - `New-MgAuditLogSignInHTMLReport` - Generate HTML reports from sign-in data
 
 #### Password Management
 
-- `Get-MgPasswordPolicyDetail` - Get password policy details
+- `Get-MgPasswordPolicyInfo` - Get password policy details
 - `Get-MgUserPasswordInfo` - Get user password information and policies
 
 #### Role Management
@@ -83,7 +83,7 @@ Import-Module .\PS365\PS365.psd1
 - `Get-ExMailboxOnMicrosoftAddress` - Get mailboxes with @onmicrosoft addresses
 - `Get-ExMailboxProtocol` - Get mailbox protocol settings
 - `Get-ExMailboxRegionalConfiguration` - Get regional settings
-- `Get-ExMailboxStatisticsDetail` - Get detailed mailbox statistics
+- `Get-ExMailboxStatisticsInfo` - Get detailed mailbox statistics
 - `Get-ExResourceMailbox` - Get resource mailbox information
 - `Test-ExMailboxProxyAddress` - Test for existing proxy addresses
 - `Set-ExMailboxMaxSize` - Set mailbox size limits
@@ -96,7 +96,7 @@ Import-Module .\PS365\PS365.psd1
 
 #### Mobile Device Management
 
-- `Get-MobileDeviceDetail` - Get mobile device details
+- `Get-MobileDeviceInfo` - Get mobile device details
 
 #### Role Reporting
 
@@ -141,10 +141,10 @@ Get-MgRoleReport -IncludeEmptyRoles
 
 ```powershell
 # Get sign-ins for specific users in the last 7 days
-Get-MgAuditLogSignInDetails -Users @('user1@contoso.com', 'user2@contoso.com') -StartDate (Get-Date).AddDays(-7)
+Get-MgAuditLogSigninInfo -Users @('user1@contoso.com', 'user2@contoso.com') -StartDate (Get-Date).AddDays(-7)
 
 # Get failed sign-in attempts only
-Get-MgAuditLogSignInDetails -FailuresOnly -StartDate (Get-Date).AddDays(-1)
+Get-MgAuditLogSigninInfo -FailuresOnly -StartDate (Get-Date).AddDays(-1)
 ```
 
 ### Mailbox Management
