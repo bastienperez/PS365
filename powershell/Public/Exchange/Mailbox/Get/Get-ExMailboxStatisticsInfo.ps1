@@ -18,24 +18,24 @@
 	Include folder details in the results
 
 	.EXAMPLE
-	Get-ExMailboxStatisticsDetail -Identity "user@domain.com"
+	Get-ExMailboxStatisticsInfo -Identity "user@domain.com"
 
 	Gets detailed statistics for the specified mailbox.
 
 	.EXAMPLE
-	Get-ExMailboxStatisticsDetail -Identity "user@domain.com" -IncludeFolderDetails
+	Get-ExMailboxStatisticsInfo -Identity "user@domain.com" -IncludeFolderDetails
 
 	Gets statistics with folder details included.
 
 	.LINK
-	https://ps365.clidsys.com/docs/commands/Get-ExMailboxStatisticsDetail
+	https://ps365.clidsys.com/docs/commands/Get-ExMailboxStatisticsInfo
 
 	.NOTES
 	Author: Bastien Perez
 	Version: 1.0.0
 #>
 
-function Get-ExMailboxStatisticsDetail {
+function Get-ExMailboxStatisticsInfo {
 	[CmdletBinding()]
 	param(
 		[Parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]

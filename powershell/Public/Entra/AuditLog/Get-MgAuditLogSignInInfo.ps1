@@ -78,32 +78,32 @@
     Switch to force the acquisition of a new authentication token.
 
     .EXAMPLE
-    Get-MgAuditLogSignInDetail -StartDate '2024-01-01' -EndDate '2024-01-31' -Users 'user1@contoso.com', 'user2@contoso.com'
+    Get-MgAuditLogSignInInfo -StartDate '2024-01-01' -EndDate '2024-01-31' -Users 'user1@contoso.com', 'user2@contoso.com'
 
     Retrieves sign-in logs for specified users between January 1, 2024, and January 31, 2024.
 
     .EXAMPLE
-    Get-MgAuditLogSignInDetail -LastXSignIns 100 -FailureOnly
+    Get-MgAuditLogSignInInfo -LastXSignIns 100 -FailureOnly
 
     Retrieves the last 100 failed sign-in attempts.
 
     .EXAMPLE
-    Get-MgAuditLogSignInDetail -AnalyzeCAPInReportOnly
+    Get-MgAuditLogSignInInfo -AnalyzeCAPInReportOnly
 
     Retrieves sign-in logs with Conditional Access applied in ReportOnly mode.
 
     .EXAMPLE
-    Get-MgAuditLogSignInDetail -StartDate (Get-Date).AddHours(-1) -NonMFASignInsOnly
+    Get-MgAuditLogSignInInfo -StartDate (Get-Date).AddHours(-1) -NonMFASignInsOnly
 
     Retrieves non-MFA sign-ins from the last hour.
 
     .LINK
-    https://ps365.clidsys.com/docs/commands/Get-MgAuditLogSignInDetail
+    https://ps365.clidsys.com/docs/commands/Get-MgAuditLogSignInInfo
 
     .NOTES
 #>
 
-function Get-MgAuditLogSignInDetail {
+function Get-MgAuditLogSignInInfo {
     param(
         [Parameter(Mandatory = $false)]    
         $StartDate,

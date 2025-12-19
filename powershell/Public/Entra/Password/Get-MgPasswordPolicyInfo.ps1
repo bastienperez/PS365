@@ -8,17 +8,17 @@
     such as the password validity period and notification window for each domain.
 
     .EXAMPLE
-    Get-MgPasswordPolicyDetail
+    Get-MgPasswordPolicyInfo
 
     Retrieves password policy details for all verified domains in the tenant.
 
     .LINK
-    https://ps365.clidsys.com/docs/commands/Get-MgPasswordPolicyDetail
+    https://ps365.clidsys.com/docs/commands/Get-MgPasswordPolicyInfo
 
     .NOTES
 #>
 
-function Get-MgPasswordPolicyDetail { 
+function Get-MgPasswordPolicyInfo { 
 
     [System.Collections.Generic.List[PSCustomObject]]$pwdPolicies = @()
 
