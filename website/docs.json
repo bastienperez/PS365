@@ -143,8 +143,7 @@
       }
     ],
     "primary": {
-      "type": "button",
-      "label": "Github",
+      "type": "github",
       "href": "https://github.com/bastienperez/PS365"
     }
   },
