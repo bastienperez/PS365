@@ -1,0 +1,98 @@
+---
+Module Name: PS365
+---
+
+## SYNOPSIS
+
+Lists Exchange Online mailboxes with an @onmicrosoft.com email address
+
+## SYNTAX
+
+```powershell
+Get-ExMailboxOnMicrosoftAddress [[-Identity] <String[]>] [-ByDomain <String>]
+ [-ProgressAction <ActionPreference>] [<CommonParameters>]
+```
+
+## DESCRIPTION
+
+Retrieves Exchange Online mailboxes that have an email address ending with @onmicrosoft.com.
+Returns an object for each mailbox with relevant details.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Get-ExMailboxOnMicrosoftAddress
+```
+
+Returns objects containing mailbox details for those with @onmicrosoft.com addresses.
+
+### EXAMPLE 2
+
+```powershell
+Get-ExMailboxOnMicrosoftAddress -ByDomain "contoso.com"
+```
+
+Returns mailboxes with @onmicrosoft.com addresses filtered by the specified domain.
+
+### EXAMPLE 3
+
+```powershell
+Get-ExMailboxOnMicrosoftAddress -Identity "user@contoso.com"
+```
+
+Returns the @onmicrosoft.com address for the specified mailbox identity.
+
+### EXAMPLE 4
+
+```powershell
+$mailboxes | Get-ExMailboxOnMicrosoftAddress
+```
+
+## PARAMETERS
+
+### -Identity
+
+\{\{ Fill Identity Description \}\}
+
+```yaml
+Type: String[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 1
+Default value: None
+Accept pipeline input: True (ByPropertyName, ByValue)
+Accept wildcard characters: False
+```
+
+### -ByDomain
+
+\{\{ Fill ByDomain Description \}\}
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+## NOTES
+
+## RELATED LINKS
+
+[https://ps365.clidsys.com/docs/commands/Get-ExMailboxOnMicrosoftAddress](https://ps365.clidsys.com/docs/commands/Get-ExMailboxOnMicrosoftAddress)
