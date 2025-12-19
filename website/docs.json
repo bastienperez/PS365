@@ -138,7 +138,7 @@
   "navbar": {
     "links": [
       {
-        "label": "PowerShell Gallery",
+        "label": "PowerShellGallery",
         "href": "https://www.powershellgallery.com/packages/PS365"
       },
       {
