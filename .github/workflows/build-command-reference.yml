@@ -1,4 +1,4 @@
-name: 📚 generate powershell documentation
+name: 📚 build command reference
 
 on:
   # workflow_dispatch allows manually triggering the workflow from the Actions tab
