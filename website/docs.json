@@ -162,11 +162,11 @@
       "vscode"
     ]
   },
-"integrations": {
+  "integrations": {
     "plausible": {
-        "domain": "ps365.clidsys.com",
+      "domain": "ps365.clidsys.com"
     }
-},
+  },
   "footer": {
     "socials": {
       "x": "https://x.com/bastienperez_",
