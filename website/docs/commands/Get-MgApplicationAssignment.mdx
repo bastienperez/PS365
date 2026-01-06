@@ -17,6 +17,8 @@ Get-MgApplicationAssignment [[-ApplicationId] <String[]>] [-OnlyAssignedToAllUse
 
 This function returns a list of all Entra ID applications with their assignment information,
 identifying whether they are assigned to all users or have specific assignments.
+If no assignments exist, it indicates whether the application is available to "all users".
+Give information about assigned users, groups, or service principals and if the group is protected/static/dynamic.
 
 ## EXAMPLES
 
@@ -49,7 +51,9 @@ Gets all applications and exports them to an Excel file
 
 ### -ApplicationId
 
-\{\{ Fill ApplicationId Description \}\}
+(Optional) One or more Application IDs to filter the results.
+If not provided, all
+applications will be processed.
 
 ```yaml
 Type: String[]
@@ -65,7 +69,8 @@ Accept wildcard characters: False
 
 ### -OnlyAssignedToAllUsers
 
-\{\{ Fill OnlyAssignedToAllUsers Description \}\}
+(Optional) If specified, only applications that are assigned to "all users" (i.e., do not require assignment)
+will be returned.
 
 ```yaml
 Type: SwitchParameter
@@ -81,7 +86,7 @@ Accept wildcard characters: False
 
 ### -ExportToExcel
 
-\{\{ Fill ExportToExcel Description \}\}
+(Optional) If specified, exports the results to an Excel file in the user's profile directory.
 
 ```yaml
 Type: SwitchParameter
