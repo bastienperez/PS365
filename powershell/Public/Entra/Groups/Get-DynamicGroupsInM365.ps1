@@ -109,8 +109,12 @@ function Get-DynamicGroupsInM365 {
     param(
         [Parameter(Mandatory = $false)]
         [switch]$ExchangeOnlineOnly,
+
         [Parameter(Mandatory = $false)]
-        [switch]$EntraIDOnly
+        [switch]$EntraIDOnly,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$ExportToExcel
     )
 
     $propertySetsAttribute = @(
@@ -155,18 +159,66 @@ function Get-DynamicGroupsInM365 {
         }
         catch {
             Write-Error "Error retrieving Exchange Online groups: $($_.Exception.Message)"
+            $object = [PSCustomObject][ordered]@{
+                GroupId                       = 'Error'
+                Name                          = 'Error'
+                Type                          = 'Exchange Dynamic Distribution Group'
+                MembershipRule                = 'Error retrieving groups. Ensure you are connected to Exchange Online.'
+                MembershipRuleProcessingState = 'Error'
+                UserAttributes                = 'N/A'
+                GroupAttributes               = 'N/A'
+                DeviceAttributes              = 'N/A'
+                MemberOf                      = 'N/A'
+                DisplayName                   = 'Error'
+                Description                   = 'Error'
+                Mail                          = 'Error'
+                MailEnabled                   = 'Error'
+                MailNickname                  = 'Error'
+                SecurityEnabled               = 'Error'
+                GroupTypes                    = 'Error'
+                CreatedDateTime               = 'Error'
+                RenewedDateTime               = 'Error'
+                OnPremisesSyncEnabled         = 'Error'
+                SecurityIdentifier            = 'Error'
+                Classification                = 'Error'
+                Visibility                    = 'Error'
+            }
+
+            $dynGroupArray.Add($object)
         }
 
         foreach ($group in $exchangeGroups) {
+            try {
+                $memberOf = Get-DistributionGroup -Identity $group.Identity | Select-Object -ExpandProperty MemberOfGroup -ErrorAction SilentlyContinue
+            }
+            catch {
+                $memberOf = $null
+            }
+
             $object = [PSCustomObject][ordered]@{
-                Name             = $group.Name
-                Type             = 'Exchange Dynamic Distribution Group'
-                Email            = $group.PrimarySmtpAddress
-                Filter           = $group.LdapRecipientFilter
-                UserAttributes   = (($group.LdapRecipientFilter | 
+                GroupId                       = $group.Guid
+                Name                          = $group.Name
+                Type                          = 'Exchange Dynamic Distribution Group'
+                MembershipRule                = (($group.LdapRecipientFilter.Replace("`r`n", '').Replace("`n", '').Replace("`r", '') -replace '\s+', ' ') -replace '(\))(\w)', '$1 $2' -replace '(\w)(\()', '$1 $2' -replace '\(\s+', '(').Trim()
+                MembershipRuleProcessingState = $null
+                UserAttributes                = (($group.LdapRecipientFilter | 
                         Select-String -Pattern '\(([a-zA-Z][a-zA-Z0-9]*)' -AllMatches).Matches | Select-Object -ExpandProperty Value -Unique).Replace('(', '') -join ' | '
-                GroupAttributes  = $null
-                DeviceAttributes = $null
+                GroupAttributes               = $null
+                DeviceAttributes              = $null
+                MemberOf                      = $memberOf -join '|'
+                DisplayName                   = $group.DisplayName
+                Description                   = $group.Notes
+                Mail                          = $group.PrimarySmtpAddress
+                MailEnabled                   = $true
+                MailNickname                  = $group.Alias
+                SecurityEnabled               = $false
+                GroupTypes                    = 'DynamicDistribution'
+                CreatedDateTime               = $group.WhenCreated
+                RenewedDateTime               = $null
+                OnPremisesSyncEnabled         = $group.IsDirSynced
+                SecurityIdentifier            = $null
+                Classification                = $null
+                Visibility                    = if ($group.HiddenFromAddressListsEnabled) { 'Private' } else { 'Public' }
             }
             
             $dynGroupArray.Add($object)
@@ -177,34 +229,86 @@ function Get-DynamicGroupsInM365 {
     if (-not $ExchangeOnlineOnly) {
         try {
             $entraGroups = Get-MgGroup -All -Filter "groupTypes/any(c:c eq 'DynamicMembership')" -ErrorAction Stop
-            Write-Error "Error retrieving groups Entra ID: $_"
         }
         catch {
             Write-Error "Error retrieving Entra ID groups: $($_.Exception.Message)"
+
+            $object = [PSCustomObject][ordered]@{
+                GroupId                       = 'Error'
+                Name                          = 'Error'
+                Type                          = 'Entra ID Dynamic Group'
+                MembershipRule                = 'Error retrieving groups. Ensure you are connected to Microsoft Graph.'
+                MembershipRuleProcessingState = 'Error'
+                UserAttributes                = 'N/A'
+                GroupAttributes               = 'N/A'
+                DeviceAttributes              = 'N/A'
+                MemberOf                      = 'N/A'
+                DisplayName                   = 'Error'
+                Description                   = 'Error'
+                Mail                          = 'Error'
+                MailEnabled                   = 'Error'
+                MailNickname                  = 'Error'
+                SecurityEnabled               = 'Error'
+                GroupTypes                    = 'Error'
+                CreatedDateTime               = 'Error'
+                RenewedDateTime               = 'Error'
+                OnPremisesSyncEnabled         = 'Error'
+                SecurityIdentifier            = 'Error'
+                Classification                = 'Error'
+                Visibility                    = 'Error'
+            }
+
+            $dynGroupArray.Add($object)
         }
 
         foreach ($group in $entraGroups) {
-            $object = [PSCustomObject][ordered]@{
-                Name             = $group.DisplayName
-                Type             = if ($group.groupTypes -contains 'Unified') { 'M365 Dynamic Group' } else { 'Entra ID Dynamic Security Group' }
-                Email            = $group.Mail
-                Filter           = $group.MembershipRule
+            try { 
+                $memberOf = Get-MgGroupMemberOf -GroupId $group.Id -ErrorAction SilentlyContinue
 
-                UserAttributes   = (($group.MembershipRule | 
+                $memberOf = ($memberOf | Where-Object { $_.AdditionalProperties.'@odata.type' -eq '#microsoft.graph.group' } | 
+                ForEach-Object { $_.AdditionalProperties.displayName }) -join '|'
+            }
+            catch { 
+                $memberOf = $null 
+            }
+
+            $object = [PSCustomObject][ordered]@{
+                GroupId                       = $group.Id
+                Name                          = $group.DisplayName
+                Type                          = if ($group.groupTypes -contains 'Unified') { 'M365 Dynamic Group' } else { 'Entra ID Dynamic Security Group' }
+                # MembershipRule can be multiline, so we need to clean it up
+                # Remove line breaks and extra spaces
+                MembershipRule                = (($group.MembershipRule.Replace("`r`n", '').Replace("`n", '').Replace("`r", '') -replace '\s+', ' ') -replace '(\))(\w)', '$1 $2' -replace '(\w)(\()', '$1 $2' -replace '\(\s+', '(').Trim()
+                MembershipRuleProcessingState = $group.MembershipRuleProcessingState
+                UserAttributes                = (($group.MembershipRule | 
                         Select-String -Pattern 'user\.([a-zA-Z][a-zA-Z0-9]*)' -AllMatches).Matches | 
                     Select-Object -ExpandProperty Value | 
                     ForEach-Object { $_.Replace('user.', '') } | 
                     Sort-Object -Unique) -join '| '
-                GroupAttributes  = (($group.MembershipRule | 
+                GroupAttributes               = (($group.MembershipRule | 
                         Select-String -Pattern 'group\.([a-zA-Z][a-zA-Z0-9]*)' -AllMatches).Matches | 
                     Select-Object -ExpandProperty Value | 
                     ForEach-Object { $_.Replace('group.', '') } | 
                     Sort-Object -Unique) -join '| '
-                DeviceAttributes = (($group.MembershipRule | 
+                DeviceAttributes              = (($group.MembershipRule | 
                         Select-String -Pattern 'device\.([a-zA-Z][a-zA-Z0-9]*)' -AllMatches).Matches | 
                     Select-Object -ExpandProperty Value | 
                     ForEach-Object { $_.Replace('device.', '') } | 
                     Sort-Object -Unique) -join '| '
+                MemberOf                      = $memberOf -join '|'
+                DisplayName = $group.DisplayName
+                Description                   = $group.Description
+                Mail                          = $group.Mail
+                MailEnabled                   = $group.MailEnabled
+                MailNickname                  = $group.MailNickname
+                SecurityEnabled               = $group.SecurityEnabled
+                GroupTypes                    = ($group.GroupTypes -join ', ')
+                CreatedDateTime               = $group.CreatedDateTime
+                RenewedDateTime               = $group.RenewedDateTime
+                OnPremisesSyncEnabled         = $group.OnPremisesSyncEnabled
+                SecurityIdentifier            = $group.SecurityIdentifier
+                Classification                = $group.Classification
+                Visibility                    = $group.Visibility
             }
 
             $dynGroupArray.Add($object)
@@ -222,5 +326,14 @@ function Get-DynamicGroupsInM365 {
         }
     }
     
-    return $dynGroupArray
+    if ($ExportToExcel.IsPresent) {
+        $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
+        $excelFilePath = "$($env:userprofile)\$now-DynamicGroupsInM365.xlsx"
+        Write-Host -ForegroundColor Cyan "Exporting dynamic groups to Excel file: $excelFilePath"
+        $dynGroupArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'DynamicGroupsInM365'
+        Write-Host -ForegroundColor Green 'Export completed successfully!'
+    }
+    else {
+        return $dynGroupArray
+    }
 }

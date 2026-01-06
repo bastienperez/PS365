@@ -5,7 +5,20 @@
     .DESCRIPTION
     This function returns a list of all Entra ID applications with their assignment information,
     identifying whether they are assigned to all users or have specific assignments.
+    If no assignments exist, it indicates whether the application is available to "all users".
+    Give information about assigned users, groups, or service principals and if the group is protected/static/dynamic.
     
+    .PARAMETER ApplicationId
+    (Optional) One or more Application IDs to filter the results. If not provided, all
+    applications will be processed.
+
+    .PARAMETER OnlyAssignedToAllUsers
+    (Optional) If specified, only applications that are assigned to "all users" (i.e., do not require assignment)
+    will be returned.
+
+    .PARAMETER ExportToExcel
+    (Optional) If specified, exports the results to an Excel file in the user's profile directory.
+
     .EXAMPLE
     $apps = Get-MgApplicationAssignment
 
@@ -83,6 +96,7 @@ function Get-MgApplicationAssignment {
                     UserPrincipalName          = $null
                     GroupName                  = $null
                     GroupType                  = $null
+                    GroupMembershipType        = $null
                     ServicePrincipalName       = $null
                     ServicePrincipalType       = $null
                     PrincipalDisplayName       = $null
@@ -149,6 +163,7 @@ function Get-MgApplicationAssignment {
                             $assignmentProps.GroupName = $group.DisplayName
                             $assignmentProps.GroupId = $group.Id
                             $assignmentProps.GroupType = $group.GroupTypes -join ','
+                            $assignmentProps.GroupMembershipType = if ($group.MembershipRule -and $group.MembershipRuleProcessingState -eq 'On') { 'Dynamic' } else { 'Static' }
                             $assignmentProps.IsAssignableToRole = $group.IsAssignableToRole
                             $assignmentProps.IsRoleAssignableGroup = $group.IsAssignableToRole
                         }
@@ -157,6 +172,7 @@ function Get-MgApplicationAssignment {
                             $assignmentProps.GroupName = "Group ID: $($assignment.PrincipalId)"
                             $assignmentProps.GroupId = $assignment.PrincipalId
                             $assignmentProps.GroupType = 'Unknown'
+                            $assignmentProps.GroupMembershipType = 'Unknown'
                             $assignmentProps.IsAssignableToRole = $null
                             $assignmentProps.IsRoleAssignableGroup = $null
                         }
@@ -168,6 +184,7 @@ function Get-MgApplicationAssignment {
                         $assignmentProps.GroupName = "Group ID: $($assignment.PrincipalId)"
                         $assignmentProps.GroupId = $assignment.PrincipalId
                         $assignmentProps.GroupType = 'Unknown'
+                        $assignmentProps.GroupMembershipType = 'Unknown'
                         $assignmentProps.IsAssignableToRole = $null
                         $assignmentProps.IsRoleAssignableGroup = $null
                     }
@@ -233,6 +250,7 @@ function Get-MgApplicationAssignment {
                 UserPrincipalName          = $null
                 GroupName                  = $null
                 GroupType                  = $null
+                GroupMembershipType        = $null
                 ServicePrincipalName       = $null
                 ServicePrincipalType       = $null
                 PrincipalDisplayName       = $null
