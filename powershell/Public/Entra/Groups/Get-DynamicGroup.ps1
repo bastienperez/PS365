@@ -18,20 +18,21 @@
 
     .PARAMETER EntraIDOnly
     When specified, retrieves only Entra ID Dynamic Groups (Security and M365 groups).
+
     Requires an active Microsoft Graph connection (use Connect-MgGraph).
 
     .EXAMPLE
-    PS C:\> Get-DynamicGroup
+    Get-DynamicGroup
     
     Retrieves all dynamic groups from both Exchange Online and Entra ID.
 
     .EXAMPLE
-    PS C:\> Get-DynamicGroup -ExchangeOnlineOnly
+    Get-DynamicGroup -ExchangeOnlineOnly
     
     Retrieves only Exchange Online Dynamic Distribution Groups.
 
     .EXAMPLE
-    PS C:\> Get-DynamicGroup -EntraIDOnly
+    Get-DynamicGroup -EntraIDOnly
     
     Retrieves only Entra ID Dynamic Groups.
 
@@ -373,10 +374,10 @@ function Get-DynamicGroup {
     if ($ExportToExcel.IsPresent) {
         Write-Verbose 'Preparing Excel export...'
         $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
-        $excelFilePath = "$($env:userprofile)\$now-DynamicGroupsInM365.xlsx"
+        $excelFilePath = "$($env:userprofile)\$now-DynamicGroups.xlsx"
         Write-Verbose "Excel file path: $excelFilePath"
         Write-Host -ForegroundColor Cyan "Exporting dynamic groups to Excel file: $excelFilePath"
-        $dynGroupArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'DynamicGroupsInM365'
+        $dynGroupArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'DynamicGroups'
         Write-Host -ForegroundColor Green 'Export completed successfully!'
     }
     else {
