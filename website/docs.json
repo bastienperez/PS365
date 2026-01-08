@@ -28,7 +28,7 @@
         "group": "Entra",
         "pages": [
           {
-            "group": "Applications",
+            "group": "Application",
             "pages": [
               "docs/commands/Get-MgApplicationAssignment",
               "docs/commands/Get-MgApplicationCredential",
@@ -47,9 +47,9 @@
             ]
           },
           {
-            "group": "Groups",
+            "group": "Group",
             "pages": [
-              "docs/commands/Get-DynamicGroupsInM365"
+              "docs/commands/Get-DynamicGroup"
             ]
           },
           {
@@ -60,7 +60,7 @@
             ]
           },
           {
-            "group": "Roles",
+            "group": "Role",
             "pages": [
               "docs/commands/Get-MgRoleReport"
             ]
@@ -141,7 +141,7 @@
         "label": "Support",
         "href": "https://github.com/bastienperez/PS365/issues"
       },
-            {
+      {
         "label": "PowerShellGallery",
         "href": "https://www.powershellgallery.com/packages/PS365/"
       }
