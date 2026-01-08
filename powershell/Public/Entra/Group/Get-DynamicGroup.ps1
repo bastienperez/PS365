@@ -57,58 +57,59 @@
 
     More information on: https://itpro-tips.com/property-set-personal-information-and-active-directory-security-and-governance/
 
+    
     .LINK
     https://ps365.clidsys.com/docs/commands/Get-DynamicGroup
 #>
 
-<#
-Active Directory to Entra ID Attribute Mapping Reference:
-=========================================================
-Attribut AD                           Attribut Entra ID
-assistant                             assistant
-c                                     country
-facsimileTelephoneNumber             faxNumber
-homePhone                            homePhone
-homePostalAddress                    homePostalAddress
-info                                 notes
-ipPhone                              ipPhone
-l                                    city
-mobile                               mobile
-otherFacsimileTelephoneNumber        otherFaxNumbers
-otherHomePhone                       otherHomePhones
-otherIpPhone                         otherIpPhones
-otherMobile                          otherMobiles
-otherPager                           otherPagers
-otherTelephone                       otherPhones
-pager                                pager
-personalTitle                        personalTitle
-physicalDeliveryOfficeName           officeLocation
-postalAddress                        streetAddress
-postalCode                           postalCode
-postOfficeBox                        postOfficeBox
-st                                   state
-street                               streetAddress
-streetAddress                        streetAddress
-telephoneNumber                      telephoneNumber
-thumbnailPhoto                       thumbnailPhoto
-userCertificate                      userCertificate
-msDS-cloudExtensionAttribute1        extensionAttribute1
-msDS-cloudExtensionAttribute2        extensionAttribute2
-msDS-cloudExtensionAttribute3        extensionAttribute3
-msDS-cloudExtensionAttribute4        extensionAttribute4
-msDS-cloudExtensionAttribute5        extensionAttribute5
-msDS-cloudExtensionAttribute6        extensionAttribute6
-msDS-cloudExtensionAttribute7        extensionAttribute7
-msDS-cloudExtensionAttribute8        extensionAttribute8
-msDS-cloudExtensionAttribute9        extensionAttribute9
-msDS-cloudExtensionAttribute10       extensionAttribute10
-msDS-cloudExtensionAttribute11       extensionAttribute11
-msDS-cloudExtensionAttribute12       extensionAttribute12
-msDS-cloudExtensionAttribute13       extensionAttribute13
-msDS-cloudExtensionAttribute14       extensionAttribute14
-msDS-cloudExtensionAttribute15       extensionAttribute15
-msDS-ExternalDirectoryObjectId       externalDirectoryObjectId
-#>
+
+# Active Directory to Entra ID Attribute Mapping Reference:
+# =========================================================
+# Attribut AD                           Attribut Entra ID
+# assistant                             assistant
+# c                                     country
+# facsimileTelephoneNumber             faxNumber
+# homePhone                            homePhone
+# homePostalAddress                    homePostalAddress
+# info                                 notes
+# ipPhone                              ipPhone
+# l                                    city
+# mobile                               mobile
+# otherFacsimileTelephoneNumber        otherFaxNumbers
+# otherHomePhone                       otherHomePhones
+# otherIpPhone                         otherIpPhones
+# otherMobile                          otherMobiles
+# otherPager                           otherPagers
+# otherTelephone                       otherPhones
+# pager                                pager
+# personalTitle                        personalTitle
+# physicalDeliveryOfficeName           officeLocation
+# postalAddress                        streetAddress
+# postalCode                           postalCode
+# postOfficeBox                        postOfficeBox
+# st                                   state
+# street                               streetAddress
+# streetAddress                        streetAddress
+# telephoneNumber                      telephoneNumber
+# thumbnailPhoto                       thumbnailPhoto
+# userCertificate                      userCertificate
+# msDS-cloudExtensionAttribute1        xx
+# msDS-cloudExtensionAttribute2        xx
+# msDS-cloudExtensionAttribute3        xx
+# msDS-cloudExtensionAttribute4        xx
+# msDS-cloudExtensionAttribute5        xx
+# msDS-cloudExtensionAttribute6        xx
+# msDS-cloudExtensionAttribute7        xx
+# msDS-cloudExtensionAttribute8        xx
+# msDS-cloudExtensionAttribute9        xx
+# msDS-cloudExtensionAttribute10       xx
+# msDS-cloudExtensionAttribute11       xx
+# msDS-cloudExtensionAttribute12       xx
+# msDS-cloudExtensionAttribute13       xx
+# msDS-cloudExtensionAttribute14       xx
+# msDS-cloudExtensionAttribute15       xx
+# msDS-ExternalDirectoryObjectId       externalDirectoryObjectId
+
 
 function Get-DynamicGroup {
     [CmdletBinding()]
