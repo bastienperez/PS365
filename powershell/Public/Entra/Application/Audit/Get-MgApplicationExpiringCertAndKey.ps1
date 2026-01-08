@@ -15,23 +15,25 @@
     Exports the results to an Excel file.
 
     .EXAMPLE
-    Get-MgApplicationExpiringCertAndKey
+    MgApplicationExpiringCertAndKey
 
     Retrieves all applications with credentials or SAML certificates expiring within the next 30 days.
 
     .EXAMPLE
-    Get-MgApplicationExpiringCertAndKey -DaysUntilExpiry 7
+    MgApplicationExpiringCertAndKey -DaysUntilExpiry 7
 
     Retrieves all applications with credentials or SAML certificates expiring within the next 7 days.
 
     .EXAMPLE
-    Get-MgApplicationExpiringCertAndKey -DaysUntilExpiry 60 -ExportToExcel
+    MgApplicationExpiringCertAndKey -DaysUntilExpiry 60 -ExportToExcel
 
     Gets all applications with credentials expiring within 60 days and exports to Excel.
 
     .NOTES
-    This function requires both Get-MgApplicationCredential and Get-MgApplicationSAML (in PS365 module) functions to be available.
+    This function requires both Get-MgApplicationCredential and Get-MgApplicationSAML functions to be available.
     
+    Author: Bastien Perez
+
     .LINK
     https://ps365.clidsys.com/docs/commands/Get-MgApplicationExpiringCertAndKey
 #>
