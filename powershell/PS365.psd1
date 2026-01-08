@@ -12,7 +12,7 @@
 RootModule = 'PS365.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.0.50'
+ModuleVersion = '0.0.51'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -71,6 +71,7 @@ RequiredAssemblies = 'Private\SharePointDLL\Microsoft.SharePoint.Client.dll',
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = 'Switch-AzureCliAuthMode', 'Switch-AzurePowerShellMode', 
+               'Get-MgApplicationExpiringCredential', 
                'Get-MgApplicationAssignment', 'Get-MgApplicationCredential', 
                'Get-MgApplicationSAML', 'Get-MgApplicationSCIM', 
                'Get-MgRegisteredApp', 'Set-MgEnterpriseAppStatus', 

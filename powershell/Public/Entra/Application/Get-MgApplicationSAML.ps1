@@ -95,9 +95,10 @@ function Get-MgApplicationSAML {
             NotificationEmailAddresses          = $samlApp.NotificationEmailAddresses -join '|'
             AppRoleAssignmentRequired           = $samlApp.AppRoleAssignmentRequired
             PreferredSingleSignOnMode           = $samlApp.PreferredSingleSignOnMode
-            PreferredTokenSigningKeyEndDateTime = $samlApp.PreferredTokenSigningKeyEndDateTime
+            SamlSigningCertificateEndTime       = $samlApp.PreferredTokenSigningKeyEndDateTime
             # PreferredTokenSigningKeyEndDateTime is date time, compared to now and see it is valid
-            PreferredTokenSigningKeyValid       = $samlApp.PreferredTokenSigningKeyEndDateTime -gt (Get-Date)
+            SamlSigningCertificateValid         = $samlApp.PreferredTokenSigningKeyEndDateTime -gt (Get-Date)
+            SamlSigningCertificateExpiresInDays = if ($samlApp.PreferredTokenSigningKeyEndDateTime) { [int](New-TimeSpan -Start (Get-Date) -End $samlApp.PreferredTokenSigningKeyEndDateTime).TotalDays } else { $null }
             ReplyUrls                           = $samlApp.ReplyUrls -join '|'
             SignInAudience                      = $samlApp.SignInAudience
         }
@@ -110,7 +111,7 @@ function Get-MgApplicationSAML {
         $excelFilePath = "$($env:userprofile)\$now-MgApplicationSAML.xlsx"
         Write-Host -ForegroundColor Cyan "Exporting SAML applications to Excel file: $excelFilePath"
         $samlApplicationsArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'EntraSAMLApplications'
-        Write-Host -ForegroundColor Green "Export completed successfully!"
+        Write-Host -ForegroundColor Green 'Export completed successfully!'
     }
     else {
         return $samlApplicationsArray

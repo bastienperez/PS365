@@ -86,17 +86,18 @@ function Get-MgApplicationCredential {
 
         foreach ($keyCredential in $mgApp.KeyCredentials) {
             $object = [PSCustomObject][ordered]@{
-                DisplayName           = $mgApp.DisplayName
-                CredentialType        = 'KeyCredentials'
-                AppId                 = $mgApp.AppId
-                CredentialDescription = $keyCredential.DisplayName
-                CredentialStartDate   = $keyCredential.StartDateTime
-                CredentialExpiryDate  = $keyCredential.EndDateTime
+                DisplayName             = $mgApp.DisplayName
+                CredentialType          = 'KeyCredentials'
+                AppId                   = $mgApp.AppId
+                CredentialDescription   = $keyCredential.DisplayName
+                CredentialStartDate     = $keyCredential.StartDateTime
+                CredentialExpiryDate    = $keyCredential.EndDateTime
                 # CredentialExpiryDate is date time, compared to now and see it is valid
-                CredentialValid       = $keyCredential.EndDateTime -gt (Get-Date)
-                Type                  = $keyCredential.Type
-                Usage                 = $keyCredential.Usage
-                Owners                = $owner.AdditionalProperties.userPrincipalName -join '|'
+                CredentialValid         = $keyCredential.EndDateTime -gt (Get-Date)
+                CredentialExpiresInDays = if ($keyCredential.EndDateTime) { [int](New-TimeSpan -Start (Get-Date) -End $keyCredential.EndDateTime).TotalDays } else { $null }
+                Type                    = $keyCredential.Type
+                Usage                   = $keyCredential.Usage
+                Owners                  = $owner.AdditionalProperties.userPrincipalName -join '|'
             }
 
             $credentialsArray.Add($object)
@@ -104,17 +105,18 @@ function Get-MgApplicationCredential {
 
         foreach ($passwordCredential in $mgApp.PasswordCredentials) {
             $object = [PSCustomObject][ordered]@{
-                DisplayName           = $mgApp.DisplayName
-                CredentialType        = 'PasswordCredentials'
-                AppId                 = $mgApp.AppId
-                CredentialDescription = $passwordCredential.DisplayName
-                CredentialStartDate   = $passwordCredential.StartDateTime
-                CredentialExpiryDate  = $passwordCredential.EndDateTime
+                DisplayName             = $mgApp.DisplayName
+                CredentialType          = 'PasswordCredentials'
+                AppId                   = $mgApp.AppId
+                CredentialDescription   = $passwordCredential.DisplayName
+                CredentialStartDate     = $passwordCredential.StartDateTime
+                CredentialExpiryDate    = $passwordCredential.EndDateTime
                 # CredentialExpiryDate is date time, compared to now and see it is valid
-                CredentialValid       = $passwordCredential.EndDateTime -gt (Get-Date)
-                Type                  = 'NA'
-                Usage                 = 'NA'
-                Owners                = $owner.AdditionalProperties.userPrincipalName -join '|'
+                CredentialValid         = $passwordCredential.EndDateTime -gt (Get-Date)
+                CredentialExpiresInDays = if ($passwordCredential.EndDateTime) { [int](New-TimeSpan -Start (Get-Date) -End $passwordCredential.EndDateTime).TotalDays } else { $null }
+                Type                    = 'NA'
+                Usage                   = 'NA'
+                Owners                  = $owner.AdditionalProperties.userPrincipalName -join '|'
             }
 
             $credentialsArray.Add($object)
@@ -126,7 +128,7 @@ function Get-MgApplicationCredential {
         $excelFilePath = "$($env:userprofile)\$now-MgApplicationCredential.xlsx"
         Write-Host -ForegroundColor Cyan "Exporting application credentials to Excel file: $excelFilePath"
         $credentialsArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'EntraApplicationCredentials'
-        Write-Host -ForegroundColor Green "Export completed successfully!"
+        Write-Host -ForegroundColor Green 'Export completed successfully!'
     }
     else {
         return $credentialsArray
