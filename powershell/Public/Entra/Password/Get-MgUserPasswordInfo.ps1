@@ -160,7 +160,7 @@ function Get-MgUserPasswordInfo {
         return $domainPasswordPolicies
     }
 
-    $userParams = 'UserPrincipalName, LastPasswordChangeDateTime, OnPremisesLastSyncDateTime, OnPremisesSyncEnabled, PasswordProfile, PasswordPolicies, AccountEnabled, DisplayName, Id, SignInActivity, CreatedDateTime'
+    $userParams = 'UserPrincipalName, LastPasswordChangeDateTime, OnPremisesLastSyncDateTime, OnPremisesSyncEnabled, PasswordProfile, PasswordPolicies, AccountEnabled, DisplayName, Id, SignInActivity, CreatedDateTime, OnPremisesDistinguishedName'
 
     if ($UserPrincipalName) {
         Write-Host -ForegroundColor Cyan "Retrieving password information for $($UserPrincipalName.Count) user(s)"
@@ -247,10 +247,11 @@ function Get-MgUserPasswordInfo {
             PasswordExpired                      = $passwordExpired
             LastSignInDateTime                   = $mgUser.signInActivity.LastSignInDateTime
             LastSuccessfulSignInDateTime         = $mgUser.signInActivity.LastSuccessfulSignInDateTime
-            OnPremisesLastSyncDateTimeUTC        = if ($mgUser.OnPremisesLastSyncDateTime -and $mgUser.OnPremisesLastSyncDateTime -ne [datetime]::new(1601, 1, 1, 0, 0, 0, [DateTimeKind]::Utc)) { $mgUser.OnPremisesLastSyncDateTime } else { $null }
             ForceChangePasswordNextSignIn        = if ($mgUser.PasswordProfile) { $mgUser.PasswordProfile.ForceChangePasswordNextSignIn } else { $null }
             ForceChangePasswordNextSignInWithMfa = if ($mgUser.PasswordProfile) { $mgUser.PasswordProfile.ForceChangePasswordNextSignInWithMfa } else { $null }
             OnPremisesSyncEnabled                = $mgUser.OnPremisesSyncEnabled
+            OnPremisesLastSyncDateTimeUTC        = if ($mgUser.OnPremisesLastSyncDateTime -and $mgUser.OnPremisesLastSyncDateTime -ne [datetime]::new(1601, 1, 1, 0, 0, 0, [DateTimeKind]::Utc)) { $mgUser.OnPremisesLastSyncDateTime } else { $null }
+            onPremisesDistinguishedName          = if ($mgUser.OnPremisesDistinguishedName) { $mgUser.OnPremisesDistinguishedName } else { $null }        
             Domain                               = $userDomain
             PasswordValidityInheritedFrom        = $userDomainPolicy.PasswordValidityInheritedFrom
             PasswordNotificationWindowInDays     = $userDomainPolicy.PasswordNotificationWindowInDays
