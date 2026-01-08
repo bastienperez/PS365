@@ -4,26 +4,47 @@ Module Name: PS365
 
 ## SYNOPSIS
 
-\{\{ Fill in the Synopsis \}\}
+Retrieves dynamic groups from Microsoft 365, Exchange Online, and Entra ID with attribute analysis.
 
 ## SYNTAX
 
 ```powershell
 Get-DynamicGroup [[-GroupId] <String>] [-ExchangeOnlineOnly] [-EntraIDOnly] [-ExportToExcel]
- [-ProgressAction <ActionPreference>] [<CommonParameters>]
+ [-ProgressAction <ActionPreference>] [<CommonParameters>]  
 ```
 
 ## DESCRIPTION
 
-\{\{ Fill in the Description \}\}
+The Get-DynamicGroup function retrieves all dynamic groups from Microsoft 365 environments,
+including Exchange Online Dynamic Distribution Groups and Entra ID Dynamic Security/M365 Groups.
+It analyzes membership rules to extract attributes and provides security warnings for attributes
+in the "Personal-Information" property set that users can modify themselves.
 
 ## EXAMPLES
 
 ## PARAMETERS
 
+### -GroupId
+
+When specified, retrieves dynamic groups by their unique GroupId.
+If not specified, retrieves all dynamic groups (both Exchange Online and Entra ID).
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 0
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -EntraIDOnly
 
-\{\{ Fill EntraIDOnly Description \}\}
+When specified, retrieves only Entra ID Dynamic Groups (Security and M365 groups).
+Requires an active Microsoft Graph connection (use Connect-MgGraph).
 
 ```yaml
 Type: SwitchParameter
@@ -39,7 +60,8 @@ Accept wildcard characters: False
 
 ### -ExchangeOnlineOnly
 
-\{\{ Fill ExchangeOnlineOnly Description \}\}
+When specified, retrieves only Exchange Online Dynamic Distribution Groups.
+Requires an active Exchange Online session (use Connect-ExchangeOnline).
 
 ```yaml
 Type: SwitchParameter
@@ -69,21 +91,6 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -GroupId
-
-\{\{ Fill GroupId Description \}\}
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 0
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
 ### CommonParameters
 
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).

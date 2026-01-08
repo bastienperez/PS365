@@ -42,7 +42,7 @@
           {
             "group": "Audit Log",
             "pages": [
-              "docs/commands/Get-MgAuditLogSignInInfo",
+              "docs/commands/Get-MgAuditLogSigninInfo",
               "docs/commands/New-MgAuditLogSignInHTMLReport"
             ]
           },

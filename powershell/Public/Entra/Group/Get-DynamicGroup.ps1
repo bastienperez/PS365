@@ -12,14 +12,13 @@
     When specified, retrieves dynamic groups by their unique GroupId.
     If not specified, retrieves all dynamic groups (both Exchange Online and Entra ID).
 
-    .PARAMETER ExchangeOnlineOnly
-    When specified, retrieves only Exchange Online Dynamic Distribution Groups.
-    Requires an active Exchange Online session (use Connect-ExchangeOnline).
-
     .PARAMETER EntraIDOnly
     When specified, retrieves only Entra ID Dynamic Groups (Security and M365 groups).
-
     Requires an active Microsoft Graph connection (use Connect-MgGraph).
+
+    .PARAMETER ExchangeOnlineOnly
+    When specified, retrieves only Exchange Online Dynamic Distribution Groups.  
+    Requires an active Exchange Online session (use Connect-ExchangeOnline).
 
     .EXAMPLE
     Get-DynamicGroup
