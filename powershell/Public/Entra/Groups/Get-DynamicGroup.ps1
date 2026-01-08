@@ -3,10 +3,14 @@
     Retrieves dynamic groups from Microsoft 365, Exchange Online, and Entra ID with attribute analysis.
 
     .DESCRIPTION
-    The Get-DynamicGroupsInM365 function retrieves all dynamic groups from Microsoft 365 environments,
+    The Get-DynamicGroup function retrieves all dynamic groups from Microsoft 365 environments,
     including Exchange Online Dynamic Distribution Groups and Entra ID Dynamic Security/M365 Groups.
     It analyzes membership rules to extract attributes and provides security warnings for attributes
     in the "Personal-Information" property set that users can modify themselves.
+
+    .PARAMETER GroupId
+    When specified, retrieves dynamic groups by their unique GroupId.
+    If not specified, retrieves all dynamic groups (both Exchange Online and Entra ID).
 
     .PARAMETER ExchangeOnlineOnly
     When specified, retrieves only Exchange Online Dynamic Distribution Groups.
@@ -17,17 +21,17 @@
     Requires an active Microsoft Graph connection (use Connect-MgGraph).
 
     .EXAMPLE
-    PS C:\> Get-DynamicGroupsInM365
+    PS C:\> Get-DynamicGroup
     
     Retrieves all dynamic groups from both Exchange Online and Entra ID.
 
     .EXAMPLE
-    PS C:\> Get-DynamicGroupsInM365 -ExchangeOnlineOnly
+    PS C:\> Get-DynamicGroup -ExchangeOnlineOnly
     
     Retrieves only Exchange Online Dynamic Distribution Groups.
 
     .EXAMPLE
-    PS C:\> Get-DynamicGroupsInM365 -EntraIDOnly
+    PS C:\> Get-DynamicGroup -EntraIDOnly
     
     Retrieves only Entra ID Dynamic Groups.
 
@@ -53,7 +57,7 @@
     More information on: https://itpro-tips.com/property-set-personal-information-and-active-directory-security-and-governance/
 
     .LINK
-    https://ps365.clidsys.com/docs/commands/Get-DynamicGroupsInM365
+    https://ps365.clidsys.com/docs/commands/Get-DynamicGroup
 #>
 
 <#
@@ -105,8 +109,12 @@ msDS-cloudExtensionAttribute15       extensionAttribute15
 msDS-ExternalDirectoryObjectId       externalDirectoryObjectId
 #>
 
-function Get-DynamicGroupsInM365 {
+function Get-DynamicGroup {
+    [CmdletBinding()]
     param(
+        [Parameter(Mandatory = $false)]
+        [String]$GroupId,
+
         [Parameter(Mandatory = $false)]
         [switch]$ExchangeOnlineOnly,
 
@@ -153,41 +161,55 @@ function Get-DynamicGroupsInM365 {
 
     # Check Exchange Online for Dynamic Distribution Groups
     if (-not $EntraIDOnly) {
+        Write-Verbose 'Retrieving Exchange Online Dynamic Distribution Groups...'
         # Retrieve dynamic distribution groups
-        try {
-            $exchangeGroups = Get-DynamicDistributionGroup -ErrorAction Stop
-        }
-        catch {
-            Write-Error "Error retrieving Exchange Online groups: $($_.Exception.Message)"
-            $object = [PSCustomObject][ordered]@{
-                GroupId                       = 'Error'
-                Name                          = 'Error'
-                Type                          = 'Exchange Dynamic Distribution Group'
-                MembershipRule                = 'Error retrieving groups. Ensure you are connected to Exchange Online.'
-                MembershipRuleProcessingState = 'Error'
-                UserAttributes                = 'N/A'
-                GroupAttributes               = 'N/A'
-                DeviceAttributes              = 'N/A'
-                MemberOf                      = 'N/A'
-                DisplayName                   = 'Error'
-                Description                   = 'Error'
-                Mail                          = 'Error'
-                MailEnabled                   = 'Error'
-                MailNickname                  = 'Error'
-                SecurityEnabled               = 'Error'
-                GroupTypes                    = 'Error'
-                CreatedDateTime               = 'Error'
-                RenewedDateTime               = 'Error'
-                OnPremisesSyncEnabled         = 'Error'
-                SecurityIdentifier            = 'Error'
-                Classification                = 'Error'
-                Visibility                    = 'Error'
+        if ([string]::IsNullOrWhitespace($GroupId) -eq $false) {
+            try {
+                $exchangeGroups = @(Get-DynamicDistributionGroup -Identity $GroupId -ErrorAction Stop)
             }
+            catch {
+                Write-Error "Error retrieving Exchange Online group with GroupId $GroupId. $($_.Exception.Message)"
+                return
+            }
+        }
+        else {
+            try {
+                $exchangeGroups = Get-DynamicDistributionGroup -ErrorAction Stop
+                Write-Verbose "Found $($exchangeGroups.Count) Exchange Online Dynamic Distribution Groups"
+            }
+            catch {
+                Write-Error "Error retrieving Exchange Online groups: $($_.Exception.Message)"
+                $object = [PSCustomObject][ordered]@{
+                    GroupId                       = 'Error'
+                    Name                          = 'Error'
+                    Type                          = 'Exchange Dynamic Distribution Group'
+                    MembershipRule                = 'Error retrieving groups. Ensure you are connected to Exchange Online.'
+                    MembershipRuleProcessingState = 'Error'
+                    UserAttributes                = 'N/A'
+                    GroupAttributes               = 'N/A'
+                    DeviceAttributes              = 'N/A'
+                    MemberOf                      = 'N/A'
+                    DisplayName                   = 'Error'
+                    Description                   = 'Error'
+                    Mail                          = 'Error'
+                    MailEnabled                   = 'Error'
+                    MailNickname                  = 'Error'
+                    SecurityEnabled               = 'Error'
+                    GroupTypes                    = 'Error'
+                    CreatedDateTime               = 'Error'
+                    RenewedDateTime               = 'Error'
+                    OnPremisesSyncEnabled         = 'Error'
+                    SecurityIdentifier            = 'Error'
+                    Classification                = 'Error'
+                    Visibility                    = 'Error'
+                }
 
-            $dynGroupArray.Add($object)
+                $dynGroupArray.Add($object)
+            }
         }
 
         foreach ($group in $exchangeGroups) {
+            Write-Verbose "Processing Exchange group: $($group.Name)"
             try {
                 $memberOf = Get-DistributionGroup -Identity $group.Identity | Select-Object -ExpandProperty MemberOfGroup -ErrorAction SilentlyContinue
             }
@@ -206,6 +228,7 @@ function Get-DynamicGroupsInM365 {
                 GroupAttributes               = $null
                 DeviceAttributes              = $null
                 MemberOf                      = $memberOf -join '|'
+                Members                       = (Get-DynamicDistributionGroupMember -Identity $group.Identity).Count
                 DisplayName                   = $group.DisplayName
                 Description                   = $group.Notes
                 Mail                          = $group.PrimarySmtpAddress
@@ -227,46 +250,65 @@ function Get-DynamicGroupsInM365 {
 
     # Check Entra ID for Dynamic Groups
     if (-not $ExchangeOnlineOnly) {
-        try {
-            $entraGroups = Get-MgGroup -All -Filter "groupTypes/any(c:c eq 'DynamicMembership')" -ErrorAction Stop
-        }
-        catch {
-            Write-Error "Error retrieving Entra ID groups: $($_.Exception.Message)"
-
-            $object = [PSCustomObject][ordered]@{
-                GroupId                       = 'Error'
-                Name                          = 'Error'
-                Type                          = 'Entra ID Dynamic Group'
-                MembershipRule                = 'Error retrieving groups. Ensure you are connected to Microsoft Graph.'
-                MembershipRuleProcessingState = 'Error'
-                UserAttributes                = 'N/A'
-                GroupAttributes               = 'N/A'
-                DeviceAttributes              = 'N/A'
-                MemberOf                      = 'N/A'
-                DisplayName                   = 'Error'
-                Description                   = 'Error'
-                Mail                          = 'Error'
-                MailEnabled                   = 'Error'
-                MailNickname                  = 'Error'
-                SecurityEnabled               = 'Error'
-                GroupTypes                    = 'Error'
-                CreatedDateTime               = 'Error'
-                RenewedDateTime               = 'Error'
-                OnPremisesSyncEnabled         = 'Error'
-                SecurityIdentifier            = 'Error'
-                Classification                = 'Error'
-                Visibility                    = 'Error'
+        Write-Verbose 'Retrieving Entra ID Dynamic Groups...'
+        if ([string]::IsNullOrWhitespace($GroupId) -eq $false) {
+            try {
+                $entraGroups = @(Get-MgGroup -GroupId $GroupId -ErrorAction Stop)
+                if ($entraGroups.groupTypes -notcontains 'DynamicMembership') {
+                    Write-Error "The specified GroupId $GroupId is not a dynamic group."
+                    return
+                }
             }
+            catch {
+                Write-Error "Error retrieving Entra ID group with GroupId $GroupId. $($_.Exception.Message)"
+                return
+            }
+        }
+        else {
+            try {
+                $entraGroups = Get-MgGroup -All -Filter "groupTypes/any(c:c eq 'DynamicMembership')" -ErrorAction Stop
+                Write-Verbose "Found $($entraGroups.Count) Entra ID Dynamic Groups"
+            }
+            catch {
+                Write-Error "Error retrieving Entra ID groups: $($_.Exception.Message)"
 
-            $dynGroupArray.Add($object)
+                $object = [PSCustomObject][ordered]@{
+                    GroupId                       = 'Error'
+                    Name                          = 'Error'
+                    Type                          = 'Entra ID Dynamic Group'
+                    MembershipRule                = 'Error retrieving groups. Ensure you are connected to Microsoft Graph.'
+                    MembershipRuleProcessingState = 'Error'
+                    UserAttributes                = 'N/A'
+                    GroupAttributes               = 'N/A'
+                    DeviceAttributes              = 'N/A'
+                    MemberOf                      = 'N/A'
+                    Members                       = 'N/A'
+                    DisplayName                   = 'Error'
+                    Description                   = 'Error'
+                    Mail                          = 'Error'
+                    MailEnabled                   = 'Error'
+                    MailNickname                  = 'Error'
+                    SecurityEnabled               = 'Error'
+                    GroupTypes                    = 'Error'
+                    CreatedDateTime               = 'Error'
+                    RenewedDateTime               = 'Error'
+                    OnPremisesSyncEnabled         = 'Error'
+                    SecurityIdentifier            = 'Error'
+                    Classification                = 'Error'
+                    Visibility                    = 'Error'
+                }
+
+                $dynGroupArray.Add($object)
+            }
         }
 
         foreach ($group in $entraGroups) {
+            Write-Verbose "Processing Entra ID group: $($group.DisplayName)"
             try { 
                 $memberOf = Get-MgGroupMemberOf -GroupId $group.Id -ErrorAction SilentlyContinue
 
                 $memberOf = ($memberOf | Where-Object { $_.AdditionalProperties.'@odata.type' -eq '#microsoft.graph.group' } | 
-                ForEach-Object { $_.AdditionalProperties.displayName }) -join '|'
+                    ForEach-Object { $_.AdditionalProperties.displayName }) -join '|'
             }
             catch { 
                 $memberOf = $null 
@@ -296,7 +338,8 @@ function Get-DynamicGroupsInM365 {
                     ForEach-Object { $_.Replace('device.', '') } | 
                     Sort-Object -Unique) -join '| '
                 MemberOf                      = $memberOf -join '|'
-                DisplayName = $group.DisplayName
+                Members                       = (Get-MgGroupMember -GroupId $group.Id -All).Count
+                DisplayName                   = $group.DisplayName
                 Description                   = $group.Description
                 Mail                          = $group.Mail
                 MailEnabled                   = $group.MailEnabled
@@ -317,6 +360,7 @@ function Get-DynamicGroupsInM365 {
 
     # foreach attribute, check if it's in the `Personal-Information` property set attribute
     # if it's, add a warning to the object 
+    Write-Verbose "Analyzing security attributes for $($dynGroupArray.Count) groups..."
     foreach ($group in $dynGroupArray) {
         $group | Add-Member -MemberType NoteProperty -Name Warning -Value $null
         foreach ($attribute in $group.UserAttributes.Split('|')) {
@@ -327,13 +371,16 @@ function Get-DynamicGroupsInM365 {
     }
     
     if ($ExportToExcel.IsPresent) {
+        Write-Verbose 'Preparing Excel export...'
         $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
         $excelFilePath = "$($env:userprofile)\$now-DynamicGroupsInM365.xlsx"
+        Write-Verbose "Excel file path: $excelFilePath"
         Write-Host -ForegroundColor Cyan "Exporting dynamic groups to Excel file: $excelFilePath"
         $dynGroupArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'DynamicGroupsInM365'
         Write-Host -ForegroundColor Green 'Export completed successfully!'
     }
     else {
+        Write-Verbose "Returning $($dynGroupArray.Count) dynamic groups"
         return $dynGroupArray
     }
 }
