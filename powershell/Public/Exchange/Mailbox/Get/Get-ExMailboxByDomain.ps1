@@ -9,6 +9,18 @@
 	.PARAMETER Domain
 	The domain for which to retrieve the mailboxes. This should be a string representing the domain (e.g., "example.com").
 
+	.PARAMETER RecipientTypeDetails
+	Filters the mailboxes by their recipient type details. Acceptable values include:
+	- UserMailbox
+	- SharedMailbox
+	- RoomMailbox
+	- EquipmentMailbox
+	- LinkedMailbox
+	- SchedulingMailbox
+
+	.PARAMETER ExportToExcel
+	If specified, exports the retrieved mailbox information to an Excel file in the user's profile directory.
+	
 	.EXAMPLE
 	Get-ExMailboxByDomain -Domain "example.com"
 

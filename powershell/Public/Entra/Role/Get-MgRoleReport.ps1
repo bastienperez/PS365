@@ -22,6 +22,9 @@
     .PARAMETER MaesterMode
     Switch parameter to use with the Maester framework (internal process not presented here)
 
+    .PARAMETER ExportToExcel
+    Switch parameter to export the report to an Excel file in the user's profile directory
+    
     .EXAMPLE
     Get-MgRoleReport
 
