@@ -21,16 +21,28 @@ function Get-ExMailboxByDomain {
 	param (
 		[Parameter(Mandatory = $true, Position = 0)]    
 		[string]$Domain,
+
 		[Parameter(Mandatory = $false)]
 		[ValidateSet('UserMailbox', 'SharedMailbox', 'RoomMailbox', 'EquipmentMailbox', 'LinkedMailbox', 'SchedulingMailbox')]
-		[string]$RecipientTypeDetails
+		[string]$RecipientTypeDetails,
+
+		[Parameter(Mandatory = $false)]
+		[switch]$ExportToExcel
 	)
 
-	$mailboxesArray = Get-ExoMailbox -ResultSize Unlimited -Filter "EmailAddresses -like '*@$Domain'" -Properties WhenCreated, WhenChanged | Where-Object { $_.PrimarySmtpAddress -like "*@$Domain" }
+	$mailboxesArray = Get-EXOMailbox -ResultSize Unlimited -Filter "EmailAddresses -like '*@$Domain'" -Properties WhenCreated, WhenChanged | Where-Object { $_.PrimarySmtpAddress -like "*@$Domain" }
     
 	if ($RecipientTypeDetails) {
 		$mailboxesArray = $mailboxesArray | Where-Object { $RecipientTypeDetails -contains $_.RecipientTypeDetails }
 	}
 
-	return $mailboxesArray
+	if ($ExportToExcel.IsPresent) {
+		$now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
+		$ExcelFilePath = "$($env:userprofile)\$now-MailboxesByDomain_Report.xlsx"
+		Write-Host -ForegroundColor Cyan "Exporting mailboxes information to Excel file: $ExcelFilePath"
+		$mailboxesArray | Select-Object PrimarySmtpAddress, DisplayName, RecipientTypeDetails, WhenCreated, WhenChanged | Export-Excel -Path $ExcelFilePath -AutoSize -AutoFilter -WorksheetName 'MailboxesByDomain'
+	}
+	else {
+		return $mailboxesArray
+	}
 }

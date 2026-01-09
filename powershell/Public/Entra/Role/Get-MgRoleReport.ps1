@@ -54,13 +54,19 @@ function Get-MgRoleReport {
     param (
         [Parameter(Mandatory = $false)]
         [switch]$IncludeEmptyRoles = $false,
+
         [Parameter(Mandatory = $false)]
         [boolean]$IncludePIMEligibleAssignments = $true,
+
         [Parameter(Mandatory = $false)]
         [switch]$ForceNewToken,
+
         # using with the Maester framework
         [Parameter(Mandatory = $false)]
-        [switch]$MaesterMode        
+        [switch]$MaesterMode,
+        
+        [Parameter(Mandatory = $false)]
+        [switch]$ExportToExcel
     )
 
     [System.Collections.Generic.List[PSObject]]$rolesMembersArray = @()
@@ -160,19 +166,19 @@ function Get-MgRoleReport {
         }
 
         $object = [PSCustomObject][ordered]@{    
-            Principal            = $principal
-            PrincipalDisplayName = $assignment.principal.AdditionalProperties.displayName
-            PrincipalType        = $assignment.principal.AdditionalProperties.'@odata.type'.Split('.')[-1]
-            PrincipalObjectID    = $assignment.principal.id
-            AssignedRole         = $assignment.RoleDefinitionExtended.displayName
+            Principal                = $principal
+            PrincipalDisplayName     = $assignment.principal.AdditionalProperties.displayName
+            PrincipalType            = $assignment.principal.AdditionalProperties.'@odata.type'.Split('.')[-1]
+            PrincipalObjectID        = $assignment.principal.id
+            AssignedRole             = $assignment.RoleDefinitionExtended.displayName
             AssignedRoleDefinitionId = $assignment.RoleDefinitionId
-            AssignedRoleScope    = $assignment.directoryScopeId
-            AssignmentType       = if ($assignment.status -eq 'Provisioned') { 'Eligible' } else { 'Permanent' }
-            RoleIsBuiltIn        = $assignment.RoleDefinitionExtended.isBuiltIn
-            RoleTemplate         = $assignment.RoleDefinitionExtended.templateId
-            DirectMember         = $true
-            Recommendations      = 'Check if the user has alternate email or alternate phone number on Microsoft Entra ID'
-            RecommendationSync   = $null
+            AssignedRoleScope        = $assignment.directoryScopeId
+            AssignmentType           = if ($assignment.status -eq 'Provisioned') { 'Eligible' } else { 'Permanent' }
+            RoleIsBuiltIn            = $assignment.RoleDefinitionExtended.isBuiltIn
+            RoleTemplate             = $assignment.RoleDefinitionExtended.templateId
+            DirectMember             = $true
+            Recommendations          = 'Check if the user has alternate email or alternate phone number on Microsoft Entra ID'
+            RecommendationSync       = $null
         }
 
         $rolesMembersArray.Add($object)
@@ -215,7 +221,7 @@ function Get-MgRoleReport {
                     RoleTemplate         = $assignment.RoleDefinitionExtended.templateId
                     DirectMember         = $false
                     Recommendations      = 'Check if the user has alternate email or alternate phone number on Microsoft Entra ID'
-                    RecommendationSync  = $null
+                    RecommendationSync   = $null
                 }
 
                 $rolesMembersArray.Add($object)
@@ -234,7 +240,7 @@ function Get-MgRoleReport {
         RoleTemplate         = 'Not applicable'
         DirectMember         = 'Not applicable'
         Recommendations      = 'Please check this URL to identify if you have partner with admin roles https: / / admin.microsoft.com / AdminPortal / Home#/partners. More information on https://practical365.com/identifying-potential-unwanted-access-by-your-msp-csp-reseller/'
-        RecommendationSync  = $null
+        RecommendationSync   = $null
     }    
     
     $rolesMembersArray.Add($object)
@@ -330,7 +336,7 @@ function Get-MgRoleReport {
         $member | Add-Member -MemberType NoteProperty -Name 'AccountEnabled' -Value $accountEnabled
         $member | Add-Member -MemberType NoteProperty -Name 'OnPremisesSyncEnabled' -Value $onPremisesSyncEnabled
 
-        if($onPremisesSyncEnabled) {
+        if ($onPremisesSyncEnabled) {
             $member.RecommendationSync = 'Privileged accounts should be cloud-only.'
         }
 
@@ -377,5 +383,15 @@ function Get-MgRoleReport {
         }   
 
     }
-    return $rolesMembersArray
+
+    if ($ExportToExcel.IsPresent) {
+        $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
+        $excelFileName = "$($env:userprofile)\$now-MgRoleReport.xlsx"
+        Write-Verbose "Exporting report to Excel file: $excelFileName"
+
+        $rolesMembersArray | Export-Excel -Path $excelFileName -AutoSize -AutoFilter -Title 'Microsoft Entra ID Role Report' -WorksheetName 'Role Report' -TableName 'MgRoleReport' -FreezeTopRow
+    }
+    else {
+        return $rolesMembersArray
+    }
 }
