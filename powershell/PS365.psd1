@@ -12,7 +12,7 @@
 RootModule = 'PS365.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.0.54'
+ModuleVersion = '0.0.55'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -76,20 +76,20 @@ FunctionsToExport = 'Switch-AzureCliAuthMode', 'Switch-AzurePowerShellMode',
                'Get-MgApplicationSAML', 'Get-MgApplicationSCIM', 
                'Get-MgRegisteredApp', 'Set-MgEnterpriseAppStatus', 
                'Set-MgRegisteredAppStatus', 'Get-MgAuditLogSigninInfo', 
-               'New-MgAuditLogSignInHTMLReport', 'Get-DynamicGroup', 
-               'Get-MgPasswordPolicyInfo', 'Get-MgUserPasswordInfo', 
-               'Get-MgRoleReport', 'Find-DistributionGroupMembers', 
-               'Get-ExMailboxByDomain', 'Get-ExMailboxForwarding', 
-               'Get-ExMailboxFromAttribute', 'Get-ExMailboxMaxSize', 
-               'Get-ExMailboxOnMicrosoftAddress', 'Get-ExMailboxPermission', 
-               'Get-ExMailboxProtocol', 'Get-ExMailboxRegionalConfiguration', 
-               'Get-ExMailboxStatisticsInfo', 'Get-ExResourceMailbox', 
-               'Test-ExMailboxProxyAddress', 'Set-ExMailboxMaxSize', 
-               'Set-ExMailboxProtocol', 'Set-ExMailboxRegionalConfiguration', 
-               'Get-MessageTraceInfo', 'Get-MobileDeviceInfo', 'Get-ExRoleReport', 
-               'Get-PurviewRoleReport', 'Get-BitlockerKeyInfo', 
-               'New-IntuneEnrollmentServicePrincipal', 'Install-M365Apps', 
-               'Invoke-M365AppsDownload', 'Compare-UserAttribute', 'Find-M365Email', 
+               'Get-DynamicGroup', 'Get-MgPasswordPolicyInfo', 
+               'Get-MgUserPasswordInfo', 'Get-MgRoleReport', 
+               'Find-DistributionGroupMembers', 'Get-ExMailboxByDomain', 
+               'Get-ExMailboxForwarding', 'Get-ExMailboxFromAttribute', 
+               'Get-ExMailboxMaxSize', 'Get-ExMailboxOnMicrosoftAddress', 
+               'Get-ExMailboxPermission', 'Get-ExMailboxProtocol', 
+               'Get-ExMailboxRegionalConfiguration', 'Get-ExMailboxStatisticsInfo', 
+               'Get-ExResourceMailbox', 'Test-ExMailboxProxyAddress', 
+               'Set-ExMailboxMaxSize', 'Set-ExMailboxProtocol', 
+               'Set-ExMailboxRegionalConfiguration', 'Get-MessageTraceInfo', 
+               'Get-MobileDeviceInfo', 'Get-ExRoleReport', 'Get-PurviewRoleReport', 
+               'Get-BitlockerKeyInfo', 'New-IntuneEnrollmentServicePrincipal', 
+               'Install-M365Apps', 'Invoke-M365AppsDownload', 
+               'Compare-UserAttribute', 'Find-M365Email', 
                'Disable-MSSelfServicePurchase'
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
