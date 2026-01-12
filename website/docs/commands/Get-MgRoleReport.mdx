@@ -10,7 +10,7 @@ Get-MgRoleReport.ps1 - Reports on Microsoft Entra ID (Azure AD) roles
 
 ```powershell
 Get-MgRoleReport [-IncludeEmptyRoles] [[-IncludePIMEligibleAssignments] <Boolean>] [-ForceNewToken]
- [-MaesterMode] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+ [-MaesterMode] [-ExportToExcel] [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -103,6 +103,22 @@ Accept wildcard characters: False
 ### -MaesterMode
 
 Switch parameter to use with the Maester framework (internal process not presented here)
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ExportToExcel
+
+Switch parameter to export the report to an Excel file in the user's profile directory
 
 ```yaml
 Type: SwitchParameter
