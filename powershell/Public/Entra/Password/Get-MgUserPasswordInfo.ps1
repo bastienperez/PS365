@@ -14,6 +14,9 @@
     .PARAMETER IncludeExchangeDetails
     Include Exchange Online mailbox details in the output, useful to exclude shared mailboxes and others.
 
+    .PARAMETER SimulatedMaxPasswordAgeDays
+    An optional parameter to simulate password expiration based on a specified maximum password age in days.
+    If provided, the function will calculate a simulated password expiration date and indicate whether the password would be expired based on this simulated age.
     .EXAMPLE
     Get-MgUserPasswordInfo
     Retrieves password information for all users and outputs it (default behavior).
@@ -224,10 +227,11 @@ function Get-MgUserPasswordInfo {
             $passwordExpirationDateUTC = $null
         }
 
-        # Calculate simulated password expiration if SimulatedMaxPasswordAgeDays is provided
-        $simulatedPasswordExpirationDateUTC = $null
-        $simulatedPasswordExpired = $false
+
         if ($SimulatedMaxPasswordAgeDays -and $mgUser.LastPasswordChangeDateTime -and $mgUser.LastPasswordChangeDateTime -ne [datetime]::new(1601, 1, 1, 0, 0, 0, [DateTimeKind]::Utc)) {
+            # Calculate simulated password expiration if SimulatedMaxPasswordAgeDays is provided
+            $simulatedPasswordExpirationDateUTC = $null
+            $simulatedPasswordExpired = $false
             $simulatedPasswordExpirationDateUTC = $mgUser.LastPasswordChangeDateTime.AddDays($SimulatedMaxPasswordAgeDays)
             if ($mgUser.LastPasswordChangeDateTime -lt (Get-Date).AddDays(-$SimulatedMaxPasswordAgeDays)) {
                 $simulatedPasswordExpired = $true
