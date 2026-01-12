@@ -26,29 +26,33 @@ This function retrieves and displays all permissions granted on a specific mailb
 
 ```powershell
 Get-ExMailboxPermission -Identity "john.doe@contoso.com"
-Gets all permissions for the mailbox john.doe@contoso.com
 ```
+
+Gets all permissions for the mailbox john.doe@contoso.com
 
 ### EXAMPLE 2
 
 ```powershell
 Get-ExMailboxPermission -Identity "john.doe@contoso.com" -ExportToExcel
-Gets all permissions for the mailbox and exports them to an Excel file
 ```
+
+Gets all permissions for the mailbox and exports them to an Excel file
 
 ### EXAMPLE 3
 
 ```powershell
 Get-ExMailboxPermission -ByDomain "contoso.com"
-Gets all permissions for all mailboxes in the contoso.com domain
 ```
+
+Gets all permissions for all mailboxes in the contoso.com domain
 
 ### EXAMPLE 4
 
 ```powershell
 Get-ExMailboxPermission -UserPermission "john.doe@contoso.com"
-Finds all mailbox permissions that john.doe@contoso.com has across all mailboxes
 ```
+
+Finds all mailbox permissions that john.doe@contoso.com has across all mailboxes
 
 ## PARAMETERS
 

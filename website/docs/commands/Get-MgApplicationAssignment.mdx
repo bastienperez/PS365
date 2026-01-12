@@ -25,27 +25,34 @@ Give information about assigned users, groups, or service principals and if the 
 ### EXAMPLE 1
 
 ```powershell
-$apps = Get-MgApplicationAssignment
+Get-MgApplicationAssignment
 ```
+
+Retrieves all applications and their assignment types.
 
 ### EXAMPLE 2
 
 ```powershell
-$apps = Get-MgApplicationAssignment -ApplicationId "xxx", "yyy"
+Get-MgApplicationAssignment -ApplicationId "xxx", "yyy"
 ```
+
+Retrieves assignment types for the specified application IDs.
 
 ### EXAMPLE 3
 
 ```powershell
-$apps = Get-MgApplicationAssignment -OnlyAssignedToAllUsers
+Get-MgApplicationAssignment -OnlyAssignedToAllUsers
 ```
+
+Retrieves only applications that are assigned to all users (no assignment required).
 
 ### EXAMPLE 4
 
 ```powershell
 Get-MgApplicationAssignment -ExportToExcel
-Gets all applications and exports them to an Excel file
 ```
+
+Gets all applications and exports them to an Excel file
 
 ## PARAMETERS
 
