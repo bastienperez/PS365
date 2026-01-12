@@ -22,18 +22,22 @@
 
     .EXAMPLE
     Get-ExMailboxPermission -Identity "john.doe@contoso.com"
+
     Gets all permissions for the mailbox john.doe@contoso.com
 
     .EXAMPLE
     Get-ExMailboxPermission -Identity "john.doe@contoso.com" -ExportToExcel
+
     Gets all permissions for the mailbox and exports them to an Excel file
 
     .EXAMPLE
     Get-ExMailboxPermission -ByDomain "contoso.com"
+
     Gets all permissions for all mailboxes in the contoso.com domain
 
     .EXAMPLE
     Get-ExMailboxPermission -UserPermission "john.doe@contoso.com"
+    
     Finds all mailbox permissions that john.doe@contoso.com has across all mailboxes
 
     .LINK

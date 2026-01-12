@@ -30,18 +30,22 @@
 	
 	.EXAMPLE
 	Set-ExMailboxMaxSize -ByDomain "example.com"
+
 	Sets the maximum mailbox size for all mailboxes in the specified domain.
 	
 	.EXAMPLE
 	Set-ExMailboxMaxSize -AllMailboxes
+
 	Sets the maximum mailbox size for all mailboxes in the organization.
 	
 	.EXAMPLE
 	Set-ExMailboxMaxSize -FromCSV "C:\path\to\file.csv"
+
 	Sets the maximum mailbox size for mailboxes listed in the specified CSV file.
 	
 	.EXAMPLE
 	Set-ExMailboxMaxSize -ByDomain "example.com" -GenerateCmdlets -OutputFile "C:\path\to\commands.ps1"
+	
 	Generates the Set-Mailbox cmdlets for all mailboxes in the specified domain and saves them to the specified file without executing them.
 
 	.LINK

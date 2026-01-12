@@ -33,10 +33,6 @@
 	Priority 1: ForwardingAddress
 	Priority 2: ForwardingSMTPAddress
 	Priority 3: Inbox Rules
-
-	# Autoforward works if forwardingAddress because it's an internal object
-	# TODO: Add forwardWorks for inbox rules & if RemoteDomain enabled
-	# label: enhancements
 #>
 
 function Get-ExMailboxForwarding {

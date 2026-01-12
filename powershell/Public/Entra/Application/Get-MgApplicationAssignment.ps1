@@ -20,16 +20,23 @@
     (Optional) If specified, exports the results to an Excel file in the user's profile directory.
 
     .EXAMPLE
-    $apps = Get-MgApplicationAssignment
+    Get-MgApplicationAssignment
+
+    Retrieves all applications and their assignment types.
 
     .EXAMPLE
-    $apps = Get-MgApplicationAssignment -ApplicationId "xxx", "yyy"
+    Get-MgApplicationAssignment -ApplicationId "xxx", "yyy"
+
+    Retrieves assignment types for the specified application IDs.
     
     .EXAMPLE
-    $apps = Get-MgApplicationAssignment -OnlyAssignedToAllUsers
+    Get-MgApplicationAssignment -OnlyAssignedToAllUsers
+
+    Retrieves only applications that are assigned to all users (no assignment required).
 
     .EXAMPLE
     Get-MgApplicationAssignment -ExportToExcel
+    
     Gets all applications and exports them to an Excel file
 
     .LINK

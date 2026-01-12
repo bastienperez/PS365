@@ -34,8 +34,6 @@
     The groups assignments are not retrieved because based on https://main.iam.ad.ext.azure.com
 
     This function requires the Microsoft.Graph.Applications and Microsoft.Graph.Authentication modules.
-
-
 #>
 
 function Get-MgApplicationSCIM {

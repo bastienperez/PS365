@@ -55,7 +55,6 @@
     .NOTES
     Author: Bastien Perez (adapted from Vasil Michev)
     Source: https://github.com/michevnew/PowerShell/blob/master/GraphSDK_Bitlocker_report.ps1
-    Date: December 2025
     
     The script requires the following Microsoft Graph permissions:
     - BitLockerKey.Read.All (required) - Allows the app to read BitLocker keys on behalf of the signed-in user, 

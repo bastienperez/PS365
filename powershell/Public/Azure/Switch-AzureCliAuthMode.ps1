@@ -28,18 +28,22 @@
 
     .EXAMPLE
     Switch-AzureCliAuthMode
+
     Toggles between browser and WAM authentication modes.
 
     .EXAMPLE
     Switch-AzureCliAuthMode -Mode Browser
+
     Switches to browser-based authentication.
 
     .EXAMPLE
     Switch-AzureCliAuthMode -Mode WAM
+
     Switches to Web Account Manager authentication.
 
     .EXAMPLE
     Switch-AzureCliAuthMode -GetCurrent
+    
     Displays the current authentication mode.
 
     .LINK

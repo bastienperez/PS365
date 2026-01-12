@@ -13,19 +13,17 @@
 
     .EXAMPLE
     Get-MgApplicationCredential -ForceNewToken
+
     Forces the function to disconnect and reconnect to Microsoft Graph to obtain a new access token.
 
     .EXAMPLE
     Get-MgApplicationCredential -ExportToExcel
-    Gets all application credentials and exports them to an Excel file.
 
-    .NOTES
-    Author: Bastien Perez
+    Gets all application credentials and exports them to an Excel file.
 
     .LINK
     https://ps365.clidsys.com/docs/commands/Get-MgApplicationCredential
 
-    .NOTES
 #>
 
 function Get-MgApplicationCredential {

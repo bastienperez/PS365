@@ -13,19 +13,12 @@
     .EXAMPLE
     Get-PurviewRoleReport
 
+    This command retrieves the Purview RBAC role report.
+
     .LINK
     https://ps365.clidsys.com/docs/commands/Get-PurviewRoleReport
 
     .NOTES
-    Written by Bastien Perez (Clidsys.com - ITPro-Tips.com)
-    For more Office 365/Microsoft 365 tips and news, check out ITPro-Tips.com.
-
-    Version History:
-    ## [1.0] - 2025-07-03
-    ### Initial Release
-    
-    # TODO: Add Get-ManagementRoleAssignment to obtain permissions, as this is sometimes not done via a group
-    #Get-ManagementRoleAssignment -RoleAssigneeType User
     
 #>
 function Get-PurviewRoleReport {

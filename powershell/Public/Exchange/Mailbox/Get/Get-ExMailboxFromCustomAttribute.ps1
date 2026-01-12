@@ -15,10 +15,12 @@
 
     .EXAMPLE
     Get-ExMailboxFromAttribute -Attribute "CustomAttribute" -CheckAttributes @("Attribute1", "Attribute2")
+    
     This example retrieves mailboxes with the custom attribute "CustomAttribute" and compares the values of "Attribute1" and "Attribute2".
 
     .EXAMPLE
     Get-ExMailboxFromAttribute -Attribute "CustomAttribute"
+
     This example retrieves mailboxes with the custom attribute "CustomAttribute" without comparing any attributes.
 
     .LINK

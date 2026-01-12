@@ -13,29 +13,12 @@
     .EXAMPLE
     Get-ExRoleReport
 
+    This command retrieves the Exchange RBAC role report for Exchange Online.
+
     .LINK
     https://ps365.clidsys.com/docs/commands/Get-ExRoleReport
 
     .NOTES
-    Version History:
-    ## [2.1] - 2025-07-03
-    ### Added
-    - Add OnPrem switch to use Get-RoleGroup instead
-
-    ### Changed
-    - Use another method to detect if we are connected to Exchange Online or not
-
-    ## [2.0] - 2024-11-22
-    ### Added
-    - Add option to see permissions graph - not work by now
-
-    ## [1.0] - 2024-11-22
-    ### Initial Release
-
-    # TODO: add MFA state
-    # TODO: Add Get-ManagementRoleAssignment to obtain permissions, as this is sometimes not done via a group
-    #Get-ManagementRoleAssignment -RoleAssigneeType User
-
 #>
 function Get-ExRoleReport {
     [CmdletBinding()]

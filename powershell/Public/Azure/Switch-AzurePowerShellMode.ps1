@@ -25,18 +25,22 @@
 
     .EXAMPLE
     Switch-AzurePowerShellMode
+
     Toggles between browser and WAM authentication modes.
 
     .EXAMPLE
     Switch-AzurePowerShellMode -Mode Browser
+
     Switches to browser-based authentication.
 
     .EXAMPLE
     Switch-AzurePowerShellMode -Mode WAM
+
     Switches to Web Account Manager authentication.
 
     .EXAMPLE
     Switch-AzurePowerShellMode -GetCurrent
+    
     Displays the current authentication mode.
 
     .LINK

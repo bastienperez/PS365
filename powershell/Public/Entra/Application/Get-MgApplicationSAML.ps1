@@ -27,8 +27,6 @@
 
     This function requires the Microsoft.Graph.Beta.Applications module to be installed.
 
-    Author: Bastien Perez
-
     .NOTES
     Limitations:
     The information about the SAML applications clams is not available in the Microsoft Graph API v1 but in https://main.iam.ad.ext.azure.com/api/ApplicationSso/<service-principal-id>/FederatedSsoV2 so we don't get them

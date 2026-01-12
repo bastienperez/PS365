@@ -37,6 +37,7 @@
 
     .EXAMPLE
     Get-MgRoleReport -IncludePIMEligibleAssignments $false
+    
     Get all the roles with members (without empty roles), but without PIM eligible assignments
 
     .EXAMPLE

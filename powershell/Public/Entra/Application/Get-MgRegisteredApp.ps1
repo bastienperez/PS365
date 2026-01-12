@@ -22,7 +22,7 @@
     https://ps365.clidsys.com/docs/commands/Get-MgRegisteredApp
 
     .NOTES
-    Same as the function `Get-MgApplication` but with a simplified output.
+    Same as the Microsoft Graph built-in function `Get-MgApplication` but with a simplified output.
 #>
 
 function Get-MgRegisteredApp {

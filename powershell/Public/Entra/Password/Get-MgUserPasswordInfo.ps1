@@ -17,16 +17,20 @@
     .PARAMETER SimulatedMaxPasswordAgeDays
     An optional parameter to simulate password expiration based on a specified maximum password age in days.
     If provided, the function will calculate a simulated password expiration date and indicate whether the password would be expired based on this simulated age.
+
     .EXAMPLE
     Get-MgUserPasswordInfo
+
     Retrieves password information for all users and outputs it (default behavior).
 
     .EXAMPLE
     Get-MgUserPasswordInfo -UserPrincipalName xxx@domain.com
+
     Retrieves password information for the specified user and outputs it.
 
     .EXAMPLE
     Get-MgUserPasswordInfo -PasswordPoliciesByDomainOnly
+
     Retrieves password policies for all domains only.
 
     .EXAMPLE
