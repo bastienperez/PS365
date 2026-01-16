@@ -172,8 +172,11 @@ function Get-MgUserPasswordInfo {
     if ($UserPrincipalName) {
         Write-Host -ForegroundColor Cyan "Retrieving password information for $($UserPrincipalName.Count) user(s)"
         [System.Collections.Generic.List[PSCustomObject]]$mgUsersList = @()
-        foreach ($upn in $UserPrincipalName) {												 
-            $mgUser = Get-MgUser -UserId $upn -Property $userParams
+        foreach ($upn in $UserPrincipalName) {		
+            # If we use Get-MgUser -UserId <upn> -Property <properties>, we get the error "Get-MgUser_Get: Get By Key only supports UserId and the key has to be a valid Guid".
+            # It seems to be a problem with one of the propertys we are requesting.
+            # So we use a filter instead.										 
+            $mgUser = Get-MgUser -Filter "userPrincipalName eq '$upn'" -Property $userParams
 
             $mgUsersList.Add($mgUser)
         }

@@ -60,11 +60,11 @@ function Switch-AzurePowerShellMode {
 
     # Get current WAM setting
     #
-    $currentSetting = (Get-AzConfig -EnableLoginByWam).Value
+    $wamEnabled = (Get-AzConfig -EnableLoginByWam).Value
 
     if ($GetCurrent) {
         # Display current mode
-        if ($currentSetting) {
+        if ($wamEnabled) {
             Write-Host 'Current authentication mode: WAM (Web Account Manager)' -ForegroundColor Cyan
         }
         else {
@@ -88,7 +88,7 @@ function Switch-AzurePowerShellMode {
     }
     else {
         # Toggle mode
-        if ($currentSetting) {
+        if ($wamEnabled) {
             Write-Verbose 'Disabling Web Account Manager (WAM)...'
             $null = Update-AzConfig -EnableLoginByWam $false
             Write-Host 'Azure CLI authentication switched to browser mode.' -ForegroundColor Green

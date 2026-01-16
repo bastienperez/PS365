@@ -1,14 +1,11 @@
 <#
     .SYNOPSIS
-    Switches Azure CLI authentication between browser and WAM modes.
+    Switches Microsoft Graph PowerShell authentication mode between Browser and WAM.
 
     .DESCRIPTION
-    Toggles the Windows broker (WAM) setting when using `az login`.
+    Toggles the Windows broker (WAM) setting when using `Connect-MgGraph`.
     If no mode is specified, it toggles between modes.
     If a mode is specified, it switches to that mode.
-
-    Beginning with Azure CLI version 2.61.0, Web Account Manager (WAM) is the default authentication method on Windows.
-    WAM is a Windows 10+ component that acts as an authentication broker. An authentication broker is an application that runs on a user's machine. It manages the authentication handshakes and token maintenance for connected accounts.
 
     Using WAM has several benefits:
     - Enhanced security. See Conditional Access: Token protection (preview).
@@ -27,30 +24,30 @@
     Displays the current authentication mode without making any changes.
 
     .EXAMPLE
-    Switch-AzureCliAuthMode
+    Switch-MgGraphPowerShellMode
 
     Toggles between browser and WAM authentication modes.
 
     .EXAMPLE
-    Switch-AzureCliAuthMode -Mode Browser
+    Switch-MgGraphPowerShellMode -Mode Browser
 
     Switches to browser-based authentication.
 
     .EXAMPLE
-    Switch-AzureCliAuthMode -Mode WAM
+    Switch-MgGraphPowerShellMode -Mode WAM
 
     Switches to Web Account Manager authentication.
 
     .EXAMPLE
-    Switch-AzureCliAuthMode -GetCurrent
+    Switch-MgGraphPowerShellMode -GetCurrent
     
     Displays the current authentication mode.
 
     .LINK
-    https://ps365.clidsys.com/docs/commands/Switch-AzureCliAuthMode
+    https://ps365.clidsys.com/docs/commands/Switch-MgGraphPowerShellMode
 #>
 
-function Switch-AzureCliAuthMode {
+function Switch-MgGraphPowerShellMode {
     [CmdletBinding(DefaultParameterSetName = 'Toggle')]
     param(
         [Parameter(Mandatory = $false, ParameterSetName = 'Specify')]
@@ -61,12 +58,15 @@ function Switch-AzureCliAuthMode {
         [switch]$GetCurrent
     )
 
+    # EnableWAMForMSGraph = $true means WAM is enabled
+    # DisableWAMForMSGraph = $false means Browser is enabled
+
     # Get current WAM setting
-    $wamEnabled = az config get core.enable_broker_on_windows --query value -o tsv 2>$null
-    
+    $wamEnabled = (Get-MgGraphOption).EnableWAMForMSGraph
+
     if ($GetCurrent) {
         # Display current mode
-        if ($wamEnabled -eq 'true') {
+        if ($wamEnabled) {
             Write-Host 'Current authentication mode: WAM (Web Account Manager)' -ForegroundColor Cyan
         }
         else {
@@ -79,26 +79,26 @@ function Switch-AzureCliAuthMode {
         # Switch to specified mode
         if ($Mode -eq 'Browser') {
             Write-Verbose 'Disabling Web Account Manager (WAM)...'
-            az config set core.enable_broker_on_windows=false
-            Write-Host 'Azure CLI authentication switched to browser mode.' -ForegroundColor Green
+            Set-MgGraphOption -EnableLoginByWAM $false
+            Write-Host ' Microsoft Graph PowerShell authentication switched to browser mode.' -ForegroundColor Green
         }
         else {
             Write-Verbose 'Enabling Web Account Manager (WAM)...'
-            az config set core.enable_broker_on_windows=true
-            Write-Host 'Azure CLI authentication switched to WAM mode.' -ForegroundColor Green
+            Set-MgGraphOption -EnableLoginByWAM $true
+            Write-Host 'Microsoft Graph PowerShell authentication switched to WAM mode.' -ForegroundColor Green
         }
     }
     else {
         # Toggle mode
-        if ($wamEnabled -eq 'true') {
+        if ($wamEnabled) {
             Write-Verbose 'Disabling Web Account Manager (WAM)...'
-            az config set core.enable_broker_on_windows=false
-            Write-Host 'Azure CLI authentication switched to browser mode.' -ForegroundColor Green
+            Set-MgGraphOption -EnableLoginByWAM $false
+            Write-Host 'Microsoft Graph PowerShell authentication switched to browser mode.' -ForegroundColor Green
         }
         else {
             Write-Verbose 'Enabling Web Account Manager (WAM)...'
-            az config set core.enable_broker_on_windows=true
-            Write-Host 'Azure CLI authentication switched to WAM mode.' -ForegroundColor Green
+            Set-MgGraphOption -EnableLoginByWAM $true
+            Write-Host 'Microsoft Graph PowerShell authentication switched to WAM mode.' -ForegroundColor Green
         }
     }
 }
