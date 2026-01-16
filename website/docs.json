@@ -21,7 +21,8 @@
         "group": "Azure",
         "pages": [
           "docs/commands/Switch-AzureCliAuthMode",
-          "docs/commands/Switch-AzurePowerShellMode"
+          "docs/commands/Switch-AzurePowerShellMode",
+          "docs/commands/Switch-MgGraphPowerShellMode"
         ]
       },
       {
@@ -42,8 +43,7 @@
           {
             "group": "Audit Log",
             "pages": [
-              "docs/commands/Get-MgAuditLogSigninInfo",
-              "docs/commands/New-MgAuditLogSignInHTMLReport"
+              "docs/commands/Get-MgAuditLogSignInInfo"
             ]
           },
           {
@@ -55,7 +55,6 @@
           {
             "group": "Password",
             "pages": [
-              "docs/commands/Get-MgPasswordPolicyInfo",
               "docs/commands/Get-MgUserPasswordInfo"
             ]
           },
