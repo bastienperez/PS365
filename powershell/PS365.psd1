@@ -12,7 +12,7 @@
 RootModule = 'PS365.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.0.56'
+ModuleVersion = '0.0.57'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -77,8 +77,7 @@ FunctionsToExport = 'Switch-AzureCliAuthMode', 'Switch-AzurePowerShellMode',
                'Get-MgApplicationSAML', 'Get-MgApplicationSCIM', 
                'Get-MgRegisteredApp', 'Set-MgEnterpriseAppStatus', 
                'Set-MgRegisteredAppStatus', 'Get-MgAuditLogSigninInfo', 
-               'Get-DynamicGroup', 'Get-MgPasswordPolicyInfo', 
-               'Get-MgUserPasswordInfo', 'Get-MgRoleReport', 
+               'Get-DynamicGroup', 'Get-MgUserPasswordInfo', 'Get-MgRoleReport', 
                'Find-DistributionGroupMembers', 'Get-ExMailboxByDomain', 
                'Get-ExMailboxForwarding', 'Get-ExMailboxFromAttribute', 
                'Get-ExMailboxMaxSize', 'Get-ExMailboxOnMicrosoftAddress', 

@@ -47,6 +47,8 @@
     https://ps365.clidsys.com/docs/commands/Get-MgUserPasswordInfo
 
     .NOTES
+    If PasswordPolicies = 'DisablePasswordExpiration', it means that the user password never expires.
+    If PasswordPolicies = 'None' or empty ($null), it means that the user follows the domain password policy.
 #>
 
 function Get-MgUserPasswordInfo {
@@ -264,6 +266,7 @@ function Get-MgUserPasswordInfo {
             OnPremisesLastSyncDateTimeUTC        = if ($mgUser.OnPremisesLastSyncDateTime -and $mgUser.OnPremisesLastSyncDateTime -ne [datetime]::new(1601, 1, 1, 0, 0, 0, [DateTimeKind]::Utc)) { $mgUser.OnPremisesLastSyncDateTime } else { $null }
             onPremisesDistinguishedName          = if ($mgUser.OnPremisesDistinguishedName) { $mgUser.OnPremisesDistinguishedName } else { $null }        
             Domain                               = $userDomain
+            DomainAuthenticationType              = $userDomainPolicy.AuthenticationType
             PasswordValidityInheritedFrom        = $userDomainPolicy.PasswordValidityInheritedFrom
             PasswordNotificationWindowInDays     = $userDomainPolicy.PasswordNotificationWindowInDays
             CreatedDateTime                      = $mgUser.CreatedDateTime
