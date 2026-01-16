@@ -54,29 +54,33 @@ Sets the maximum mailbox size for the specified mailbox.
 
 ```powershell
 Set-ExMailboxMaxSize -ByDomain "example.com"
-Sets the maximum mailbox size for all mailboxes in the specified domain.
 ```
+
+Sets the maximum mailbox size for all mailboxes in the specified domain.
 
 ### EXAMPLE 3
 
 ```powershell
 Set-ExMailboxMaxSize -AllMailboxes
-Sets the maximum mailbox size for all mailboxes in the organization.
 ```
+
+Sets the maximum mailbox size for all mailboxes in the organization.
 
 ### EXAMPLE 4
 
 ```powershell
 Set-ExMailboxMaxSize -FromCSV "C:\path\to\file.csv"
-Sets the maximum mailbox size for mailboxes listed in the specified CSV file.
 ```
+
+Sets the maximum mailbox size for mailboxes listed in the specified CSV file.
 
 ### EXAMPLE 5
 
 ```powershell
 Set-ExMailboxMaxSize -ByDomain "example.com" -GenerateCmdlets -OutputFile "C:\path\to\commands.ps1"
-Generates the Set-Mailbox cmdlets for all mailboxes in the specified domain and saves them to the specified file without executing them.
 ```
+
+Generates the Set-Mailbox cmdlets for all mailboxes in the specified domain and saves them to the specified file without executing them.
 
 ## PARAMETERS
 
