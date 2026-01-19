@@ -258,13 +258,15 @@ function Get-MgUserPasswordInfo {
             PasswordExpirationDateUTC            = $passwordExpirationDateUTC
             DaysLeftBeforePasswordChangeUTC      = $daysLeft
             PasswordExpired                      = $passwordExpired
-            LastSignInDateTime                   = $mgUser.signInActivity.LastSignInDateTime
+            #The last interactive sign-in date and time for a specific user. This property records the last time a user attempted an interactive sign-in to the directory—whether the attempt was successful or not. Note: Since unsuccessful attempts are also logged, this value might not accurately reflect actual system usage.
+            LastInteractiveSignInDateTime       = $mgUser.signInActivity.LastSignInDateTime
+            # The date and time of the user's most recent successful interactive or non-interactive sign-in
             LastSuccessfulSignInDateTime         = $mgUser.signInActivity.LastSuccessfulSignInDateTime
             ForceChangePasswordNextSignIn        = if ($mgUser.PasswordProfile) { $mgUser.PasswordProfile.ForceChangePasswordNextSignIn } else { $null }
             ForceChangePasswordNextSignInWithMfa = if ($mgUser.PasswordProfile) { $mgUser.PasswordProfile.ForceChangePasswordNextSignInWithMfa } else { $null }
             OnPremisesSyncEnabled                = $mgUser.OnPremisesSyncEnabled
             OnPremisesLastSyncDateTimeUTC        = if ($mgUser.OnPremisesLastSyncDateTime -and $mgUser.OnPremisesLastSyncDateTime -ne [datetime]::new(1601, 1, 1, 0, 0, 0, [DateTimeKind]::Utc)) { $mgUser.OnPremisesLastSyncDateTime } else { $null }
-            onPremisesDistinguishedName          = if ($mgUser.OnPremisesDistinguishedName) { $mgUser.OnPremisesDistinguishedName } else { $null }        
+            OnPremisesDistinguishedName          = if ($mgUser.OnPremisesDistinguishedName) { $mgUser.OnPremisesDistinguishedName } else { $null }        
             Domain                               = $userDomain
             DomainAuthenticationType              = $userDomainPolicy.AuthenticationType
             PasswordValidityInheritedFrom        = $userDomainPolicy.PasswordValidityInheritedFrom
