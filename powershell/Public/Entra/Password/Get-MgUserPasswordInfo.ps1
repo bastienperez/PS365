@@ -18,6 +18,9 @@
     An optional parameter to simulate password expiration based on a specified maximum password age in days.
     If provided, the function will calculate a simulated password expiration date and indicate whether the password would be expired based on this simulated age.
 
+    .PARAMETER ExportToExcel
+    (Optional) If specified, exports the results to an Excel file in the user's profile directory.
+    
     .EXAMPLE
     Get-MgUserPasswordInfo
 

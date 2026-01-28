@@ -6,6 +6,9 @@
     This function returns a list of all Entra ID applications with their credentials information,
     including key credentials and password credentials, along with their validity status.
     The function also retrieves the owners of each application.
+    
+    .PARAMETER ExportToExcel
+    (Optional) If specified, exports the results to an Excel file in the user's profile directory.
 
     .EXAMPLE
     Get-MgApplicationCredential
@@ -29,8 +32,6 @@
 function Get-MgApplicationCredential {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $false)]
-        [switch]$ForceNewToken,
         [Parameter(Mandatory = $false)]
         [switch]$ExportToExcel
     )
