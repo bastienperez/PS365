@@ -24,6 +24,9 @@
     An optional parameter to simulate password expiration based on a specified maximum password age in days.
     If provided, the function will calculate a simulated password expiration date and indicate whether the password would be expired based on this simulated age.
 
+    .PARAMETER OnlyUsersWithForceChangePasswordNextSignIn
+    If specified, retrieves password information for users who have ForceChangePasswordNextSignIn set to true only.
+
     .PARAMETER ExportToExcel
     (Optional) If specified, exports the results to an Excel file in the user's profile directory.
     
@@ -58,27 +61,32 @@
     Connect-MgGraph -Scopes 'User.Read.All', 'Domain.Read.All', 'OnPremDirectorySynchronization.Read.All'
 
     Password policies for *cloud-only* users:
-    IF `PasswordPolicies` is set to "DisablePasswordExpiration":
+    IF `PasswordPolicies` is 'DisablePasswordExpiration':
         THEN password never expires
-    ELSE (PasswordPolicies is 'None' or $null):
-        IF domain's `PasswordValidityPeriodInDays` is set to 2147483647:
-            THEN password never expires
-        ELSEIF domain's `PasswordValidityPeriodInDays` is not set (null):
+    ELSEIF `PasswordPolicies` is 'None' or $null:
+        IF domain's `PasswordValidityPeriodInDays` is 2147483647 or $null:
             THEN password never expires
         ELSE:
-        ELSE:
-            THEN password expires based on the domain's `PasswordValidityPeriodInDays`
+            password expires based on the domain's `PasswordValidityPeriodInDays`
+    ELSE:
+            IF domain's `PasswordValidityPeriodInDays` is 2147483647 or $null
+                THEN password never expires
+            ELSE
+                password expires based on the domain's `PasswordValidityPeriodInDays`
 
     Password policies for *synchronized* users:
     IF `CloudPasswordPolicyForPasswordSyncedUsersEnabled` is enabled:
-        THEN cloud password follows cloud expiration policy
-    ELSE:
-        THEN PasswordPolicies is set to "DisablePasswordExpiration" 
-        AND cloud password never expires for synced users
-        AND users can sign in even if on-premises password has expired
-
+        IF `PasswordPolicies` is 'None' or $null:
+            THEN password expires based on the domain's `PasswordValidityPeriodInDays` (same as cloud-only users above)
+        ELSEIF `PasswordPolicies` is 'DisablePasswordExpiration':
+            THEN password never expires
+        ELSE:
+            THEN password expires based on the domain's `PasswordValidityPeriodInDays` (same as cloud-only users above)
+    ELSE (CloudPasswordPolicyForPasswordSyncedUsersEnabled is disabled):
+        THEN password never expires
 
     Side note : When we manually want to set Password Policies to follow domain policies, we need to set PasswordPolicies 'None' via Microsoft Graph API because $null is not accepted.
+    
     .LINK
     https://ps365.clidsys.com/docs/commands/Get-MgUserPasswordInfo
 #>
@@ -109,7 +117,10 @@ function Get-MgUserPasswordInfo {
 
         [Parameter(Mandatory = $false)]
         [ValidateRange(1, [int]::MaxValue)]
-        [int]$SimulatedMaxPasswordAgeDays
+        [int]$SimulatedMaxPasswordAgeDays,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$OnlyUsersWithForceChangePasswordNextSignIn
     )
     
     # Import required modules
@@ -255,7 +266,7 @@ function Get-MgUserPasswordInfo {
 
     if ($OnlySyncedUsers) {
         Write-Host -ForegroundColor Cyan 'Filtering synchronized users only (OnPremisesSyncEnabled = true)'
-        $mgUsersList = $mgUsersList | Where-Object { $_.OnPremisesSyncEnabled -eq $true }
+        $mgUsersList = $mgUsersList | Where-Object { $_.OnPremisesSyncEnabled}
     }
 
     foreach ($mgUser in $mgUsersList) {
@@ -370,6 +381,11 @@ function Get-MgUserPasswordInfo {
         }
     
         $passwordsInfoArray.Add($object)
+    }
+
+    if ($OnlyUsersWithForceChangePasswordNextSignIn) {
+        Write-Host -ForegroundColor Cyan 'Filtering users with ForceChangePasswordNextSignIn = true'
+        $passwordsInfoArray = $passwordsInfoArray | Where-Object { $_.ForceChangePasswordNextSignIn }
     }
 
     if ($IncludeExchangeDetails) {
