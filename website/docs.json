@@ -53,6 +53,14 @@
             ]
           },
           {
+            "group": "Hybrid",
+            "pages": [
+              "docs/commands/Get-EntraIDHybridJoinComputerInfo",
+              "docs/commands/Get-EntraIDHybridJoinComputerRegistryKey",
+              "docs/commands/Get-EntraIDHybridJoinSCP"
+            ]
+          },
+          {
             "group": "Password",
             "pages": [
               "docs/commands/Get-MgUserPasswordInfo"

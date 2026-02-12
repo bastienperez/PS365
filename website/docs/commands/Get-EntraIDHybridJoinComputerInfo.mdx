@@ -1,0 +1,49 @@
+---
+Module Name: PS365
+---
+
+## SYNOPSIS
+
+Retrieves detailed information about Entra ID Hybrid Join configuration on the local computer.
+
+## SYNTAX
+
+```powershell
+Get-EntraIDHybridJoinComputerInfo [-ProgressAction <ActionPreference>] [<CommonParameters>]
+```
+
+## DESCRIPTION
+
+This function gathers comprehensive diagnostics for Entra ID Hybrid Join status including:
+- Service Connection Point (SCP) details
+- Network connectivity to Microsoft Entra ID endpoints
+- Registry keys related to hybrid join
+- Scheduled tasks for Automatic Device Join
+- Computer certificates in AD and local store
+- Event logs for device registration
+- dsregcmd status output
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Get-EntraIDHybridJoinComputerInfo
+```
+
+Retrieves all hybrid join diagnostic information for the local computer.
+
+## PARAMETERS
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+## NOTES
+
+Must be run on a domain-joined computer.
+
+## RELATED LINKS

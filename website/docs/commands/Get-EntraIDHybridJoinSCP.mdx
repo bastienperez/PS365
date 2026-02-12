@@ -1,0 +1,42 @@
+---
+Module Name: PS365
+---
+
+## SYNOPSIS
+
+Retrieves the Service Connection Point (SCP) for Entra ID Hybrid Join from Active Directory.
+
+## SYNTAX
+
+```powershell
+Get-EntraIDHybridJoinSCP
+```
+
+## DESCRIPTION
+
+This function queries the Active Directory configuration naming context to retrieve
+the Service Connection Point (SCP) object for device registration, which contains
+Azure AD tenant information.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Get-EntraIDHybridJoinSCP
+```
+
+Returns the SCP object with keywords containing AzureADName and azureADId.
+
+## PARAMETERS
+
+## INPUTS
+
+## OUTPUTS
+
+## NOTES
+
+Requires access to Active Directory and the configuration naming context.
+Must be run on a domain-joined computer or with appropriate AD access.
+
+## RELATED LINKS

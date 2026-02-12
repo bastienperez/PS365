@@ -1,0 +1,41 @@
+---
+Module Name: PS365
+---
+
+## SYNOPSIS
+
+Retrieves Entra ID Hybrid Join registry keys from the local computer.
+
+## SYNTAX
+
+```powershell
+Get-EntraIDHybridJoinComputerRegistryKey
+```
+
+## DESCRIPTION
+
+This function reads registry keys from HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CDJ\AAD
+to retrieve TenantId, TenantName, and other hybrid join configuration values.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Get-EntraIDHybridJoinComputerRegistryKey
+```
+
+Returns an object containing TenantId, TenantName, and other registry keys if present.
+
+## PARAMETERS
+
+## INPUTS
+
+## OUTPUTS
+
+## NOTES
+
+Returns a PSCustomObject with ComputerName, TenantId, TenantName, and OtherKeys properties.
+Properties will be null if the registry path or values do not exist.
+
+## RELATED LINKS
