@@ -9,8 +9,7 @@ Retrieves detailed information about Entra ID Hybrid Join configuration on the l
 ## SYNTAX
 
 ```powershell
-Get-EntraIDHybridJoinComputerInfo [[-ExportToExcel] <String>] [-ProgressAction <ActionPreference>]
- [<CommonParameters>]
+Get-EntraIDHybridJoinComputerInfo [-ExportToExcel] [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -49,13 +48,13 @@ Retrieves hybrid join information and exports it to an Excel file.
 Optional path to export the results to an Excel file.
 
 ```yaml
-Type: String
+Type: SwitchParameter
 Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 1
-Default value: None
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
