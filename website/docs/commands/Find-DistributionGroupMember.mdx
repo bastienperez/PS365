@@ -9,7 +9,7 @@ Find members of distribution groups based on email address or domain.
 ## SYNTAX
 
 ```powershell
-Find-DistributionGroupMembers [[-FilterByDomain] <String>] [[-FilterByEmailAddresses] <String[]>]
+Find-DistributionGroupMember [[-FilterByDomain] <String>] [[-FilterByEmailAddresses] <String[]>]
  [-FilterByExternalDomains] [[-FilterRecipientTypeDetails] <String>] [-ProgressAction <ActionPreference>]
  [<CommonParameters>]
 ```
@@ -23,7 +23,7 @@ This function retrieves members of all distribution groups in Exchange Online th
 ### EXAMPLE 1
 
 ```powershell
-Find-DistributionGroupMembers -FilterByDomain "contoso.com"
+Find-DistributionGroupMember -FilterByDomain "contoso.com"
 ```
 
 Searches all distribution groups for members with email addresses containing "contoso.com" and exports the results to a CSV file.
@@ -31,7 +31,7 @@ Searches all distribution groups for members with email addresses containing "co
 ### EXAMPLE 2
 
 ```powershell
-Find-DistributionGroupMembers -FilterByEmailAddresses "user@contoso.com"
+Find-DistributionGroupMember -FilterByEmailAddresses "user@contoso.com"
 ```
 
 Searches all distribution groups for members with the email address "user@contoso.com" and exports the results to a CSV file.
@@ -39,7 +39,7 @@ Searches all distribution groups for members with the email address "user@contos
 ### EXAMPLE 3
 
 ```powershell
-Find-DistributionGroupMembers -FilterByExternalDomains -FilterRecipientTypeDetails "MailContact"
+Find-DistributionGroupMember -FilterByExternalDomains -FilterRecipientTypeDetails "MailContact"
 ```
 
 Searches all distribution groups for members whose email addresses belong to external domains and are of the type "MailContact", then exports the results to a CSV file.
@@ -121,4 +121,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## RELATED LINKS
 
-[https://ps365.clidsys.com/docs/commands/Find-DistributionGroupMembers](https://ps365.clidsys.com/docs/commands/Find-DistributionGroupMembers)
+[https://ps365.clidsys.com/docs/commands/Find-DistributionGroupMember](https://ps365.clidsys.com/docs/commands/Find-DistributionGroupMember)

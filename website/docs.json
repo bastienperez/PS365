@@ -80,7 +80,7 @@
           {
             "group": "Group",
             "pages": [
-              "docs/commands/Find-DistributionGroupMembers"
+              "docs/commands/Find-DistributionGroupMember"
             ]
           },
           {

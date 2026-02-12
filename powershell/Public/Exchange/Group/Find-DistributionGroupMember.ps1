@@ -18,24 +18,24 @@
     Specify a recipient type detail to further filter the members (e.g., MailContact, MailUser).
 
     .EXAMPLE
-    Find-DistributionGroupMembers -FilterByDomain "contoso.com"
+    Find-DistributionGroupMember -FilterByDomain "contoso.com"
 
     Searches all distribution groups for members with email addresses containing "contoso.com" and exports the results to a CSV file.
     
     .EXAMPLE
-    Find-DistributionGroupMembers -FilterByEmailAddresses "user@contoso.com"
+    Find-DistributionGroupMember -FilterByEmailAddresses "user@contoso.com"
 
     Searches all distribution groups for members with the email address "user@contoso.com" and exports the results to a CSV file.   
 
     .EXAMPLE
-    Find-DistributionGroupMembers -FilterByExternalDomains -FilterRecipientTypeDetails "MailContact"
+    Find-DistributionGroupMember -FilterByExternalDomains -FilterRecipientTypeDetails "MailContact"
 
     Searches all distribution groups for members whose email addresses belong to external domains and are of the type "MailContact", then exports the results to a CSV file.
 
     .LINK
-    https://ps365.clidsys.com/docs/commands/Find-DistributionGroupMembers
+    https://ps365.clidsys.com/docs/commands/Find-DistributionGroupMember
 #>
-function Find-DistributionGroupMembers {
+function Find-DistributionGroupMember {
     param
     (
         [Parameter(Mandatory = $false)]
