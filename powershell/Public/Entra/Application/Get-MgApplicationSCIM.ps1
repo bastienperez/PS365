@@ -66,18 +66,18 @@ function Get-MgApplicationSCIM {
     # Determine how to search for the Service Principal(s): by ObjectID (GUID), by DisplayName, or all
     if ($ObjectID) {
         # If ObjectID looks like a GUID, use it directly
-        $servicePrincipals = Get-MgServicePrincipal -ServicePrincipalId $ObjectID
+        $servicePrincipals = @(Invoke-PS365GraphRequest -Uri "/v1.0/servicePrincipals/$ObjectID")
     }
     elseif ($DisplayName) {
         # Use OData filter to search by DisplayName. Escape single quotes by doubling them.
         $escaped = $DisplayName -replace "'", "''"
         $filter = "DisplayName eq '$escaped'"
         Write-Verbose "Filtering service principals with: $filter"
-        $servicePrincipals = Get-MgServicePrincipal -Filter $filter -All -Property DisplayName, Id
+        $servicePrincipals = Invoke-PS365GraphRequest -Uri '/v1.0/servicePrincipals' -Filter $filter -All -Select 'displayName,id'
     }
     else {
         # Default: get all service principals (existing behavior)
-        $servicePrincipals = Get-MgServicePrincipal -All -Property DisplayName, Id
+        $servicePrincipals = Invoke-PS365GraphRequest -Uri '/v1.0/servicePrincipals' -All -Select 'displayName,id'
     }
 
     Write-Host "$($servicePrincipals.Count) service principals found"
@@ -87,7 +87,7 @@ function Get-MgApplicationSCIM {
         $i++
         Write-Host "($i/$($servicePrincipals.Count)) - $($servicePrincipal.DisplayName): check for synchronization jobs " -ForegroundColor Cyan -NoNewline
         # Service principal is the ObjectID in Microsoft Entra ID
-        $job = Get-MgServicePrincipalSynchronizationJob -ServicePrincipalId $servicePrincipal.Id -All
+        $job = Invoke-PS365GraphRequest -Uri "/v1.0/servicePrincipals/$($servicePrincipal.Id)/synchronization/jobs" -All
         
         if ($job) {
             Write-Host "$($servicePrincipal.DisplayName) - Synchronization job found" -ForegroundColor Green
@@ -97,7 +97,7 @@ function Get-MgApplicationSCIM {
             $job | Add-Member -MemberType NoteProperty -Name ServicePrincipalId -Value $servicePrincipal.Id
             $job | Add-Member -MemberType NoteProperty -Name DisplayName -Value $servicePrincipal.DisplayName
         
-            $provisioningSettings = Invoke-GraphRequest -Uri "https://graph.microsoft.com/v1.0/servicePrincipals/$($job.ServicePrincipalId)/synchronization/secrets" -Method Get -OutputType PSObject
+            $provisioningSettings = Invoke-PS365GraphRequest -Uri "/v1.0/servicePrincipals/$($job.ServicePrincipalId)/synchronization/secrets" -Method GET -OutputType PSObject
 
             $job | Add-Member -MemberType NoteProperty -Name ProvisioningBaseAddress -Value $($provisioningSettings.Value | Where-Object { $_.key -eq 'BaseAddress' }).Value
             $job | Add-Member -MemberType NoteProperty -Name ProvisioningSyncAll -Value $($provisioningSettings.Value | Where-Object { $_.key -eq 'SyncAll' }).Value
@@ -138,7 +138,7 @@ function Get-MgApplicationSCIM {
 
         Write-Host "Get synchronization settings $($job.DisplayName) ($j/$($synchronizationJobsArray.Count))"
 
-        $jobSchema = Get-MgServicePrincipalSynchronizationJobSchema -ServicePrincipalId $job.ServicePrincipalId -SynchronizationJobId $job.Id
+        $jobSchema = Invoke-PS365GraphRequest -Uri "/v1.0/servicePrincipals/$($job.ServicePrincipalId)/synchronization/jobs/$($job.Id)/schema"
 
         $job | Add-Member -MemberType NoteProperty -Name Scheduling -Value $job.Schedule.Interval
         $job | Add-Member -MemberType NoteProperty -Name SchedulingState -Value $job.Schedule.State

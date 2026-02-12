@@ -216,7 +216,7 @@ function Get-MgAuditLogSigninInfo {
     }
 
     try {
-        $null = Get-MgBetaAuditLogSignIn -Top 1 -ErrorAction stop
+        $null = Invoke-PS365GraphRequest -Uri '/beta/auditLogs/signIns' -Top 1 -ErrorAction Stop
     }
     catch {
         if ($_.Exception.ErrorContent.Code) {
@@ -390,7 +390,7 @@ function Get-MgAuditLogSigninInfo {
     }    
 
     if ($LastLogonOnly) {
-        $mgUsers = Get-MgUser -All -Property SignInActivity
+        $mgUsers = Invoke-PS365GraphRequest -Uri '/v1.0/users' -All -Select 'userPrincipalName,id,signInActivity,accountEnabled,createdDateTime,creationType,userType'
 
         foreach ($mgUser in $mgUsers) {
             $mgUser.UserPrincipalName
@@ -477,13 +477,13 @@ function Get-MgAuditLogSigninInfo {
     }
 
     if ($LastXSignIns) {
-        Write-Verbose "Get-MgBetaAuditLogSignIn -Top: $LastXSignIns -Filter $filter"
-        $signsIn = Get-MgBetaAuditLogSignIn -Top $LastXSignIns -Filter $filter
+        Write-Verbose "Invoke-PS365GraphRequest -Uri '/beta/auditLogs/signIns' -Top: $LastXSignIns -Filter $filter"
+        $signsIn = (Invoke-PS365GraphRequest -Uri '/beta/auditLogs/signIns' -Top $LastXSignIns -Filter $filter).value
     }
     else {
-        Write-Verbose "Get-MgBetaAuditLogSignIn -All:`$true -Filter $filter"
+        Write-Verbose "Invoke-PS365GraphRequest -Uri '/beta/auditLogs/signIns' -All -Filter $filter"
 
-        $signsIn = Get-MgBetaAuditLogSignIn -All:$true -Filter $filter
+        $signsIn = Invoke-PS365GraphRequest -Uri '/beta/auditLogs/signIns' -All -Filter $filter
     }
     
     Write-Verbose "Filter is $filter"

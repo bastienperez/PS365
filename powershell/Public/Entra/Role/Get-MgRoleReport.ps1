@@ -127,13 +127,11 @@ function Get-MgRoleReport {
     try {
         #$mgRolesArrayAssignment = Get-MgRoleManagementDirectoryRoleDefinition -ErrorAction Stop
         
-        Get-MgRoleManagementDirectoryRoleAssignment -All -ExpandProperty Principal | ForEach-Object {
+        Invoke-PS365GraphRequest -Uri '/v1.0/roleManagement/directory/roleAssignments' -All -Expand 'principal' | ForEach-Object {
             $mgRolesArrayAssignment.Add($_)
         }
 
-        #$mgRolesArrayAssignment = (Invoke-MgGraphRequest -Method GET -Uri 'https://graph.microsoft.com/v1.0/roleManagement/directory/roleAssignments' -OutputType PSObject).Value
-
-        $mgRolesDefinition = Get-MgRoleManagementDirectoryRoleAssignment -All -ExpandProperty roleDefinition
+        $mgRolesDefinition = Invoke-PS365GraphRequest -Uri '/v1.0/roleManagement/directory/roleAssignments' -All -Expand 'roleDefinition'
 
     }
     catch {
@@ -151,28 +149,37 @@ function Get-MgRoleReport {
     if ($IncludePIMEligibleAssignments) {
         Write-Verbose 'Collecting PIM eligible role assignments...'
         try {
-            (Get-MgRoleManagementDirectoryRoleEligibilitySchedule -All -ExpandProperty * -ErrorAction Stop | Select-Object id, principalId, directoryScopeId, roleDefinitionId, status, principal, @{Name = 'RoleDefinitionExtended'; Expression = { $_.roleDefinition } }) | ForEach-Object {
+            (Invoke-PS365GraphRequest -Uri '/v1.0/roleManagement/directory/roleEligibilitySchedules' -All -Expand 'principal,roleDefinition' -ErrorAction Stop | ForEach-Object {
+                [PSCustomObject]@{
+                    id                     = $_.id
+                    principalId            = $_.principalId
+                    directoryScopeId       = $_.directoryScopeId
+                    roleDefinitionId       = $_.roleDefinitionId
+                    status                 = $_.status
+                    principal              = $_.principal
+                    RoleDefinitionExtended = $_.roleDefinition
+                }
+            }) | ForEach-Object {
                 $mgRolesArrayAssignment.Add($_)
             }
-            #$mgRoles += (Invoke-MgGraphRequest -Method GET -Uri 'https://graph.microsoft.com/v1.0/roleManagement/directory/roleEligibilitySchedule' -OutputType PSObject).Value
         }
         catch {
             Write-Warning "Unable to get PIM eligible role assignments: $($_.Exception.Message)"
         }
     }
 
-    foreach ($assignment in $mgRolesArrayAssignment) {    
-        $principal = switch ($assignment.principal.AdditionalProperties.'@odata.type') {
-            '#microsoft.graph.user' { $assignment.principal.AdditionalProperties.userPrincipalName; break }
-            '#microsoft.graph.servicePrincipal' { $assignment.principal.AdditionalProperties.appId; break }
+    foreach ($assignment in $mgRolesArrayAssignment) {
+        $principal = switch ($assignment.principal.'@odata.type') {
+            '#microsoft.graph.user' { $assignment.principal.userPrincipalName; break }
+            '#microsoft.graph.servicePrincipal' { $assignment.principal.appId; break }
             '#microsoft.graph.group' { $assignment.principalid; break }
             'default' { '-' }
         }
 
-        $object = [PSCustomObject][ordered]@{    
+        $object = [PSCustomObject][ordered]@{
             Principal                = $principal
-            PrincipalDisplayName     = $assignment.principal.AdditionalProperties.displayName
-            PrincipalType            = $assignment.principal.AdditionalProperties.'@odata.type'.Split('.')[-1]
+            PrincipalDisplayName     = $assignment.principal.displayName
+            PrincipalType            = $assignment.principal.'@odata.type'.Split('.')[-1]
             PrincipalObjectID        = $assignment.principal.id
             AssignedRole             = $assignment.RoleDefinitionExtended.displayName
             AssignedRoleDefinitionId = $assignment.RoleDefinitionId
@@ -188,14 +195,12 @@ function Get-MgRoleReport {
         $rolesMembersArray.Add($object)
 
         if ($object.PrincipalType -eq 'group') {
-            # need to get ID for Get-MgGroupMember
-            $group = Get-MgGroup -GroupId $object.Principal -Property Id, onPremisesSyncEnabled
+            $group = Invoke-PS365GraphRequest -Uri "/v1.0/groups/$($object.Principal)" -Select 'id,onPremisesSyncEnabled'
             $object | Add-Member -MemberType NoteProperty -Name 'OnPremisesSyncEnabled' -Value $([bool]($group.onPremisesSyncEnabled -eq $true))
 
             #$group = (Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/groups/$($object.Principal)" -OutputType PSObject)
 
-            $groupMembers = Get-MgGroupMember -GroupId $group.Id -Property displayName, userPrincipalName
-            #$groupMembers = (Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/groups/$($group.Id)/members" -OutputType PSObject).Value
+            $groupMembers = (Invoke-PS365GraphRequest -Uri "/v1.0/groups/$($group.Id)/members" -Select 'displayName,userPrincipalName').value
 
             foreach ($member in $groupMembers) {
                 $typeMapping = @{
@@ -207,16 +212,16 @@ function Get-MgRoleReport {
                     '#microsoft.graph.application'      = 'application'
                 }
 
-                $memberType = if ($typeMapping[$member.AdditionalProperties.'@odata.type']) {
-                    $typeMapping[$member.AdditionalProperties.'@odata.type']
+                $memberType = if ($typeMapping[$member.'@odata.type']) {
+                    $typeMapping[$member.'@odata.type']
                 }
                 else {
                     'Unknown'
                 }
 
                 $object = [PSCustomObject][ordered]@{
-                    Principal            = $member.AdditionalProperties.userPrincipalName
-                    PrincipalDisplayName = $member.AdditionalProperties.displayName
+                    Principal            = $member.userPrincipalName
+                    PrincipalDisplayName = $member.displayName
                     PrincipalType        = $memberType
                     AssignedRole         = $assignment.RoleDefinitionExtended.displayName
                     AssignedRoleScope    = $assignment.directoryScopeId
@@ -287,7 +292,7 @@ function Get-MgRoleReport {
                     # This is because the sign-in data comes from a different source that requires a GUID to retrieve the account's sign-in activity. 
                     # Therefore, we must provide the account's object identifier for the command to function correctly.
                     # To overcome this issue, we use the -Filter parameter to search for the user by their UserPrincipalName.
-                    $mgUser = Get-MgUser -Filter "UserPrincipalName eq '$($member.Principal)'" -Property AccountEnabled, SignInActivity, onPremisesSyncEnabled
+                    $mgUser = (Invoke-PS365GraphRequest -Uri '/v1.0/users' -Filter "userPrincipalName eq '$($member.Principal)'" -Select 'accountEnabled,signInActivity,onPremisesSyncEnabled').value | Select-Object -First 1
                     $accountEnabled = $mgUser.AccountEnabled
                     $lastSignInDateTime = $mgUser.signInActivity.LastSignInDateTime
                     $lastNonInteractiveSignInDateTime = $mgUser.signInActivity.LastNonInteractiveSignInDateTime
@@ -307,7 +312,7 @@ function Get-MgRoleReport {
                 }
 
                 'servicePrincipal' {
-                    $lastSignInActivity = (Get-MgBetaReportServicePrincipalSignInActivity -Filter "appId eq '$($member.Principal)'").LastSignInActivity
+                    $lastSignInActivity = ((Invoke-PS365GraphRequest -Uri '/beta/reports/servicePrincipalSignInActivities' -Filter "appId eq '$($member.Principal)'").value | Select-Object -First 1).lastSignInActivity
                     $accountEnabled = 'Not applicable'
                     $lastSignInDateTime = $lastSignInActivity.LastSignInDateTime
                     $lastNonInteractiveSignInDateTime = $lastSignInActivity.LastNonInteractiveSignInDateTime
@@ -355,7 +360,7 @@ function Get-MgRoleReport {
         Write-Verbose 'Collecting all roles...'
         try {
             #$mgRolesArrayAssignment = (Invoke-MgGraphRequest -Method GET -Uri 'https://graph.microsoft.com/v1.0/roleManagement/directory/roleDefinitions' -OutputType PSObject).Value
-            $mgRolesDefinition = Get-MgRoleManagementDirectoryRoleDefinition -All -ErrorAction Stop
+            $mgRolesDefinition = Invoke-PS365GraphRequest -Uri '/v1.0/roleManagement/directory/roleDefinitions' -All -ErrorAction Stop
 
             $emptyRoles = $mgRolesDefinition | Where-Object { $mgRolesArrayAssignment.RoleDefinitionId -notcontains $_.id }
 

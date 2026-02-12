@@ -60,7 +60,7 @@ function Get-MgApplicationAssignment {
         $servicePrincipals = @()
         foreach ($appId in $ApplicationId) {
             try {
-                $sp = Get-MgServicePrincipal -Filter "AppId eq '$appId'" -ErrorAction Stop
+                $sp = (Invoke-PS365GraphRequest -Uri '/v1.0/servicePrincipals' -Filter "appId eq '$appId'" -ErrorAction Stop).value | Select-Object -First 1
                 if ($sp) {
                     $servicePrincipals += $sp
                 }
@@ -71,7 +71,7 @@ function Get-MgApplicationAssignment {
         }
     }
     else {
-        $servicePrincipals = Get-MgServicePrincipal -All
+        $servicePrincipals = Invoke-PS365GraphRequest -Uri '/v1.0/servicePrincipals' -All
     }
     
     # Initialize results array
@@ -85,7 +85,7 @@ function Get-MgApplicationAssignment {
         Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] [$counter/$($servicePrincipals.Count)] Analyzing application: $($sp.DisplayName)" -ForegroundColor Cyan
         
         # Get app role assignments for this service principal
-        $appRoleAssignments = Get-MgServicePrincipalAppRoleAssignedTo -ServicePrincipalId $sp.Id
+        $appRoleAssignments = (Invoke-PS365GraphRequest -Uri "/v1.0/servicePrincipals/$($sp.id)/appRoleAssignedTo" -All)
         
         if ($appRoleAssignments.Count -gt 0) {
             # Process each assignment individually
@@ -133,7 +133,7 @@ function Get-MgApplicationAssignment {
                     $assignmentProps.PrincipalType = 'User'
                     
                     try {
-                        $user = Get-MgUser -UserId $assignment.PrincipalId -ErrorAction SilentlyContinue
+                        $user = Invoke-PS365GraphRequest -Uri "/v1.0/users/$($assignment.PrincipalId)" -ErrorAction SilentlyContinue
                         if ($user) {
                             Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')]   -> User found: $($user.DisplayName)" -ForegroundColor Green
                             
@@ -162,7 +162,7 @@ function Get-MgApplicationAssignment {
                     $assignmentProps.PrincipalType = 'Group'
                     
                     try {
-                        $group = Get-MgGroup -GroupId $assignment.PrincipalId -ErrorAction SilentlyContinue
+                        $group = Invoke-PS365GraphRequest -Uri "/v1.0/groups/$($assignment.PrincipalId)" -ErrorAction SilentlyContinue
                         if ($group) {
                             $protectedStatus = if ($null -ne $group.IsAssignableToRole) { $group.IsAssignableToRole } else { 'N/A' }
                             Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')]   -> Group found: $($group.DisplayName) (Protected: $protectedStatus)" -ForegroundColor Green
@@ -201,7 +201,7 @@ function Get-MgApplicationAssignment {
                     $assignmentProps.PrincipalType = 'ServicePrincipal'
                     
                     try {
-                        $servicePrincipal = Get-MgServicePrincipal -ServicePrincipalId $assignment.PrincipalId -ErrorAction SilentlyContinue
+                        $servicePrincipal = Invoke-PS365GraphRequest -Uri "/v1.0/servicePrincipals/$($assignment.PrincipalId)" -ErrorAction SilentlyContinue
                         if ($servicePrincipal) {
                             Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')]   -> Service Principal found: $($servicePrincipal.DisplayName)" -ForegroundColor Magenta
                             

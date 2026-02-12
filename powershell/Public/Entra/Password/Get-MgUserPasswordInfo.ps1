@@ -142,27 +142,27 @@ function Get-MgUserPasswordInfo {
 
     function Get-DomainPasswordPolicies {
         Write-Host -ForegroundColor Cyan 'Retrieving password policies for all domains'
-        $domains = Get-MgDomain -All
+        $domains = Invoke-PS365GraphRequest -Uri '/v1.0/domains' -All
         $domainPasswordPolicies = [System.Collections.Generic.List[PSCustomObject]]$domainPasswordPolicies = @()
 
         foreach ($domain in $domains) {
 	
-            if ($domain.PasswordValidityPeriodInDays -eq '2147483647') { 
+            if ($domain.passwordValidityPeriodInDays -eq '2147483647') {
                 $validityPeriod = '2147483647 (Password never expire)'
             }
-            elseif ($null -eq $domain.PasswordValidityPeriodInDays) {
+            elseif ($null -eq $domain.passwordValidityPeriodInDays) {
                 $validityPeriod = '2147483647 (Password never expire - currently null in the domain settings)'
             }
-            else { 
-                $validityPeriod = $domain.PasswordValidityPeriodInDays 
+            else {
+                $validityPeriod = $domain.passwordValidityPeriodInDays
             }
-            
+
             $object = [PSCustomObject][ordered]@{
-                DomainName                       = $domain.ID
-                AuthenticationType               = $domain.AuthenticationType
+                DomainName                       = $domain.id
+                AuthenticationType               = $domain.authenticationType
                 PasswordValidityPeriodInDays     = $validityPeriod
                 PasswordValidityInheritedFrom    = $null
-                PasswordNotificationWindowInDays = $domain.PasswordNotificationWindowInDays
+                PasswordNotificationWindowInDays = $domain.passwordNotificationWindowInDays
             }
 
             $domainPasswordPolicies.Add($object)
@@ -192,7 +192,7 @@ function Get-MgUserPasswordInfo {
 
     # Get tenant-level password policy for synced users
     Write-Host -ForegroundColor Cyan 'Retrieving tenant password policy settings for synchronized users'
-    $onPremSyncResponse = Invoke-MgGraphRequest -Method GET -Uri 'https://graph.microsoft.com/v1.0/directory/onPremisesSynchronization' -OutputType PSObject
+    $onPremSyncResponse = Invoke-PS365GraphRequest -Method GET -Uri 'https://graph.microsoft.com/v1.0/directory/onPremisesSynchronization' -OutputType PSObject
     $tenantEnforceCloudPasswordPolicyForPasswordSyncedUsers = $onPremSyncResponse.value[0].features.cloudPasswordPolicyForPasswordSyncedUsersEnabled
 
     if ($IncludeExchangeDetails) {
@@ -233,44 +233,42 @@ function Get-MgUserPasswordInfo {
         }
     }
 
-    $userParams = 'UserPrincipalName, LastPasswordChangeDateTime, OnPremisesLastSyncDateTime, OnPremisesSyncEnabled, PasswordProfile, PasswordPolicies, AccountEnabled, DisplayName, Id, SignInActivity, CreatedDateTime, OnPremisesDistinguishedName'
+    $userSelect = 'userPrincipalName,lastPasswordChangeDateTime,onPremisesLastSyncDateTime,onPremisesSyncEnabled,passwordProfile,passwordPolicies,accountEnabled,displayName,id,signInActivity,createdDateTime,onPremisesDistinguishedName'
 
     if ($UserPrincipalName) {
         Write-Host -ForegroundColor Cyan "Retrieving password information for $($UserPrincipalName.Count) user(s)"
         [System.Collections.Generic.List[PSCustomObject]]$mgUsersList = @()
-        foreach ($upn in $UserPrincipalName) {		
-            # If we use Get-MgUser -UserId <upn> -Property <properties>, we get the error "Get-MgUser_Get: Get By Key only supports UserId and the key has to be a valid Guid".
-            # It seems to be a problem with one of the propertys we are requesting.
-            # So we use a filter instead.										 
-            $mgUser = Get-MgUser -Filter "userPrincipalName eq '$upn'" -Property $userParams
-
-            $mgUsersList.Add($mgUser)
+        foreach ($upn in $UserPrincipalName) {
+            $mgUserResponse = Invoke-PS365GraphRequest -Uri '/v1.0/users' -Filter "userPrincipalName eq '$upn'" -Select $userSelect
+            if ($mgUserResponse.value) {
+                foreach ($u in $mgUserResponse.value) { $mgUsersList.Add($u) }
+            }
         }
     }
     elseif ($FilterByDomain) {
         Write-Host -ForegroundColor Cyan "Retrieving password information for users in domain: $FilterByDomain (excluding guest users #EXT#@$FilterByDomain)"
 
-        $mgUsersList = Get-MgUser -Filter "endswith(userPrincipalName,'$FilterByDomain') and not endswith(userPrincipalName,'#EXT#@$FilterByDomain')" -All -ConsistencyLevel eventual
+        $mgUsersList = Invoke-PS365GraphRequest -Uri '/v1.0/users' -Filter "endswith(userPrincipalName,'$FilterByDomain') and not endswith(userPrincipalName,'#EXT#@$FilterByDomain')" -All -ConsistencyLevel 'eventual' -Select $userSelect
 
     }
     else {
         Write-Host -ForegroundColor Cyan 'Retrieving password information for all users'
-        $mgUsersList = Get-MgUser -All -Property $userParams
+        $mgUsersList = Invoke-PS365GraphRequest -Uri '/v1.0/users' -All -Select $userSelect
     }
 
     [System.Collections.Generic.List[PSCustomObject]]$passwordsInfoArray = @()
 
     if (-not $IncludeGuestUsers) {
-        $mgUsersList = $mgUsersList | Where-Object { $_.UserPrincipalName -notmatch '#EXT#' }
+        $mgUsersList = $mgUsersList | Where-Object { $_.userPrincipalName -notmatch '#EXT#' }
     }
 
     if ($OnlySyncedUsers) {
         Write-Host -ForegroundColor Cyan 'Filtering synchronized users only (OnPremisesSyncEnabled = true)'
-        $mgUsersList = $mgUsersList | Where-Object { $_.OnPremisesSyncEnabled}
+        $mgUsersList = $mgUsersList | Where-Object { $_.onPremisesSyncEnabled }
     }
 
     foreach ($mgUser in $mgUsersList) {
-        $userDomain = $mgUser.UserPrincipalName.Split('@')[1]
+        $userDomain = $mgUser.userPrincipalName.Split('@')[1]
         $originalDomainPolicy = $domainPasswordPolicies | Where-Object { $_.DomainName -eq $userDomain }
         
         # Create a copy of the domain policy to avoid modifying the original object
@@ -285,40 +283,40 @@ function Get-MgUserPasswordInfo {
         $passwordExpired = $false 
 
         # Determine password policy inheritance
-        if ($mgUser.OnPremisesSyncEnabled -and -not $tenantEnforceCloudPasswordPolicyForPasswordSyncedUsers) {
+        if ($mgUser.onPremisesSyncEnabled -and -not $tenantEnforceCloudPasswordPolicyForPasswordSyncedUsers) {
             # Synchronized user with cloud password policy NOT enforced
             $userDomainPolicy.PasswordValidityPeriodInDays = '2147483647 (Password never expire)'
             $userDomainPolicy.PasswordValidityInheritedFrom = 'Synchronized user - Cloud password policy NOT enforced (EnforceCloudPasswordPolicyForPasswordSyncedUsers is disabled)'
         }
-        elseif ($mgUser.PasswordPolicies -eq 'DisablePasswordExpiration') {
+        elseif ($mgUser.passwordPolicies -eq 'DisablePasswordExpiration') {
             # User has DisablePasswordExpiration set at user level
             $userDomainPolicy.PasswordValidityPeriodInDays = '2147483647 (Password never expire)'
             $userDomainPolicy.PasswordValidityInheritedFrom = 'User password policy (DisablePasswordExpiration)'
         }
-        elseif ($mgUser.PasswordPolicies -eq 'None' -or [string]::IsNullOrEmpty($mgUser.PasswordPolicies)) {
+        elseif ($mgUser.passwordPolicies -eq 'None' -or [string]::IsNullOrEmpty($mgUser.passwordPolicies)) {
             # User follows domain policy (PasswordPolicies is 'None' or $null)
             if ([string]::IsNullOrEmpty($userDomainPolicy.PasswordValidityInheritedFrom)) {
                 $userDomainPolicy.PasswordValidityInheritedFrom = 'Domain password policy'
             }
         }
 
-        if ($userDomainPolicy.PasswordValidityPeriodInDays -ne '2147483647 (Password never expire)' -and $mgUser.LastPasswordChangeDateTime -and $mgUser.LastPasswordChangeDateTime -ne [datetime]::new(1601, 1, 1, 0, 0, 0, [DateTimeKind]::Utc)) {
+        if ($userDomainPolicy.PasswordValidityPeriodInDays -ne '2147483647 (Password never expire)' -and $mgUser.lastPasswordChangeDateTime -and $mgUser.lastPasswordChangeDateTime -ne [datetime]::new(1601, 1, 1, 0, 0, 0, [DateTimeKind]::Utc)) {
 
-            if ($mgUser.LastPasswordChangeDateTime -lt (Get-Date).AddDays(-$userDomainPolicy.PasswordValidityPeriodInDays)) { 
+            if ($mgUser.lastPasswordChangeDateTime -lt (Get-Date).AddDays(-$userDomainPolicy.PasswordValidityPeriodInDays)) { 
                 $passwordExpired = $true 
             }
         }
 
-        if ($userDomainPolicy.PasswordValidityPeriodInDays -ne '2147483647 (Password never expire)' -and $mgUser.LastPasswordChangeDateTime -and $mgUser.LastPasswordChangeDateTime -ne [datetime]::new(1601, 1, 1, 0, 0, 0, [DateTimeKind]::Utc)) {
-            $daysLeft = ($mgUser.LastPasswordChangeDateTime.AddDays($userDomainPolicy.PasswordValidityPeriodInDays) - (Get-Date)).Days
+        if ($userDomainPolicy.PasswordValidityPeriodInDays -ne '2147483647 (Password never expire)' -and $mgUser.lastPasswordChangeDateTime -and $mgUser.lastPasswordChangeDateTime -ne [datetime]::new(1601, 1, 1, 0, 0, 0, [DateTimeKind]::Utc)) {
+            $daysLeft = ($mgUser.lastPasswordChangeDateTime.AddDays($userDomainPolicy.PasswordValidityPeriodInDays) - (Get-Date)).Days
             if ($daysLeft -lt 0) {
                 $daysLeft = 'Already expired'
             }
             
-            $date = $mgUser.LastPasswordChangeDateTime.AddDays($userDomainPolicy.PasswordValidityPeriodInDays)
+            $date = $mgUser.lastPasswordChangeDateTime.AddDays($userDomainPolicy.PasswordValidityPeriodInDays)
             $passwordExpirationDateUTC = $date.ToString('dd/MM/yyyy HH:mm:ss')
         }
-        elseif ($userDomainPolicy.PasswordValidityPeriodInDays -ne '2147483647 (Password never expire)' -and (-not $mgUser.LastPasswordChangeDateTime -or $mgUser.LastPasswordChangeDateTime -eq [datetime]::new(1601, 1, 1, 0, 0, 0, [DateTimeKind]::Utc))) {
+        elseif ($userDomainPolicy.PasswordValidityPeriodInDays -ne '2147483647 (Password never expire)' -and (-not $mgUser.lastPasswordChangeDateTime -or $mgUser.lastPasswordChangeDateTime -eq [datetime]::new(1601, 1, 1, 0, 0, 0, [DateTimeKind]::Utc))) {
             $daysLeft = 'No password set date available'
             $passwordExpirationDateUTC = $null
         }
@@ -328,42 +326,42 @@ function Get-MgUserPasswordInfo {
         }
 
 
-        if ($SimulatedMaxPasswordAgeDays -and $mgUser.LastPasswordChangeDateTime -and $mgUser.LastPasswordChangeDateTime -ne [datetime]::new(1601, 1, 1, 0, 0, 0, [DateTimeKind]::Utc)) {
+        if ($SimulatedMaxPasswordAgeDays -and $mgUser.lastPasswordChangeDateTime -and $mgUser.lastPasswordChangeDateTime -ne [datetime]::new(1601, 1, 1, 0, 0, 0, [DateTimeKind]::Utc)) {
             # Calculate simulated password expiration if SimulatedMaxPasswordAgeDays is provided
             $simulatedPasswordExpirationDateUTC = $null
             $simulatedPasswordExpired = $false
-            $simulatedPasswordExpirationDateUTC = $mgUser.LastPasswordChangeDateTime.AddDays($SimulatedMaxPasswordAgeDays)
-            if ($mgUser.LastPasswordChangeDateTime -lt (Get-Date).AddDays(-$SimulatedMaxPasswordAgeDays)) {
+            $simulatedPasswordExpirationDateUTC = $mgUser.lastPasswordChangeDateTime.AddDays($SimulatedMaxPasswordAgeDays)
+            if ($mgUser.lastPasswordChangeDateTime -lt (Get-Date).AddDays(-$SimulatedMaxPasswordAgeDays)) {
                 $simulatedPasswordExpired = $true
             }
         }
 
         $object = [PSCustomObject][ordered]@{
-            UserPrincipalName                                      = $mgUser.UserPrincipalName
-            DisplayName                                            = $mgUser.DisplayName
-            ID                                                     = $mgUser.Id
-            AccountEnabled                                         = $mgUser.AccountEnabled
+            UserPrincipalName                                      = $mgUser.userPrincipalName
+            DisplayName                                            = $mgUser.displayName
+            ID                                                     = $mgUser.id
+            AccountEnabled                                         = $mgUser.accountEnabled
             PasswordPolicies                                       = $mgUser.PasswordPolicies
-            PasswordLastSetUTCTime                                 = if ($mgUser.LastPasswordChangeDateTime -and $mgUser.LastPasswordChangeDateTime -ne [datetime]::new(1601, 1, 1, 0, 0, 0, [DateTimeKind]::Utc)) { $mgUser.LastPasswordChangeDateTime } else { $null }
+            PasswordLastSetUTCTime                                 = if ($mgUser.lastPasswordChangeDateTime -and $mgUser.lastPasswordChangeDateTime -ne [datetime]::new(1601, 1, 1, 0, 0, 0, [DateTimeKind]::Utc)) { $mgUser.lastPasswordChangeDateTime } else { $null }
             PasswordPolicyMaxPasswordAgeInDays                     = $userDomainPolicy.PasswordValidityPeriodInDays
             PasswordExpirationDateUTC                              = $passwordExpirationDateUTC
             DaysUntilPasswordExpiration                            = $daysLeft
             PasswordExpired                                        = $passwordExpired
             #The last interactive sign-in date and time for a specific user. This property records the last time a user attempted an interactive sign-in to the directory—whether the attempt was successful or not. Note: Since unsuccessful attempts are also logged, this value might not accurately reflect actual system usage.
-            LastInteractiveSignInDateTime                          = $mgUser.signInActivity.LastSignInDateTime
+            LastInteractiveSignInDateTime                          = $mgUser.signInActivity.lastSignInDateTime
             # The date and time of the user's most recent successful interactive or non-interactive sign-in
-            LastSuccessfulSignInDateTime                           = $mgUser.signInActivity.LastSuccessfulSignInDateTime
-            ForceChangePasswordNextSignIn                          = if ($mgUser.PasswordProfile) { $mgUser.PasswordProfile.ForceChangePasswordNextSignIn } else { $null }
-            ForceChangePasswordNextSignInWithMfa                   = if ($mgUser.PasswordProfile) { $mgUser.PasswordProfile.ForceChangePasswordNextSignInWithMfa } else { $null }
-            OnPremisesSyncEnabled                                  = if($null -eq $mgUser.OnPremisesSyncEnabled) { $false } else { $mgUser.OnPremisesSyncEnabled }
-            OnPremisesLastSyncDateTimeUTC                          = if ($mgUser.OnPremisesLastSyncDateTime -and $mgUser.OnPremisesLastSyncDateTime -ne [datetime]::new(1601, 1, 1, 0, 0, 0, [DateTimeKind]::Utc)) { $mgUser.OnPremisesLastSyncDateTime } else { $null }
-            OnPremisesDistinguishedName                            = if ($mgUser.OnPremisesDistinguishedName) { $mgUser.OnPremisesDistinguishedName } else { $null }        
+            LastSuccessfulSignInDateTime                           = $mgUser.signInActivity.lastSuccessfulSignInDateTime
+            ForceChangePasswordNextSignIn                          = if ($mgUser.passwordProfile) { $mgUser.passwordProfile.forceChangePasswordNextSignIn } else { $null }
+            ForceChangePasswordNextSignInWithMfa                   = if ($mgUser.passwordProfile) { $mgUser.passwordProfile.forceChangePasswordNextSignInWithMfa } else { $null }
+            OnPremisesSyncEnabled                                  = if($null -eq $mgUser.onPremisesSyncEnabled) { $false } else { $mgUser.onPremisesSyncEnabled }
+            OnPremisesLastSyncDateTimeUTC                          = if ($mgUser.onPremisesLastSyncDateTime -and $mgUser.onPremisesLastSyncDateTime -ne [datetime]::new(1601, 1, 1, 0, 0, 0, [DateTimeKind]::Utc)) { $mgUser.onPremisesLastSyncDateTime } else { $null }
+            OnPremisesDistinguishedName                            = if ($mgUser.onPremisesDistinguishedName) { $mgUser.onPremisesDistinguishedName } else { $null }        
             Domain                                                 = $userDomain
             DomainAuthenticationType                               = $userDomainPolicy.AuthenticationType
             PasswordValidityInheritedFrom                          = $userDomainPolicy.PasswordValidityInheritedFrom
             PasswordNotificationWindowInDays                       = $userDomainPolicy.PasswordNotificationWindowInDays
             TenantEnforceCloudPasswordPolicyForPasswordSyncedUsers = $tenantEnforceCloudPasswordPolicyForPasswordSyncedUsers
-            CreatedDateTime                                        = $mgUser.CreatedDateTime
+            CreatedDateTime                                        = $mgUser.createdDateTime
         }
 
         # Add simulation columns only when parameter is provided, positioned after PasswordExpired

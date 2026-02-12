@@ -208,10 +208,10 @@ function Get-BitlockerKeyInfo {
             $Devices = @()
             if ($PSBoundParameters['IncludeDeviceOwner']) {
                 Write-Verbose 'Including device owner information...'
-                $Devices = Get-MgDevice -All -ExpandProperty registeredOwners -ErrorAction Stop
+                $Devices = Invoke-PS365GraphRequest -Uri '/v1.0/devices' -All -Expand 'registeredOwners' -ErrorAction Stop
             }
             else {
-                $Devices = Get-MgDevice -All -ErrorAction Stop
+                $Devices = Invoke-PS365GraphRequest -Uri '/v1.0/devices' -All -ErrorAction Stop
             }
             
             # Filter out invalid/dummy devices
@@ -240,7 +240,7 @@ function Get-BitlockerKeyInfo {
             $Devices | Add-Member -MemberType NoteProperty -Name 'BitLockerDriveType' -Value $null
             $Devices | Add-Member -MemberType NoteProperty -Name 'BitLockerBackedUp' -Value $null
         }
-        $Devices | ForEach-Object { Add-Member -InputObject $_ -MemberType NoteProperty -Name 'DeviceOwner' -Value (& { if ($_.registeredOwners) { $_.registeredOwners[0].AdditionalProperties.userPrincipalName } else { 'N/A' } }) }    
+        $Devices | ForEach-Object { Add-Member -InputObject $_ -MemberType NoteProperty -Name 'DeviceOwner' -Value (& { if ($_.registeredOwners) { $_.registeredOwners[0].userPrincipalName } else { 'N/A' } }) }    
     }
 
     #Get the list of application objects within the tenant.
@@ -248,7 +248,7 @@ function Get-BitlockerKeyInfo {
 
     #Get the list of BitLocker keys
     Write-Verbose 'Retrieving BitLocker keys...'
-    $Keys = Get-MgInformationProtectionBitlockerRecoveryKey -All -ErrorAction Stop -Verbose:$false
+    $Keys = Invoke-PS365GraphRequest -Uri '/v1.0/informationProtection/bitlocker/recoveryKeys' -All -ErrorAction Stop
     Write-Verbose "Found $($Keys.Count) BitLocker keys to process"
 
     #Cycle through the keys and retrieve the key
@@ -268,7 +268,7 @@ function Get-BitlockerKeyInfo {
         # Get the BitLocker key details (plain text required for Key Vault backup or if explicitly requested)
         if ($PSBoundParameters['RevealKeys'] -or $PSBoundParameters['BackupToKeyVault']) {
             Write-Verbose "[$KeyCounter/$TotalKeys] Retrieving plain text BitLocker key for device $($Key.DeviceId)..."
-            $RecoveryKey = Get-MgInformationProtectionBitlockerRecoveryKey -BitlockerRecoveryKeyId $Key.Id -Property key -ErrorAction Stop -Verbose:$false
+            $RecoveryKey = Invoke-PS365GraphRequest -Uri "/v1.0/informationProtection/bitlocker/recoveryKeys/$($Key.Id)" -Select 'key' -ErrorAction Stop
             $ActualKeyValue = if ($RecoveryKey.Key) { $RecoveryKey.Key } else { 'N/A' }
             
             # For display purposes, hide the key unless explicitly requested
@@ -290,7 +290,7 @@ function Get-BitlockerKeyInfo {
                 Write-Verbose "[$KeyCounter/$TotalKeys] Backing up BitLocker key to Key Vault..."
                 
                 # Get device information for Key Vault secret name
-                $deviceInfo = Get-MgDevice -Filter "DeviceId eq '$($Key.DeviceId)'" -ErrorAction SilentlyContinue
+                $deviceInfo = (Invoke-PS365GraphRequest -Uri '/v1.0/devices' -Filter "deviceId eq '$($Key.DeviceId)'" -ErrorAction SilentlyContinue).value
                 $deviceName = if ($deviceInfo -and $deviceInfo.DisplayName) { $deviceInfo.DisplayName } else { "UnknownDevice-$($Key.DeviceId)" }
                 
                 # Create Key Vault secret name: DeviceName-BitLockerKeyID-KeyId
@@ -340,14 +340,14 @@ function Get-BitlockerKeyInfo {
             $Key | Add-Member -MemberType NoteProperty -Name 'DeviceGUID' -Value $Device.Id #key actually used by the stupid module...
             $Key | Add-Member -MemberType NoteProperty -Name 'DeviceOS' -Value $Device.OperatingSystem
             $Key | Add-Member -MemberType NoteProperty -Name 'DeviceTrustType' -Value $Device.TrustType
-            $Key | Add-Member -MemberType NoteProperty -Name 'DeviceMDM' -Value $Device.AdditionalProperties.managementType #can be null! ALWAYS null when using a filter...
+            $Key | Add-Member -MemberType NoteProperty -Name 'DeviceMDM' -Value $Device.managementType #can be null! ALWAYS null when using a filter...
             $Key | Add-Member -MemberType NoteProperty -Name 'DeviceCompliant' -Value $Device.isCompliant #can be null!
             $Key | Add-Member -MemberType NoteProperty -Name 'DeviceRegistered' -Value (& { if ($Device.registrationDateTime) { Get-Date($Device.registrationDateTime) -Format g } else { 'N/A' } })
             $Key | Add-Member -MemberType NoteProperty -Name 'DeviceLastActivity' -Value (& { if ($Device.approximateLastSignInDateTime) { Get-Date($Device.approximateLastSignInDateTime) -Format g } else { 'N/A' } })
 
             #If requested, include the device owner
             if ($PSBoundParameters['IncludeDeviceOwner']) {
-                $Key | Add-Member -MemberType NoteProperty -Name 'DeviceOwner' -Value (& { if ($Device.registeredOwners) { $Device.registeredOwners[0].AdditionalProperties.userPrincipalName } else { 'N/A' } })
+                $Key | Add-Member -MemberType NoteProperty -Name 'DeviceOwner' -Value (& { if ($Device.registeredOwners) { $Device.registeredOwners[0].userPrincipalName } else { 'N/A' } })
             }
         }
     }

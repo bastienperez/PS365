@@ -81,7 +81,7 @@ function Get-MgApplicationSAML {
     }
     
     [System.Collections.Generic.List[PSCustomObject]]$samlApplicationsArray = @()
-    $samlApplications = Get-MgBetaServicePrincipal -Filter "PreferredSingleSignOnMode eq 'saml'"
+    $samlApplications = Invoke-PS365GraphRequest -Uri '/beta/servicePrincipals' -All -Filter "PreferredSingleSignOnMode eq 'saml'"
 
     foreach ($samlApp in $samlApplications) {
         $object = [PSCustomObject][ordered]@{

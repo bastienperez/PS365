@@ -4,7 +4,7 @@
 
     .DESCRIPTION
     This function takes an Application ID or DisplayName as input and enables or disables the service principal (enterprise app) 
-    by using Invoke-MgGraphRequest to set AccountEnabled to true or false.
+    by using Invoke-PS365GraphRequest to set AccountEnabled to true or false.
 
     .PARAMETER ApplicationID
     The App ID of the service principal to modify.
@@ -62,7 +62,7 @@ function Set-MgEnterpriseAppStatus {
 
     # Get service principal
     try {
-        $result = Invoke-MgGraphRequest -Uri $uri -Method GET -ErrorAction Stop
+        $result = Invoke-PS365GraphRequest -Uri $uri -Method GET -ErrorAction Stop
     }
     catch {
         Write-Error "Failed to retrieve service principal with $identifier $_"
@@ -109,14 +109,14 @@ function Set-MgEnterpriseAppStatus {
     if ($GenerateCmdlets) {
         $commands = @()
         $bodyJson = ConvertTo-Json -InputObject $body -Compress
-        $command = "Invoke-MgGraphRequest -Uri `"$statusUri`" -Method PATCH -Body '$bodyJson'"
+        $command = "Invoke-PS365GraphRequest -Uri `"$statusUri`" -Method PATCH -Body '$bodyJson'"
         $commands += $command
 
         return $commands
     }
 
     try {
-        Invoke-MgGraphRequest -Uri $statusUri -Method PATCH -Body $body -ErrorAction Stop
+        Invoke-PS365GraphRequest -Uri $statusUri -Method PATCH -Body $body -ErrorAction Stop
         Write-Host "Enterprise application '$($servicePrincipal.displayName)' has been $targetStatusText." -ForegroundColor Green
     }
     catch {

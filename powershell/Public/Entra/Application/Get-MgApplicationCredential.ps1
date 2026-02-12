@@ -76,10 +76,10 @@ function Get-MgApplicationCredential {
 
     [System.Collections.Generic.List[PSCustomObject]]$credentialsArray = @()
 
-    $mgApps = Get-MgApplication -All
+    $mgApps = Invoke-PS365GraphRequest -Uri '/v1.0/applications' -All
 
     foreach ($mgApp in $mgApps) {
-        $owner = Get-MgApplicationOwner -ApplicationId $mgApp.Id
+        $owner = (Invoke-PS365GraphRequest -Uri "/v1.0/applications/$($mgApp.id)/owners").value
 
         # if severral owners, join them with '|'
 
@@ -96,7 +96,7 @@ function Get-MgApplicationCredential {
                 CredentialExpiresInDays = if ($keyCredential.EndDateTime) { [int](New-TimeSpan -Start (Get-Date) -End $keyCredential.EndDateTime).TotalDays } else { $null }
                 Type                    = $keyCredential.Type
                 Usage                   = $keyCredential.Usage
-                Owners                  = $owner.AdditionalProperties.userPrincipalName -join '|'
+                Owners                  = $owner.userPrincipalName -join '|'
             }
 
             $credentialsArray.Add($object)
@@ -115,7 +115,7 @@ function Get-MgApplicationCredential {
                 CredentialExpiresInDays = if ($passwordCredential.EndDateTime) { [int](New-TimeSpan -Start (Get-Date) -End $passwordCredential.EndDateTime).TotalDays } else { $null }
                 Type                    = 'NA'
                 Usage                   = 'NA'
-                Owners                  = $owner.AdditionalProperties.userPrincipalName -join '|'
+                Owners                  = $owner.userPrincipalName -join '|'
             }
 
             $credentialsArray.Add($object)

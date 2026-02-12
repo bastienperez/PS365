@@ -89,18 +89,18 @@ function Compare-UserAttribute {
         'EntraID' {
             Write-Verbose "Using Microsoft Graph to compare attributes '$Attribute1' and '$Attribute2' in Entra ID."
             if ($ByDomain) {
-                $users = Get-MgUser -All | Where-Object { $_.mail -like "*$ByDomain" }
+                $users = (Invoke-PS365GraphRequest -Uri '/v1.0/users' -All) | Where-Object { $_.mail -like "*$ByDomain" }
             }
             elseif ($User) {
                 [System.Collections.Generic.List[PSCustomObject]]$users = @()
                 
                 foreach ($u in $User) {
-                    $mgUser = Get-MgUser -UserId $u -Property $Attribute1, $Attribute2
+                    $mgUser = Invoke-PS365GraphRequest -Uri "/v1.0/users/$u" -Select (@($Attribute1, $Attribute2) -join ',')
                     $users.Add($mgUser)
                 }
             }
             else {
-                $users = Get-MgUser -Filter 'mail ne null' -Property $Attribute1, $Attribute2
+                $users = Invoke-PS365GraphRequest -Uri '/v1.0/users' -All -Filter 'mail ne null' -ConsistencyLevel 'eventual' -Select (@($Attribute1, $Attribute2) -join ',')
             }
 
             break

@@ -36,12 +36,12 @@ function Get-MgRegisteredApp {
     if ($ApplicationID) {
         # Get specific application
         $uri = "/beta/applications/$($ApplicationID)"
-        $apps = @(Invoke-MgGraphRequest -Uri $uri -Method GET)
+        $apps = @(Invoke-PS365GraphRequest -Uri $uri -Method GET)
     }
     else {
         # Get all applications with selected properties
         $uri = "/beta/applications?`$select=uniqueName,id,createdByAppId,displayName,signInAudience,disabledByMicrosoftStatus,isDisabled,appId"
-        $apps = Invoke-MgGraphRequest -Uri $uri | Select-Object -ExpandProperty Value
+        $apps = Invoke-PS365GraphRequest -Uri $uri | Select-Object -ExpandProperty Value
     }
 
     foreach ($app in $apps) {

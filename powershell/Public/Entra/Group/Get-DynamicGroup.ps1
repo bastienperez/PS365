@@ -254,7 +254,7 @@ function Get-DynamicGroup {
         Write-Verbose 'Retrieving Entra ID Dynamic Groups...'
         if ([string]::IsNullOrWhitespace($GroupId) -eq $false) {
             try {
-                $entraGroups = @(Get-MgGroup -GroupId $GroupId -ErrorAction Stop)
+                $entraGroups = @(Invoke-PS365GraphRequest -Uri "/v1.0/groups/$GroupId" -ErrorAction Stop)
                 if ($entraGroups.groupTypes -notcontains 'DynamicMembership') {
                     Write-Error "The specified GroupId $GroupId is not a dynamic group."
                     return
@@ -267,7 +267,7 @@ function Get-DynamicGroup {
         }
         else {
             try {
-                $entraGroups = Get-MgGroup -All -Filter "groupTypes/any(c:c eq 'DynamicMembership')" -ErrorAction Stop
+                $entraGroups = Invoke-PS365GraphRequest -Uri '/v1.0/groups' -All -Filter "groupTypes/any(c:c eq 'DynamicMembership')" -ErrorAction Stop
                 Write-Verbose "Found $($entraGroups.Count) Entra ID Dynamic Groups"
             }
             catch {
@@ -306,10 +306,10 @@ function Get-DynamicGroup {
         foreach ($group in $entraGroups) {
             Write-Verbose "Processing Entra ID group: $($group.DisplayName)"
             try { 
-                $memberOf = Get-MgGroupMemberOf -GroupId $group.Id -ErrorAction SilentlyContinue
+                $memberOf = (Invoke-PS365GraphRequest -Uri "/v1.0/groups/$($group.Id)/memberOf" -ErrorAction SilentlyContinue).value
 
-                $memberOf = ($memberOf | Where-Object { $_.AdditionalProperties.'@odata.type' -eq '#microsoft.graph.group' } | 
-                    ForEach-Object { $_.AdditionalProperties.displayName }) -join '|'
+                $memberOf = ($memberOf | Where-Object { $_.'@odata.type' -eq '#microsoft.graph.group' } |
+                    ForEach-Object { $_.displayName }) -join '|'
             }
             catch { 
                 $memberOf = $null 
@@ -339,7 +339,7 @@ function Get-DynamicGroup {
                     ForEach-Object { $_.Replace('device.', '') } | 
                     Sort-Object -Unique) -join '| '
                 MemberOf                      = $memberOf -join '|'
-                Members                       = (Get-MgGroupMember -GroupId $group.Id -All).Count
+                Members                       = (Invoke-PS365GraphRequest -Uri "/v1.0/groups/$($group.Id)/members" -All).Count
                 DisplayName                   = $group.DisplayName
                 Description                   = $group.Description
                 Mail                          = $group.Mail
