@@ -1,0 +1,86 @@
+---
+Module Name: PS365
+---
+
+## SYNOPSIS
+
+Find email addresses across various services.
+
+## SYNTAX
+
+```powershell
+Find-M365Email [[-SearchEmail] <String[]>] [[-ByDomain] <String>] [-ProgressAction <ActionPreference>]
+ [<CommonParameters>]
+```
+
+## DESCRIPTION
+
+This function searches for email addresses across Exchange Online recipients,
+Microsoft 365 users, and deleted users.
+It can filter results by specific email
+addresses or by domain.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Find-M365Email -SearchEmail "user@example.com"
+```
+
+Searches for the specified email address and displays its details if found.
+
+### EXAMPLE 2
+
+```powershell
+Find-M365Email -ByDomain "example.com"
+```
+
+Searches for all email addresses within the specified domain and displays their details.
+
+## PARAMETERS
+
+### -SearchEmail
+
+An array of email addresses to search for.
+
+```yaml
+Type: String[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ByDomain
+
+An array of domains to search for.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 2
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+## NOTES
+
+## RELATED LINKS
+
+[https://ps365.clidsys.com/docs/commands/Find-M365Email](https://ps365.clidsys.com/docs/commands/Find-M365Email)

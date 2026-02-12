@@ -1,0 +1,96 @@
+---
+Module Name: PS365
+---
+
+## SYNOPSIS
+
+Retrieves all Entra ID applications configured for SAML SSO.
+
+## SYNTAX
+
+```powershell
+Get-MgApplicationSAML [-ForceNewToken] [-ExportToExcel] [-ProgressAction <ActionPreference>]
+ [<CommonParameters>]
+```
+
+## DESCRIPTION
+
+This function returns a list of all Entra ID applications configured for SAML Single Sign-On
+along with their SAML-related properties, including the PreferredTokenSigningKeyEndDateTime
+and its validity status.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Get-MgApplicationSAML
+```
+
+Retrieves all Entra ID applications configured for SAML SSO.
+
+### EXAMPLE 2
+
+```powershell
+Get-MgApplicationSAML -ForceNewToken
+```
+
+Forces the function to disconnect and reconnect to Microsoft Graph to obtain a new access token.
+
+### EXAMPLE 3
+
+```powershell
+Get-MgApplicationSAML -ExportToExcel
+```
+
+Gets all SAML applications and exports them to an Excel file.
+
+## PARAMETERS
+
+### -ForceNewToken
+
+\{\{ Fill ForceNewToken Description \}\}
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ExportToExcel
+
+\{\{ Fill ExportToExcel Description \}\}
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+## NOTES
+
+Limitations:
+The information about the SAML applications clams is not available in the Microsoft Graph API v1 but in https://main.iam.ad.ext.azure.com/api/ApplicationSso/&lt;service-principal-id&gt;/FederatedSsoV2 so we don't get them
+
+## RELATED LINKS
+
+[https://ps365.clidsys.com/docs/commands/Get-MgApplicationSAML](https://ps365.clidsys.com/docs/commands/Get-MgApplicationSAML)

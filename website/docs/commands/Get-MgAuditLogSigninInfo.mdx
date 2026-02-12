@@ -1,0 +1,445 @@
+---
+Module Name: PS365
+---
+
+## SYNOPSIS
+
+Get Microsoft Entra ID Audit Log Sign-In Details
+
+## SYNTAX
+
+```powershell
+Get-MgAuditLogSigninInfo [[-StartDate] <Object>] [[-EndDate] <Object>] [[-Users] <String[]>]
+ [[-LastXSignIns] <Int32>] [[-IPAddresses] <Int32>] [-BasicAuthenticationOnly] [-SuccessOnly] [-FailureOnly]
+ [-BadCredentialsOnly] [-LastLogonOnly] [-NonMFASignInsOnly] [-MFASignInsOnly] [-NonInteractiveSignIns]
+ [-ServicePrincipalSignIns] [-ManagedIdentitySignIns] [[-ConditionalAccessPolicyName] <String>]
+ [-ConditionalAccessPolicyNotApplied] [-ConditionalAccessPolicySuccessOnly]
+ [-ConditionalAccessPolicyFailedOnly] [[-TimeRange] <String>] [-ForceNewToken] [-AnalyzeCAPInReportOnly]
+ [-ExportToExcel] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+```
+
+## DESCRIPTION
+
+Get Microsoft Entra ID Audit Log Sign-In Details with various filtering options.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Get-MgAuditLogSigninInfo -StartDate '2024-01-01' -EndDate '2024-01-31' -Users 'user1@contoso.com', 'user2@contoso.com'
+```
+
+Retrieves sign-in logs for specified users between January 1, 2024, and January 31, 2024.
+
+### EXAMPLE 2
+
+```powershell
+Get-MgAuditLogSigninInfo -LastXSignIns 100 -FailureOnly
+```
+
+Retrieves the last 100 failed sign-in attempts.
+
+### EXAMPLE 3
+
+```powershell
+Get-MgAuditLogSigninInfo -AnalyzeCAPInReportOnly
+```
+
+Retrieves sign-in logs with Conditional Access applied in ReportOnly mode.
+
+### EXAMPLE 4
+
+```powershell
+Get-MgAuditLogSigninInfo -StartDate (Get-Date).AddHours(-1) -NonMFASignInsOnly
+```
+
+Retrieves non-MFA sign-ins from the last hour.
+
+## PARAMETERS
+
+### -StartDate
+
+The start date for filtering sign-in logs.
+Accepts either a DateTime object or a string in yyyy-MM-dd format.
+
+```yaml
+Type: Object
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -EndDate
+
+The end date for filtering sign-in logs.
+Accepts either a DateTime object or a string in yyyy-MM-dd format.
+
+```yaml
+Type: Object
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 2
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Users
+
+An array of user principal names to filter the sign-in logs.
+
+```yaml
+Type: String[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 3
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -LastXSignIns
+
+The number of most recent sign-ins to retrieve.
+The other filters (StartDate, EndDate, Users, etc.) will still apply.
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 4
+Default value: 0
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -IPAddresses
+
+A comma-separated list of IP addresses to filter the sign-in logs.
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 5
+Default value: 0
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -BasicAuthenticationOnly
+
+Switch to filter sign-ins using legacy authentication protocols.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -SuccessOnly
+
+Switch to filter only successful sign-in attempts.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -FailureOnly
+
+Switch to filter only failed sign-in attempts.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -BadCredentialsOnly
+
+Switch to filter sign-ins with bad username or password (error code 50126).
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -LastLogonOnly
+
+Switch to get only the last logon details for each user.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -NonMFASignInsOnly
+
+Switch to filter non-MFA sign-ins only.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -MFASignInsOnly
+
+Switch to filter MFA sign-ins only.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -NonInteractiveSignIns
+
+Switch to filter non-interactive sign-ins only.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ServicePrincipalSignIns
+
+Switch to filter service principal sign-ins only.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ManagedIdentitySignIns
+
+Switch to filter managed identity sign-ins only.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ConditionalAccessPolicyName
+
+Filter sign-ins by a specific Conditional Access Policy Name.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 6
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ConditionalAccessPolicyNotApplied
+
+Switch to filter sign-ins where the Conditional Access Policy was not applied.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ConditionalAccessPolicySuccessOnly
+
+Switch to filter sign-ins where the Conditional Access Policy evaluation was successful.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ConditionalAccessPolicyFailedOnly
+
+Switch to filter sign-ins where the Conditional Access Policy evaluation failed.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -TimeRange
+
+Remplace plusieurs switches par un seul paramètre avec ValidateSet
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 7
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ForceNewToken
+
+Switch to force the acquisition of a new authentication token.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -AnalyzeCAPInReportOnly
+
+Switch to filter sign-ins with Conditional Access applied in ReportOnly mode.
+Only sign-ins where the policy was used (exclude 'NotApplied') are returned.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ExportToExcel
+
+Switch to export the sign-in details report to an Excel file.
+The file will be saved in the user's profile directory with a timestamped filename.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+## NOTES
+
+## RELATED LINKS
+
+[https://ps365.clidsys.com/docs/commands/Get-MgAuditLogSigninInfo](https://ps365.clidsys.com/docs/commands/Get-MgAuditLogSigninInfo)

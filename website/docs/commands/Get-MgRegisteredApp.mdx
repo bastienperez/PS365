@@ -1,0 +1,70 @@
+---
+Module Name: PS365
+---
+
+## SYNOPSIS
+
+Get registered application in Microsoft Graph
+
+## SYNTAX
+
+```powershell
+Get-MgRegisteredApp [[-ApplicationID] <String>] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+```
+
+## DESCRIPTION
+
+Retrieves registered applications from Microsoft Graph.
+If no ApplicationID is provided, returns all applications with selected properties.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Get-MgRegisteredApp -ApplicationID "your-application-id"
+```
+
+This command retrieves the registered application with the specified Application ID.
+
+### EXAMPLE 2
+
+```powershell
+Get-MgRegisteredApp
+```
+
+This command retrieves all registered applications.
+
+## PARAMETERS
+
+### -ApplicationID
+
+The unique identifier of the registered application to retrieve.
+If not provided, all applications are returned.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+## NOTES
+
+Same as the Microsoft Graph built-in function `Get-MgApplication` but with a simplified output.
+
+## RELATED LINKS
+
+[https://ps365.clidsys.com/docs/commands/Get-MgRegisteredApp](https://ps365.clidsys.com/docs/commands/Get-MgRegisteredApp)
