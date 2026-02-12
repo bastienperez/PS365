@@ -27,27 +27,47 @@
     Requires Azure PowerShell module and appropriate permissions to access Key Vault.
     Keys will be stored with device name and BitLocker key ID as the secret name.
     Example: -BackupToKeyVault "MyBitLockerVault"
+    
+    .PARAMETER DeviceName
+    Filter results to a specific device by its display name.
+    Cannot be used together with DeviceID parameter.
+    Example: -DeviceName "LAPTOP-ABC123"
+    
+    .PARAMETER DeviceID
+    Filter results to a specific device by its device ID (GUID).
+    Cannot be used together with DeviceName parameter.
+    Example: -DeviceID "12345678-1234-1234-1234-123456789abc"
 
     .EXAMPLE
-    Get-BitlockerKeyFromIntune -IncludeDeviceInfo -IncludeDeviceOwner
+    Get-BitlockerKeyInfo -IncludeDeviceInfo -IncludeDeviceOwner
 
     This command retrieves BitLocker recovery keys for all Intune managed devices with device and owner information.
 
     .EXAMPLE
-    Get-BitlockerKeyFromIntune -IncludeDeviceInfo -ExportToExcel
+    Get-BitlockerKeyInfo -IncludeDeviceInfo -ExportToExcel
 
     This command retrieves BitLocker keys with device information and exports to Excel.
     
     .EXAMPLE
-    Get-BitlockerKeyFromIntune -IncludeDeviceInfo -IncludeDeviceOwner -RevealKeys -ExportToExcel
+    Get-BitlockerKeyInfo -IncludeDeviceInfo -IncludeDeviceOwner -RevealKeys -ExportToExcel
 
     This command generates a comprehensive report with BitLocker keys visible in plain text and exports to Excel.
     WARNING: Use with extreme caution as this exposes sensitive recovery keys!
     
     .EXAMPLE
-    Get-BitlockerKeyFromIntune -IncludeDeviceInfo -BackupToKeyVault "MyBitLockerVault" -ExportToExcel
+    Get-BitlockerKeyInfo -IncludeDeviceInfo -BackupToKeyVault "MyBitLockerVault" -ExportToExcel
 
     This command retrieves BitLocker keys, backs them up to the specified Azure Key Vault, and exports to Excel.
+
+    .EXAMPLE
+    Get-BitlockerKeyInfo -DeviceName "LAPTOP-ABC123" -IncludeDeviceInfo -RevealKeys
+
+    This command retrieves BitLocker keys for a specific device by name, includes device information, and displays keys in plain text.
+
+    .EXAMPLE
+    Get-BitlockerKeyInfo -DeviceID "12345678-1234-1234-1234-123456789abc" -ExportToExcel
+
+    This command retrieves BitLocker keys for a specific device by ID and exports the results to Excel.
 
     .LINK
     https://ps365.clidsys.com/docs/commands/Get-BitlockerKeyInfo
@@ -88,8 +108,21 @@ function Get-BitlockerKeyInfo {
         
         [Parameter(HelpMessage = 'Specify Azure Key Vault name to backup BitLocker keys')]
         [ValidateNotNullOrEmpty()]
-        [string]$BackupToKeyVault
+        [string]$BackupToKeyVault,
+        
+        [Parameter(HelpMessage = 'Filter by device name (cannot be used with DeviceID)')]
+        [ValidateNotNullOrEmpty()]
+        [string]$DeviceName,
+        
+        [Parameter(HelpMessage = 'Filter by device ID (cannot be used with DeviceName)')]
+        [ValidateNotNullOrEmpty()]
+        [string]$DeviceID
     )
+
+    # Validate that only one device filter is specified
+    if ($PSBoundParameters.ContainsKey('DeviceName') -and $PSBoundParameters.ContainsKey('DeviceID')) {
+        Write-Error 'Cannot specify both DeviceName and DeviceID parameters. Please use only one.' -ErrorAction Stop
+    }
 
     function Get-DriveTypeName {
         [CmdletBinding()]
@@ -119,10 +152,10 @@ function Get-BitlockerKeyInfo {
         $PSBoundParameters['IncludeDeviceInfo'] = $true
     }
 
-    #Determine the required scopes, based on the parameters passed to the script
-    $RequiredScopes = switch ($PSBoundParameters.Keys) {
+    # Determine the required scopes, based on the parameters passed to the script
+    $requiredScopes = switch ($PSBoundParameters.Keys) {
         'IncludeDeviceInfo' { if ($PSBoundParameters['IncludeDeviceInfo']) { 'Device.Read.All' } }
-        'IncludeDeviceOwner' { if ($PSBoundParameters['IncludeDeviceOwner']) { 'User.ReadBasic.All' } } #Otherwise we only get the UserId
+        'IncludeDeviceOwner' { if ($PSBoundParameters['IncludeDeviceOwner']) { 'User.ReadBasic.All' } } # Otherwise we only get the UserId
         default { 'BitLockerKey.Read.All' }
     }
 
@@ -138,12 +171,12 @@ function Get-BitlockerKeyInfo {
     # Verify we have all required permissions
     Write-Verbose 'Verifying Microsoft Graph permissions...'
     try {
-        $CurrentScopes = (Get-MgContext).Scopes
-        $MissingScopes = $RequiredScopes | Where-Object { $_ -notin $CurrentScopes }
+        $currentScopes = (Get-MgContext).Scopes
+        $missingScopes = $requiredScopes | Where-Object { $_ -notin $currentScopes }
         
-        if ($MissingScopes) {
-            $MissingScopesString = $MissingScopes -join ', '
-            Write-Error "Missing required Microsoft Graph permissions: $MissingScopesString. Please rerun the script and consent to the missing scopes." -ErrorAction Stop
+        if ($missingScopes) {
+            $missingScopesString = $missingScopes -join ', '
+            Write-Error "Missing required Microsoft Graph permissions: $missingScopesString. Please rerun the script and consent to the missing scopes." -ErrorAction Stop
         }
         
         Write-Verbose 'All required permissions are available'
@@ -205,27 +238,60 @@ function Get-BitlockerKeyInfo {
         Write-Verbose 'Retrieving device details from Microsoft Graph...'
         
         try {
-            $Devices = @()
-            if ($PSBoundParameters['IncludeDeviceOwner']) {
-                Write-Verbose 'Including device owner information...'
-                $Devices = Get-MgDevice -All -ExpandProperty registeredOwners -ErrorAction Stop
+            [System.Collections.Generic.List[Object]]$devices = @()
+            
+            # Determine the appropriate filter based on provided parameters
+            if ($PSBoundParameters.ContainsKey('DeviceName')) {
+                Write-Verbose "Filtering devices by name: $DeviceName"
+                $filter = "displayName eq '$DeviceName'"
+            }
+            elseif ($PSBoundParameters.ContainsKey('DeviceID')) {
+                Write-Verbose "Filtering devices by ID: $DeviceID"
+                $filter = "deviceId eq '$DeviceID'"
             }
             else {
-                $Devices = Get-MgDevice -All -ErrorAction Stop
+                $filter = $null
             }
             
-            # Filter out invalid/dummy devices
-            $OriginalDeviceCount = $Devices.Count
-            $Devices = $Devices | Where-Object { 
-                $_.Id -ne '00000000-0000-0000-0000-000000000000' -and 
-                $_.DeviceId -ne '00000000-0000-0000-0000-000000000000' 
+            # Retrieve devices with or without filter
+            if ($PSBoundParameters['IncludeDeviceOwner']) {
+                Write-Verbose 'Including device owner information...'
+                if ($filter) {
+                    $deviceResults = Get-MgDevice -Filter $filter -ExpandProperty registeredOwners -ErrorAction Stop
+                }
+                else {
+                    $deviceResults = Get-MgDevice -All -ExpandProperty registeredOwners -ErrorAction Stop
+                }
+            }
+            else {
+                if ($filter) {
+                    $deviceResults = Get-MgDevice -Filter $filter -ErrorAction Stop
+                }
+                else {
+                    $deviceResults = Get-MgDevice -All -ErrorAction Stop
+                }
             }
             
-            if ($Devices) { 
-                Write-Verbose "Successfully retrieved $($Devices.Count) valid devices (filtered out $($OriginalDeviceCount - $Devices.Count) invalid devices)"
+            # Convert to list and add only valid results
+            foreach ($deviceResult in $deviceResults) {
+                # Only add valid devices (filter out invalid/dummy devices)
+                if ($deviceResult.Id -ne '00000000-0000-0000-0000-000000000000' -and 
+                    $deviceResult.DeviceId -ne '00000000-0000-0000-0000-000000000000') {
+                    $devices.Add($deviceResult)
+                }
+            }
+            
+            $originalDeviceCount = $deviceResults.Count
+            if ($devices.Count -gt 0) { 
+                Write-Verbose "Successfully retrieved $($devices.Count) valid devices (filtered out $($originalDeviceCount - $devices.Count) invalid devices)"
             }
             else { 
-                Write-Warning 'No valid devices found in Microsoft Graph'
+                if ($PSBoundParameters.ContainsKey('DeviceName') -or $PSBoundParameters.ContainsKey('DeviceID')) {
+                    Write-Warning 'No valid devices found matching the specified criteria'
+                }
+                else {
+                    Write-Warning 'No valid devices found in Microsoft Graph'
+                }
                 return
             }
         }
@@ -235,119 +301,221 @@ function Get-BitlockerKeyInfo {
 
         # Prepare the device object to be used later on
         if ($PSBoundParameters['ExportToExcel']) {
-            $Devices | Add-Member -MemberType NoteProperty -Name 'BitLockerKeyId' -Value $null
-            $Devices | Add-Member -MemberType NoteProperty -Name 'BitLockerRecoveryKey' -Value $null
-            $Devices | Add-Member -MemberType NoteProperty -Name 'BitLockerDriveType' -Value $null
-            $Devices | Add-Member -MemberType NoteProperty -Name 'BitLockerBackedUp' -Value $null
+            foreach ($device in $devices) {
+                $device | Add-Member -MemberType NoteProperty -Name 'BitLockerKeyId' -Value $null
+                $device | Add-Member -MemberType NoteProperty -Name 'BitLockerRecoveryKey' -Value $null
+                $device | Add-Member -MemberType NoteProperty -Name 'BitLockerDriveType' -Value $null
+                $device | Add-Member -MemberType NoteProperty -Name 'BitLockerBackedUp' -Value $null
+            }
         }
-        $Devices | ForEach-Object { Add-Member -InputObject $_ -MemberType NoteProperty -Name 'DeviceOwner' -Value (& { if ($_.registeredOwners) { $_.registeredOwners[0].AdditionalProperties.userPrincipalName } else { 'N/A' } }) }    
+        foreach ($device in $devices) {
+            $device | Add-Member -MemberType NoteProperty -Name 'DeviceOwner' -Value (& { if ($device.registeredOwners) { $device.registeredOwners[0].AdditionalProperties.userPrincipalName } else { '$null' } })
+        }    
     }
 
-    #Get the list of application objects within the tenant.
-    $Keys = @()
-
-    #Get the list of BitLocker keys
-    Write-Verbose 'Retrieving BitLocker keys...'
-    $Keys = Get-MgInformationProtectionBitlockerRecoveryKey -All -ErrorAction Stop -Verbose:$false
-    Write-Verbose "Found $($Keys.Count) BitLocker keys to process"
-
-    #Cycle through the keys and retrieve the key
-    Write-Verbose 'Processing BitLocker Recovery keys...'
-    $KeyCounter = 0
-    $TotalKeys = $Keys.Count
+    # Get the list of BitLocker keys
+    [System.Collections.Generic.List[Object]]$keys = @()
     
-    foreach ($Key in $Keys) {
-        $KeyCounter++
-        Write-Verbose "[$KeyCounter/$TotalKeys] Processing BitLocker key for device $($Key.DeviceId)..."
-        #Skip stale/dummy devices
-        if ($Key.DeviceId -eq '00000000-0000-0000-0000-000000000000') {
-            Write-Warning "[$KeyCounter/$TotalKeys] BitLocker key with ID $($Key.Id) has a device ID of 00000000-0000-0000-0000-000000000000, skipping..."
+    # If device filtering is specified, only get keys for those specific devices
+    if ($PSBoundParameters.ContainsKey('DeviceName') -or $PSBoundParameters.ContainsKey('DeviceID')) {
+        Write-Verbose 'Filtering BitLocker keys for specified devices only...'
+        
+        # If devices were not retrieved yet (because IncludeDeviceInfo was not specified), get them now for filtering
+        if (-not $PSBoundParameters['IncludeDeviceInfo']) {
+            try {
+                # Determine the appropriate filter based on provided parameters
+                if ($PSBoundParameters.ContainsKey('DeviceName')) {
+                    Write-Verbose "Retrieving device by name: $DeviceName"
+                    $filter = "displayName eq '$DeviceName'"
+                }
+                elseif ($PSBoundParameters.ContainsKey('DeviceID')) {
+                    Write-Verbose "Retrieving device by ID: $DeviceID"
+                    $filter = "deviceId eq '$DeviceID'"
+                }
+                
+                $deviceResults = Get-MgDevice -Filter $filter -ErrorAction Stop
+                [System.Collections.Generic.List[Object]]$devices = @()
+                
+                foreach ($deviceResult in $deviceResults) {
+                    # Only add valid devices (filter out invalid/dummy devices)
+                    if ($deviceResult.Id -ne '00000000-0000-0000-0000-000000000000' -and 
+                        $deviceResult.DeviceId -ne '00000000-0000-0000-0000-000000000000') {
+                        $devices.Add($deviceResult)
+                    }
+                }
+                
+                if ($devices.Count -eq 0) {
+                    Write-Warning 'No valid devices found matching the specified criteria'
+                    return
+                }
+            }
+            catch {
+                Write-Error "Failed to retrieve device for filtering: $($_.Exception.Message)" -ErrorAction Stop
+            }
+        }
+        
+        # Get BitLocker keys for the specific devices
+        foreach ($device in $devices) {
+            try {
+                Write-Verbose "Retrieving BitLocker keys for device: $($device.DisplayName) (ID: $($device.DeviceId))..."
+                
+                # Create base object for this device (no BitLocker key found by default)  
+                $deviceKeyInfo = [PSCustomObject]@{
+                    Id = $null
+                    DeviceId = $device.DeviceId
+                    VolumeType = $null
+                    Key = 'No BitLocker key found'
+                    CreatedDateTime = $null
+                    AdditionalProperties = @{}
+                }
+                
+                # Try to find BitLocker keys for this device
+                $deviceKeys = Get-MgInformationProtectionBitlockerRecoveryKey -Filter "deviceId eq '$($device.DeviceId)'" -ErrorAction Stop -Verbose:$false
+                
+                if ($deviceKeys -and $deviceKeys.Count -gt 0) {
+                    # Device has BitLocker keys - add each key as separate object
+                    foreach ($key in $deviceKeys) {
+                        $keys.Add($key)
+                    }
+                }
+                else {
+                    # No BitLocker keys found - add the base object
+                    Write-Verbose "No BitLocker keys found for device: $($device.DisplayName)"
+                    $keys.Add($deviceKeyInfo)
+                }
+            }
+            catch {
+                Write-Warning "Failed to retrieve BitLocker keys for device $($device.DisplayName): $($_.Exception.Message)"
+                # Create base object for device with retrieval error
+                $deviceKeyInfo = [PSCustomObject]@{
+                    Id = $null
+                    DeviceId = $device.DeviceId
+                    VolumeType = $null
+                    Key = 'Error retrieving BitLocker keys'
+                    CreatedDateTime = $null
+                    AdditionalProperties = @{}
+                }
+                $keys.Add($deviceKeyInfo)
+            }
+        }
+    }
+    else {
+        Write-Verbose 'Retrieving all BitLocker keys...'
+        # Get all BitLocker keys (original behavior)
+        $bitlockerKeys = Get-MgInformationProtectionBitlockerRecoveryKey -All -ErrorAction Stop -Verbose:$false
+        foreach ($key in $bitlockerKeys) {
+            $keys.Add($key)
+        }
+    }
+    
+    Write-Verbose "Found $($keys.Count) BitLocker keys to process"
+
+    # Cycle through the keys and retrieve the key
+    Write-Verbose 'Processing BitLocker Recovery keys...'
+    $keyCounter = 0
+    $totalKeys = $keys.Count
+    
+    foreach ($key in $keys) {
+        $keyCounter++
+        Write-Verbose "[$keyCounter/$totalKeys] Processing BitLocker key for device $($key.DeviceId)..."
+        
+        # Skip stale/dummy devices
+        if ($key.DeviceId -eq '00000000-0000-0000-0000-000000000000') {
+            Write-Warning "[$keyCounter/$totalKeys] BitLocker key with ID $($key.Id) has a device ID of 00000000-0000-0000-0000-000000000000, skipping..."
             continue
         }
 
-        # Get the BitLocker key details (plain text required for Key Vault backup or if explicitly requested)
-        if ($PSBoundParameters['RevealKeys'] -or $PSBoundParameters['BackupToKeyVault']) {
-            Write-Verbose "[$KeyCounter/$TotalKeys] Retrieving plain text BitLocker key for device $($Key.DeviceId)..."
-            $RecoveryKey = Get-MgInformationProtectionBitlockerRecoveryKey -BitlockerRecoveryKeyId $Key.Id -Property key -ErrorAction Stop -Verbose:$false
-            $ActualKeyValue = if ($RecoveryKey.Key) { $RecoveryKey.Key } else { 'N/A' }
-            
-            # For display purposes, hide the key unless explicitly requested
-            if ($PSBoundParameters['RevealKeys']) {
-                $KeyValue = $ActualKeyValue
-            }
-            else {
-                $KeyValue = '[HIDDEN - Backed up to Key Vault]'
-            }
+        # Handle devices without BitLocker keys (dummy objects)
+        if ($null -eq $key.Id) {
+            Write-Verbose "[$keyCounter/$totalKeys] Processing device without BitLocker key: $($key.DeviceId)"
+            $keyValue = 'No BitLocker key found'
+            $actualKeyValue = $null
         }
         else {
-            $KeyValue = '[HIDDEN - Use -RevealKeys to display]'
-            $ActualKeyValue = $null
+            # Get the BitLocker key details (plain text required for Key Vault backup or if explicitly requested)
+            if ($PSBoundParameters['RevealKeys'] -or $PSBoundParameters['BackupToKeyVault']) {
+                Write-Verbose "[$keyCounter/$totalKeys] Retrieving plain text BitLocker key for device $($key.DeviceId)..."
+                $recoveryKey = Get-MgInformationProtectionBitlockerRecoveryKey -BitlockerRecoveryKeyId $key.Id -Property key -ErrorAction Stop -Verbose:$false
+                $actualKeyValue = if ($recoveryKey.Key) { $recoveryKey.Key } else { '$null' }
+                
+                # For display purposes, hide the key unless explicitly requested
+                if ($PSBoundParameters['RevealKeys']) {
+                    $keyValue = $actualKeyValue
+                }
+                else {
+                    $keyValue = '[HIDDEN - Backed up to Key Vault]'
+                }
+            }
+            else {
+                $keyValue = '[HIDDEN - Use -RevealKeys to display]'
+                $actualKeyValue = $null
+            }
         }
         
         # Backup to Key Vault if requested
-        if ($PSBoundParameters['BackupToKeyVault'] -and $ActualKeyValue -and $ActualKeyValue -ne 'N/A') {
+        if ($PSBoundParameters['BackupToKeyVault'] -and $actualKeyValue -and $actualKeyValue -ne '$null') {
             try {
-                Write-Verbose "[$KeyCounter/$TotalKeys] Backing up BitLocker key to Key Vault..."
+                Write-Verbose "[$keyCounter/$totalKeys] Backing up BitLocker key to Key Vault..."
                 
                 # Get device information for Key Vault secret name
-                $deviceInfo = Get-MgDevice -Filter "DeviceId eq '$($Key.DeviceId)'" -ErrorAction SilentlyContinue
-                $deviceName = if ($deviceInfo -and $deviceInfo.DisplayName) { $deviceInfo.DisplayName } else { "UnknownDevice-$($Key.DeviceId)" }
+                $deviceInfo = Get-MgDevice -Filter "DeviceId eq '$($key.DeviceId)'" -ErrorAction SilentlyContinue
+                $deviceName = if ($deviceInfo -and $deviceInfo.DisplayName) { $deviceInfo.DisplayName } else { "UnknownDevice-$($key.DeviceId)" }
                 
                 # Create Key Vault secret name: DeviceName-BitLockerKeyID-KeyId
-                $secretName = "$deviceName-BitLockerKeyID-$($Key.Id)"
+                $secretName = "$deviceName-BitLockerKeyID-$($key.Id)"
                 
                 # Convert to secure string and save to Key Vault
-                $secretValue = ConvertTo-SecureString $ActualKeyValue -AsPlainText -Force
-                Set-AzKeyVaultSecret -VaultName $keyVaultName -Name $secretName -SecretValue $secretValue -ErrorAction Continue
+                $secretValue = ConvertTo-SecureString $actualKeyValue -AsPlainText -Force
+                $null = Set-AzKeyVaultSecret -VaultName $keyVaultName -Name $secretName -SecretValue $secretValue -ErrorAction Continue
                 
-                Write-Verbose "[$KeyCounter/$TotalKeys] Successfully backed up key for device $deviceName to Key Vault"
+                Write-Verbose "[$keyCounter/$totalKeys] Successfully backed up key for device $deviceName to Key Vault"
             }
             catch {
-                Write-Warning "[$KeyCounter/$TotalKeys] Failed to backup BitLocker key to Key Vault for device $($Key.DeviceId): $($_.Exception.Message)"
+                Write-Warning "[$keyCounter/$totalKeys] Failed to backup BitLocker key to Key Vault for device $($key.DeviceId): $($_.Exception.Message)"
             }
         }
         
-        $Key.Key = $KeyValue
-        $Key | Add-Member -MemberType NoteProperty -Name 'BitLockerKeyId' -Value $Key.Id
-        $Key | Add-Member -MemberType NoteProperty -Name 'BitLockerRecoveryKey' -Value $KeyValue
-        $Key | Add-Member -MemberType NoteProperty -Name 'BitLockerDriveType' -Value (Get-DriveTypeName -DriveType $Key.VolumeType)
-        $Key | Add-Member -MemberType NoteProperty -Name 'BitLockerBackedUp' -Value (& { if ($Key.CreatedDateTime) { Get-Date($Key.CreatedDateTime) -Format g } else { 'N/A' } })
+        $key.Key = $keyValue
+        $key | Add-Member -MemberType NoteProperty -Name 'BitLockerKeyId' -Value (& { if ($null -eq $key.Id) { '$null' } else { $key.Id } })
+        $key | Add-Member -MemberType NoteProperty -Name 'BitLockerRecoveryKey' -Value $keyValue
+        $key | Add-Member -MemberType NoteProperty -Name 'BitLockerDriveType' -Value (& { if ($null -eq $key.VolumeType) { '$null' } else { Get-DriveTypeName -DriveType $key.VolumeType } })
+        $key | Add-Member -MemberType NoteProperty -Name 'BitLockerBackedUp' -Value (& { if ($key.CreatedDateTime) { Get-Date($key.CreatedDateTime) -Format g } else { '$null' } })
 
-        #If requested, include the device details
+        # If requested, include the device details
         if ($PSBoundParameters['IncludeDeviceInfo']) {
-            Write-Verbose "[$KeyCounter/$TotalKeys] Looking up device information for $($Key.DeviceId)..."
-            $Device = $Devices | Where-Object { $Key.DeviceId -eq $_.DeviceId }
-            if (!$Device) {
-                Write-Warning "[$KeyCounter/$TotalKeys] Device with ID $($Key.DeviceId) not found!"
-                $Key | Add-Member -MemberType NoteProperty -Name 'DeviceName' -Value 'Device not found'
+            Write-Verbose "[$keyCounter/$totalKeys] Looking up device information for $($key.DeviceId)..."
+            $device = $devices | Where-Object { $key.DeviceId -eq $_.DeviceId }
+            if (-not $device) {
+                Write-Warning "[$keyCounter/$totalKeys] Device with ID $($key.DeviceId) not found!"
+                $key | Add-Member -MemberType NoteProperty -Name 'DeviceName' -Value 'Device not found'
                 continue
             }
-            if ($Device.Id -eq '00000000-0000-0000-0000-000000000000' -or $Device.DeviceId -eq '00000000-0000-0000-0000-000000000000') {
-                Write-Warning "[$KeyCounter/$TotalKeys] Stale/dummy device found for key $($Key.DeviceId), skipping..."
-                $Key | Add-Member -MemberType NoteProperty -Name 'DeviceName' -Value 'Stale/Dummy Device'
+            if ($device.Id -eq '00000000-0000-0000-0000-000000000000' -or $device.DeviceId -eq '00000000-0000-0000-0000-000000000000') {
+                Write-Warning "[$keyCounter/$totalKeys] Stale/dummy device found for key $($key.DeviceId), skipping..."
+                $key | Add-Member -MemberType NoteProperty -Name 'DeviceName' -Value 'Stale/Dummy Device'
                 continue
             }
 
             # If exporting to Excel, add the BitLocker key details to the device object for comprehensive reporting
             if ($PSBoundParameters['ExportToExcel']) {
-                $Device.BitLockerKeyId = $Key.Id
-                $Device.BitLockerRecoveryKey = $KeyValue
-                $Device.BitLockerDriveType = (Get-DriveTypeName -DriveType $Key.VolumeType)
-                $Device.BitLockerBackedUp = (& { if ($Key.CreatedDateTime) { Get-Date($Key.CreatedDateTime) -Format g } else { 'N/A' } })
+                $device.BitLockerKeyId = $key.Id
+                $device.BitLockerRecoveryKey = $keyValue
+                $device.BitLockerDriveType = (Get-DriveTypeName -DriveType $key.VolumeType)
+                $device.BitLockerBackedUp = (& { if ($key.CreatedDateTime) { Get-Date($key.CreatedDateTime) -Format g } else { '$null' } })
             }
 
-            $Key | Add-Member -MemberType NoteProperty -Name 'DeviceName' -Value $Device.DisplayName
-            $Key | Add-Member -MemberType NoteProperty -Name 'DeviceGUID' -Value $Device.Id #key actually used by the stupid module...
-            $Key | Add-Member -MemberType NoteProperty -Name 'DeviceOS' -Value $Device.OperatingSystem
-            $Key | Add-Member -MemberType NoteProperty -Name 'DeviceTrustType' -Value $Device.TrustType
-            $Key | Add-Member -MemberType NoteProperty -Name 'DeviceMDM' -Value $Device.AdditionalProperties.managementType #can be null! ALWAYS null when using a filter...
-            $Key | Add-Member -MemberType NoteProperty -Name 'DeviceCompliant' -Value $Device.isCompliant #can be null!
-            $Key | Add-Member -MemberType NoteProperty -Name 'DeviceRegistered' -Value (& { if ($Device.registrationDateTime) { Get-Date($Device.registrationDateTime) -Format g } else { 'N/A' } })
-            $Key | Add-Member -MemberType NoteProperty -Name 'DeviceLastActivity' -Value (& { if ($Device.approximateLastSignInDateTime) { Get-Date($Device.approximateLastSignInDateTime) -Format g } else { 'N/A' } })
+            $key | Add-Member -MemberType NoteProperty -Name 'DeviceName' -Value $device.DisplayName
+            $key | Add-Member -MemberType NoteProperty -Name 'DeviceGUID' -Value $device.Id # key actually used by the stupid module...
+            $key | Add-Member -MemberType NoteProperty -Name 'DeviceOS' -Value $device.OperatingSystem
+            $key | Add-Member -MemberType NoteProperty -Name 'DeviceTrustType' -Value $device.TrustType
+            $key | Add-Member -MemberType NoteProperty -Name 'DeviceMDM' -Value $device.AdditionalProperties.managementType # can be null! ALWAYS null when using a filter...
+            $key | Add-Member -MemberType NoteProperty -Name 'DeviceCompliant' -Value $device.isCompliant # can be null!
+            $key | Add-Member -MemberType NoteProperty -Name 'DeviceRegistered' -Value (& { if ($device.registrationDateTime) { Get-Date($device.registrationDateTime) -Format g } else { '$null' } })
+            $key | Add-Member -MemberType NoteProperty -Name 'DeviceLastActivity' -Value (& { if ($device.approximateLastSignInDateTime) { Get-Date($device.approximateLastSignInDateTime) -Format g } else { '$null' } })
 
-            #If requested, include the device owner
+            # If requested, include the device owner
             if ($PSBoundParameters['IncludeDeviceOwner']) {
-                $Key | Add-Member -MemberType NoteProperty -Name 'DeviceOwner' -Value (& { if ($Device.registeredOwners) { $Device.registeredOwners[0].AdditionalProperties.userPrincipalName } else { 'N/A' } })
+                $key | Add-Member -MemberType NoteProperty -Name 'DeviceOwner' -Value (& { if ($device.registeredOwners) { $device.registeredOwners[0].AdditionalProperties.userPrincipalName } else { '$null' } })
             }
         }
     }
@@ -356,27 +524,27 @@ function Get-BitlockerKeyInfo {
     if ($PSBoundParameters['ExportToExcel']) {
         try {
             $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
-            $ExcelFilePath = "$($env:userprofile)\${now}_BitLockerKeys_Report.xlsx"
-            Write-Host -ForegroundColor Cyan "Exporting BitLocker keys report to Excel file: $ExcelFilePath"
+            $excelFilePath = "$($env:userprofile)\${now}_BitLockerKeys_Report.xlsx"
+            Write-Host -ForegroundColor Cyan "Exporting BitLocker keys report to Excel file: $excelFilePath"
             
             if ($PSBoundParameters['IncludeDeviceInfo']) {
                 Write-Verbose 'Exporting comprehensive device report to Excel...'
                 # Exclude internal properties from the export
-                $ExcludeProps = @(
+                $excludeProps = @(
                     'AdditionalProperties', 'AlternativeSecurityIds', 'complianceExpirationDateTime',
                     'deviceMetadata', 'deviceVersion', 'memberOf', 'PhysicalIds', 'SystemLabels',
                     'transitiveMemberOf', 'RegisteredOwners', 'RegisteredUsers'
                 )
-                $Devices | Select-Object * -ExcludeProperty $ExcludeProps | 
-                Export-Excel -Path $ExcelFilePath -AutoSize -AutoFilter -WorksheetName 'BitLocker-DeviceReport'
+                $devices | Select-Object * -ExcludeProperty $excludeProps | 
+                Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'BitLocker-DeviceReport'
             }
             else {
                 Write-Verbose 'Exporting BitLocker keys report to Excel...'
-                $Keys | Select-Object * -ExcludeProperty Id, VolumeType, AdditionalProperties, CreatedDateTime, Key | 
-                Export-Excel -Path $ExcelFilePath -AutoSize -AutoFilter -WorksheetName 'BitLocker-Keys'
+                $keys | Select-Object * -ExcludeProperty Id, VolumeType, AdditionalProperties, CreatedDateTime, Key | 
+                Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'BitLocker-Keys'
             }
             
-            Write-Host "Report successfully exported to: $ExcelFilePath" -ForegroundColor Green
+            Write-Host "Report successfully exported to: $excelFilePath" -ForegroundColor Green
             
             if ($PSBoundParameters['RevealKeys']) {
                 Write-Warning 'SECURITY ALERT: The Excel file contains BitLocker recovery keys in PLAIN TEXT!'
@@ -394,11 +562,11 @@ function Get-BitlockerKeyInfo {
         # Return the data objects
         if ($PSBoundParameters['IncludeDeviceInfo']) {
             Write-Verbose 'Returning device objects with BitLocker key information'
-            return $Devices
+            return $devices
         }
         else {
             Write-Verbose 'Returning BitLocker key objects'
-            return $Keys
+            return $keys
         }
     }
 }
