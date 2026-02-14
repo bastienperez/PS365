@@ -44,6 +44,50 @@ POWERSHELL STYLE RULES
 - Follow best practices for PowerShell module development.
 - Comment functions with .SYNOPSIS, .DESCRIPTION, .PARAMETER, .EXAMPLE, and .NOTES.
 
+COMMENT-BASED HELP
+- Every exported function must include comment-based help with at minimum `.SYNOPSIS`, `.DESCRIPTION`, `.PARAMETER` entries for each parameter, one or more `.EXAMPLE` blocks, and `.NOTES`.
+- `.SYNOPSIS`: single short sentence (≤ 120 characters) summarizing the command's purpose.
+- `.DESCRIPTION`: longer explanation, side effects, and any important behavior differences (bulk vs single-item, destructive actions).
+- `.PARAMETER`: document each parameter, its accepted types, any validation constraints, default behavior, and required permissions or scopes when applicable.
+- `.EXAMPLE`: provide at least two examples - a simple default usage and a realistic scenario (e.g., filtering, exporting). Keep examples idempotent and safe to run when possible. Each example should include a description, which can be after a blank line for readability and documentation generation.
+- `.NOTES`: list required modules, minimum PowerShell version, required Graph/Exchange scopes, and any environmental preconditions.
+- `.LINK`: include a documentation link to the function page when available.
+- For functions that require external connections, include a connection example in `.EXAMPLE` or `.NOTES` showing the required `Connect-*` command and scopes, for example:
+  ```powershell
+  # Connect-MgGraph with minimal scopes required by the function
+  Connect-MgGraph -Scopes 'User.Read.All', 'Domain.Read.All' -NoWelcome
+  ```
+- Keep the help blocks concise and use consistent casing and wording across functions to make automated docs generation reliable.
+- Example template to follow:
+  ```powershell
+  <#
+      .SYNOPSIS
+      Short one-line description of the function.
+
+      .DESCRIPTION
+      Detailed description, side-effects, and important notes.
+
+      .PARAMETER UserPrincipalName
+      Description of the parameter, accepted types and examples.
+
+      .EXAMPLE
+      Get-MgUserPasswordInfo -UserPrincipalName 'alice@contoso.com' -IncludeExchangeDetails
+
+      Retrieves password information for the user 'alice@contoso.com', including Exchange mailbox details when available.
+
+      .EXAMPLE
+      Get-MgUserPasswordInfo -FilterByDomain 'contoso.com' -ExportToExcel
+
+      Retrieves password information for users in the 'contoso.com' domain and exports the results to an Excel report.
+
+      .NOTES
+      Requires Connect-MgGraph with scopes: 'User.Read.All', 'Domain.Read.All'.
+
+      .LINK
+      https://ps365.clidsys.com/docs/commands/Get-MgUserPasswordInfo
+  #>
+  ```
+
 OUTPUT OBJECT PATTERNS
 - Use ordered PSCustomObject with consistent property naming:
   ```powershell
@@ -124,3 +168,29 @@ CONDITIONAL LOGIC PATTERNS
 - Use consistent property checking: `if ($null -eq $property)`  
 - Handle optional features with feature flags (like IncludeExchangeDetails)
 - Support both single item and bulk operations in same function
+
+NOMENCLATURE BEST PRACTICES
+- **Function Names**: Use PowerShell approved verbs + service prefix + descriptive noun
+  - Pattern: `[Verb]-[ServicePrefix][NounDescription]`
+  - Examples: `Get-MgUserPasswordInfo`, `Set-ExMailboxMaxSize`, `Switch-AzureCliAuthMode`
+  - Service prefixes: Mg (Graph), Ex (Exchange), Az (Azure), Intune (Intune)
+- **Parameters**: Use PascalCase for all parameters
+  - Examples: `UserPrincipalName`, `FilterByDomain`, `ExportToExcel`, `IncludeExchangeDetails`
+  - Boolean parameters: Use [switch] type with descriptive names
+  - Array parameters: Use [string[]] with plural or descriptive names
+- **Variables**: Use camelCase for local variables
+  - Examples: `$mgUsersList`, `$passwordsInfoArray`, `$domainPasswordPolicies`
+  - Collections: Use descriptive suffixes like `List`, `Array`, `HashTable`
+- **Object Properties**: Use PascalCase for consistency with Microsoft APIs
+  - Examples: `UserPrincipalName`, `DisplayName`, `PasswordPolicies`, `AccountEnabled`
+  - Maintain consistency with Microsoft Graph property names when possible
+- **Excel File Names**: Use timestamp + function context + report suffix
+  - Pattern: `yyyy-MM-dd_HHmmss-[Context]_Report.xlsx`
+  - Examples: `2024-02-14_143022-MgUserPasswordInfo_Report.xlsx`
+- **Excel Worksheet Names**: Use service prefix + descriptive purpose
+  - Examples: `Entra-PasswordInfo`, `Exchange-MailboxPermissions`, `Intune-DeviceInfo`
+- **Module Names**: Use full Microsoft official module names
+  - Examples: `Microsoft.Graph.Users`, `Microsoft.Graph.Authentication`, `ExchangeOnlineManagement`
+- **File Organization**: Use hierarchical naming reflecting service structure
+  - Pattern: `/Public/[Service]/[Category]/[Verb]-[Function].ps1`
+  - Examples: `/Public/Entra/Password/Get-MgUserPasswordInfo.ps1`
