@@ -108,7 +108,9 @@
         "group": "Intune",
         "pages": [
           "docs/commands/Get-BitlockerKeyInfo",
-          "docs/commands/New-IntuneEnrollmentServicePrincipal"
+          "docs/commands/Get-IntuneAutoMDMEnrollmentPolicy",
+          "docs/commands/New-IntuneEnrollmentServicePrincipal",
+          "docs/commands/Set-IntuneAutoMDMEnrollmentPolicy"
         ]
       },
       {
