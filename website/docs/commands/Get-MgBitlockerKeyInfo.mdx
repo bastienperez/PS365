@@ -9,7 +9,7 @@ Invokes the backup of BitLocker recovery keys to Intune for all Intune managed d
 ## SYNTAX
 
 ```powershell
-Get-MgBitlockerKeyInfo [-IncludeDeviceInfo] [-IncludeDeviceOwner] [-ExportToExcel] [-RevealKeys]
+Get-MgBitlockerKeyInfo [-IncludeDeviceInfo] [-IncludeDeviceOwner] [-ExportToExcel] [-ShowKeyInPlainText]
  [[-BackupToKeyVault] <String>] [[-DeviceName] <String>] [[-DeviceID] <String>]
  [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
@@ -42,7 +42,7 @@ This command retrieves BitLocker keys with device information and exports to Exc
 ### EXAMPLE 3
 
 ```powershell
-Get-MgBitlockerKeyInfo -IncludeDeviceInfo -IncludeDeviceOwner -RevealKeys -ExportToExcel
+Get-MgBitlockerKeyInfo -IncludeDeviceInfo -IncludeDeviceOwner -ShowKeysInPlainText -ExportToExcel
 ```
 
 This command generates a comprehensive report with BitLocker keys visible in plain text and exports to Excel.
@@ -59,7 +59,7 @@ This command retrieves BitLocker keys, backs them up to the specified Azure Key 
 ### EXAMPLE 5
 
 ```powershell
-Get-MgBitlockerKeyInfo -DeviceName "LAPTOP-ABC123" -IncludeDeviceInfo -RevealKeys
+Get-MgBitlockerKeyInfo -DeviceName "LAPTOP-ABC123" -IncludeDeviceInfo -ShowKeysInPlainText
 ```
 
 This command retrieves BitLocker keys for a specific device by name, includes device information, and displays keys in plain text.
@@ -124,11 +124,12 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -RevealKeys
+### -ShowKeyInPlainText
 
-Switch to display BitLocker recovery keys in plain text format in the CSV export.
-WARNING: This will expose sensitive BitLocker recovery keys in the output file!
-Use only when necessary and ensure secure storage of the exported file.
+Switch to display BitLocker recovery keys in plain text format in the output.
+WARNING: This will expose sensitive BitLocker recovery keys!
+Only use when absolutely necessary and ensure secure handling of the output.
+Without this parameter, keys will be hidden for security (displayed as '[HIDDEN]').
 
 ```yaml
 Type: SwitchParameter
@@ -147,7 +148,6 @@ Accept wildcard characters: False
 Specify the name of Azure Key Vault to backup BitLocker recovery keys.
 Requires Azure PowerShell module and appropriate permissions to access Key Vault.
 Keys will be stored with device name and BitLocker key ID as the secret name.
-Example: -BackupToKeyVault "MyBitLockerVault"
 
 ```yaml
 Type: String
@@ -165,7 +165,6 @@ Accept wildcard characters: False
 
 Filter results to a specific device by its display name.
 Cannot be used together with DeviceID parameter.
-Example: -DeviceName "LAPTOP-ABC123"
 
 ```yaml
 Type: String
@@ -183,7 +182,6 @@ Accept wildcard characters: False
 
 Filter results to a specific device by its device ID (GUID).
 Cannot be used together with DeviceName parameter.
-Example: -DeviceID "12345678-1234-1234-1234-123456789abc"
 
 ```yaml
 Type: String
