@@ -39,38 +39,38 @@
     Example: -DeviceID "12345678-1234-1234-1234-123456789abc"
 
     .EXAMPLE
-    Get-BitlockerKeyInfo -IncludeDeviceInfo -IncludeDeviceOwner
+    Get-MgBitlockerKeyInfo -IncludeDeviceInfo -IncludeDeviceOwner
 
     This command retrieves BitLocker recovery keys for all Intune managed devices with device and owner information.
 
     .EXAMPLE
-    Get-BitlockerKeyInfo -IncludeDeviceInfo -ExportToExcel
+    Get-MgBitlockerKeyInfo -IncludeDeviceInfo -ExportToExcel
 
     This command retrieves BitLocker keys with device information and exports to Excel.
     
     .EXAMPLE
-    Get-BitlockerKeyInfo -IncludeDeviceInfo -IncludeDeviceOwner -RevealKeys -ExportToExcel
+    Get-MgBitlockerKeyInfo -IncludeDeviceInfo -IncludeDeviceOwner -RevealKeys -ExportToExcel
 
     This command generates a comprehensive report with BitLocker keys visible in plain text and exports to Excel.
     WARNING: Use with extreme caution as this exposes sensitive recovery keys!
     
     .EXAMPLE
-    Get-BitlockerKeyInfo -IncludeDeviceInfo -BackupToKeyVault "MyBitLockerVault" -ExportToExcel
+    Get-MgBitlockerKeyInfo -IncludeDeviceInfo -BackupToKeyVault "MyBitLockerVault" -ExportToExcel
 
     This command retrieves BitLocker keys, backs them up to the specified Azure Key Vault, and exports to Excel.
 
     .EXAMPLE
-    Get-BitlockerKeyInfo -DeviceName "LAPTOP-ABC123" -IncludeDeviceInfo -RevealKeys
+    Get-MgBitlockerKeyInfo -DeviceName "LAPTOP-ABC123" -IncludeDeviceInfo -RevealKeys
 
     This command retrieves BitLocker keys for a specific device by name, includes device information, and displays keys in plain text.
 
     .EXAMPLE
-    Get-BitlockerKeyInfo -DeviceID "12345678-1234-1234-1234-123456789abc" -ExportToExcel
+    Get-MgBitlockerKeyInfo -DeviceID "12345678-1234-1234-1234-123456789abc" -ExportToExcel
 
     This command retrieves BitLocker keys for a specific device by ID and exports the results to Excel.
 
     .LINK
-    https://ps365.clidsys.com/docs/commands/Get-BitlockerKeyInfo
+    https://ps365.clidsys.com/docs/commands/Get-MgBitlockerKeyInfo
     
     .NOTES
     Author: Bastien Perez (adapted from Vasil Michev)
@@ -91,7 +91,7 @@
     Store it in a secure location and limit access appropriately!
 #>
 
-function Get-BitlockerKeyInfo {
+function Get-MgBitlockerKeyInfo {
     [CmdletBinding()]
     param(
         [Parameter(HelpMessage = 'Include device information in the output')]
@@ -361,11 +361,11 @@ function Get-BitlockerKeyInfo {
                 
                 # Create base object for this device (no BitLocker key found by default)  
                 $deviceKeyInfo = [PSCustomObject]@{
-                    Id = $null
-                    DeviceId = $device.DeviceId
-                    VolumeType = $null
-                    Key = 'No BitLocker key found'
-                    CreatedDateTime = $null
+                    Id                   = $null
+                    DeviceId             = $device.DeviceId
+                    VolumeType           = $null
+                    Key                  = 'No BitLocker key found'
+                    CreatedDateTime      = $null
                     AdditionalProperties = @{}
                 }
                 
@@ -388,11 +388,11 @@ function Get-BitlockerKeyInfo {
                 Write-Warning "Failed to retrieve BitLocker keys for device $($device.DisplayName): $($_.Exception.Message)"
                 # Create base object for device with retrieval error
                 $deviceKeyInfo = [PSCustomObject]@{
-                    Id = $null
-                    DeviceId = $device.DeviceId
-                    VolumeType = $null
-                    Key = 'Error retrieving BitLocker keys'
-                    CreatedDateTime = $null
+                    Id                   = $null
+                    DeviceId             = $device.DeviceId
+                    VolumeType           = $null
+                    Key                  = 'Error retrieving BitLocker keys'
+                    CreatedDateTime      = $null
                     AdditionalProperties = @{}
                 }
                 $keys.Add($deviceKeyInfo)

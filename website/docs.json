@@ -47,9 +47,15 @@
             ]
           },
           {
+            "group": "Bitlocker",
+            "pages": [
+              "docs/commands/Get-MgBitlockerKeyInfo"
+            ]
+          },
+          {
             "group": "Group",
             "pages": [
-              "docs/commands/Get-DynamicGroup"
+              "docs/commands/Get-MgDynamicGroup"
             ]
           },
           {
@@ -107,7 +113,6 @@
       {
         "group": "Intune",
         "pages": [
-          "docs/commands/Get-BitlockerKeyInfo",
           "docs/commands/Get-IntuneAutoMDMEnrollmentPolicy",
           "docs/commands/New-IntuneEnrollmentServicePrincipal",
           "docs/commands/Set-IntuneAutoMDMEnrollmentPolicy"
