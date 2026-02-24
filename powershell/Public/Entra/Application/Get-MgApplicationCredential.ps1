@@ -186,6 +186,7 @@ function Get-MgApplicationCredential {
                 DisplayName             = $mgApp.DisplayName
                 CredentialType          = 'KeyCredentials'
                 AppId                   = $mgApp.AppId
+                EntraUrl                = "https://entra.microsoft.com/#view/Microsoft_AAD_RegisteredApps/ApplicationMenuBlade/~/Overview/appId/$($mgApp.AppId)"
                 CredentialDescription   = $keyCredential.DisplayName
                 CredentialStartDate     = $keyCredential.StartDateTime
                 CredentialExpiryDate    = $keyCredential.EndDateTime
@@ -205,6 +206,7 @@ function Get-MgApplicationCredential {
                 DisplayName             = $mgApp.DisplayName
                 CredentialType          = 'PasswordCredentials'
                 AppId                   = $mgApp.AppId
+                EntraUrl                = "https://entra.microsoft.com/#view/Microsoft_AAD_RegisteredApps/ApplicationMenuBlade/~/Overview/appId/$($mgApp.AppId)"
                 CredentialDescription   = $passwordCredential.DisplayName
                 CredentialStartDate     = $passwordCredential.StartDateTime
                 CredentialExpiryDate    = $passwordCredential.EndDateTime
@@ -394,11 +396,12 @@ function Get-MgApplicationCredential {
             <th>Owners</th>
         </tr>
 "@
-            
+
             foreach ($cred in $expiringCredentials) {
                 $rowClass = if ($cred.CredentialExpiresInDays -le 0) { 'critical' } elseif ($cred.CredentialExpiresInDays -le 14) { 'warning' } else { 'caution' }
                 $expiresInDaysDisplay = if ($cred.CredentialExpiresInDays -le 0) { "$($cred.CredentialExpiresInDays) (already expired)" } else { $cred.CredentialExpiresInDays }
-                $emailBody += "<tr class=`"$rowClass`"><td>$($cred.DisplayName)</td><td>$($cred.CredentialType)</td><td>$($cred.CredentialDescription)</td><td><strong>$expiresInDaysDisplay</strong></td><td>$($cred.CredentialExpiryDate)</td><td>$($cred.Owners)</td></tr>"
+                $appLink = "<a href=`"$($cred.EntraUrl)`" style=`"color:#0078d4;text-decoration:none;`">$($cred.DisplayName)</a>"
+                $emailBody += "<tr class=`"$rowClass`"><td>$appLink</td><td>$($cred.CredentialType)</td><td>$($cred.CredentialDescription)</td><td><strong>$expiresInDaysDisplay</strong></td><td>$($cred.CredentialExpiryDate)</td><td>$($cred.Owners)</td></tr>"
             }
             
             $emailBody += @"

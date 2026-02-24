@@ -6,6 +6,34 @@
     This function returns a list of all Entra ID applications with SCIM provisioning enabled,
     along with their synchronization job details and settings.
 
+    .PARAMETER ExportToExcel
+    (Optional) If specified, exports the results to an Excel file in the user's profile directory.
+
+    .PARAMETER ForceNewToken
+    (Optional) Forces the function to disconnect and reconnect to Microsoft Graph to obtain a new access token.
+
+    .PARAMETER ObjectID
+    (Optional) Retrieves the SCIM configuration for a specific application by its ObjectID.
+
+    .PARAMETER DisplayName
+    (Optional) Retrieves the SCIM configuration for a specific application by its DisplayName.
+
+    .PARAMETER RunFromAzureAutomation
+    (Optional) If specified, uses managed identity authentication instead of interactive authentication.
+    This is useful when running the script in Azure environments like Azure Functions, Logic Apps, or VMs with managed identity enabled.
+    When this parameter is used, NotificationRecipient and NotificationSender are required.
+
+    PowerShell modules used in Azure Automation must be a MAXIMUM of version 2.25.0 when using PowerShell < 7.4.0, because starting from version 2.26.0, PowerShell 7.4.0 is required, and Azure Automation does not support it yet as of February 2026. For PowerShell 7.4.0+, there are no version restrictions.
+    https://github.com/microsoftgraph/msgraph-sdk-powershell/issues/3147
+    https://github.com/microsoftgraph/msgraph-sdk-powershell/issues/3151
+    https://github.com/microsoftgraph/msgraph-sdk-powershell/issues/3166
+
+    .PARAMETER NotificationRecipient
+    (Required when RunFromAzureAutomation is enabled) Email address to receive synchronization health notifications.
+
+    .PARAMETER NotificationSender
+    (Required when RunFromAzureAutomation is enabled) Email address of the sender for synchronization health notifications.
+
     .EXAMPLE
     $scimApps = Get-MgApplicationSCIM
 
@@ -17,14 +45,19 @@
     Forces the function to disconnect and reconnect to Microsoft Graph to obtain a new access token.
 
     .EXAMPLE
-    Get-MgApplicationSCIM -Export
+    Get-MgApplicationSCIM -ExportToExcel
 
-    Exports the SCIM configuration details to a CSV file.
+    Exports the SCIM configuration details to an Excel file.
 
     .EXAMPLE
     Get-MgApplicationSCIM -ObjectID "xxx-xxx-xxx"
 
     Retrieves the SCIM configuration for a specific application by its ObjectID.
+
+    .EXAMPLE
+    Get-MgApplicationSCIM -RunFromAzureAutomation -NotificationRecipient 'admin@company.com' -NotificationSender 'automation@company.com'
+
+    Gets all SCIM provisioning jobs using managed identity and sends a health report for apps with synchronization issues.
 
     .LINK
     https://ps365.clidsys.com/docs/commands/Get-MgApplicationSCIM
@@ -46,8 +79,49 @@ function Get-MgApplicationSCIM {
         [Parameter(Mandatory = $false)]
         [switch]$ForceNewToken,
         [Parameter(Mandatory = $false)]
-        [switch]$ExportToExcel
+        [switch]$ExportToExcel,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$RunFromAzureAutomation,
+
+        [Parameter(Mandatory = $false)]
+        [string]$NotificationRecipient,
+
+        [Parameter(Mandatory = $false)]
+        [string]$NotificationSender
     )
+
+    # Validate notification parameters
+    if ($RunFromAzureAutomation.IsPresent) {
+        if ([string]::IsNullOrWhiteSpace($NotificationRecipient)) {
+            Write-Error 'NotificationRecipient parameter is required when RunFromAzureAutomation is enabled.'
+            return
+        }
+        if ([string]::IsNullOrWhiteSpace($NotificationSender)) {
+            Write-Error 'NotificationSender parameter is required when RunFromAzureAutomation is enabled.'
+            return
+        }
+
+        try {
+            Import-Module 'Microsoft.Graph.Users.Actions' -ErrorAction Stop -ErrorVariable mgGraphMailMissing
+        }
+        catch {
+            if ($mgGraphMailMissing) {
+                Write-Warning "Failed to import Microsoft.Graph.Users.Actions module: $($mgGraphMailMissing.Exception.Message)"
+            }
+
+            return
+        }
+
+        # Only check module version if PowerShell < 7.4 (Azure Automation limitation)
+        if ($PSVersionTable.PSVersion -lt [version]'7.4.0') {
+            $mgAuth = Get-Module 'Microsoft.Graph.Authentication' -ListAvailable | Sort-Object Version -Descending | Select-Object -First 1
+            if ($mgAuth -and [version]$mgAuth.Version -gt [version]'2.25.0') {
+                Write-Error "Microsoft.Graph.Authentication v$($mgAuth.Version) is not compatible with Azure Automation on PowerShell $($PSVersionTable.PSVersion). Maximum supported version is 2.25.0. Script execution stopped."
+                return
+            }
+        }
+    }
 
     [System.Collections.Generic.List[PSCustomObject]]$synchronizationJobsArray = @()
     [System.Collections.Generic.List[PSCustomObject]]$synchronizationJobsDetailsArray = @()
@@ -56,27 +130,31 @@ function Get-MgApplicationSCIM {
         if (Get-MgContext) {
             $null = Disconnect-MgGraph
         }
-
-        $scopes = @(
-            'Directory.Read.All'
-        )
-
-        Connect-MgGraph -Scopes $scopes -NoWelcome
     }
+
+    if (-not (Get-MgContext -ErrorAction SilentlyContinue)) {
+        if ($RunFromAzureAutomation.IsPresent) {
+            Write-Verbose 'Connecting to Microsoft Graph using Managed Identity'
+            Connect-MgGraph -Identity -NoWelcome
+        }
+        else {
+            $scopes = @('Directory.Read.All')
+            Write-Verbose "Connecting to Microsoft Graph. Scopes: $($scopes -join ',')"
+            Connect-MgGraph -Scopes $scopes -NoWelcome
+        }
+    }
+
     # Determine how to search for the Service Principal(s): by ObjectID (GUID), by DisplayName, or all
     if ($ObjectID) {
-        # If ObjectID looks like a GUID, use it directly
         $servicePrincipals = Get-MgServicePrincipal -ServicePrincipalId $ObjectID
     }
     elseif ($DisplayName) {
-        # Use OData filter to search by DisplayName. Escape single quotes by doubling them.
         $escaped = $DisplayName -replace "'", "''"
         $filter = "DisplayName eq '$escaped'"
         Write-Verbose "Filtering service principals with: $filter"
         $servicePrincipals = Get-MgServicePrincipal -Filter $filter -All -Property DisplayName, Id
     }
     else {
-        # Default: get all service principals (existing behavior)
         $servicePrincipals = Get-MgServicePrincipal -All -Property DisplayName, Id
     }
 
@@ -86,17 +164,15 @@ function Get-MgApplicationSCIM {
     foreach ($servicePrincipal in $servicePrincipals) {
         $i++
         Write-Host "($i/$($servicePrincipals.Count)) - $($servicePrincipal.DisplayName): check for synchronization jobs " -ForegroundColor Cyan -NoNewline
-        # Service principal is the ObjectID in Microsoft Entra ID
         $job = Get-MgServicePrincipalSynchronizationJob -ServicePrincipalId $servicePrincipal.Id -All
-        
+
         if ($job) {
             Write-Host "$($servicePrincipal.DisplayName) - Synchronization job found" -ForegroundColor Green
-            
-            # We need to keep $servicePrincipal.Id in a new property ServicePrincipalID
 
             $job | Add-Member -MemberType NoteProperty -Name ServicePrincipalId -Value $servicePrincipal.Id
             $job | Add-Member -MemberType NoteProperty -Name DisplayName -Value $servicePrincipal.DisplayName
-        
+            $job | Add-Member -MemberType NoteProperty -Name EntraUrl -Value "https://entra.microsoft.com/#view/Microsoft_AAD_IAM/ManagedAppMenuBlade/~/ProvisioningActivity/objectId/$($servicePrincipal.Id)"
+
             $provisioningSettings = Invoke-GraphRequest -Uri "https://graph.microsoft.com/v1.0/servicePrincipals/$($job.ServicePrincipalId)/synchronization/secrets" -Method Get -OutputType PSObject
 
             $job | Add-Member -MemberType NoteProperty -Name ProvisioningBaseAddress -Value $($provisioningSettings.Value | Where-Object { $_.key -eq 'BaseAddress' }).Value
@@ -106,7 +182,7 @@ function Get-MgApplicationSCIM {
             $job | Add-Member -MemberType NoteProperty -Name ProvisioningNotificationRecipientAddress -Value $SyncNotificationSettings.Recipients
             $job | Add-Member -MemberType NoteProperty -Name ProvisioningNotificationDeleteThresholdEnabled -Value $SyncNotificationSettings.DeleteThresholdEnabled
             $job | Add-Member -MemberType NoteProperty -Name ProvisioningNotificationDeleteThresholdValue -Value $SyncNotificationSettings.DeleteThresholdValue
-            $job | Add-Member -MemberType NoteProperty -Name ProvisioningNotificationHumanResourcesLookaheadQueryEnabled -Value $SyncNotificationSettings.HumanResourcesLookaheadQueryEnabled    
+            $job | Add-Member -MemberType NoteProperty -Name ProvisioningNotificationHumanResourcesLookaheadQueryEnabled -Value $SyncNotificationSettings.HumanResourcesLookaheadQueryEnabled
 
             # status Value
             $job | Add-Member -MemberType NoteProperty -Name StatusCode -Value $job.Status.Code
@@ -121,7 +197,6 @@ function Get-MgApplicationSCIM {
                 $job | Add-Member -MemberType NoteProperty -Name $property.Name -Value $property.Value
             }
 
-            # we exclude the Status and SynchronizationJobSettings properties because we already got its values
             $job = $job | Select-Object -ExcludeProperty Status, SynchronizationJobSettings
             $synchronizationJobsArray.Add($job)
         }
@@ -133,8 +208,6 @@ function Get-MgApplicationSCIM {
     $j = 0
     foreach ($job in $synchronizationJobsArray) {
         $j++
-
-        # Get information about
 
         Write-Host "Get synchronization settings $($job.DisplayName) ($j/$($synchronizationJobsArray.Count))"
 
@@ -155,7 +228,6 @@ function Get-MgApplicationSCIM {
         }
 
         foreach ($type in $job.Status.SynchronizedEntryCountByType) {
-            # it's not an hashtable but an array
             $key = $type.Key
             $count = $type.Value
 
@@ -163,7 +235,7 @@ function Get-MgApplicationSCIM {
         }
 
         [System.Collections.Generic.List[PSCustomObject]]$attributesArray = @()
-    
+
         foreach ($objectMapping in $jobSchema.SynchronizationRules.ObjectMappings) {
 
             foreach ($mapping in $objectMapping) {
@@ -172,7 +244,7 @@ function Get-MgApplicationSCIM {
                 $targetObjectType = $mapping.TargetObjectName
 
                 foreach ($attribute in $mapping.AttributeMappings) {
-                
+
                     $object = [PSCustomObject][ordered]@{
                         Type                    = $targetObjectType
                         DefaultValue            = $attribute.DefaultValue
@@ -187,7 +259,6 @@ function Get-MgApplicationSCIM {
 
                     $attributesArray.Add($object)
 
-                    # add delimiter if not the first attribute
                     if ($null -ne $res) {
                         $res = "$res # "
                     }
@@ -204,14 +275,251 @@ function Get-MgApplicationSCIM {
                 }
                 catch {
                     Write-Host "Error adding member to job: $($_.Exception.Message)" -ForegroundColor Red
-                }           
+                }
             }
         }
-    
-        # exclude properties because they are not needed
+
         $job = $job | Select-Object * -ExcludeProperty Schedule, Schema
 
         $synchronizationJobsDetailsArray.Add($job)
+    }
+
+    # Send health report if running from Azure Automation
+    if ($RunFromAzureAutomation.IsPresent) {
+        $unhealthyJobs = $synchronizationJobsDetailsArray | Where-Object {
+            $_.StatusCode -ne 'Steady' -or
+            $_.Quarantined -eq $true -or
+            $_.CountSuccessiveCompleteFailures -gt 0
+        }
+
+        $quarantinedJobs = $synchronizationJobsDetailsArray | Where-Object { $_.Quarantined -eq $true }
+        $failingJobs = $synchronizationJobsDetailsArray | Where-Object { $_.CountSuccessiveCompleteFailures -gt 0 }
+        $nonSteadyJobs = $synchronizationJobsDetailsArray | Where-Object { $_.StatusCode -ne 'Steady' -and $_.Quarantined -ne $true }
+
+        Write-Verbose "Sending SCIM health report email ($($unhealthyJobs.Count) issues found out of $($synchronizationJobsDetailsArray.Count) jobs)."
+
+        if ($true) {
+
+            $emailBody = @"
+<!DOCTYPE html>
+<html>
+<head>
+<title>Microsoft Entra ID SCIM Provisioning Health Report</title>
+<style>
+    body {
+        font-family: Segoe UI, SegoeUI, Roboto, "Helvetica Neue", Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        color: #11100f;
+        font-size: 14px;
+        line-height: 20px;
+        background-color: #ffffff;
+    }
+
+    .summary-container {
+        width: 100%;
+        margin-bottom: 30px;
+    }
+
+    .summary-table {
+        width: 80%;
+        border-collapse: separate;
+        border-spacing: 8px;
+        margin: 0 auto;
+    }
+
+    .summary-box {
+        background-color: #fff9f5;
+        border: 1px solid #8a6700;
+        padding: 10px;
+        border-radius: 6px;
+        text-align: center;
+        width: 25%;
+    }
+
+    .summary-box.expired {
+        background-color: #fde7e9;
+        border-color: #a4262c;
+    }
+
+    .summary-box.warning {
+        background-color: #fff4ce;
+        border-color: #8a6700;
+    }
+
+    .summary-box.ok {
+        background-color: #dff6dd;
+        border-color: #107c10;
+    }
+
+    .summary-count {
+        font-size: 20px;
+        font-weight: bold;
+        color: #d73502;
+        margin: 6px 0;
+    }
+
+    .summary-count.ok {
+        color: #107c10;
+    }
+
+    h2 {
+        padding-top: 0;
+        margin: 0 0 16px 0;
+        font-family: "Segoe UI Semibold", SegoeUISemibold, "Segoe UI", SegoeUI, Roboto, "Helvetica Neue", Arial, sans-serif;
+        font-weight: 600;
+        font-size: 20px;
+        line-height: 28px;
+        color: #323130;
+    }
+
+    table {
+        border-spacing: 0;
+        border-collapse: collapse;
+        width: 100%;
+        margin-bottom: 20px;
+        background-color: #ffffff;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    th {
+        vertical-align: bottom;
+        color: #ffffff;
+        background-color: #323130;
+        padding: 12px 8px;
+        text-align: left;
+        font-family: "Segoe UI Semibold", SegoeUISemibold, "Segoe UI", SegoeUI, Roboto, "Helvetica Neue", Arial, sans-serif;
+        font-weight: 600;
+        font-size: 13px;
+        word-wrap: break-word;
+    }
+
+    td {
+        vertical-align: top;
+        color: #11100f;
+        padding: 12px 8px;
+        border-bottom: solid 1px #edebe9;
+        word-wrap: break-word;
+        font-size: 13px;
+    }
+
+    .critical { background-color: #fde7e9; color: #a4262c; }
+    .warning { background-color: #fff4ce; color: #8a6700; }
+    .caution { background-color: #fff9f5; color: #8a6700; }
+
+    .footer {
+        margin-top: 30px;
+        padding: 20px;
+        background-color: #faf9f8;
+        border-radius: 8px;
+        border-top: 3px solid #0078d4;
+    }
+
+    .footer p {
+        margin: 8px 0;
+        font-size: 13px;
+        color: #605e5c;
+    }
+
+    .action-required {
+        font-weight: 600;
+        color: #d73502;
+    }
+</style>
+</head>
+<body>
+    <div class="summary-container">
+        <table class="summary-table">
+            <tr>
+                <td class="summary-box expired">
+                    <div class="summary-count">$($quarantinedJobs.Count)</div>
+                    <div>apps in quarantine</div>
+                </td>
+                <td class="summary-box warning">
+                    <div class="summary-count">$($failingJobs.Count)</div>
+                    <div>apps with successive failures</div>
+                </td>
+                <td class="summary-box caution">
+                    <div class="summary-count">$($nonSteadyJobs.Count)</div>
+                    <div>apps not in steady state</div>
+                </td>
+                <td class="summary-box ok">
+                    <div class="summary-count ok">$($synchronizationJobsDetailsArray.Count - $unhealthyJobs.Count)</div>
+                    <div>apps healthy</div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+"@
+
+            if ($unhealthyJobs.Count -gt 0) {
+                $emailBody += @"
+    <h2>SCIM Provisioning Jobs Requiring Attention</h2>
+    <table>
+        <tr>
+            <th>Application</th>
+            <th>Status</th>
+            <th>Quarantined</th>
+            <th>Successive Failures</th>
+            <th>Last Successful Sync</th>
+            <th>Scheduling State</th>
+        </tr>
+"@
+                $unhealthyJobs = $unhealthyJobs | Sort-Object Quarantined -Descending
+
+                foreach ($job in $unhealthyJobs) {
+                    $rowClass = if ($job.Quarantined) { 'critical' } elseif ($job.CountSuccessiveCompleteFailures -gt 0) { 'warning' } else { 'caution' }
+                    $appLink = "<a href=`"$($job.EntraUrl)`" style=`"color:#0078d4;text-decoration:none;`">$($job.DisplayName)</a>"
+                    $quarantinedDisplay = if ($job.Quarantined) { '<strong>Yes</strong>' } else { 'No' }
+                    $emailBody += "<tr class=`"$rowClass`"><td>$appLink</td><td>$($job.StatusCode)</td><td>$quarantinedDisplay</td><td>$($job.CountSuccessiveCompleteFailures)</td><td>$($job.LastSuccessfulExecutionDate)</td><td>$($job.SchedulingState)</td></tr>"
+                }
+
+                $emailBody += "    </table>"
+            }
+            else {
+                $emailBody += "    <p style=`"color:#107c10;font-weight:600;`">✓ All SCIM provisioning jobs are healthy.</p>"
+            }
+
+            $emailBody += @"
+
+    <div class="footer">
+        $(if ($unhealthyJobs.Count -gt 0) { '<p class="action-required">Action Required:</p><p>Please review these SCIM provisioning jobs to avoid user provisioning disruptions.</p>' } else { '<p>No action required. All provisioning jobs are running as expected.</p>' })
+        <hr style="border: none; border-top: 1px solid #d2d0ce; margin: 15px 0;">
+        <p><em>Generated on $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') by Get-MgApplicationSCIM</em></p>
+    </div>
+</body>
+</html>
+"@
+
+            try {
+                $params = @{
+                    Message         = @{
+                        Subject      = if ($unhealthyJobs.Count -gt 0) { "Microsoft Entra ID SCIM Provisioning Issues Detected ($($unhealthyJobs.Count) apps)" } else { "Microsoft Entra ID SCIM Provisioning Health Report - All Healthy ($($synchronizationJobsDetailsArray.Count) apps)" }
+                        Body         = @{
+                            ContentType = 'HTML'
+                            Content     = $emailBody
+                        }
+                        ToRecipients = @(
+                            @{
+                                EmailAddress = @{
+                                    Address = $NotificationRecipient
+                                }
+                            }
+                        )
+                    }
+                    SaveToSentItems = 'false'
+                }
+
+                Send-MgUserMail -UserId $NotificationSender -BodyParameter $params
+                Write-Host -ForegroundColor Green "✓ SCIM health notification email sent successfully to $NotificationRecipient"
+            }
+            catch {
+                Write-Warning "Failed to send notification email: $($_.Exception.Message)"
+            }
+        }
     }
 
     if ($ExportToExcel.IsPresent) {
@@ -221,7 +529,7 @@ function Get-MgApplicationSCIM {
         $synchronizationJobsDetailsArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'Entra-ApplicationSCIM'
         Write-Host -ForegroundColor Green "Export completed successfully!"
     }
-    else {
+    elseif (-not $RunFromAzureAutomation.IsPresent) {
         return $synchronizationJobsDetailsArray
     }
 }
