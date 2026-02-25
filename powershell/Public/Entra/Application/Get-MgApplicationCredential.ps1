@@ -177,15 +177,26 @@ function Get-MgApplicationCredential {
     $mgApps = Get-MgApplication -All
 
     foreach ($mgApp in $mgApps) {
-        $owner = Get-MgApplicationOwner -ApplicationId $mgApp.Id
+        # Reset to $null before each call: prevents previous iteration's value from bleeding through on silent errors
+        $ownerObjects = $null
+        $ownerString = $null
+        $ownerObjects = Get-MgApplicationOwner -ApplicationId $mgApp.Id -ErrorAction SilentlyContinue
 
-        # if severral owners, join them with '|'
+        # Build owners string: DisplayName for each owner, joined with '|'
+        if ($ownerObjects) {
+            $ownerString = ($ownerObjects | ForEach-Object {
+                    $props = $_.AdditionalProperties
+                    if ($props.ContainsKey('displayName') -and -not [string]::IsNullOrEmpty($props['displayName'])) { $props['displayName'] }
+                    else { $_.Id }
+                }) -join '|'
+        }
 
         foreach ($keyCredential in $mgApp.KeyCredentials) {
             $object = [PSCustomObject][ordered]@{
                 DisplayName             = $mgApp.DisplayName
                 CredentialType          = 'KeyCredentials'
                 AppId                   = $mgApp.AppId
+                EntraUrl                = "https://entra.microsoft.com/#view/Microsoft_AAD_RegisteredApps/ApplicationMenuBlade/~/Credentials/appId/$($mgApp.AppId)"
                 CredentialDescription   = $keyCredential.DisplayName
                 CredentialStartDate     = $keyCredential.StartDateTime
                 CredentialExpiryDate    = $keyCredential.EndDateTime
@@ -194,7 +205,7 @@ function Get-MgApplicationCredential {
                 CredentialExpiresInDays = if ($keyCredential.EndDateTime) { [int](New-TimeSpan -Start (Get-Date) -End $keyCredential.EndDateTime).TotalDays } else { $null }
                 Type                    = $keyCredential.Type
                 Usage                   = $keyCredential.Usage
-                Owners                  = $owner.AdditionalProperties.userPrincipalName -join '|'
+                Owners                  = $ownerString
             }
 
             $credentialsArray.Add($object)
@@ -205,6 +216,7 @@ function Get-MgApplicationCredential {
                 DisplayName             = $mgApp.DisplayName
                 CredentialType          = 'PasswordCredentials'
                 AppId                   = $mgApp.AppId
+                EntraUrl                = "https://entra.microsoft.com/#view/Microsoft_AAD_RegisteredApps/ApplicationMenuBlade/~/Credentials/appId/$($mgApp.AppId)"
                 CredentialDescription   = $passwordCredential.DisplayName
                 CredentialStartDate     = $passwordCredential.StartDateTime
                 CredentialExpiryDate    = $passwordCredential.EndDateTime
@@ -213,7 +225,7 @@ function Get-MgApplicationCredential {
                 CredentialExpiresInDays = if ($passwordCredential.EndDateTime) { [int](New-TimeSpan -Start (Get-Date) -End $passwordCredential.EndDateTime).TotalDays } else { $null }
                 Type                    = 'NA'
                 Usage                   = 'NA'
-                Owners                  = $owner.AdditionalProperties.userPrincipalName -join '|'
+                Owners                  = $ownerString
             }
 
             $credentialsArray.Add($object)
@@ -238,12 +250,11 @@ function Get-MgApplicationCredential {
             $null -ne $_.CredentialExpiresInDays -and $_.CredentialExpiresInDays -le 30 -and $_.CredentialExpiresInDays -gt 0 
         }
         
-        if ($expiringCredentials.Count -gt 0) {
-            Write-Verbose "Found $($expiringCredentials.Count) credentials expiring within $ExpirationThresholdDays days. Sending notification email."
+        Write-Verbose "Sending notification email. Found $($expiringCredentials.Count) credentials expiring within $ExpirationThresholdDays days."
+
+        $expiringCredentials = $expiringCredentials | Sort-Object CredentialExpiresInDays
             
-            $expiringCredentials = $expiringCredentials | Sort-Object CredentialExpiresInDays
-            
-            $emailBody = @"
+        $emailBody = @"
 <!DOCTYPE html>
 <html>
 <head>
@@ -257,44 +268,6 @@ function Get-MgApplicationCredential {
         font-size: 14px;
         line-height: 20px;
         background-color: #ffffff;
-    }
-    
-    .summary-container {
-        width: 100%;
-        margin-bottom: 30px;
-    }
-    
-    .summary-table {
-        width: 80%;
-        border-collapse: separate;
-        border-spacing: 8px;
-        margin: 0 auto;
-    }
-    
-    .summary-box {
-        background-color: #fff9f5;
-        border: 1px solid #8a6700;
-        padding: 10px;
-        border-radius: 6px;
-        text-align: center;
-        width: 25%;
-    }
-    
-    .summary-box.expired {
-        background-color: #fde7e9;
-        border-color: #a4262c;
-    }
-    
-    .summary-box.warning {
-        background-color: #fff4ce;
-        border-color: #8a6700;
-    }
-    
-    .summary-count {
-        font-size: 20px;
-        font-weight: bold;
-        color: #d73502;
-        margin: 6px 0;
     }
     
     h2 { 
@@ -319,29 +292,31 @@ function Get-MgApplicationCredential {
     }
     
     th { 
-        vertical-align: bottom;
+        vertical-align: middle;
         color: #ffffff;
         background-color: #323130;
-        padding: 12px 8px;
+        padding: 3px 8px;
         text-align: left;
         font-family: "Segoe UI Semibold", SegoeUISemibold, "Segoe UI", SegoeUI, Roboto, "Helvetica Neue", Arial, sans-serif;
         font-weight: 600;
-        font-size: 13px;
+        font-size: 12px;
+        line-height: 16px;
         word-wrap: break-word;
     }
     
     td { 
-        vertical-align: top;
+        vertical-align: middle;
         color: #11100f;
-        padding: 12px 8px;
-        border-bottom: solid 1px #edebe9;
+        padding: 3px 8px;
+        border-bottom: solid 1px #c8c6c4;
         word-wrap: break-word;
-        font-size: 13px;
+        font-size: 12px;
+        line-height: 16px;
     }
     
-    .critical { background-color: #fde7e9; color: #a4262c; }
-    .warning { background-color: #fff4ce; color: #8a6700; }
-    .caution { background-color: #fff9f5; color: #8a6700; }
+    .critical { background-color: #FFF0F0; color: #A80000; }
+    .warning { background-color: #FDEFD0; color: #7A3A00; }
+    .caution { background-color: #CCE4FF; color: #003882; }
     
     .footer {
         margin-top: 30px;
@@ -364,26 +339,69 @@ function Get-MgApplicationCredential {
 </style>
 </head>
 <body>
-    <div class="summary-container">
-        <table class="summary-table">
-            <tr>
-                <td class="summary-box expired">
-                    <div class="summary-count">$($expiredCredentials.Count)</div>
-                    <div>secrets already expired</div>
-                </td>
-                <td class="summary-box warning">
-                    <div class="summary-count">$($credentialsExpiring15Days.Count)</div>
-                    <div>secrets expire within 15 days</div>
-                </td>
-                <td class="summary-box">
-                    <div class="summary-count">$($credentialsExpiring30Days.Count)</div>
-                    <div>secrets expire within 30 days</div>
-                </td>
-            </tr>
-        </table>
-    </div>
+    <table border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;border-collapse:collapse;margin-bottom:12px;background:transparent;box-shadow:none;" role="presentation">
+        <tr>
+            <td width="33%" valign="top" style="width:33%;padding:4pt 3pt 4pt 5pt;">
+                <table border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;background:#FFF0F0;border-collapse:collapse;margin-bottom:0;box-shadow:none;" role="presentation">
+                    <tr>
+                        <td valign="top" style="padding:6pt 8pt 6pt 8pt;border-bottom:none;">
+                            <h4 align="center" style="margin:0 0 5pt 0;text-align:center;line-height:14pt;font-size:11pt;font-family:'Segoe UI Semibold',sans-serif;color:#A80000;font-weight:600;">Expired secrets</h4>
+                            <table border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;border-collapse:collapse;margin-bottom:0;background:transparent;box-shadow:none;" role="presentation">
+                                <tr>
+                                    <td width="50%" valign="top" style="width:50%;padding:2pt 0 2pt 0;text-align:right;border-bottom:none;">
+                                        <span style="font-size:18pt;font-family:'Segoe UI',sans-serif;color:#A80000;font-weight:bold;">$($expiredCredentials.Count)</span>
+                                    </td>
+                                    <td width="50%" valign="middle" style="width:50%;padding:2pt 0 2pt 6pt;font-size:9pt;font-family:'Segoe UI',sans-serif;color:#A80000;border-bottom:none;vertical-align:middle;">
+                                        secrets already expired
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+            <td width="34%" valign="top" style="width:34%;padding:4pt 3pt 4pt 3pt;">
+                <table border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;background:#FDEFD0;border-collapse:collapse;margin-bottom:0;box-shadow:none;" role="presentation">
+                    <tr>
+                        <td valign="top" style="padding:6pt 8pt 6pt 8pt;border-bottom:none;">
+                            <h4 align="center" style="margin:0 0 5pt 0;text-align:center;line-height:14pt;font-size:11pt;font-family:'Segoe UI Semibold',sans-serif;color:#7A3A00;font-weight:600;">Expiring within 15 days</h4>
+                            <table border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;border-collapse:collapse;margin-bottom:0;background:transparent;box-shadow:none;" role="presentation">
+                                <tr>
+                                    <td width="50%" valign="top" style="width:50%;padding:2pt 0 2pt 0;text-align:right;border-bottom:none;">
+                                        <span style="font-size:18pt;font-family:'Segoe UI',sans-serif;color:#7A3A00;font-weight:bold;">$($credentialsExpiring15Days.Count)</span>
+                                    </td>
+                                    <td width="50%" valign="middle" style="width:50%;padding:2pt 0 2pt 6pt;font-size:9pt;font-family:'Segoe UI',sans-serif;color:#7A3A00;border-bottom:none;vertical-align:middle;">
+                                        secrets expire within 15 days
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+            <td width="33%" valign="top" style="width:33%;padding:4pt 5pt 4pt 3pt;">
+                <table border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;background:#CCE4FF;border-collapse:collapse;margin-bottom:0;box-shadow:none;" role="presentation">
+                    <tr>
+                        <td valign="top" style="padding:6pt 8pt 6pt 8pt;border-bottom:none;">
+                            <h4 align="center" style="margin:0 0 5pt 0;text-align:center;line-height:14pt;font-size:11pt;font-family:'Segoe UI Semibold',sans-serif;color:#003882;font-weight:600;">Expiring within 30 days</h4>
+                            <table border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;border-collapse:collapse;margin-bottom:0;background:transparent;box-shadow:none;" role="presentation">
+                                <tr>
+                                    <td width="50%" valign="top" style="width:50%;padding:2pt 0 2pt 0;text-align:right;border-bottom:none;">
+                                        <span style="font-size:18pt;font-family:'Segoe UI',sans-serif;color:#003882;font-weight:bold;">$($credentialsExpiring30Days.Count)</span>
+                                    </td>
+                                    <td width="50%" valign="middle" style="width:50%;padding:2pt 0 2pt 6pt;font-size:9pt;font-family:'Segoe UI',sans-serif;color:#003882;border-bottom:none;vertical-align:middle;">
+                                        secrets expire within 30 days
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
     
-    <h2>Credentials Requiring Attention</h2>
+    <h2>Credentials requiring attention</h2>
     <table>
         <tr>
             <th>Application</th>
@@ -394,54 +412,70 @@ function Get-MgApplicationCredential {
             <th>Owners</th>
         </tr>
 "@
+
+        foreach ($cred in $expiringCredentials) {
+            $rowClass = if ($cred.CredentialExpiresInDays -le 0) { 'critical' } elseif ($cred.CredentialExpiresInDays -le 14) { 'warning' } else { 'caution' }
+            $expiresInDaysDisplay = if ($cred.CredentialExpiresInDays -lt 0) { "$($cred.CredentialExpiresInDays) (already expired)" } else { $cred.CredentialExpiresInDays }
+            $appLink = "<strong style=`"color:#11100f;font-size:12px;line-height:16px;`">$($cred.DisplayName)</strong> <a href=`"$($cred.EntraUrl)`" style=`"text-decoration:none;font-size:14px;line-height:16px;`" title=`"Open in Entra`">&#x1F517;</a>"
+            $ownersList = @($cred.Owners -split '\|' | Where-Object { $_ })
+            $ownersHtml = if ($ownersList.Count -gt 1) { ($ownersList | ForEach-Object { "- $_" }) -join '<br>' } else { $ownersList -join '' }
+            $emailBody += "<tr class=`"$rowClass`"><td>$appLink</td><td>$($cred.CredentialType)</td><td>$($cred.CredentialDescription)</td><td><strong>$expiresInDaysDisplay</strong></td><td>$($cred.CredentialExpiryDate)</td><td>$ownersHtml</td></tr>"
+        }
+
+        if ($expiringCredentials.Count -eq 0) {
+            $emailBody += '<tr><td colspan="6" style="text-align:center;padding:12px 8px;color:#605e5c;font-style:italic;">No credentials requiring attention - all credentials are healthy.</td></tr>'
+        }
             
-            foreach ($cred in $expiringCredentials) {
-                $rowClass = if ($cred.CredentialExpiresInDays -le 0) { 'critical' } elseif ($cred.CredentialExpiresInDays -le 14) { 'warning' } else { 'caution' }
-                $expiresInDaysDisplay = if ($cred.CredentialExpiresInDays -le 0) { "$($cred.CredentialExpiresInDays) (already expired)" } else { $cred.CredentialExpiresInDays }
-                $emailBody += "<tr class=`"$rowClass`"><td>$($cred.DisplayName)</td><td>$($cred.CredentialType)</td><td>$($cred.CredentialDescription)</td><td><strong>$expiresInDaysDisplay</strong></td><td>$($cred.CredentialExpiryDate)</td><td>$($cred.Owners)</td></tr>"
-            }
-            
-            $emailBody += @"
+        $emailFooter = if ($expiringCredentials.Count -gt 0) {
+            '<p class="action-required">Action Required:</p><p>Please review and renew these credentials before they expire to avoid service disruptions.</p>'
+        }
+        else {
+            '<p style="color:#107C10;font-weight:600;">&#10003; All credentials are healthy. No action required at this time.</p>'
+        }
+
+        $emailSubject = if ($expiringCredentials.Count -gt 0) {
+            "Microsoft Entra ID Application Credentials Expiring ($($expiringCredentials.Count) credentials)"
+        }
+        else {
+            'Microsoft Entra ID Application Credentials - All Healthy'
+        }
+
+        $emailBody += @"
     </table>
     
     <div class="footer">
-        <p class="action-required">Action Required:</p>
-        <p>Please review and renew these credentials before they expire to avoid service disruptions.</p>
+        $emailFooter
         <hr style="border: none; border-top: 1px solid #d2d0ce; margin: 15px 0;">
-        <p><em>Generated on $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') by Get-MgApplicationCredential</em></p>
+        <p><em>Generated on $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') by Get-MgApplicationCredential v0.71.0</em></p>
     </div>
 </body>
 </html>
 "@
             
-            try {
-                $params = @{
-                    Message         = @{
-                        Subject      = "Microsoft Entra ID Application Credentials Expiring ($($expiringCredentials.Count) credentials)"
-                        Body         = @{
-                            ContentType = 'HTML'
-                            Content     = $emailBody
-                        }
-                        ToRecipients = @(
-                            @{
-                                EmailAddress = @{
-                                    Address = $NotificationRecipient
-                                }
-                            }
-                        )
+        try {
+            $params = @{
+                Message         = @{
+                    Subject      = $emailSubject
+                    Body         = @{
+                        ContentType = 'HTML'
+                        Content     = $emailBody
                     }
-                    SaveToSentItems = 'false'
+                    ToRecipients = @(
+                        @{
+                            EmailAddress = @{
+                                Address = $NotificationRecipient
+                            }
+                        }
+                    )
                 }
+                SaveToSentItems = 'false'
+            }
                 
-                Send-MgUserMail -UserId $NotificationSender -BodyParameter $params
-                Write-Host -ForegroundColor Green "✓ Expiration notification email sent successfully to $NotificationRecipient"
-            }
-            catch {
-                Write-Warning "Failed to send notification email: $($_.Exception.Message)"
-            }
+            Send-MgUserMail -UserId $NotificationSender -BodyParameter $params
+            Write-Host -ForegroundColor Green "Expiration notification email sent successfully to $NotificationRecipient"
         }
-        else {
-            Write-Verbose "No credentials found expiring within $ExpirationThresholdDays days."
+        catch {
+            Write-Warning "Failed to send notification email: $($_.Exception.Message)"
         }
     }
 
