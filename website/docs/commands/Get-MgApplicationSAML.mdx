@@ -9,8 +9,9 @@ Retrieves all Entra ID applications configured for SAML SSO.
 ## SYNTAX
 
 ```powershell
-Get-MgApplicationSAML [-ForceNewToken] [-ExportToExcel] [-ProgressAction <ActionPreference>]
- [<CommonParameters>]
+Get-MgApplicationSAML [-ForceNewToken] [-ExportToExcel] [-RunFromAzureAutomation]
+ [[-ExpirationThresholdDays] <Int32>] [[-NotificationRecipient] <String>] [[-NotificationSender] <String>]
+ [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -45,11 +46,27 @@ Get-MgApplicationSAML -ExportToExcel
 
 Gets all SAML applications and exports them to an Excel file.
 
+### EXAMPLE 4
+
+```powershell
+Get-MgApplicationSAML -RunFromAzureAutomation -ExpirationThresholdDays 30 -NotificationRecipient 'admin@company.com' -NotificationSender 'automation@company.com'
+```
+
+Gets all SAML applications using managed identity authentication and sends notification for certificates expiring within 30 days.
+
+### EXAMPLE 5
+
+```powershell
+Get-MgApplicationSAML -RunFromAzureAutomation -ExpirationThresholdDays 7 -NotificationRecipient 'admin@company.com' -NotificationSender 'automation@company.com'
+```
+
+Gets all SAML applications using managed identity and sends email notification for certificates expiring within 7 days.
+
 ## PARAMETERS
 
 ### -ForceNewToken
 
-\{\{ Fill ForceNewToken Description \}\}
+(Optional) Forces the function to disconnect and reconnect to Microsoft Graph to obtain a new access token.
 
 ```yaml
 Type: SwitchParameter
@@ -65,7 +82,7 @@ Accept wildcard characters: False
 
 ### -ExportToExcel
 
-\{\{ Fill ExportToExcel Description \}\}
+(Optional) If specified, exports the results to an Excel file in the user's profile directory.
 
 ```yaml
 Type: SwitchParameter
@@ -75,6 +92,79 @@ Aliases:
 Required: False
 Position: Named
 Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -RunFromAzureAutomation
+
+(Optional) If specified, uses managed identity authentication instead of interactive authentication.
+This is useful when running the script in Azure environments like Azure Functions, Logic Apps, or VMs with managed identity enabled.
+When this parameter is used, ExpirationThresholdDays, NotificationRecipient and NotificationSender are required.
+
+PowerShell modules used in Azure Automation must be a MAXIMUM of version 2.25.0 when using PowerShell &lt; 7.4.0, because starting from version 2.26.0, PowerShell 7.4.0 is required, and Azure Automation does not support it yet as of February 2026.
+For PowerShell 7.4.0+, there are no version restrictions.
+https://github.com/microsoftgraph/msgraph-sdk-powershell/issues/3147
+https://github.com/microsoftgraph/msgraph-sdk-powershell/issues/3151
+https://github.com/microsoftgraph/msgraph-sdk-powershell/issues/3166
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ExpirationThresholdDays
+
+(Required when RunFromAzureAutomation is enabled) Number of days threshold for expiration notification.
+Default is 30 days.
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 1
+Default value: 30
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -NotificationRecipient
+
+(Required when RunFromAzureAutomation is enabled) Email address to receive expiration notifications.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 2
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -NotificationSender
+
+(Required when RunFromAzureAutomation is enabled) Email address of the sender for expiration notifications.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 3
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

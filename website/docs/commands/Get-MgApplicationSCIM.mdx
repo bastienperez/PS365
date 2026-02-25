@@ -11,22 +11,25 @@ Retrieves all Entra ID applications configured for SCIM provisioning.
 ### All (Default)
 
 ```powershell
-Get-MgApplicationSCIM [-ForceNewToken] [-ExportToExcel] [-ProgressAction <ActionPreference>]
+Get-MgApplicationSCIM [-ForceNewToken] [-ExportToExcel] [-RunFromAzureAutomation]
+ [-NotificationRecipient <String>] [-NotificationSender <String>] [-ProgressAction <ActionPreference>]
  [<CommonParameters>]
 ```
 
 ### ByObjectId
 
 ```powershell
-Get-MgApplicationSCIM [-ObjectID <String>] [-ForceNewToken] [-ExportToExcel]
- [-ProgressAction <ActionPreference>] [<CommonParameters>]
+Get-MgApplicationSCIM [-ObjectID <String>] [-ForceNewToken] [-ExportToExcel] [-RunFromAzureAutomation]
+ [-NotificationRecipient <String>] [-NotificationSender <String>] [-ProgressAction <ActionPreference>]
+ [<CommonParameters>]
 ```
 
 ### ByDisplayName
 
 ```powershell
-Get-MgApplicationSCIM [-DisplayName <String>] [-ForceNewToken] [-ExportToExcel]
- [-ProgressAction <ActionPreference>] [<CommonParameters>]
+Get-MgApplicationSCIM [-DisplayName <String>] [-ForceNewToken] [-ExportToExcel] [-RunFromAzureAutomation]
+ [-NotificationRecipient <String>] [-NotificationSender <String>] [-ProgressAction <ActionPreference>]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -55,10 +58,10 @@ Forces the function to disconnect and reconnect to Microsoft Graph to obtain a n
 ### EXAMPLE 3
 
 ```powershell
-Get-MgApplicationSCIM -Export
+Get-MgApplicationSCIM -ExportToExcel
 ```
 
-Exports the SCIM configuration details to a CSV file.
+Exports the SCIM configuration details to an Excel file.
 
 ### EXAMPLE 4
 
@@ -68,11 +71,19 @@ Get-MgApplicationSCIM -ObjectID "xxx-xxx-xxx"
 
 Retrieves the SCIM configuration for a specific application by its ObjectID.
 
+### EXAMPLE 5
+
+```powershell
+Get-MgApplicationSCIM -RunFromAzureAutomation -NotificationRecipient 'admin@company.com' -NotificationSender 'automation@company.com'
+```
+
+Gets all SCIM provisioning jobs using managed identity and sends a health report for apps with synchronization issues.
+
 ## PARAMETERS
 
 ### -ObjectID
 
-\{\{ Fill ObjectID Description \}\}
+(Optional) Retrieves the SCIM configuration for a specific application by its ObjectID.
 
 ```yaml
 Type: String
@@ -88,7 +99,7 @@ Accept wildcard characters: False
 
 ### -DisplayName
 
-\{\{ Fill DisplayName Description \}\}
+(Optional) Retrieves the SCIM configuration for a specific application by its DisplayName.
 
 ```yaml
 Type: String
@@ -104,7 +115,7 @@ Accept wildcard characters: False
 
 ### -ForceNewToken
 
-\{\{ Fill ForceNewToken Description \}\}
+(Optional) Forces the function to disconnect and reconnect to Microsoft Graph to obtain a new access token.
 
 ```yaml
 Type: SwitchParameter
@@ -120,7 +131,7 @@ Accept wildcard characters: False
 
 ### -ExportToExcel
 
-\{\{ Fill ExportToExcel Description \}\}
+(Optional) If specified, exports the results to an Excel file in the user's profile directory.
 
 ```yaml
 Type: SwitchParameter
@@ -130,6 +141,62 @@ Aliases:
 Required: False
 Position: Named
 Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -RunFromAzureAutomation
+
+(Optional) If specified, uses managed identity authentication instead of interactive authentication.
+This is useful when running the script in Azure environments like Azure Functions, Logic Apps, or VMs with managed identity enabled.
+When this parameter is used, NotificationRecipient and NotificationSender are required.
+
+PowerShell modules used in Azure Automation must be a MAXIMUM of version 2.25.0 when using PowerShell &lt; 7.4.0, because starting from version 2.26.0, PowerShell 7.4.0 is required, and Azure Automation does not support it yet as of February 2026.
+For PowerShell 7.4.0+, there are no version restrictions.
+https://github.com/microsoftgraph/msgraph-sdk-powershell/issues/3147
+https://github.com/microsoftgraph/msgraph-sdk-powershell/issues/3151
+https://github.com/microsoftgraph/msgraph-sdk-powershell/issues/3166
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -NotificationRecipient
+
+(Required when RunFromAzureAutomation is enabled) Email address to receive synchronization health notifications.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -NotificationSender
+
+(Required when RunFromAzureAutomation is enabled) Email address of the sender for synchronization health notifications.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
