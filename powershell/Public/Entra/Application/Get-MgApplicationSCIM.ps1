@@ -298,117 +298,70 @@ function Get-MgApplicationSCIM {
 
         Write-Verbose "Sending SCIM health report email ($($unhealthyJobs.Count) issues found out of $($synchronizationJobsDetailsArray.Count) jobs)."
 
-        if ($true) {
-
-            $emailBody = @"
+        $emailBody = @"
 <!DOCTYPE html>
 <html>
 <head>
 <title>Microsoft Entra ID SCIM Provisioning Health Report</title>
 <style>
-    body {
-        font-family: Segoe UI, SegoeUI, Roboto, "Helvetica Neue", Arial, sans-serif;
-        margin: 0;
-        padding: 20px;
-        color: #11100f;
+    body { 
+        font-family: Segoe UI, SegoeUI, Roboto, "Helvetica Neue", Arial, sans-serif; 
+        margin: 0; 
+        padding: 20px; 
+        color: #11100f; 
         font-size: 14px;
         line-height: 20px;
         background-color: #ffffff;
     }
-
-    .summary-container {
-        width: 100%;
-        margin-bottom: 30px;
-    }
-
-    .summary-table {
-        width: 80%;
-        border-collapse: separate;
-        border-spacing: 8px;
-        margin: 0 auto;
-    }
-
-    .summary-box {
-        background-color: #fff9f5;
-        border: 1px solid #8a6700;
-        padding: 10px;
-        border-radius: 6px;
-        text-align: center;
-        width: 25%;
-    }
-
-    .summary-box.expired {
-        background-color: #fde7e9;
-        border-color: #a4262c;
-    }
-
-    .summary-box.warning {
-        background-color: #fff4ce;
-        border-color: #8a6700;
-    }
-
-    .summary-box.ok {
-        background-color: #dff6dd;
-        border-color: #107c10;
-    }
-
-    .summary-count {
-        font-size: 20px;
-        font-weight: bold;
-        color: #d73502;
-        margin: 6px 0;
-    }
-
-    .summary-count.ok {
-        color: #107c10;
-    }
-
-    h2 {
-        padding-top: 0;
-        margin: 0 0 16px 0;
+    
+    h2 { 
+        padding-top: 0; 
+        margin: 0 0 16px 0; 
         font-family: "Segoe UI Semibold", SegoeUISemibold, "Segoe UI", SegoeUI, Roboto, "Helvetica Neue", Arial, sans-serif;
-        font-weight: 600;
-        font-size: 20px;
+        font-weight: 600; 
+        font-size: 20px; 
         line-height: 28px;
         color: #323130;
     }
-
-    table {
-        border-spacing: 0;
-        border-collapse: collapse;
-        width: 100%;
+    
+    table { 
+        border-spacing: 0; 
+        border-collapse: collapse; 
+        width: 100%; 
         margin-bottom: 20px;
         background-color: #ffffff;
         border-radius: 8px;
         overflow: hidden;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
-
-    th {
-        vertical-align: bottom;
+    
+    th { 
+        vertical-align: middle;
         color: #ffffff;
         background-color: #323130;
-        padding: 12px 8px;
+        padding: 3px 8px;
         text-align: left;
         font-family: "Segoe UI Semibold", SegoeUISemibold, "Segoe UI", SegoeUI, Roboto, "Helvetica Neue", Arial, sans-serif;
         font-weight: 600;
-        font-size: 13px;
+        font-size: 12px;
+        line-height: 16px;
         word-wrap: break-word;
     }
-
-    td {
-        vertical-align: top;
+    
+    td { 
+        vertical-align: middle;
         color: #11100f;
-        padding: 12px 8px;
-        border-bottom: solid 1px #edebe9;
+        padding: 3px 8px;
+        border-bottom: solid 1px #c8c6c4;
         word-wrap: break-word;
-        font-size: 13px;
+        font-size: 12px;
+        line-height: 16px;
     }
-
-    .critical { background-color: #fde7e9; color: #a4262c; }
-    .warning { background-color: #fff4ce; color: #8a6700; }
-    .caution { background-color: #fff9f5; color: #8a6700; }
-
+    
+    .critical { background-color: #FFF0F0; color: #A80000; }
+    .warning { background-color: #FDEFD0; color: #7A3A00; }
+    .caution { background-color: #CCE4FF; color: #003882; }
+    
     .footer {
         margin-top: 30px;
         padding: 20px;
@@ -416,13 +369,13 @@ function Get-MgApplicationSCIM {
         border-radius: 8px;
         border-top: 3px solid #0078d4;
     }
-
+    
     .footer p {
         margin: 8px 0;
         font-size: 13px;
         color: #605e5c;
     }
-
+    
     .action-required {
         font-weight: 600;
         color: #d73502;
@@ -430,33 +383,91 @@ function Get-MgApplicationSCIM {
 </style>
 </head>
 <body>
-    <div class="summary-container">
-        <table class="summary-table">
-            <tr>
-                <td class="summary-box expired">
-                    <div class="summary-count">$($quarantinedJobs.Count)</div>
-                    <div>apps in quarantine</div>
-                </td>
-                <td class="summary-box warning">
-                    <div class="summary-count">$($failingJobs.Count)</div>
-                    <div>apps with successive failures</div>
-                </td>
-                <td class="summary-box caution">
-                    <div class="summary-count">$($nonSteadyJobs.Count)</div>
-                    <div>apps not in steady state</div>
-                </td>
-                <td class="summary-box ok">
-                    <div class="summary-count ok">$($synchronizationJobsDetailsArray.Count - $unhealthyJobs.Count)</div>
-                    <div>apps healthy</div>
-                </td>
-            </tr>
-        </table>
-    </div>
+    <table border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;border-collapse:collapse;margin-bottom:12px;background:transparent;box-shadow:none;" role="presentation">
+        <tr>
+            <td width="25%" valign="top" style="width:25%;padding:4pt 3pt 4pt 5pt;">
+                <table border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;background:#FFF0F0;border-collapse:collapse;margin-bottom:0;box-shadow:none;" role="presentation">
+                    <tr>
+                        <td valign="top" style="padding:6pt 8pt 6pt 8pt;border-bottom:none;">
+                            <h4 align="center" style="margin:0 0 5pt 0;text-align:center;line-height:14pt;font-size:11pt;font-family:'Segoe UI Semibold',sans-serif;color:#A80000;font-weight:600;">Quarantined</h4>
+                            <table border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;border-collapse:collapse;margin-bottom:0;background:transparent;box-shadow:none;" role="presentation">
+                                <tr>
+                                    <td width="50%" valign="top" style="width:50%;padding:2pt 0 2pt 0;text-align:right;border-bottom:none;">
+                                        <span style="font-size:18pt;font-family:'Segoe UI',sans-serif;color:#A80000;font-weight:bold;">$($quarantinedJobs.Count)</span>
+                                    </td>
+                                    <td width="50%" valign="middle" style="width:50%;padding:2pt 0 2pt 6pt;font-size:9pt;font-family:'Segoe UI',sans-serif;color:#A80000;border-bottom:none;vertical-align:middle;">
+                                        apps in quarantine
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+            <td width="25%" valign="top" style="width:25%;padding:4pt 3pt 4pt 3pt;">
+                <table border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;background:#FDEFD0;border-collapse:collapse;margin-bottom:0;box-shadow:none;" role="presentation">
+                    <tr>
+                        <td valign="top" style="padding:6pt 8pt 6pt 8pt;border-bottom:none;">
+                            <h4 align="center" style="margin:0 0 5pt 0;text-align:center;line-height:14pt;font-size:11pt;font-family:'Segoe UI Semibold',sans-serif;color:#7A3A00;font-weight:600;">Successive Failures</h4>
+                            <table border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;border-collapse:collapse;margin-bottom:0;background:transparent;box-shadow:none;" role="presentation">
+                                <tr>
+                                    <td width="50%" valign="top" style="width:50%;padding:2pt 0 2pt 0;text-align:right;border-bottom:none;">
+                                        <span style="font-size:18pt;font-family:'Segoe UI',sans-serif;color:#7A3A00;font-weight:bold;">$($failingJobs.Count)</span>
+                                    </td>
+                                    <td width="50%" valign="middle" style="width:50%;padding:2pt 0 2pt 6pt;font-size:9pt;font-family:'Segoe UI',sans-serif;color:#7A3A00;border-bottom:none;vertical-align:middle;">
+                                        apps with successive failures
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+            <td width="25%" valign="top" style="width:25%;padding:4pt 3pt 4pt 3pt;">
+                <table border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;background:#CCE4FF;border-collapse:collapse;margin-bottom:0;box-shadow:none;" role="presentation">
+                    <tr>
+                        <td valign="top" style="padding:6pt 8pt 6pt 8pt;border-bottom:none;">
+                            <h4 align="center" style="margin:0 0 5pt 0;text-align:center;line-height:14pt;font-size:11pt;font-family:'Segoe UI Semibold',sans-serif;color:#003882;font-weight:600;">Not Steady</h4>
+                            <table border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;border-collapse:collapse;margin-bottom:0;background:transparent;box-shadow:none;" role="presentation">
+                                <tr>
+                                    <td width="50%" valign="top" style="width:50%;padding:2pt 0 2pt 0;text-align:right;border-bottom:none;">
+                                        <span style="font-size:18pt;font-family:'Segoe UI',sans-serif;color:#003882;font-weight:bold;">$($nonSteadyJobs.Count)</span>
+                                    </td>
+                                    <td width="50%" valign="middle" style="width:50%;padding:2pt 0 2pt 6pt;font-size:9pt;font-family:'Segoe UI',sans-serif;color:#003882;border-bottom:none;vertical-align:middle;">
+                                        apps not in steady state
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+            <td width="25%" valign="top" style="width:25%;padding:4pt 5pt 4pt 3pt;">
+                <table border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;background:#DFF6DD;border-collapse:collapse;margin-bottom:0;box-shadow:none;" role="presentation">
+                    <tr>
+                        <td valign="top" style="padding:6pt 8pt 6pt 8pt;border-bottom:none;">
+                            <h4 align="center" style="margin:0 0 5pt 0;text-align:center;line-height:14pt;font-size:11pt;font-family:'Segoe UI Semibold',sans-serif;color:#107C10;font-weight:600;">Healthy</h4>
+                            <table border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;border-collapse:collapse;margin-bottom:0;background:transparent;box-shadow:none;" role="presentation">
+                                <tr>
+                                    <td width="50%" valign="top" style="width:50%;padding:2pt 0 2pt 0;text-align:right;border-bottom:none;">
+                                        <span style="font-size:18pt;font-family:'Segoe UI',sans-serif;color:#107C10;font-weight:bold;">$($synchronizationJobsDetailsArray.Count - $unhealthyJobs.Count)</span>
+                                    </td>
+                                    <td width="50%" valign="middle" style="width:50%;padding:2pt 0 2pt 6pt;font-size:9pt;font-family:'Segoe UI',sans-serif;color:#107C10;border-bottom:none;vertical-align:middle;">
+                                        apps healthy
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
 
 "@
 
-            if ($unhealthyJobs.Count -gt 0) {
-                $emailBody += @"
+        if ($unhealthyJobs.Count -gt 0) {
+            $emailBody += @'
     <h2>SCIM Provisioning Jobs Requiring Attention</h2>
     <table>
         <tr>
@@ -467,58 +478,57 @@ function Get-MgApplicationSCIM {
             <th>Last Successful Sync</th>
             <th>Scheduling State</th>
         </tr>
-"@
-                $unhealthyJobs = $unhealthyJobs | Sort-Object Quarantined -Descending
+'@
+            $unhealthyJobs = $unhealthyJobs | Sort-Object Quarantined -Descending
 
-                foreach ($job in $unhealthyJobs) {
-                    $rowClass = if ($job.Quarantined) { 'critical' } elseif ($job.CountSuccessiveCompleteFailures -gt 0) { 'warning' } else { 'caution' }
-                    $appLink = "<a href=`"$($job.EntraUrl)`" style=`"color:#0078d4;text-decoration:none;`">$($job.DisplayName)</a>"
-                    $quarantinedDisplay = if ($job.Quarantined) { '<strong>Yes</strong>' } else { 'No' }
-                    $emailBody += "<tr class=`"$rowClass`"><td>$appLink</td><td>$($job.StatusCode)</td><td>$quarantinedDisplay</td><td>$($job.CountSuccessiveCompleteFailures)</td><td>$($job.LastSuccessfulExecutionDate)</td><td>$($job.SchedulingState)</td></tr>"
-                }
-
-                $emailBody += "    </table>"
-            }
-            else {
-                $emailBody += "    <p style=`"color:#107c10;font-weight:600;`">✓ All SCIM provisioning jobs are healthy.</p>"
+            foreach ($job in $unhealthyJobs) {
+                $rowClass = if ($job.Quarantined) { 'critical' } elseif ($job.CountSuccessiveCompleteFailures -gt 0) { 'warning' } else { 'caution' }
+                $appLink = "<strong style=`"color:#11100f;font-size:12px;line-height:16px;`">$($job.DisplayName)</strong> <a href=`"$($job.EntraUrl)`" style=`"text-decoration:none;font-size:14px;line-height:16px;`" title=`"Open in Entra`">&#x1F517;</a>"
+                $quarantinedDisplay = if ($job.Quarantined) { '<strong>Yes</strong>' } else { 'No' }
+                $emailBody += "<tr class=`"$rowClass`"><td>$appLink</td><td>$($job.StatusCode)</td><td>$quarantinedDisplay</td><td>$($job.CountSuccessiveCompleteFailures)</td><td>$($job.LastSuccessfulExecutionDate)</td><td>$($job.SchedulingState)</td></tr>"
             }
 
-            $emailBody += @"
+            $emailBody += '    </table>'
+        }
+        else {
+            $emailBody += "    <p style=`"color:#107c10;font-weight:600;`">✓ All SCIM provisioning jobs are healthy.</p>"
+        }
+
+        $emailBody += @"
 
     <div class="footer">
         $(if ($unhealthyJobs.Count -gt 0) { '<p class="action-required">Action Required:</p><p>Please review these SCIM provisioning jobs to avoid user provisioning disruptions.</p>' } else { '<p>No action required. All provisioning jobs are running as expected.</p>' })
         <hr style="border: none; border-top: 1px solid #d2d0ce; margin: 15px 0;">
-        <p><em>Generated on $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') by Get-MgApplicationSCIM</em></p>
+        <p><em>Generated on $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') by Get-MgApplicationSCIM v0.71.0</em></p>
     </div>
 </body>
 </html>
 "@
 
-            try {
-                $params = @{
-                    Message         = @{
-                        Subject      = if ($unhealthyJobs.Count -gt 0) { "Microsoft Entra ID SCIM Provisioning Issues Detected ($($unhealthyJobs.Count) apps)" } else { "Microsoft Entra ID SCIM Provisioning Health Report - All Healthy ($($synchronizationJobsDetailsArray.Count) apps)" }
-                        Body         = @{
-                            ContentType = 'HTML'
-                            Content     = $emailBody
-                        }
-                        ToRecipients = @(
-                            @{
-                                EmailAddress = @{
-                                    Address = $NotificationRecipient
-                                }
-                            }
-                        )
+        try {
+            $params = @{
+                Message         = @{
+                    Subject      = if ($unhealthyJobs.Count -gt 0) { "Microsoft Entra ID SCIM Provisioning Issues Detected ($($unhealthyJobs.Count) apps)" } else { "Microsoft Entra ID SCIM Provisioning Health Report - All Healthy ($($synchronizationJobsDetailsArray.Count) apps)" }
+                    Body         = @{
+                        ContentType = 'HTML'
+                        Content     = $emailBody
                     }
-                    SaveToSentItems = 'false'
+                    ToRecipients = @(
+                        @{
+                            EmailAddress = @{
+                                Address = $NotificationRecipient
+                            }
+                        }
+                    )
                 }
+                SaveToSentItems = 'false'
+            }
 
-                Send-MgUserMail -UserId $NotificationSender -BodyParameter $params
-                Write-Host -ForegroundColor Green "✓ SCIM health notification email sent successfully to $NotificationRecipient"
-            }
-            catch {
-                Write-Warning "Failed to send notification email: $($_.Exception.Message)"
-            }
+            Send-MgUserMail -UserId $NotificationSender -BodyParameter $params
+            Write-Host -ForegroundColor Green "✓ SCIM health notification email sent successfully to $NotificationRecipient"
+        }
+        catch {
+            Write-Warning "Failed to send notification email: $($_.Exception.Message)"
         }
     }
 
@@ -527,7 +537,7 @@ function Get-MgApplicationSCIM {
         $excelFilePath = "$($env:userprofile)\$now-MgApplicationSCIM-SynchronizationJobsInfo.xlsx"
         Write-Host -ForegroundColor Cyan "Exporting SCIM synchronization jobs to Excel file: $excelFilePath"
         $synchronizationJobsDetailsArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'Entra-ApplicationSCIM'
-        Write-Host -ForegroundColor Green "Export completed successfully!"
+        Write-Host -ForegroundColor Green 'Export completed successfully!'
     }
     elseif (-not $RunFromAzureAutomation.IsPresent) {
         return $synchronizationJobsDetailsArray

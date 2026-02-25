@@ -349,7 +349,7 @@ function Get-MgUserPasswordInfo {
             PasswordExpirationDateUTC                              = $passwordExpirationDateUTC
             DaysUntilPasswordExpiration                            = $daysLeft
             PasswordExpired                                        = $passwordExpired
-            #The last interactive sign-in date and time for a specific user. This property records the last time a user attempted an interactive sign-in to the directory—whether the attempt was successful or not. Note: Since unsuccessful attempts are also logged, this value might not accurately reflect actual system usage.
+            #The last interactive sign-in date and time for a specific user. This property records the last time a user attempted an interactive sign-in to the directory-whether the attempt was successful or not. Note: Since unsuccessful attempts are also logged, this value might not accurately reflect actual system usage.
             LastInteractiveSignInDateTime                          = $mgUser.signInActivity.LastSignInDateTime
             # The date and time of the user's most recent successful interactive or non-interactive sign-in
             LastSuccessfulSignInDateTime                           = $mgUser.signInActivity.LastSuccessfulSignInDateTime
