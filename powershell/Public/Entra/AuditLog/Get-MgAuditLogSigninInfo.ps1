@@ -74,6 +74,11 @@
     Switch to export the sign-in details report to an Excel file.
     The file will be saved in the user's profile directory with a timestamped filename.
 
+    .PARAMETER UseDatePicker
+    Switch to open an interactive calendar dialog to select StartDate and EndDate visually.
+    Requires Windows with .NET Windows Forms support (Windows PowerShell or pwsh on Windows).
+    Any values already provided via -StartDate or -EndDate are used as the initial selection in the pickers.
+
     .PARAMETER ForceNewToken
     Switch to force the acquisition of a new authentication token.
 
@@ -179,6 +184,9 @@ function Get-MgAuditLogSigninInfo {
         [string]$TimeRange,
 
         [Parameter(Mandatory = $false)]
+        [switch]$UseDatePicker,
+
+        [Parameter(Mandatory = $false)]
         [switch]$ForceNewToken,
 
         [Parameter(Mandatory = $false)]
@@ -206,6 +214,207 @@ function Get-MgAuditLogSigninInfo {
     }
 #>
     Write-Verbose 'Connect MgGraph with AuditLog.Read.All scope'
+
+    # Open a Windows Forms date+time-range picker when -UseDatePicker is requested
+    if ($UseDatePicker.IsPresent) {
+        Add-Type -AssemblyName System.Windows.Forms
+        Add-Type -AssemblyName System.Drawing
+
+        # Resolve initial values (date + time)
+        $initStart = if ($StartDate -is [DateTime]) { $StartDate } elseif ($StartDate) { [datetime]::ParseExact($StartDate, 'yyyy-MM-dd', $null) } else { (Get-Date).Date.AddDays(-7) }
+        $initEnd = if ($EndDate -is [DateTime]) { $EndDate } elseif ($EndDate) { [datetime]::ParseExact($EndDate, 'yyyy-MM-dd', $null).AddDays(1).AddSeconds(-1) } else { (Get-Date) }
+
+        $colorAccent = [System.Drawing.Color]::FromArgb(222, 118, 29)   # PS365 orange #de761d
+        $colorBg = [System.Drawing.Color]::FromArgb(245, 245, 248) # near-white
+        $colorPanelBg = [System.Drawing.Color]::FromArgb(245, 245, 248) # same as form bg – suppresses white card
+        $colorText = [System.Drawing.Color]::FromArgb(32, 32, 32)
+        $colorSubText = [System.Drawing.Color]::FromArgb(96, 96, 96)
+        $fontUI = [System.Drawing.Font]::new('Segoe UI', 9)
+        $fontUIBold = [System.Drawing.Font]::new('Segoe UI', 9, [System.Drawing.FontStyle]::Bold)
+        $fontTitle = [System.Drawing.Font]::new('Segoe UI', 11, [System.Drawing.FontStyle]::Bold)
+
+        # --- Form ---
+        $form = [System.Windows.Forms.Form]@{
+            Text            = 'Sign-in log — Date & time range'
+            Size            = [System.Drawing.Size]::new(440, 352)
+            StartPosition   = 'CenterScreen'
+            FormBorderStyle = 'FixedDialog'
+            MaximizeBox     = $false
+            MinimizeBox     = $false
+            BackColor       = $colorBg
+            Font            = $fontUI
+        }
+
+        # --- Header panel ---
+        $pnlHeader = [System.Windows.Forms.Panel]@{
+            Dock      = [System.Windows.Forms.DockStyle]::Top
+            Height    = 52
+            BackColor = $colorAccent
+        }
+        $lblTitle = [System.Windows.Forms.Label]@{
+            Text        = 'Select date & time range'
+            ForeColor   = [System.Drawing.Color]::White
+            Font        = $fontTitle
+            AutoSize    = $true
+            Location    = [System.Drawing.Point]::new(16, 14)
+            UseMnemonic = $false   # prevents '&' from being swallowed as a mnemonic accelerator
+        }
+        $pnlHeader.Controls.Add($lblTitle)
+
+        # --- Content panel (white card) ---
+        $pnlContent = [System.Windows.Forms.Panel]@{
+            Location  = [System.Drawing.Point]::new(16, 68)
+            Size      = [System.Drawing.Size]::new(400, 160)
+            BackColor = $colorPanelBg
+        }
+        # No border needed – content panel blends with form background
+
+        # Helper to build a label+date+time row inside a panel
+        # Returns a Panel containing the row
+        function New-DateTimeRow {
+            param([string]$Caption, [datetime]$InitialValue, [int]$Top)
+            $row = [System.Windows.Forms.Panel]@{
+                Location  = [System.Drawing.Point]::new(0, $Top)
+                Size      = [System.Drawing.Size]::new(400, 58)
+                BackColor = $colorPanelBg
+            }
+            $lbl = [System.Windows.Forms.Label]@{
+                Text      = $Caption
+                Font      = $fontUIBold
+                ForeColor = $colorText
+                Location  = [System.Drawing.Point]::new(16, 8)
+                AutoSize  = $true
+            }
+            $lblDateHint = [System.Windows.Forms.Label]@{
+                Text      = 'Date'
+                Font      = [System.Drawing.Font]::new('Segoe UI', 7.5)
+                ForeColor = $colorSubText
+                Location  = [System.Drawing.Point]::new(100, 6)
+                AutoSize  = $true
+            }
+            $dtp = [System.Windows.Forms.DateTimePicker]@{
+                Format   = [System.Windows.Forms.DateTimePickerFormat]::Short
+                Location = [System.Drawing.Point]::new(100, 22)
+                Size     = [System.Drawing.Size]::new(140, 24)
+                Value    = $InitialValue
+                Font     = $fontUI
+            }
+            $lblTimeHint = [System.Windows.Forms.Label]@{
+                Text      = 'Time'
+                Font      = [System.Drawing.Font]::new('Segoe UI', 7.5)
+                ForeColor = $colorSubText
+                Location  = [System.Drawing.Point]::new(256, 6)
+                AutoSize  = $true
+            }
+            $dtpTime = [System.Windows.Forms.DateTimePicker]@{
+                Format     = [System.Windows.Forms.DateTimePickerFormat]::Time
+                ShowUpDown = $true
+                Location   = [System.Drawing.Point]::new(256, 22)
+                Size       = [System.Drawing.Size]::new(110, 24)
+                Value      = $InitialValue
+                Font       = $fontUI
+            }
+            $row.Controls.AddRange(@($lbl, $lblDateHint, $dtp, $lblTimeHint, $dtpTime))
+            # Draw an explicit 1-px border around each DTP so all 4 sides are visible regardless
+            # of background colour (the Windows-themed DTP border disappears on a same-colour bg)
+            $row | Add-Member -NotePropertyName '_dtp' -NotePropertyValue $dtp
+            $row | Add-Member -NotePropertyName '_dtpTime' -NotePropertyValue $dtpTime
+            $row.Add_Paint({
+                    param($s, $e)
+                    $pen = [System.Drawing.Pen]::new([System.Drawing.Color]::FromArgb(130, 135, 153))
+                    foreach ($ctrl in @($s._dtp, $s._dtpTime)) {
+                        $e.Graphics.DrawRectangle($pen, $ctrl.Left - 1, $ctrl.Top - 1, $ctrl.Width + 1, $ctrl.Height + 1)
+                    }
+                    $pen.Dispose()
+                })
+            # Return the row and both pickers as a hashtable
+            return @{ Panel = $row; DatePicker = $dtp; TimePicker = $dtpTime }
+        }
+
+        $startRow = New-DateTimeRow -Caption 'From' -InitialValue $initStart -Top 10
+        $endRow = New-DateTimeRow -Caption 'To' -InitialValue $initEnd -Top 88
+
+        # Thin separator between rows
+        $sep = [System.Windows.Forms.Panel]@{
+            Location  = [System.Drawing.Point]::new(16, 74)
+            Size      = [System.Drawing.Size]::new(368, 1)
+            BackColor = [System.Drawing.Color]::FromArgb(220, 220, 220)
+        }
+
+        $pnlContent.Controls.AddRange(@($startRow.Panel, $sep, $endRow.Panel))
+
+        # --- Time zone selector ---
+        $lblTZHint = [System.Windows.Forms.Label]@{
+            Text      = 'Time zone'
+            Font      = [System.Drawing.Font]::new('Segoe UI', 7.5)
+            ForeColor = $colorSubText
+            Location  = [System.Drawing.Point]::new(16, 236)
+            AutoSize  = $true
+        }
+        $cmbTZ = [System.Windows.Forms.ComboBox]@{
+            DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
+            Location      = [System.Drawing.Point]::new(16, 252)
+            Size          = [System.Drawing.Size]::new(400, 24)
+            Font          = $fontUI
+        }
+        $cmbTZ.DisplayMember = 'DisplayName'
+        foreach ($tz in [System.TimeZoneInfo]::GetSystemTimeZones()) { $null = $cmbTZ.Items.Add($tz) }
+        $localId = [System.TimeZoneInfo]::Local.Id
+        for ($i = 0; $i -lt $cmbTZ.Items.Count; $i++) {
+            if ($cmbTZ.Items[$i].Id -eq $localId) { $cmbTZ.SelectedIndex = $i; break }
+        }
+
+        # --- Buttons ---
+        $btnOK = [System.Windows.Forms.Button]@{
+            Text         = 'Apply'
+            Location     = [System.Drawing.Point]::new(222, 286)
+            Size         = [System.Drawing.Size]::new(90, 32)
+            FlatStyle    = [System.Windows.Forms.FlatStyle]::Flat
+            BackColor    = $colorAccent
+            ForeColor    = [System.Drawing.Color]::White
+            Font         = $fontUIBold
+            DialogResult = [System.Windows.Forms.DialogResult]::OK
+            Cursor       = [System.Windows.Forms.Cursors]::Hand
+        }
+        $btnOK.FlatAppearance.BorderSize = 0
+
+        $btnCancel = [System.Windows.Forms.Button]@{
+            Text         = 'Cancel'
+            Location     = [System.Drawing.Point]::new(326, 286)
+            Size         = [System.Drawing.Size]::new(90, 32)
+            FlatStyle    = [System.Windows.Forms.FlatStyle]::Flat
+            BackColor    = [System.Drawing.Color]::FromArgb(225, 225, 225)
+            ForeColor    = $colorText
+            Font         = $fontUI
+            DialogResult = [System.Windows.Forms.DialogResult]::Cancel
+            Cursor       = [System.Windows.Forms.Cursors]::Hand
+        }
+        $btnCancel.FlatAppearance.BorderSize = 0
+
+        $lblPS365 = [System.Windows.Forms.Label]@{
+            Text      = 'PS365 - ps365.clidsys.com'
+            ForeColor = $colorSubText
+            Font      = [System.Drawing.Font]::new('Segoe UI', 7.5)
+            AutoSize  = $true
+            Location  = [System.Drawing.Point]::new(16, 294)
+        }
+
+        $form.Controls.AddRange(@($pnlHeader, $pnlContent, $lblTZHint, $cmbTZ, $btnOK, $btnCancel, $lblPS365))
+        $form.AcceptButton = $btnOK
+        $form.CancelButton = $btnCancel
+
+        if ($form.ShowDialog() -ne [System.Windows.Forms.DialogResult]::OK) {
+            Write-Warning 'Date picker cancelled. No data retrieved.'
+            return
+        }
+
+        # Merge date + time then convert from the selected timezone to UTC
+        $selectedTz = $cmbTZ.SelectedItem
+        $startLocal = $startRow.DatePicker.Value.Date.Add($startRow.TimePicker.Value.TimeOfDay)
+        $endLocal = $endRow.DatePicker.Value.Date.Add($endRow.TimePicker.Value.TimeOfDay)
+        $StartDate = [System.TimeZoneInfo]::ConvertTimeToUtc([datetime]::SpecifyKind($startLocal, [System.DateTimeKind]::Unspecified), $selectedTz)
+        $EndDate = [System.TimeZoneInfo]::ConvertTimeToUtc([datetime]::SpecifyKind($endLocal, [System.DateTimeKind]::Unspecified), $selectedTz)
+    }
 
     if ($ForceNewToken) {
         Disconnect-MgGraph
@@ -623,6 +832,11 @@ function Get-MgAuditLogSigninInfo {
                 DeviceIsCompliant                = $signIn.DeviceDetail.IsCompliant
                 Location                         = $location
                 IsInteractive                    = $signIn.IsInteractive
+                AuthenticationRequirement        = $signIn.AuthenticationRequirement
+                MfaDetail                        = if ($signIn.MfaDetail.AuthMethod) { "$($signIn.MfaDetail.AuthMethod)|$($signIn.MfaDetail.AuthDetail)" } else { $null }
+                AuthenticationDetails            = ($signIn.AuthenticationDetails | ForEach-Object {
+                        "Method=$($_.AuthenticationMethod);Step=$($_.AuthenticationStepRequirement);Succeeded=$($_.Succeeded);Result=$($_.AuthenticationStepResultDetail)"
+                    }) -join ' | '
             }
 
             $signsInList.Add($object)

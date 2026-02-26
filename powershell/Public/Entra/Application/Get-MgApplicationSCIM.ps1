@@ -491,7 +491,7 @@ function Get-MgApplicationSCIM {
             $emailBody += '    </table>'
         }
         else {
-            $emailBody += "    <p style=`"color:#107c10;font-weight:600;`">✓ All SCIM provisioning jobs are healthy.</p>"
+            $emailBody += "    <p style=`"color:#107c10;font-weight:600;`">All SCIM provisioning jobs are healthy.</p>"
         }
 
         $emailBody += @"
@@ -525,7 +525,7 @@ function Get-MgApplicationSCIM {
             }
 
             Send-MgUserMail -UserId $NotificationSender -BodyParameter $params
-            Write-Host -ForegroundColor Green "✓ SCIM health notification email sent successfully to $NotificationRecipient"
+            Write-Host -ForegroundColor Green "SCIM health notification email sent successfully to $NotificationRecipient"
         }
         catch {
             Write-Warning "Failed to send notification email: $($_.Exception.Message)"

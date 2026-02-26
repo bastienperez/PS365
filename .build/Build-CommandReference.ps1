@@ -2,7 +2,6 @@
 # * This command needs to be run from the root of the project. e.g. ./build/Build-CommandReference.ps1
 # * If running the docusaurus site locally you will need to stop and start Docusaurus to clear the 'Module not found' errors after running this command
 
-
 $powershellModuleFolder = './powershell'
 $powershellModuleName = 'PS365.psm1'
 $websiteFolder = './website/docs'

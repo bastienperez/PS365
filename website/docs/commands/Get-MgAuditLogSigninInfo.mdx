@@ -14,8 +14,8 @@ Get-MgAuditLogSigninInfo [[-StartDate] <Object>] [[-EndDate] <Object>] [[-Users]
  [-BadCredentialsOnly] [-LastLogonOnly] [-NonMFASignInsOnly] [-MFASignInsOnly] [-NonInteractiveSignIns]
  [-ServicePrincipalSignIns] [-ManagedIdentitySignIns] [[-ConditionalAccessPolicyName] <String>]
  [-ConditionalAccessPolicyNotApplied] [-ConditionalAccessPolicySuccessOnly]
- [-ConditionalAccessPolicyFailedOnly] [[-TimeRange] <String>] [-ForceNewToken] [-AnalyzeCAPInReportOnly]
- [-ExportToExcel] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+ [-ConditionalAccessPolicyFailedOnly] [[-TimeRange] <String>] [-UseDatePicker] [-ForceNewToken]
+ [-AnalyzeCAPInReportOnly] [-ExportToExcel] [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -377,6 +377,24 @@ Aliases:
 Required: False
 Position: 7
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -UseDatePicker
+
+Switch to open an interactive calendar dialog to select StartDate and EndDate visually.
+Requires Windows with .NET Windows Forms support (Windows PowerShell or pwsh on Windows).
+Any values already provided via -StartDate or -EndDate are used as the initial selection in the pickers.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
