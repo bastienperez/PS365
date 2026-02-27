@@ -218,21 +218,15 @@ function Get-EntraIDHybridJoinComputerInfo {
     Write-Host -ForegroundColor Cyan 'Get dsregcmd status'
 
     # Computer state
-    $dsregcmd = (dsregcmd /status | Where-Object { $_ -match ' : ' } | ForEach-Object { $_.Trim() } | ConvertFrom-String -PropertyNames 'Name', 'Value' -Delimiter ' : ')
-
-    $dsregcmdObject = [PSCustomObject][ordered]@{}
-
-    foreach ($property in $dsregcmd) {
-        $dsregcmdObject | Add-Member -NotePropertyName $property.Name -NotePropertyValue $property.Value
-    }
+    $dsregcmdObject = Get-EntraIDRegcmd
 
     $joinType = 0
-    if ( ($dsregcmd | Where-Object { $_.Name -eq 'EnterpriseJoined' }).Value -eq 'YES' ) {
+    if ( $dsregcmdObject.EnterpriseJoined -eq 'YES' ) {
         $joinType = 4
     }
     else {
-        if ( ($dsregcmd | Where-Object { $_.Name -eq 'AzureAdJoined' }).Value -eq 'YES' ) {
-            if ( ($dsregcmd | Where-Object { $_.Name -eq 'DomainJoined' }).Value -eq 'YES' ) {
+        if ( $dsregcmdObject.AzureAdJoined -eq 'YES' ) {
+            if ( $dsregcmdObject.DomainJoined -eq 'YES' ) {
                 $joinType = 3
             }
             else {
@@ -240,8 +234,8 @@ function Get-EntraIDHybridJoinComputerInfo {
             }
         }
         else {
-            if ( ($dsregcmd | Where-Object { $_.Name -eq 'DomainJoined' }).Value -eq 'YES' ) {
-                if ( ($dsregcmd | Where-Object { $_.Name -eq 'WorkplaceJoined' }).Value -eq 'YES' ) {
+            if ( $dsregcmdObject.DomainJoined -eq 'YES' ) {
+                if ( $dsregcmdObject.WorkplaceJoined -eq 'YES' ) {
                     $joinType = 6
                 }
                 else {
@@ -249,7 +243,7 @@ function Get-EntraIDHybridJoinComputerInfo {
                 }
             }
             else {
-                if ( ($dsregcmd | Where-Object { $_.Name -eq 'WorkplaceJoined' }).Value -eq 'YES' ) {
+                if ( $dsregcmdObject.WorkplaceJoined -eq 'YES' ) {
                     $joinType = 5
                 }
             }

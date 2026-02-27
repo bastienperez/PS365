@@ -63,7 +63,14 @@
             "pages": [
               "docs/commands/Get-EntraIDHybridJoinComputerInfo",
               "docs/commands/Get-EntraIDHybridJoinComputerRegistryKey",
-              "docs/commands/Get-EntraIDHybridJoinSCP"
+              "docs/commands/Get-EntraIDHybridJoinSCP",
+              "docs/commands/Get-EntraIDRegcmd"
+            ]
+          },
+          {
+            "group": "L A P S",
+            "pages": [
+              "docs/commands/Get-MgLAPSPassword"
             ]
           },
           {
