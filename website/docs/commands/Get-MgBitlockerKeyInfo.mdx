@@ -8,10 +8,20 @@ Invokes the backup of BitLocker recovery keys to Intune for all Intune managed d
 
 ## SYNTAX
 
+### Default (Default)
+
 ```powershell
 Get-MgBitlockerKeyInfo [-IncludeDeviceInfo] [-IncludeDeviceOwner] [-ExportToExcel] [-ShowKeyInPlainText]
- [[-BackupToKeyVault] <String>] [[-DeviceName] <String>] [[-DeviceID] <String>]
- [-ProgressAction <ActionPreference>] [<CommonParameters>]
+ [-RunFromAzureAutomation] [-DeviceName <String>] [-DeviceID <String>] [-ProgressAction <ActionPreference>]
+ [<CommonParameters>]
+```
+
+### KeyVault
+
+```powershell
+Get-MgBitlockerKeyInfo [-IncludeDeviceInfo] [-IncludeDeviceOwner] [-ExportToExcel] [-ShowKeyInPlainText]
+ [-RunFromAzureAutomation] [-BackupToKeyVault] -KeyVaultName <String> [-DeviceName <String>]
+ [-DeviceID <String>] [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -51,7 +61,7 @@ WARNING: Use with extreme caution as this exposes sensitive recovery keys!
 ### EXAMPLE 4
 
 ```powershell
-Get-MgBitlockerKeyInfo -IncludeDeviceInfo -BackupToKeyVault "MyBitLockerVault" -ExportToExcel
+Get-MgBitlockerKeyInfo -IncludeDeviceInfo -BackupToKeyVault -KeyVaultName "MyBitLockerVault" -ExportToExcel
 ```
 
 This command retrieves BitLocker keys, backs them up to the specified Azure Key Vault, and exports to Excel.
@@ -59,12 +69,21 @@ This command retrieves BitLocker keys, backs them up to the specified Azure Key 
 ### EXAMPLE 5
 
 ```powershell
+Get-MgBitlockerKeyInfo -RunFromAzureAutomation -IncludeDeviceInfo -ExportToExcel
+```
+
+This command retrieves BitLocker keys using managed identity authentication and exports to Excel.
+Suitable for Azure Automation runbooks.
+
+### EXAMPLE 6
+
+```powershell
 Get-MgBitlockerKeyInfo -DeviceName "LAPTOP-ABC123" -IncludeDeviceInfo -ShowKeysInPlainText
 ```
 
 This command retrieves BitLocker keys for a specific device by name, includes device information, and displays keys in plain text.
 
-### EXAMPLE 6
+### EXAMPLE 7
 
 ```powershell
 Get-MgBitlockerKeyInfo -DeviceID "12345678-1234-1234-1234-123456789abc" -ExportToExcel
@@ -143,19 +162,60 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -RunFromAzureAutomation
+
+(Optional) If specified, uses managed identity authentication instead of interactive authentication.
+This is useful when running the script in Azure environments like Azure Functions, Logic Apps, or VMs with managed identity enabled.
+
+PowerShell modules used in Azure Automation must be a MAXIMUM of version 2.25.0 when using PowerShell &lt; 7.4.0, because starting from version 2.26.0, PowerShell 7.4.0 is required, and Azure Automation does not support it yet as of February 2026.
+For PowerShell 7.4.0+, there are no version restrictions.
+https://github.com/microsoftgraph/msgraph-sdk-powershell/issues/3147
+https://github.com/microsoftgraph/msgraph-sdk-powershell/issues/3151
+https://github.com/microsoftgraph/msgraph-sdk-powershell/issues/3166
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -BackupToKeyVault
 
+Switch to enable backup of BitLocker recovery keys to Azure Key Vault.
+Must be used together with -KeyVaultName.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: KeyVault
+Aliases:
+
+Required: True
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -KeyVaultName
+
 Specify the name of Azure Key Vault to backup BitLocker recovery keys.
+Mandatory when -BackupToKeyVault is specified.
 Requires Azure PowerShell module and appropriate permissions to access Key Vault.
 Keys will be stored with device name and BitLocker key ID as the secret name.
 
 ```yaml
 Type: String
-Parameter Sets: (All)
+Parameter Sets: KeyVault
 Aliases:
 
-Required: False
-Position: 1
+Required: True
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -172,7 +232,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 2
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -189,7 +249,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 3
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

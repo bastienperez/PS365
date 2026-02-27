@@ -1,164 +1,341 @@
-<#.SYNOPSIS
-Retrieves the LAPS password for a Microsoft Entra ID device.
+<#
+    .SYNOPSIS
+    Retrieves the LAPS password for a Microsoft Entra ID device.
 
-.DESCRIPTION
-Gets the Windows Local Administrator Password Solution (LAPS) password for a specified device in Microsoft Entra ID (formerly Azure AD).
+    .DESCRIPTION
+    Gets the Windows Local Administrator Password Solution (LAPS) password for one or all devices in Microsoft Entra ID (formerly Azure AD).
+    By default, only metadata is returned (no password). Use -ShowPassword to retrieve the password in plain text.
+    Passwords can optionally be backed up to an Azure Key Vault.
 
-.PARAMETER DeviceID
-The Microsoft Entra ID (Azure AD) Device ID for which you want to retrieve the LAPS password. This is the unique identifier assigned to the device in Microsoft Entra ID.
+    .PARAMETER DeviceID
+    The Microsoft Entra ID (Azure AD) Device ID for which you want to retrieve the LAPS password.
+    If not specified, retrieves LAPS passwords for all devices.
 
-.EXAMPLE
-Get-MgLAPSPassword -DeviceID "12345678-1234-1234-1234-123456789012"
+    .PARAMETER ShowPassword
+    Retrieve and display the LAPS password in plain text.
+    By default, only metadata (expiration time, etc.) is returned.
+    Use with caution, as this will expose the password in the console output.
 
-Retrieves the LAPS password for the specified device ID.
+    .PARAMETER IncludeHistory
+    Include previous LAPS passwords in the output, in addition to the current one.
+    Only applicable when -ShowPassword or -BackupToKeyVault is specified. Has no effect otherwise.
+    The output includes an IsCurrent property to identify the active password.
 
-.EXAMPLE
-Get-MgLAPSPassword -DeviceID "12345678-1234-1234-1234-123456789012" -IncludePasswords
+    .PARAMETER RunFromAzureAutomation
+    Use managed identity authentication instead of interactive authentication.
+    Suitable for Azure Automation runbooks, Azure Functions, or VMs with managed identity enabled.
 
-Retrieves the LAPS password for the specified device ID, including the password itself as a secure string.
+    .PARAMETER BackupToKeyVault
+    Enable backup of LAPS passwords to Azure Key Vault.
+    Must be used together with -KeyVaultName.
+    The secret name is the device name; the Content Type field contains the account name and backup date.
 
-.EXAMPLE
-Get-MgLAPSPassword -DeviceID "12345678-1234-1234-1234-123456789012" -IncludePasswords -AsPlainText
+    .PARAMETER KeyVaultName
+    Name of the Azure Key Vault to back up LAPS passwords to.
+    Mandatory when -BackupToKeyVault is specified.
+    Requires the Az.KeyVault module and appropriate permissions.
 
-Retrieves the LAPS password for the specified device ID, including the password itself, and displays the password in plain text.
+    .EXAMPLE
+    Get-MgLAPSPassword
 
-.EXAMPLE
-Get-MgLAPSPassword -DeviceID "12345678-1234-1234-1234-123456789012" -IncludePasswords -IncludeHistory
+    Retrieves metadata (no password) for all devices with LAPS configured.
 
-Retrieves the LAPS password for the specified device ID, including the password itself, and includes the password history.
+    .EXAMPLE
+    Get-MgLAPSPassword -DeviceID "12345678-1234-1234-1234-123456789012"
 
-.EXAMPLE
-Get-MgLAPSPassword -DeviceID "12345678-1234-1234-1234-123456789012" -IncludePasswords -IncludeHistory -AsPlainText
+    Retrieves metadata (no password) for the specified device.
 
-Retrieves the LAPS password for the specified device ID, including the password itself, includes the password history, and displays the password in plain text.
+    .EXAMPLE
+    Get-MgLAPSPassword -ShowPassword
 
-.NOTES
-Requires appropriate permissions in Microsoft Entra ID to read LAPS passwords.
-This cmdlet is part of the Microsoft365-Toolbox module.
+    Retrieves the current LAPS password in plain text for all devices.
 
+    .EXAMPLE
+    Get-MgLAPSPassword -DeviceID "12345678-1234-1234-1234-123456789012" -ShowPassword
+
+    Retrieves the current LAPS password in plain text for the specified device.
+
+    .EXAMPLE
+    Get-MgLAPSPassword -DeviceID "12345678-1234-1234-1234-123456789012" -ShowPassword -IncludeHistory
+
+    Retrieves the current and historical LAPS passwords for the specified device.
+    The IsCurrent property indicates which entry is the active password.
+
+    .EXAMPLE
+    Get-MgLAPSPassword -BackupToKeyVault -KeyVaultName "MyLAPSVault"
+
+    Backs up LAPS passwords for all devices to Azure Key Vault.
+
+    .EXAMPLE
+    Get-MgLAPSPassword -DeviceID "12345678-1234-1234-1234-123456789012" -BackupToKeyVault -KeyVaultName "MyLAPSVault"
+
+    Backs up the LAPS password for the specified device to Azure Key Vault.
+
+    .EXAMPLE
+    Get-MgLAPSPassword -RunFromAzureAutomation -BackupToKeyVault -KeyVaultName "MyLAPSVault"
+
+    Backs up LAPS passwords for all devices using managed identity authentication. Suitable for Azure Automation runbooks.
+
+    .LINK
+    https://ps365.clidsys.com/docs/commands/Get-MgLAPSPassword
+
+    .NOTES
+    Requires the DeviceLocalCredential.Read.All and Device.Read.All permissions in Microsoft Entra ID.
 #>
 
 function Get-MgLAPSPassword {
+    [CmdletBinding(DefaultParameterSetName = 'Default')]
     param(
-        [Parameter(Mandatory = $true, HelpMessage = 'The Microsoft Entra ID (Azure AD) Device ID for which you want to retrieve the LAPS password.')]
+        [Parameter(Mandatory = $false, HelpMessage = 'The Microsoft Entra ID (Azure AD) Device ID for which you want to retrieve the LAPS password. If not specified, retrieves LAPS passwords for all devices.')]
         [string]$DeviceID,
-        [switch]$IncludePasswords,
-        [switch]$AsPlainText,
-        [switch]$IncludeHistory
+        [switch]$ShowPassword,
+        [switch]$IncludeHistory,
+
+        [Parameter(HelpMessage = 'Use managed identity authentication (for Azure Automation)')]
+        [switch]$RunFromAzureAutomation,
+
+        [Parameter(Mandatory, ParameterSetName = 'KeyVault', HelpMessage = 'Enable backup of LAPS passwords to Azure Key Vault')]
+        [switch]$BackupToKeyVault,
+
+        [Parameter(Mandatory, ParameterSetName = 'KeyVault', HelpMessage = 'Azure Key Vault name to backup LAPS passwords')]
+        [ValidateNotNullOrEmpty()]
+        [string]$KeyVaultName
     )
 
-    #Connect to Microsoft Graph
-    #Connect-MgGraph -Scope DeviceLocalCredential.Read.All, Device.Read.All
+    $fetchPasswords = $ShowPassword.IsPresent -or $BackupToKeyVault.IsPresent
 
-    #Define your device name here
-    #$DeviceName = ''
-    #Store the device id value for your target device
-    #$DeviceId = (Get-MgDevice -All | Where-Object { $_.DisplayName -eq $DeviceName } | Select-Object DeviceId).DeviceId
+    if ($IncludeHistory.IsPresent -and -not $fetchPasswords) {
+        Write-Warning '-IncludeHistory has no effect without -ShowPassword or -BackupToKeyVault.'
+    }
+
+    $requiredScopes = @('DeviceLocalCredential.Read.All', 'Device.Read.All')
+
+    # Version check for Azure Automation before connecting
+    if ($RunFromAzureAutomation.IsPresent) {
+        if ($PSVersionTable.PSVersion -lt [version]'7.4.0') {
+            $mgAuth = Get-Module 'Microsoft.Graph.Authentication' -ListAvailable | Sort-Object Version -Descending | Select-Object -First 1
+            if ($mgAuth -and [version]$mgAuth.Version -gt [version]'2.25.0') {
+                Write-Error "Microsoft.Graph.Authentication v$($mgAuth.Version) is not compatible with Azure Automation on PowerShell $($PSVersionTable.PSVersion). Maximum supported version is 2.25.0. Script execution stopped." -ErrorAction Stop
+                return
+            }
+        }
+    }
+
+    $isConnected = $null -ne (Get-MgContext -ErrorAction SilentlyContinue)
+
+    if (-not $isConnected) {
+        if ($RunFromAzureAutomation.IsPresent) {
+            Write-Verbose 'Connecting to Microsoft Graph using Managed Identity'
+            Connect-MgGraph -Identity -NoWelcome
+        }
+        else {
+            Write-Verbose "Connecting to Microsoft Graph. Scopes: $($requiredScopes -join ',')"
+            $null = Connect-MgGraph -Scopes $requiredScopes -NoWelcome
+        }
+    }
+
+    # Setup Azure Key Vault connection if backup is requested
+    if ($BackupToKeyVault.IsPresent) {
+        Write-Verbose 'Setting up Azure Key Vault connection for LAPS password backup...'
+        $keyVaultName = $KeyVaultName
+        Write-Verbose "Using Key Vault: $keyVaultName"
+
+        try {
+            if (-not (Get-Module -ListAvailable -Name Az.KeyVault)) {
+                Write-Error 'Az.KeyVault module is required for Key Vault backup. Install it with: Install-Module Az.KeyVault' -ErrorAction Stop
+            }
+
+            Write-Verbose 'Connecting to Azure for Key Vault access...'
+            try {
+                $azContext = Get-AzContext -ErrorAction SilentlyContinue
+                if (-not $azContext) {
+                    Connect-AzAccount -Identity -ErrorAction Stop
+                    Write-Verbose 'Connected to Azure using Managed Identity'
+                }
+                else {
+                    Write-Verbose 'Using existing Azure connection'
+                }
+            }
+            catch {
+                Write-Warning 'Failed to connect to Azure automatically. Please ensure you are logged in with Connect-AzAccount or using Managed Identity.'
+                Write-Error "Azure connection required for Key Vault backup: $($_.Exception.Message)" -ErrorAction Stop
+            }
+
+            Write-Verbose "Verifying access to Key Vault: $keyVaultName"
+            try {
+                $keyVault = Get-AzKeyVault -VaultName $keyVaultName -ErrorAction Stop
+                Write-Verbose "Successfully verified access to Key Vault: $($keyVault.VaultName)"
+            }
+            catch {
+                Write-Error "Cannot access Key Vault '$keyVaultName'. Please ensure it exists and you have appropriate permissions: $($_.Exception.Message)" -ErrorAction Stop
+            }
+        }
+        catch {
+            Write-Error "Failed to setup Azure Key Vault connection: $($_.Exception.Message)" -ErrorAction Stop
+        }
+    }
 
     #Define the URI path
-    $uri = 'v1.0/directory/deviceLocalCredentials/' + $DeviceId
-    # ?$select=credentials will cause the server to return all credentials, ie latest plus history
-
-    if ($IncludePasswords.IsPresent) {
-        $uri = $uri + '?$select=credentials'
+    # Build request headers (used for both list and individual calls)
+    $headers = @{
+        'ocp-client-name'    = 'Get-LapsAADPassword Windows LAPS Cmdlet'
+        'ocp-client-version' = '1.0'
     }
 
-    #Generate a new correlation ID
-    $correlationID = [System.Guid]::NewGuid()
-        
-    #Build the request header
-    $headers = @{}
-    $headers.Add('ocp-client-name', 'Get-LapsAADPassword Windows LAPS Cmdlet')
-    $headers.Add('ocp-client-version', '1.0')
-    $headers.Add('client-request-id', $correlationID)
+    # Build the list of device credential IDs to process
+    $deviceCredentialIds = [System.Collections.Generic.List[string]]@()
 
-    #Initation the request to Microsoft Graph for the LAPS password
-    try {
-        $response = Invoke-MgGraphRequest -Method GET -Uri $URI -Headers $headers -OutputType Json
+    if ($DeviceID) {
+        $deviceCredentialIds.Add($DeviceID)
     }
-    catch {
-        Write-Warning "Device ID: $DeviceId $($_.Exception.Message -replace "`n", ' ' -replace "`r", ' ')"
-        $object = [PSCustomObject][ordered]@{
-            DeviceName             = '$null'
-            DeviceId               = $deviceID
-            PasswordExpirationTime = $null
+    else {
+        Write-Verbose 'No DeviceID specified - retrieving all device LAPS credentials...'
+        $listUri = 'v1.0/directory/deviceLocalCredentials'
+        $listResponse = Invoke-MgGraphRequest -Method GET -Uri $listUri -Headers $headers -OutputType PSObject
+        foreach ($item in $listResponse.value) {
+            $deviceCredentialIds.Add($item.id)
+        }
+        Write-Verbose "Found $($deviceCredentialIds.Count) devices with LAPS credentials"
+    }
+
+    foreach ($deviceCredentialId in $deviceCredentialIds) {
+
+        # New correlation ID per request
+        $headers['client-request-id'] = [System.Guid]::NewGuid().ToString()
+
+        $uri = 'v1.0/directory/deviceLocalCredentials/' + $deviceCredentialId
+        # ?$select=credentials will cause the server to return all credentials, ie latest plus history
+
+        if ($fetchPasswords) {
+            $uri = $uri + '?$select=credentials'
         }
 
-        return $object
-    }
+        #Initation the request to Microsoft Graph for the LAPS password
+        try {
+            $response = Invoke-MgGraphRequest -Method GET -Uri $URI -Headers $headers -OutputType Json
+        }
+        catch {
+            Write-Warning "Device ID: $deviceCredentialId $($_.Exception.Message -replace "`n", ' ' -replace "`r", ' ')"
+            $object = [PSCustomObject][ordered]@{
+                DeviceName             = '$null'
+                DeviceId               = $deviceCredentialId
+                PasswordExpirationTime = $null
+            }
 
-    if ([string]::IsNullOrWhitespace($response)) {
-        $object = [PSCustomObject][ordered]@{
-            DeviceName             = '$null'
-            DeviceId               = $deviceID
-            PasswordExpirationTime = $null
+            $object
+            continue
         }
 
-        return $object
-    }
+        if ([string]::IsNullOrWhitespace($response)) {
+            $object = [PSCustomObject][ordered]@{
+                DeviceName             = '$null'
+                DeviceId               = $deviceCredentialId
+                PasswordExpirationTime = $null
+            }
 
-    # Build custom PS output object
-    $resultsJson = ConvertFrom-Json $response
+            $object
+            continue
+        }
+
+        # Build custom PS output object
+        $resultsJson = ConvertFrom-Json $response
     
-    $lapsDeviceId = $resultsJson.deviceName
+        $lapsDeviceId = $resultsJson.deviceName
 
-    $lapsDeviceId = New-Object([System.Guid])
-    $lapsDeviceId = [System.Guid]::Parse($resultsJson.id)
+        $lapsDeviceId = New-Object([System.Guid])
+        $lapsDeviceId = [System.Guid]::Parse($resultsJson.id)
 
-    # Grab password expiration time (only applies to the latest password)
-    $lapsPasswordExpirationTime = Get-Date $resultsJson.refreshDateTime
+        # Grab password expiration time (only applies to the latest password)
+        $lapsPasswordExpirationTime = Get-Date $resultsJson.refreshDateTime
 
-    if ($IncludePasswords) {
-        # Copy the credentials array
-        $credentials = $resultsJson.credentials
+        if ($fetchPasswords) {
+            # Copy the credentials array
+            $credentials = $resultsJson.credentials
 
-        # Sort the credentials array by backupDateTime.
-        $credentials = $credentials | Sort-Object -Property backupDateTime -Descending
+            # Sort the credentials array by backupDateTime.
+            $credentials = $credentials | Sort-Object -Property backupDateTime -Descending
 
-        # Note: current password (ie, the one most recently set) is now in the zero position of the array
+            # Note: current password (ie, the one most recently set) is now in the zero position of the array
 
-        # If history was not requested, truncate the credential array down to just the latest one
-        if (-not $IncludeHistory) {
-            $credentials = @($credentials[0])
-        }
+            # If history was not requested, truncate the credential array down to just the latest one
+            if (-not $IncludeHistory) {
+                $credentials = @($credentials[0])
+            }
 
-        foreach ($credential in $credentials) {
+            $currentCredential = $credentials[0]
 
-            # Cloud returns passwords in base64, convert:
-            if ($AsPlainText) {
-                $password = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($credential.passwordBase64))
+            # When backing up history to Key Vault, process oldest first so the most recent
+            # password is written last and becomes the active version of the secret
+            $credentialsToProcess = if ($BackupToKeyVault.IsPresent -and $IncludeHistory) {
+                @($credentials | Sort-Object -Property backupDateTime)
             }
             else {
-                $bytes = [System.Convert]::FromBase64String($credential.passwordBase64)
-
-                $plainText = [System.Text.Encoding]::UTF8.GetString($bytes)
-
-                $password = ConvertTo-SecureString $plainText -AsPlainText -Force
+                $credentials
             }
 
-            $lapsPasswordExpirationTime = $null
+            foreach ($credential in $credentialsToProcess) {
 
+                # Cloud returns passwords in base64, decode to plain text
+                $plainText = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($credential.passwordBase64))
+
+                # Backup to Key Vault if requested
+                if ($BackupToKeyVault.IsPresent) {
+                    try {
+                        $backupDate = if ($credential.backupDateTime) { (Get-Date $credential.backupDateTime -Format 'yyyy-MM-dd-HHmmss') } else { 'unknown' }
+                        $secretName = "LAPS-$($resultsJson.deviceName)" -replace '[^0-9a-zA-Z-]', '-'
+                        $contentType = "$backupDate-$($credential.accountName)"
+
+                        Write-Verbose "Backing up LAPS password for $($resultsJson.deviceName) ($($credential.accountName)) to Key Vault '$keyVaultName' with secret name '$secretName' and content type '$contentType'"
+                        $existingVersions = Get-AzKeyVaultSecret -VaultName $keyVaultName -Name $secretName -IncludeVersions -ErrorAction SilentlyContinue
+                        $alreadyBackedUp = $existingVersions | Where-Object { $_.ContentType -eq $contentType }
+                        if ($alreadyBackedUp) {
+                            Write-Host "Secret '$secretName' with ContentType '$contentType' already exists in Key Vault, skipping..." -ForegroundColor Yellow
+                        }
+                        else {
+                            $secretValue = ConvertTo-SecureString $plainText -AsPlainText -Force
+                            $notBefore = if ($credential.backupDateTime) { (Get-Date $credential.backupDateTime).ToUniversalTime() } else { $null }
+                            $setParams = @{
+                                VaultName   = $keyVaultName
+                                Name        = $secretName
+                                SecretValue = $secretValue
+                                ContentType = $contentType
+                                ErrorAction = 'Continue'
+                            }
+                            if ($notBefore) { $setParams['NotBefore'] = $notBefore }
+                            $null = Set-AzKeyVaultSecret @setParams
+                            Write-Verbose "Successfully backed up LAPS password for $($resultsJson.deviceName) ($($credential.accountName)) to Key Vault"
+                        }
+                    }
+                    catch {
+                        Write-Warning "Failed to backup LAPS password to Key Vault: $($_.Exception.Message)"
+                    }
+                }
+                else {
+                    $object = [PSCustomObject][ordered]@{
+                        DeviceName             = $resultsJson.deviceName
+                        DeviceId               = $lapsDeviceId
+                        Account                = $credential.accountName
+                        IsCurrent              = ($credential -eq $currentCredential)
+                        Password               = $plainText
+                        PasswordExpirationTime = $lapsPasswordExpirationTime
+                        PasswordUpdateTime     = if ($credential.backupDateTime) { Get-Date $credential.backupDateTime } else { $null }
+                    }
+
+                    $object
+                }
+            }
+        }
+        else {
+            # Output a single object that just displays latest password expiration time
+            # Note, $IncludeHistory is ignored even if specified in this case
             $object = [PSCustomObject][ordered]@{
                 DeviceName             = $resultsJson.deviceName
                 DeviceId               = $lapsDeviceId
-                Account                = $credential.accountName
-                Password               = $password
+                Password               = '[HIDDEN - Use -ShowPassword to display]'
                 PasswordExpirationTime = $lapsPasswordExpirationTime
-                PasswordUpdateTime     = Get-Date $credential.backupDateTime
             }
 
             $object
         }
-    }
-    else {
-        # Output a single object that just displays latest password expiration time
-        # Note, $IncludeHistory is ignored even if specified in this case
-        $object = [PSCustomObject][ordered]@{
-            DeviceName             = $resultsJson.deviceName
-            DeviceId               = $lapsDeviceId
-            PasswordExpirationTime = $lapsPasswordExpirationTime
-        }
-
-        $object
-    }
+    } # end foreach deviceCredentialId
 }

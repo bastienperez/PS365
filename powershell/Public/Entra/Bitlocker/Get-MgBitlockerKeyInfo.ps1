@@ -24,10 +24,24 @@
     Without this parameter, keys will be hidden for security (displayed as '[HIDDEN]').
     
     .PARAMETER BackupToKeyVault
+    Switch to enable backup of BitLocker recovery keys to Azure Key Vault.
+    Must be used together with -KeyVaultName.
+
+    .PARAMETER KeyVaultName
     Specify the name of Azure Key Vault to backup BitLocker recovery keys.
+    Mandatory when -BackupToKeyVault is specified.
     Requires Azure PowerShell module and appropriate permissions to access Key Vault.
     Keys will be stored with device name and BitLocker key ID as the secret name.
     
+    .PARAMETER RunFromAzureAutomation
+    (Optional) If specified, uses managed identity authentication instead of interactive authentication.
+    This is useful when running the script in Azure environments like Azure Functions, Logic Apps, or VMs with managed identity enabled.
+
+    PowerShell modules used in Azure Automation must be a MAXIMUM of version 2.25.0 when using PowerShell < 7.4.0, because starting from version 2.26.0, PowerShell 7.4.0 is required, and Azure Automation does not support it yet as of February 2026. For PowerShell 7.4.0+, there are no version restrictions.
+    https://github.com/microsoftgraph/msgraph-sdk-powershell/issues/3147
+    https://github.com/microsoftgraph/msgraph-sdk-powershell/issues/3151
+    https://github.com/microsoftgraph/msgraph-sdk-powershell/issues/3166
+
     .PARAMETER DeviceName
     Filter results to a specific device by its display name.
     Cannot be used together with DeviceID parameter.
@@ -53,9 +67,14 @@
     WARNING: Use with extreme caution as this exposes sensitive recovery keys!
     
     .EXAMPLE
-    Get-MgBitlockerKeyInfo -IncludeDeviceInfo -BackupToKeyVault "MyBitLockerVault" -ExportToExcel
+    Get-MgBitlockerKeyInfo -IncludeDeviceInfo -BackupToKeyVault -KeyVaultName "MyBitLockerVault" -ExportToExcel
 
     This command retrieves BitLocker keys, backs them up to the specified Azure Key Vault, and exports to Excel.
+
+    .EXAMPLE
+    Get-MgBitlockerKeyInfo -RunFromAzureAutomation -IncludeDeviceInfo -ExportToExcel
+
+    This command retrieves BitLocker keys using managed identity authentication and exports to Excel. Suitable for Azure Automation runbooks.
 
     .EXAMPLE
     Get-MgBitlockerKeyInfo -DeviceName "LAPTOP-ABC123" -IncludeDeviceInfo -ShowKeysInPlainText
@@ -90,7 +109,7 @@
 #>
 
 function Get-MgBitlockerKeyInfo {
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName = 'Default')]
     param(
         [Parameter(HelpMessage = 'Include device information in the output')]
         [switch]$IncludeDeviceInfo,
@@ -104,9 +123,15 @@ function Get-MgBitlockerKeyInfo {
         [Parameter(HelpMessage = 'Show BitLocker recovery keys in plain text (/!\ SECURITY RISK: Use with caution!)')]
         [switch]$ShowKeyInPlainText,
         
-        [Parameter(HelpMessage = 'Specify Azure Key Vault name to backup BitLocker keys')]
+        [Parameter(HelpMessage = 'Use managed identity authentication (for Azure Automation)')]
+        [switch]$RunFromAzureAutomation,
+
+        [Parameter(Mandatory, ParameterSetName = 'KeyVault', HelpMessage = 'Enable backup of BitLocker recovery keys to Azure Key Vault')]
+        [switch]$BackupToKeyVault,
+        
+        [Parameter(Mandatory, ParameterSetName = 'KeyVault', HelpMessage = 'Azure Key Vault name to backup BitLocker keys')]
         [ValidateNotNullOrEmpty()]
-        [string]$BackupToKeyVault,
+        [string]$KeyVaultName,
         
         [Parameter(HelpMessage = 'Filter by device name (cannot be used with DeviceID)')]
         [ValidateNotNullOrEmpty()]
@@ -163,7 +188,31 @@ function Get-MgBitlockerKeyInfo {
     catch {
         Write-Error "Failed to import Microsoft.Graph.Identity.SignIns module: $($_.Exception.Message)" -ErrorAction Stop
     }
-    
+
+    # Version check for Azure Automation before connecting
+    if ($RunFromAzureAutomation.IsPresent) {
+        if ($PSVersionTable.PSVersion -lt [version]'7.4.0') {
+            $mgAuth = Get-Module 'Microsoft.Graph.Authentication' -ListAvailable | Sort-Object Version -Descending | Select-Object -First 1
+            if ($mgAuth -and [version]$mgAuth.Version -gt [version]'2.25.0') {
+                Write-Error "Microsoft.Graph.Authentication v$($mgAuth.Version) is not compatible with Azure Automation on PowerShell $($PSVersionTable.PSVersion). Maximum supported version is 2.25.0. Script execution stopped." -ErrorAction Stop
+                return
+            }
+        }
+    }
+
+    $isConnected = $null -ne (Get-MgContext -ErrorAction SilentlyContinue)
+
+    if (-not $isConnected) {
+        if ($RunFromAzureAutomation.IsPresent) {
+            Write-Verbose 'Connecting to Microsoft Graph using Managed Identity'
+            Connect-MgGraph -Identity -NoWelcome
+        }
+        else {
+            Write-Verbose "Connecting to Microsoft Graph. Scopes: $($requiredScopes -join ',')"
+            $null = Connect-MgGraph -Scopes $requiredScopes -NoWelcome
+        }
+    }
+
     # Verify we have all required permissions
     Write-Verbose 'Verifying Microsoft Graph permissions...'
     try {
@@ -182,11 +231,11 @@ function Get-MgBitlockerKeyInfo {
     }
     
     # Setup Azure Key Vault connection if backup is requested
-    if ($PSBoundParameters['BackupToKeyVault']) {
+    if ($PSBoundParameters['KeyVaultName']) {
         Write-Verbose 'Setting up Azure Key Vault connection for BitLocker keys backup...'
         
         # Key Vault configuration from parameter
-        $keyVaultName = $BackupToKeyVault
+        $keyVaultName = $KeyVaultName
         Write-Verbose "Using Key Vault: $keyVaultName"
         
         try {
@@ -358,7 +407,7 @@ function Get-MgBitlockerKeyInfo {
     Write-Verbose "Found $($keys.Count) BitLocker keys to process"
 
     # Cycle through the keys and retrieve the key
-    Write-Verbose 'Processing BitLocker Recovery keys...'
+    Write-Verbose 'Processe ing BitLocker Recovery keys...'
     $keyCounter = 0
     $totalKeys = $keys.Count
     
@@ -380,7 +429,7 @@ function Get-MgBitlockerKeyInfo {
         }
         else {
             # Fetch plain text key if needed
-            if ($ShowKeyInPlainText -or $BackupToKeyVault) {
+            if ($ShowKeyInPlainText -or $KeyVaultName) {
                 try {
                     Write-Verbose "[$keyCounter/$totalKeys] Retrieving plain text key for BitLocker key ID: $($key.Id)..."
                     $keyDetails = Get-MgInformationProtectionBitlockerRecoveryKey -BitlockerRecoveryKeyId $key.Id -Property key -ErrorAction Stop -Verbose:$false
@@ -404,8 +453,13 @@ function Get-MgBitlockerKeyInfo {
             }
         }
         
+        $key | Add-Member -MemberType NoteProperty -Name 'BitLockerKeyId' -Value (& { if ($null -eq $key.Id) { '$null' } else { $key.Id } })
+        $key | Add-Member -MemberType NoteProperty -Name 'BitLockerRecoveryKey' -Value $keyValue
+        $key | Add-Member -MemberType NoteProperty -Name 'BitLockerDriveType' -Value (& { if ($null -eq $key.VolumeType) { '$null' } else { Get-DriveTypeName -DriveType $key.VolumeType } })
+        $key | Add-Member -MemberType NoteProperty -Name 'BitlockerKeyCreatedDateTime' -Value (& { if ($key.CreatedDateTime) { Get-Date($key.CreatedDateTime) -Format g } else { '$null' } })
+
         # Backup to Key Vault if requested
-        if ($BackupToKeyVault -and $actualKeyValue) {
+        if ($KeyVaultName -and $actualKeyValue) {
             try {
                 Write-Verbose "[$keyCounter/$totalKeys] Backing up BitLocker key to Key Vault..."
                 
@@ -413,24 +467,35 @@ function Get-MgBitlockerKeyInfo {
                 $deviceInfo = $devices | Where-Object { $_.DeviceId -eq $key.DeviceId }
                 $deviceName = if ($deviceInfo -and $deviceInfo.DisplayName) { $deviceInfo.DisplayName } else { "UnknownDevice-$($key.DeviceId)" }
                 
-                # Create Key Vault secret name: DeviceName-BitLockerKeyID-KeyId
-                $secretName = "$deviceName-BitLockerKeyID-$($key.Id)"
+                # Create Key Vault secret name: DeviceName-BitLockerKeyID-KeyId-CreationDate
+                $keyCreationDate = if ($key.CreatedDateTime) { (Get-Date $key.CreatedDateTime -Format 'yyyy-MM-dd-HHmmss') } else { 'unknown' }
+                # parsedevicetype selon le nom = OperatingSystem alors OS , FixedDisk, RemovableDisk
                 
-                # Convert to secure string and save to Key Vault
-                $secretValue = ConvertTo-SecureString $actualKeyValue -AsPlainText -Force
-                $null = Set-AzKeyVaultSecret -VaultName $keyVaultName -Name $secretName -SecretValue $secretValue -ErrorAction Continue
+                switch ($key.BitLockerDriveType) {
+                    'operatingSystemVolume' { $volumeType = 'OSDrive' }
+                    'fixedDiskVolume' { $volumeType = 'FixedDisk' }
+                    'removableDiskVolume' { $volumeType = 'RemovableDisk' }
+                    default { $volumeType = 'UnknownDrive' }
+                }
+
+                $secretName = "$deviceName-$($key.Id)-$volumeType-$keyCreationDate"
                 
-                Write-Verbose "[$keyCounter/$totalKeys] Successfully backed up key for device $deviceName to Key Vault"
+                # Check if secret already exists - if so, skip
+                $existingSecret = Get-AzKeyVaultSecret -VaultName $keyVaultName -Name $secretName -ErrorAction SilentlyContinue
+                if ($existingSecret) {
+                    Write-Host "[$keyCounter/$totalKeys] Secret '$secretName' already exists in Key Vault, skipping..." -ForegroundColor Yellow
+                }
+                else {
+                    # Convert to secure string and save to Key Vault
+                    $secretValue = ConvertTo-SecureString $actualKeyValue -AsPlainText -Force
+                    $null = Set-AzKeyVaultSecret -VaultName $keyVaultName -Name $secretName -SecretValue $secretValue -ErrorAction Continue
+                    Write-Verbose "[$keyCounter/$totalKeys] Successfully backed up key for device $deviceName to Key Vault"
+                }
             }
             catch {
                 Write-Warning "[$keyCounter/$totalKeys] Failed to backup BitLocker key to Key Vault for device $($key.DeviceId): $($_.Exception.Message)"
             }
         }
-        
-        $key | Add-Member -MemberType NoteProperty -Name 'BitLockerKeyId' -Value (& { if ($null -eq $key.Id) { '$null' } else { $key.Id } })
-        $key | Add-Member -MemberType NoteProperty -Name 'BitLockerRecoveryKey' -Value $keyValue
-        $key | Add-Member -MemberType NoteProperty -Name 'BitLockerDriveType' -Value (& { if ($null -eq $key.VolumeType) { '$null' } else { Get-DriveTypeName -DriveType $key.VolumeType } })
-        $key | Add-Member -MemberType NoteProperty -Name 'BitlockerKeyCreatedDateTime' -Value (& { if ($key.CreatedDateTime) { Get-Date($key.CreatedDateTime) -Format g } else { '$null' } })
 
         # If requested, include the device details
         if ($PSBoundParameters['IncludeDeviceInfo']) {
@@ -518,6 +583,9 @@ function Get-MgBitlockerKeyInfo {
         catch {
             Write-Error "Failed to export results to Excel: $($_.Exception.Message)" -ErrorAction Stop
         }
+    }
+    elseif ($PSBoundParameters['BackupToKeyVault']) {
+        # No output when backing up to Key Vault
     }
     else {
         # Return the data objects
