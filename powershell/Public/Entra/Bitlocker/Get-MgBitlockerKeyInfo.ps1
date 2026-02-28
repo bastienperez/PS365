@@ -407,9 +407,11 @@ function Get-MgBitlockerKeyInfo {
     Write-Verbose "Found $($keys.Count) BitLocker keys to process"
 
     # Cycle through the keys and retrieve the key
-    Write-Verbose 'Processe ing BitLocker Recovery keys...'
+    Write-Verbose 'Processing BitLocker Recovery keys...'
     $keyCounter = 0
     $totalKeys = $keys.Count
+    # Counter for Key Vault secret creations - Key Vault allows max 300 creations per 10 seconds
+    if ($PSBoundParameters['KeyVaultName']) { $kvSecretCreationCount = 0 }
     
     foreach ($key in $keys) {
         $keyCounter++
@@ -489,7 +491,14 @@ function Get-MgBitlockerKeyInfo {
                     # Convert to secure string and save to Key Vault
                     $secretValue = ConvertTo-SecureString $actualKeyValue -AsPlainText -Force
                     $null = Set-AzKeyVaultSecret -VaultName $keyVaultName -Name $secretName -SecretValue $secretValue -ErrorAction Continue
+                    $kvSecretCreationCount++
                     Write-Verbose "[$keyCounter/$totalKeys] Successfully backed up key for device $deviceName to Key Vault"
+
+                    # Throttle Key Vault writes: max ~300 creations per 10 seconds; pause every 250
+                    if ($kvSecretCreationCount % 250 -eq 0) {
+                        Write-Host "[$keyCounter/$totalKeys] Key Vault rate limit throttle: $kvSecretCreationCount secrets created. Waiting 10 seconds..." -ForegroundColor Cyan
+                        Start-Sleep -Seconds 10
+                    }
                 }
             }
             catch {

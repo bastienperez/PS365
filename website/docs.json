@@ -20,9 +20,12 @@
       {
         "group": "Azure",
         "pages": [
-          "docs/commands/Switch-AzureCliAuthMode",
-          "docs/commands/Switch-AzurePowerShellMode",
-          "docs/commands/Switch-MgGraphPowerShellMode"
+          {
+            "group": "Automation",
+            "pages": [
+              "docs/commands/Copy-AzAutomationRunbook"
+            ]
+          }
         ]
       },
       {
@@ -141,7 +144,10 @@
         "group": "Misc",
         "pages": [
           "docs/commands/Compare-UserAttribute",
-          "docs/commands/Find-M365Email"
+          "docs/commands/Find-M365Email",
+          "docs/commands/Switch-AzureCliAuthMode",
+          "docs/commands/Switch-AzurePowerShellMode",
+          "docs/commands/Switch-MgGraphPowerShellMode"
         ]
       },
       {

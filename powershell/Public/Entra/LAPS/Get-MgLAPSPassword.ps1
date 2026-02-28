@@ -7,9 +7,14 @@
     By default, only metadata is returned (no password). Use -ShowPassword to retrieve the password in plain text.
     Passwords can optionally be backed up to an Azure Key Vault.
 
+    .PARAMETER DeviceName
+    Filter results to a specific device by its display name.
+    Cannot be used together with DeviceID parameter.
+
     .PARAMETER DeviceID
-    The Microsoft Entra ID (Azure AD) Device ID for which you want to retrieve the LAPS password.
+    Filter results to a specific device by its Entra ID (Azure AD) object ID.
     If not specified, retrieves LAPS passwords for all devices.
+    Cannot be used together with DeviceName parameter.
 
     .PARAMETER ShowPassword
     Retrieve and display the LAPS password in plain text.
@@ -39,6 +44,11 @@
     Get-MgLAPSPassword
 
     Retrieves metadata (no password) for all devices with LAPS configured.
+
+    .EXAMPLE
+    Get-MgLAPSPassword -DeviceName "DESKTOP-ABC123"
+
+    Retrieves metadata (no password) for the device with the specified display name.
 
     .EXAMPLE
     Get-MgLAPSPassword -DeviceID "12345678-1234-1234-1234-123456789012"
@@ -86,8 +96,14 @@
 function Get-MgLAPSPassword {
     [CmdletBinding(DefaultParameterSetName = 'Default')]
     param(
-        [Parameter(Mandatory = $false, HelpMessage = 'The Microsoft Entra ID (Azure AD) Device ID for which you want to retrieve the LAPS password. If not specified, retrieves LAPS passwords for all devices.')]
+        [Parameter(HelpMessage = 'Filter by device display name (cannot be used with DeviceID)')]
+        [ValidateNotNullOrEmpty()]
+        [string]$DeviceName,
+
+        [Parameter(HelpMessage = 'Filter by Entra ID (Azure AD) device object ID (cannot be used with DeviceName). If not specified, retrieves LAPS passwords for all devices.')]
+        [ValidateNotNullOrEmpty()]
         [string]$DeviceID,
+
         [switch]$ShowPassword,
         [switch]$IncludeHistory,
 
@@ -101,6 +117,11 @@ function Get-MgLAPSPassword {
         [ValidateNotNullOrEmpty()]
         [string]$KeyVaultName
     )
+
+    # Validate that only one device filter is specified
+    if ($PSBoundParameters.ContainsKey('DeviceName') -and $PSBoundParameters.ContainsKey('DeviceID')) {
+        Write-Error 'Cannot specify both DeviceName and DeviceID parameters. Please use only one.' -ErrorAction Stop
+    }
 
     $fetchPasswords = $ShowPassword.IsPresent -or $BackupToKeyVault.IsPresent
 
@@ -185,11 +206,21 @@ function Get-MgLAPSPassword {
     # Build the list of device credential IDs to process
     $deviceCredentialIds = [System.Collections.Generic.List[string]]@()
 
-    if ($DeviceID) {
+    if ($PSBoundParameters.ContainsKey('DeviceName')) {
+        Write-Verbose "Resolving device name '$DeviceName' to Entra ID object ID..."
+        $mgDevice = Get-MgDevice -Filter "displayName eq '$DeviceName'" -ErrorAction Stop | Select-Object -First 1
+        if (-not $mgDevice) {
+            Write-Warning "No device found with display name '$DeviceName'"
+            return
+        }
+        Write-Verbose "Resolved '$DeviceName' to device object ID: $($mgDevice.Id)"
+        $deviceCredentialIds.Add($mgDevice.Id)
+    }
+    elseif ($PSBoundParameters.ContainsKey('DeviceID')) {
         $deviceCredentialIds.Add($DeviceID)
     }
     else {
-        Write-Verbose 'No DeviceID specified - retrieving all device LAPS credentials...'
+        Write-Verbose 'No device filter specified - retrieving all device LAPS credentials...'
         $listUri = 'v1.0/directory/deviceLocalCredentials'
         $listResponse = Invoke-MgGraphRequest -Method GET -Uri $listUri -Headers $headers -OutputType PSObject
         foreach ($item in $listResponse.value) {
@@ -197,6 +228,9 @@ function Get-MgLAPSPassword {
         }
         Write-Verbose "Found $($deviceCredentialIds.Count) devices with LAPS credentials"
     }
+
+    # Counter for Key Vault secret creations - Key Vault allows max 300 creations per 10 seconds
+    if ($PSBoundParameters['KeyVaultName']) { $kvSecretCreationCount = 0 }
 
     foreach ($deviceCredentialId in $deviceCredentialIds) {
 
@@ -303,7 +337,14 @@ function Get-MgLAPSPassword {
                             }
                             if ($notBefore) { $setParams['NotBefore'] = $notBefore }
                             $null = Set-AzKeyVaultSecret @setParams
+                            $kvSecretCreationCount++
                             Write-Verbose "Successfully backed up LAPS password for $($resultsJson.deviceName) ($($credential.accountName)) to Key Vault"
+
+                            # Throttle Key Vault writes: max ~300 creations per 10 seconds; pause every 250
+                            if ($kvSecretCreationCount % 250 -eq 0) {
+                                Write-Host "Key Vault rate limit throttle: $kvSecretCreationCount secrets created. Waiting 10 seconds..." -ForegroundColor Cyan
+                                Start-Sleep -Seconds 10
+                            }
                         }
                     }
                     catch {
@@ -337,5 +378,5 @@ function Get-MgLAPSPassword {
 
             $object
         }
-    } # end foreach deviceCredentialId
+    }
 }
