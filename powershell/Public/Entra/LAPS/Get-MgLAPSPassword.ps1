@@ -170,7 +170,7 @@ function Get-MgLAPSPassword {
             try {
                 $azContext = Get-AzContext -ErrorAction SilentlyContinue
                 if (-not $azContext) {
-                    Connect-AzAccount -Identity -ErrorAction Stop
+                    $null = Connect-AzAccount -Identity -ErrorAction Stop
                     Write-Verbose 'Connected to Azure using Managed Identity'
                 }
                 else {
@@ -213,8 +213,8 @@ function Get-MgLAPSPassword {
             Write-Warning "No device found with display name '$DeviceName'"
             return
         }
-        Write-Verbose "Resolved '$DeviceName' to device object ID: $($mgDevice.Id)"
-        $deviceCredentialIds.Add($mgDevice.Id)
+        Write-Verbose "Resolved '$DeviceName' to device object ID: $($mgDevice.DeviceId)"
+        $deviceCredentialIds.Add($mgDevice.DeviceId)
     }
     elseif ($PSBoundParameters.ContainsKey('DeviceID')) {
         $deviceCredentialIds.Add($DeviceID)

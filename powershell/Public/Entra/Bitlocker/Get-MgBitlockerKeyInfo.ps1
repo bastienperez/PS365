@@ -251,7 +251,7 @@ function Get-MgBitlockerKeyInfo {
                 $azContext = Get-AzContext -ErrorAction SilentlyContinue
                 if (-not $azContext) {
                     # Attempt Managed Identity connection
-                    Connect-AzAccount -Identity -ErrorAction Stop
+                    $null = Connect-AzAccount -Identity -ErrorAction Stop
                     Write-Verbose 'Connected to Azure using Managed Identity'
                 }
                 else {
@@ -469,30 +469,39 @@ function Get-MgBitlockerKeyInfo {
                 $deviceInfo = $devices | Where-Object { $_.DeviceId -eq $key.DeviceId }
                 $deviceName = if ($deviceInfo -and $deviceInfo.DisplayName) { $deviceInfo.DisplayName } else { "UnknownDevice-$($key.DeviceId)" }
                 
-                # Create Key Vault secret name: DeviceName-BitLockerKeyID-KeyId-CreationDate
                 $keyCreationDate = if ($key.CreatedDateTime) { (Get-Date $key.CreatedDateTime -Format 'yyyy-MM-dd-HHmmss') } else { 'unknown' }
-                # parsedevicetype selon le nom = OperatingSystem alors OS , FixedDisk, RemovableDisk
-                
+
                 switch ($key.BitLockerDriveType) {
                     'operatingSystemVolume' { $volumeType = 'OSDrive' }
-                    'fixedDiskVolume' { $volumeType = 'FixedDisk' }
-                    'removableDiskVolume' { $volumeType = 'RemovableDisk' }
+                    'fixedDataVolume' { $volumeType = 'FixedDisk' }
+                    'removableDataVolume' { $volumeType = 'RemovableDisk' }
                     default { $volumeType = 'UnknownDrive' }
                 }
 
-                $secretName = "$deviceName-$($key.Id)-$volumeType-$keyCreationDate"
-                
-                # Check if secret already exists - if so, skip
-                $existingSecret = Get-AzKeyVaultSecret -VaultName $keyVaultName -Name $secretName -ErrorAction SilentlyContinue
-                if ($existingSecret) {
-                    Write-Host "[$keyCounter/$totalKeys] Secret '$secretName' already exists in Key Vault, skipping..." -ForegroundColor Yellow
+                # Secret name = device name (sanitized); ContentType = date + volume type (mirrors LAPS pattern)
+                $secretName = "BL-$deviceName" -replace '[^0-9a-zA-Z-]', '-'
+                $contentType = "$keyCreationDate-$volumeType"
+
+                Write-Verbose "[$keyCounter/$totalKeys] Backing up BitLocker key for $deviceName ($volumeType) to Key Vault '$keyVaultName' with secret name '$secretName' and content type '$contentType'"
+                $existingVersions = Get-AzKeyVaultSecret -VaultName $keyVaultName -Name $secretName -IncludeVersions -ErrorAction SilentlyContinue
+                $alreadyBackedUp = $existingVersions | Where-Object { $_.ContentType -eq $contentType }
+                if ($alreadyBackedUp) {
+                    Write-Host "[$keyCounter/$totalKeys] Secret '$secretName' with ContentType '$contentType' already exists in Key Vault, skipping..." -ForegroundColor Yellow
                 }
                 else {
-                    # Convert to secure string and save to Key Vault
                     $secretValue = ConvertTo-SecureString $actualKeyValue -AsPlainText -Force
-                    $null = Set-AzKeyVaultSecret -VaultName $keyVaultName -Name $secretName -SecretValue $secretValue -ErrorAction Continue
+                    $notBefore = if ($key.CreatedDateTime) { (Get-Date $key.CreatedDateTime).ToUniversalTime() } else { $null }
+                    $setParams = @{
+                        VaultName   = $keyVaultName
+                        Name        = $secretName
+                        SecretValue = $secretValue
+                        ContentType = $contentType
+                        ErrorAction = 'Continue'
+                    }
+                    if ($notBefore) { $setParams['NotBefore'] = $notBefore }
+                    $null = Set-AzKeyVaultSecret @setParams
                     $kvSecretCreationCount++
-                    Write-Verbose "[$keyCounter/$totalKeys] Successfully backed up key for device $deviceName to Key Vault"
+                    Write-Verbose "[$keyCounter/$totalKeys] Successfully backed up BitLocker key for $deviceName ($volumeType) to Key Vault"
 
                     # Throttle Key Vault writes: max ~300 creations per 10 seconds; pause every 250
                     if ($kvSecretCreationCount % 250 -eq 0) {
