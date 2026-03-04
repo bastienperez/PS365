@@ -94,6 +94,12 @@
         "group": "Exchange",
         "pages": [
           {
+            "group": "Calendar",
+            "pages": [
+              "docs/commands/Set-ExCalendarPermission"
+            ]
+          },
+          {
             "group": "Group",
             "pages": [
               "docs/commands/Find-DistributionGroupMember"
