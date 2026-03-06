@@ -1,0 +1,84 @@
+---
+Module Name: PS365
+---
+
+## SYNOPSIS
+
+Converts between Microsoft Entra ID SID and Object ID formats.
+
+## SYNTAX
+
+```powershell
+Convert-EntraObjectIDAndSID [-Value] <String> [-ProgressAction <ActionPreference>] [<CommonParameters>]
+```
+
+## DESCRIPTION
+
+Automatically detects whether the input is a SID (S-1-12-1-...) or an Object ID (GUID)
+and converts it to the other format.
+
+- SID (S-1-12-1-...) → returns the corresponding Object ID (GUID)
+- Object ID (GUID)   → returns the corresponding SID (S-1-12-1-...)
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Convert-EntraObjectIDAndSID -Value "S-1-12-1-1234567890-987654321-1122334455-5544332211"
+```
+
+Converts the given SID to its corresponding Object ID (GUID).
+
+### EXAMPLE 2
+
+```powershell
+Convert-EntraObjectIDAndSID -Value "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+```
+
+Converts the given Object ID to its corresponding SID.
+
+### EXAMPLE 3
+
+```powershell
+"S-1-12-1-1234567890-987654321-1122334455-5544332211", "a1b2c3d4-e5f6-7890-abcd-ef1234567890" | Convert-EntraObjectIDAndSID
+```
+
+Converts multiple values via pipeline input.
+
+## PARAMETERS
+
+### -Value
+
+The SID or Object ID to convert.
+Accepts pipeline input.
+- SID format:       S-1-12-1-\{4 decimal numbers separated by dashes\}
+- Object ID format: GUID (e.g., xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 1
+Default value: None
+Accept pipeline input: True (ByValue)
+Accept wildcard characters: False
+```
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+## NOTES
+
+Entra ID uses a specific SID format: S-1-12-1-\{4 UInt32 components derived from the GUID bytes\}.
+This conversion is bijective: SID &lt;-&gt; ObjectID.
+
+## RELATED LINKS
+
+[https://ps365.clidsys.com/docs/commands/Convert-EntraObjectIDAndSID](https://ps365.clidsys.com/docs/commands/Convert-EntraObjectIDAndSID)

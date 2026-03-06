@@ -77,6 +77,12 @@
             ]
           },
           {
+            "group": "Object",
+            "pages": [
+              "docs/commands/Convert-EntraObjectIDAndSID"
+            ]
+          },
+          {
             "group": "Password",
             "pages": [
               "docs/commands/Get-MgUserPasswordInfo"
@@ -130,6 +136,7 @@
         "group": "Intune",
         "pages": [
           "docs/commands/Get-IntuneAutoMDMEnrollmentPolicy",
+          "docs/commands/Get-IntuneODJConnectorServiceEventLog",
           "docs/commands/New-IntuneEnrollmentServicePrincipal",
           "docs/commands/Set-IntuneAutoMDMEnrollmentPolicy"
         ]

@@ -1,0 +1,109 @@
+---
+Module Name: PS365
+---
+
+## SYNOPSIS
+
+Retrieves and parses event logs from the Microsoft Intune ODJ (Offline Domain Join) Connector Service.
+
+## SYNTAX
+
+```powershell
+Get-IntuneODJConnectorServiceEventLog [[-DeviceId] <String>] [[-DeviceName] <String>]
+ [-ProgressAction <ActionPreference>] [<CommonParameters>]
+```
+
+## DESCRIPTION
+
+This function uses the Get-WinEvent cmdlet to filter and retrieve specific event logs related
+to the Microsoft Intune ODJ (Offline Domain Join) Connector Service.
+It parses the event messages
+to extract structured information such as ActivityId, DeviceId, DeviceName, and other diagnostic data.
+Intune ODJ Connector Service is responsible for creating Windows computer objects in Active Directory 
+during the device enrollment process via Windows Autopilot.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Get-IntuneODJConnectorServiceEventLog
+```
+
+Retrieves and parses the event logs for the Microsoft Intune ODJ Connector Service, returning structured objects with parsed properties.
+
+### EXAMPLE 2
+
+```powershell
+Get-IntuneODJConnectorServiceEventLog | Where-Object { $_.DiagnosticCode -ne 0 }
+```
+
+Retrieves parsed event logs and filters for events with non-zero diagnostic codes (potential errors).
+
+### EXAMPLE 3
+
+```powershell
+Get-IntuneODJConnectorServiceEventLog -DeviceId 'e078603c-fe1a-488a-a760-415622ff9f45'
+```
+
+Retrieves event logs for a specific device ID.
+
+### EXAMPLE 4
+
+```powershell
+Get-IntuneODJConnectorServiceEventLog -DeviceName 'DESKTOP-*'
+```
+
+Retrieves event logs for devices with names matching the wildcard pattern.
+
+## PARAMETERS
+
+### -DeviceId
+
+Filters the results to show only events for the specified Device ID (GUID).
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DeviceName
+
+Filters the results to show only events for the specified Device Name.
+Supports wildcards.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 2
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+## NOTES
+
+Must be executed on the server where the Microsoft Intune ODJ Connector Service is installed to access the relevant event logs.
+Requires local administrator privileges to read the event logs.
+Automatically resolves UserID to Active Directory account information (User, gMSA, Computer) when the ActiveDirectory module is available.
+
+## RELATED LINKS
+
+[https://ps365.clidsys.com/docs/commands/Get-IntuneODJConnectorServiceEventLog](https://ps365.clidsys.com/docs/commands/Get-IntuneODJConnectorServiceEventLog)

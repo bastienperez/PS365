@@ -1,3 +1,15 @@
+<#
+    .SYNOPSIS
+    Retrieves the current device registration status by invoking the 'dsregcmd /status' command and
+    parsing its output.
+
+    .DESCRIPTION
+    Retrieves the current device registration status by invoking the 'dsregcmd /status' command and parsing its output.
+
+    .EXAMPLE
+    Get-EntraIDRegcmd
+#>
+
 function Get-EntraIDRegcmd {
     $dsregcmd = dsregcmd /status
 
