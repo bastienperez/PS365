@@ -1,17 +1,17 @@
 <#
-.SYNOPSIS
+    .SYNOPSIS
     Retrieves Entra ID Hybrid Join registry keys from the local computer.
 
-.DESCRIPTION
+    .DESCRIPTION
     This function reads registry keys from HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CDJ\AAD
     to retrieve TenantId, TenantName, and other hybrid join configuration values.
 
-.EXAMPLE
+    .EXAMPLE
     Get-EntraIDHybridJoinComputerRegistryKey
 
     Returns an object containing TenantId, TenantName, and other registry keys if present.
 
-.NOTES
+    .NOTES
     Returns a PSCustomObject with ComputerName, TenantId, TenantName, and OtherKeys properties.
     Properties will be null if the registry path or values do not exist.
 #>

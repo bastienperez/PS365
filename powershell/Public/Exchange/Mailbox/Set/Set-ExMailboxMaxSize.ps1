@@ -54,7 +54,7 @@
 function Set-ExMailboxMaxSize {
 	[CmdletBinding(SupportsShouldProcess)]
 	param(
-		[Parameter(Mandatory = $true, ParameterSetName = 'Identity')]
+		[Parameter(Mandatory = $true, ParameterSetName = 'Identity', Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
 		[string[]]$Identity,
 
 		[Parameter(Mandatory = $true, ParameterSetName = 'ByDomain')]
@@ -65,6 +65,7 @@ function Set-ExMailboxMaxSize {
 
 		[Parameter(Mandatory = $true, ParameterSetName = 'AllMailboxes')]
 		[switch]$AllMailboxes,
+		
 		[Parameter(Mandatory = $false)]
 		[switch]$GenerateCmdlets,
 

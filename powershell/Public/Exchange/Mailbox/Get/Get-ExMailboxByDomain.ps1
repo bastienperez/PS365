@@ -31,7 +31,8 @@
 #>
 function Get-ExMailboxByDomain {
 	param (
-		[Parameter(Mandatory = $true, Position = 0)]    
+		[Parameter(Mandatory = $false, position=0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
+		[ValidateNotNullOrEmpty()] 
 		[string]$Domain,
 
 		[Parameter(Mandatory = $false)]

@@ -113,7 +113,7 @@
 function Get-MgDynamicGroup {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, Position = 0)]
         [String]$GroupId,
 
         [Parameter(Mandatory = $false)]

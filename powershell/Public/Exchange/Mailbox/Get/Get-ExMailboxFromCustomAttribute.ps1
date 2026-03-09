@@ -33,8 +33,10 @@
 
 function Get-ExMailboxFromAttribute {
     param (
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory = $false, position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
+        [ValidateNotNullOrEmpty()]
         [string]$Attribute,
+
         [Parameter(Mandatory = $false)]
         [string[]]$CheckAttributes
     )

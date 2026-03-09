@@ -33,6 +33,7 @@ function Get-ExMailboxOnMicrosoftAddress {
     param (
         [Parameter(Mandatory = $false, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
         [string[]]$Identity,
+        
         [Parameter(Mandatory = $false)]
         [string]$ByDomain
     )

@@ -73,7 +73,7 @@
 function Set-ExMailboxRegionalConfiguration {
 	[CmdletBinding(SupportsShouldProcess)]
 	param(
-		[Parameter(Mandatory = $true, ParameterSetName = 'Identity')]
+		[Parameter(Mandatory = $true, ParameterSetName = 'Identity', Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
 		[string[]]$Identity,
 
 		[Parameter(Mandatory = $true, ParameterSetName = 'ByDomain')]

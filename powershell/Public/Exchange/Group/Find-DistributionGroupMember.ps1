@@ -40,11 +40,14 @@ function Find-DistributionGroupMember {
     (
         [Parameter(Mandatory = $false)]
         [string]$FilterByDomain,
+
         [Parameter(Mandatory = $false)]
         [ValidateNotNull()]
         [string[]]$FilterByEmailAddresses,
+
         [Parameter(Mandatory = $false)]
         [switch]$FilterByExternalDomains,
+        
         [Parameter(Mandatory = $false)]
         [string]$FilterRecipientTypeDetails
     )

@@ -9,7 +9,8 @@ Sets calendar folder permissions for a mailbox in Exchange Online.
 ## SYNTAX
 
 ```powershell
-Set-ExCalendarPermission [[-Identity] <String>] [[-AccessRights] <String>] [[-DelegateUser] <String>]
+Set-ExCalendarPermission [-Identity] <String> -AccessRights <String> -DelegateUser <String>
+ [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -46,7 +47,7 @@ Type: String
 Parameter Sets: (All)
 Aliases:
 
-Required: False
+Required: True
 Position: 1
 Default value: None
 Accept pipeline input: False
@@ -78,8 +79,8 @@ Type: String
 Parameter Sets: (All)
 Aliases:
 
-Required: False
-Position: 2
+Required: True
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -94,12 +95,15 @@ Type: String
 Parameter Sets: (All)
 Aliases:
 
-Required: False
-Position: 3
+Required: True
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 

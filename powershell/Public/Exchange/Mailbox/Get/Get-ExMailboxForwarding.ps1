@@ -39,15 +39,19 @@ function Get-ExMailboxForwarding {
 
 	[CmdletBinding()] 
 	param ( 
-		[Parameter(Mandatory = $false)] 
+		[Parameter(Mandatory = $false, position=0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
 		[ValidateNotNullOrEmpty()] 
-		[string[]]$Mailboxes,
+		[string[]]$Identity,
+		
 		[Parameter(Mandatory = $false)] 
 		[switch]$ForwardingAndForwardingSMTPOnly,
+
 		[Parameter(Mandatory = $false)] 
 		[switch]$InboxRulesOnly,
+
 		[Parameter(Mandatory = $false)] 
 		[switch]$ExportResults,
+
 		[Parameter(Mandatory = $false)] 
 		[switch]$ExchangeOnPremise
 	)
@@ -174,9 +178,9 @@ function Get-ExMailboxForwarding {
 	}
 
 	# if mailboxes is specified, get only these mailboxes
-	if ($null -ne $Mailboxes -and $Mailboxes.Count -gt 0) {
+	if ($null -ne $Identity -and $Identity.Count -gt 0) {
 		[System.Collections.Generic.List[Object]]$tempMailboxesList = @()
-		foreach ($mbx in $Mailboxes) {
+		foreach ($mbx in $Identity) {
 			try {
 				$mailbox = $mailboxesList | Where-Object { $_.PrimarySMTPAddress -eq $mbx }
 				$tempMailboxesList.Add($mailbox)

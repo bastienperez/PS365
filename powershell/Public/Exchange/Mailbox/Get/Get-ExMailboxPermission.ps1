@@ -50,7 +50,8 @@
 
 function Get-ExMailboxPermission {
     param (
-        [Parameter(Mandatory = $false, Position = 0)]
+		[Parameter(Mandatory = $false, position=0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
+		[ValidateNotNullOrEmpty()]
         [string]$Identity,
 
         [Parameter(Mandatory = $false)]

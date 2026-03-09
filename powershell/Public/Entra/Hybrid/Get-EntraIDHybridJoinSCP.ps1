@@ -1,37 +1,37 @@
 <#
     .SYNOPSIS
-        Retrieves the Service Connection Point (SCP) for Entra ID Hybrid Join from Active Directory.
+    Retrieves the Service Connection Point (SCP) for Entra ID Hybrid Join from Active Directory.
 
     .DESCRIPTION
-        This function queries the Active Directory configuration naming context to retrieve
-        the Service Connection Point (SCP) object for device registration, which contains
-        Azure AD tenant information. If Active Directory is not accessible, it returns
-        an object with error information and null values for the SCP data.
+    This function queries the Active Directory configuration naming context to retrieve
+    the Service Connection Point (SCP) object for device registration, which contains
+    Azure AD tenant information. If Active Directory is not accessible, it returns
+    an object with error information and null values for the SCP data.
 
     .EXAMPLE
-        Get-EntraIDHybridJoinSCP
+    Get-EntraIDHybridJoinSCP
 
-        Returns the SCP object with keywords containing AzureADName and azureADId when AD is accessible.
+    Returns the SCP object with keywords containing AzureADName and azureADId when AD is accessible.
 
     .EXAMPLE
-        $result = Get-EntraIDHybridJoinSCP
-        if (-not $result.ADAccessible) {
-            Write-Warning "Cannot access Active Directory: $($result.ErrorMessage)"
-        }
+    $result = Get-EntraIDHybridJoinSCP
+    if (-not $result.ADAccessible) {
+        Write-Warning "Cannot access Active Directory: $($result.ErrorMessage)"
+    }
 
-        Tests if Active Directory is accessible and handles the error case.
+    Tests if Active Directory is accessible and handles the error case.
 
     .NOTES
-        Requires access to Active Directory and the configuration naming context.
-        Must be run on a domain-joined computer or with appropriate AD access.
-        
-        The returned object includes:
-        - WhenCreated: Creation date of the SCP object
-        - WhenChanged: Last modification date of the SCP object  
-        - Keywords: Pipe-separated keywords containing AzureADName and azureADId
-        - Path: LDAP path to the SCP object
-        - ErrorMessage: Error details if AD is not accessible (null if successful)
-        - ADAccessible: Boolean indicating if AD was accessible
+    Requires access to Active Directory and the configuration naming context.
+    Must be run on a domain-joined computer or with appropriate AD access.
+    
+    The returned object includes:
+    - WhenCreated: Creation date of the SCP object
+    - WhenChanged: Last modification date of the SCP object  
+    - Keywords: Pipe-separated keywords containing AzureADName and azureADId
+    - Path: LDAP path to the SCP object
+    - ErrorMessage: Error details if AD is not accessible (null if successful)
+    - ADAccessible: Boolean indicating if AD was accessible
 #>
 
 function Get-EntraIDHybridJoinSCP {

@@ -45,7 +45,7 @@
     
 function Get-MgApplicationAssignment {
     param(
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, Position = 0)]
         [String[]]$ApplicationId,
 
         [Parameter(Mandatory = $false)]

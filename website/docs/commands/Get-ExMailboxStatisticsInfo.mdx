@@ -9,7 +9,7 @@ Gets detailed mailbox statistics for Exchange Online including item count by typ
 ## SYNTAX
 
 ```powershell
-Get-ExMailboxStatisticsInfo [-Identity] <String> [-IncludeFolderDetails] [-ProgressAction <ActionPreference>]
+Get-ExMailboxStatisticsInfo [[-Identity] <String>] [-IncludeFolderDetails] [-ProgressAction <ActionPreference>]
  [<CommonParameters>]
 ```
 
@@ -52,7 +52,7 @@ Type: String
 Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: 1
 Default value: None
 Accept pipeline input: True (ByPropertyName, ByValue)

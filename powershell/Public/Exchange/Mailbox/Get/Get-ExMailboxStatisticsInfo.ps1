@@ -38,7 +38,8 @@
 function Get-ExMailboxStatisticsInfo {
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
+		[Parameter(Mandatory = $false, position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
+		[ValidateNotNullOrEmpty()] 
 		[string]$Identity,
         
 		[Parameter(Mandatory = $false)]

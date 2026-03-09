@@ -44,9 +44,12 @@
 
 function Set-ExCalendarPermission {
     param (
+        [Parameter(Mandatory = $true, Position = 0)]
         [string]$Identity,
+        [Parameter(Mandatory = $true)]
         [ValidateSet('None', 'FreeBusyTimeOnly', 'FreeBusyTimeAndSubjectAndLocation', 'Reviewer', 'Contributor', 'NoneditingAuthor', 'Author', 'PublishingAuthor', 'Editor', 'PublishingEditor', 'Owner', 'Custom')]
         [string]$AccessRights,
+        [Parameter(Mandatory = $true)]
         [string]$DelegateUser
     )
 

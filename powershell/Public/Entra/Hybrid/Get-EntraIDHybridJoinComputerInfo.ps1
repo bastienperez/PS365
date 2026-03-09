@@ -1,8 +1,8 @@
 <#
-.SYNOPSIS
+    .SYNOPSIS
     Retrieves detailed information about Entra ID Hybrid Join configuration on the local computer.
 
-.DESCRIPTION
+    .DESCRIPTION
     This function gathers comprehensive diagnostics for Entra ID Hybrid Join status including:
     - Service Connection Point (SCP) details
     - Network connectivity to Microsoft Entra ID endpoints
@@ -12,20 +12,20 @@
     - Event logs for device registration
     - dsregcmd status output
 
-.PARAMETER ExportToExcel
+    .PARAMETER ExportToExcel
     Optional path to export the results to an Excel file.
 
-.EXAMPLE
+    .EXAMPLE
     Get-EntraIDHybridJoinComputerInfo
 
     Retrieves all hybrid join diagnostic information for the local computer.
 
-.EXAMPLE
+    .EXAMPLE
     Get-EntraIDHybridJoinComputerInfo -ExportToExcel "C:\Reports\HybridJoinInfo.xlsx"
 
     Retrieves hybrid join information and exports it to an Excel file.
 
-.NOTES
+    .NOTES
     Must be run on a domain-joined computer.
 #>
 

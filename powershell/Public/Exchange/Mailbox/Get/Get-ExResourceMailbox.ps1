@@ -43,7 +43,8 @@ function Get-ExResourceMailbox {
     [CmdletBinding()]
     param (
         
-        [Parameter(Position = 0)]
+        [Parameter(Mandatory = $false, position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
+        [ValidateNotNullOrEmpty()] 
         [String[]] $PrimarySmtpAddress,
 
         [Parameter()]

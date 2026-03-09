@@ -11,7 +11,7 @@ Set Exchange mailbox protocol settings.
 ### Identity
 
 ```powershell
-Set-ExMailboxProtocol -Identity <String[]> [-GenerateCmdlets] [-OutputFile <String>] [-ModernProtocolsOnly]
+Set-ExMailboxProtocol [-Identity] <String[]> [-GenerateCmdlets] [-OutputFile <String>] [-ModernProtocolsOnly]
  [-ModernProtocolsAndEws] [-MAPIEnabled <Boolean>] [-OWAEnabled <Boolean>] [-PopEnabled <Boolean>]
  [-ImapEnabled <Boolean>] [-ActiveSyncEnabled <Boolean>] [-EwsEnabled <Boolean>]
  [-SmtpClientAuthenticationDisabled <Boolean>] [-UniversalOutlookEnabled <Boolean>]
@@ -107,9 +107,9 @@ Parameter Sets: Identity
 Aliases:
 
 Required: True
-Position: Named
+Position: 1
 Default value: None
-Accept pipeline input: False
+Accept pipeline input: True (ByPropertyName, ByValue)
 Accept wildcard characters: False
 ```
 

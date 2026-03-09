@@ -9,7 +9,7 @@ Get mailbox forwarding configuration
 ## SYNTAX
 
 ```powershell
-Get-ExMailboxForwarding [[-Mailboxes] <String[]>] [-ForwardingAndForwardingSMTPOnly] [-InboxRulesOnly]
+Get-ExMailboxForwarding [[-Identity] <String[]>] [-ForwardingAndForwardingSMTPOnly] [-InboxRulesOnly]
  [-ExportResults] [-ExchangeOnPremise] [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
@@ -53,9 +53,9 @@ Returns only mailboxes with inbox rules that forward emails.
 
 ## PARAMETERS
 
-### -Mailboxes
+### -Identity
 
-\{\{ Fill Mailboxes Description \}\}
+\{\{ Fill Identity Description \}\}
 
 ```yaml
 Type: String[]
@@ -65,7 +65,7 @@ Aliases:
 Required: False
 Position: 1
 Default value: None
-Accept pipeline input: False
+Accept pipeline input: True (ByPropertyName, ByValue)
 Accept wildcard characters: False
 ```
 
