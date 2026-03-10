@@ -7,6 +7,12 @@
     along with their SAML-related properties, including the PreferredTokenSigningKeyEndDateTime
     and its validity status.
 
+    .PARAMETER ObjectID
+    (Optional) Retrieves the SAML configuration for a specific application by its ObjectID.
+
+    .PARAMETER DisplayName
+    (Optional) Retrieves the SAML configuration for a specific application by its DisplayName.
+
     .PARAMETER ExportToExcel
     (Optional) If specified, exports the results to an Excel file in the user's profile directory.
 
@@ -32,10 +38,29 @@
     .PARAMETER NotificationSender
     (Required when RunFromAzureAutomation is enabled) Email address of the sender for expiration notifications.
 
+    .PARAMETER IncludeSignInStats
+    (Optional) If specified, includes sign-in statistics for the last 30 days for each application. Requires AuditLog.Read.All permission.
+    Please be advised that this process is time-consuming.
+
     .EXAMPLE
     Get-MgApplicationSAML
 
     Retrieves all Entra ID applications configured for SAML SSO.
+
+    .EXAMPLE
+    Get-MgApplicationSAML -IncludeSignInStats
+
+    Retrieves all Entra ID applications configured for SAML SSO with sign-in statistics for the last 30 days.
+
+    .EXAMPLE
+    Get-MgApplicationSAML -ObjectID "xxx-xxx-xxx"
+
+    Retrieves the SAML configuration for a specific application by its ObjectID.
+
+    .EXAMPLE
+    Get-MgApplicationSAML -DisplayName "My SAML App"
+
+    Retrieves the SAML configuration for a specific application by its DisplayName.
 
     .EXAMPLE
     Get-MgApplicationSAML -ForceNewToken
@@ -71,10 +96,17 @@
 #>
 
 function Get-MgApplicationSAML {
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName = 'All')]
     param (
+        [Parameter(Mandatory = $false, ParameterSetName = 'ByObjectId')]
+        [string]$ObjectID,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'ByDisplayName')]
+        [string]$DisplayName,
+
         [Parameter(Mandatory = $false)]
         [switch]$ForceNewToken,
+
         [Parameter(Mandatory = $false)]
         [switch]$ExportToExcel,
 
@@ -88,7 +120,10 @@ function Get-MgApplicationSAML {
         [string]$NotificationRecipient,
 
         [Parameter(Mandatory = $false)]
-        [string]$NotificationSender
+        [string]$NotificationSender,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$IncludeSignInStats
     )
 
     # Validate notification parameters
@@ -146,6 +181,9 @@ function Get-MgApplicationSAML {
     if ($RunFromAzureAutomation.IsPresent) {
         $permissionsNeeded += 'Mail.Send'
     }
+    if ($IncludeSignInStats.IsPresent) {
+        $permissionsNeeded += 'AuditLog.Read.All'
+    }
 
     $permissionMissing = $permissionsNeeded | Where-Object { $_ -notin $scopes }
 
@@ -177,9 +215,58 @@ function Get-MgApplicationSAML {
     }
 
     [System.Collections.Generic.List[PSCustomObject]]$samlApplicationsArray = @()
-    $samlApplications = Get-MgBetaServicePrincipal -Filter "PreferredSingleSignOnMode eq 'saml'"
+    
+    # Determine how to search for the Service Principal(s): by ObjectID (GUID), by DisplayName, or all
+    if ($ObjectID) {
+        $samlApplications = Get-MgBetaServicePrincipal -ServicePrincipalId $ObjectID
+        # Verify it's a SAML application
+        if ($samlApplications.PreferredSingleSignOnMode -ne 'saml') {
+            Write-Warning "The application with ObjectID '$ObjectID' is not configured for SAML SSO (PreferredSingleSignOnMode: $($samlApplications.PreferredSingleSignOnMode))"
+            return
+        }
+    }
+    elseif ($DisplayName) {
+        $escaped = $DisplayName -replace "'", "''"
+        $filter = "DisplayName eq '$escaped' and PreferredSingleSignOnMode eq 'saml'"
+        Write-Verbose "Filtering service principals with: $filter"
+        $samlApplications = Get-MgBetaServicePrincipal -Filter $filter -All
+        
+        # If no exact match found, try to find apps where trimmed DisplayName matches
+        if (-not $samlApplications) {
+            Write-Verbose "No exact match found. Searching for apps with trimmed DisplayName matching '$DisplayName'..."
+            $filter = "startswith(DisplayName, '$escaped') and PreferredSingleSignOnMode eq 'saml'"
+            $candidateApps = Get-MgBetaServicePrincipal -Filter $filter -All
+            
+            # Filter in PowerShell to find apps where trimmed name matches
+            $samlApplications = $candidateApps | Where-Object { $_.DisplayName.Trim() -eq $DisplayName }
+            
+            if ($samlApplications) {
+                Write-Verbose "Found $($samlApplications.Count) application(s) with trimmed DisplayName matching '$DisplayName'"
+            }
+        }
+    }
+    else {
+        $samlApplications = Get-MgBetaServicePrincipal -Filter "PreferredSingleSignOnMode eq 'saml'"
+    }
 
+    if (-not $samlApplications) {
+        Write-Host 'No SAML applications found' -ForegroundColor Yellow
+        return
+    }
+
+    Write-Host "$($samlApplications.Count) SAML application(s) found" -ForegroundColor Green
+
+    # Calculate date for 30 days ago for sign-in statistics
+    $signInStartDate = (Get-Date).AddDays(-30).ToString('yyyy-MM-ddTHH:mm:ssZ')
+
+    if ($IncludeSignInStats.IsPresent) {
+        Write-Host 'Retrieving sign-in statistics for each application - this may take several minutes...' -ForegroundColor Yellow
+    }
+
+    $appCounter = 0
     foreach ($samlApp in $samlApplications) {
+        $appCounter++
+        Write-Host "Processing $appCounter/$($samlApplications.Count): $($samlApp.DisplayName)" -ForegroundColor Cyan
         # Reset to $null before each call: prevents previous iteration's value from bleeding through on silent errors
         $ownerObjects = $null
         $ownerString = $null
@@ -193,9 +280,54 @@ function Get-MgApplicationSAML {
                     else { $_.Id }
                 }) -join '|'
         }
+        
+        # Check for leading/trailing spaces in DisplayName
+        $recommendation = $null
+        if ($samlApp.DisplayName -ne $samlApp.DisplayName.Trim()) {
+            $recommendation = 'DisplayName contains leading or trailing spaces - consider renaming'
+            Write-Warning "Application '$($samlApp.DisplayName)' has leading or trailing spaces in the displayName"
+        }
+        
+        # Get sign-in statistics if requested
+        $signInCount = $null
+        if ($IncludeSignInStats.IsPresent) {
+            try {
+                $signInFilter = "appId eq '$($samlApp.AppId)' and createdDateTime ge $signInStartDate"
+                Write-Verbose "Sign-in filter: $signInFilter"
+                $encodedFilter = [uri]::EscapeDataString($signInFilter)
+                $uri = "https://graph.microsoft.com/v1.0/auditLogs/signIns?`$filter=$encodedFilter&`$count=true&`$top=999"
+                try{
+                    $signInResponse = Invoke-MgGraphRequest -Uri $uri -Method GET -Headers @{ ConsistencyLevel = 'eventual' } -ErrorAction Stop -WarningAction Stop
+                }
+                catch {
+                    $signInCount = "Problem to get sign-ins - $($_.Exception.Message)"
+                }
+
+                if ($null -ne $signInResponse.'@odata.count') {
+                    $signInCount = [int]$signInResponse.'@odata.count'
+                } else {
+                    $allSignIns = [System.Collections.Generic.List[object]]@()
+                    $signInResponse.value | Where-Object { $_.isInteractive -eq $true } | ForEach-Object { $null = $allSignIns.Add($_) }
+                    $nextLink = $signInResponse.'@odata.nextLink'
+                    while ($nextLink) {
+                        $pageResponse = Invoke-MgGraphRequest -Uri $nextLink -Method GET -Headers @{ ConsistencyLevel = 'eventual' }
+                        $pageResponse.value | Where-Object { $_.isInteractive -eq $true } | ForEach-Object { $null = $allSignIns.Add($_) }
+                        $nextLink = $pageResponse.'@odata.nextLink'
+                    }
+                    $signInCount = $allSignIns.Count
+                }
+                
+                Write-Verbose "Found $signInCount sign-ins in the last 30 days for $($samlApp.DisplayName)"
+            }
+            catch {
+                Write-Warning "Could not retrieve sign-in statistics for '$($samlApp.DisplayName)': $($_.Exception.Message)"
+                $signInCount = $null
+            }
+        }
 
         $object = [PSCustomObject][ordered]@{
             DisplayName                         = $samlApp.DisplayName
+            Recommendation                      = $recommendation
             Id                                  = $samlApp.Id
             AppId                               = $samlApp.AppId
             EntraUrl                            = "https://entra.microsoft.com/#view/Microsoft_AAD_IAM/ManagedAppMenuBlade/~/Overview/objectId/$($samlApp.Id)/appId/$($samlApp.AppId)"
@@ -211,6 +343,11 @@ function Get-MgApplicationSAML {
             ReplyUrls                           = $samlApp.ReplyUrls -join '|'
             SignInAudience                      = $samlApp.SignInAudience
             Owners                              = $ownerString
+        }
+
+        # Add sign-in statistics only if requested
+        if ($IncludeSignInStats.IsPresent) {
+            $object | Add-Member -MemberType NoteProperty -Name InteractiveSignInsLast30Days -Value $signInCount
         }
 
         $samlApplicationsArray.Add($object)

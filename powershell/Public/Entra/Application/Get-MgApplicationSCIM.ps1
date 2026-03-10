@@ -74,10 +74,13 @@ function Get-MgApplicationSCIM {
     param (
         [Parameter(Mandatory = $false, ParameterSetName = 'ByObjectId')]
         [string]$ObjectID,
+
         [Parameter(Mandatory = $false, ParameterSetName = 'ByDisplayName')]
         [string]$DisplayName,
+
         [Parameter(Mandatory = $false)]
         [switch]$ForceNewToken,
+        
         [Parameter(Mandatory = $false)]
         [switch]$ExportToExcel,
 
@@ -183,6 +186,14 @@ function Get-MgApplicationSCIM {
             $job | Add-Member -MemberType NoteProperty -Name ProvisioningNotificationDeleteThresholdEnabled -Value $SyncNotificationSettings.DeleteThresholdEnabled
             $job | Add-Member -MemberType NoteProperty -Name ProvisioningNotificationDeleteThresholdValue -Value $SyncNotificationSettings.DeleteThresholdValue
             $job | Add-Member -MemberType NoteProperty -Name ProvisioningNotificationHumanResourcesLookaheadQueryEnabled -Value $SyncNotificationSettings.HumanResourcesLookaheadQueryEnabled
+
+            # Check for leading/trailing spaces in DisplayName
+            $recommendation = $null
+            if ($servicePrincipal.DisplayName -ne $servicePrincipal.DisplayName.Trim()) {
+                $recommendation = 'DisplayName contains leading or trailing spaces - consider renaming'
+                Write-Warning "Application '$($servicePrincipal.DisplayName)' has leading or trailing spaces in the displayName"
+            }
+            $job | Add-Member -MemberType NoteProperty -Name Recommendation -Value $recommendation
 
             # status Value
             $job | Add-Member -MemberType NoteProperty -Name StatusCode -Value $job.Status.Code

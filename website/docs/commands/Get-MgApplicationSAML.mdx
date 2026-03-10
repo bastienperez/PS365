@@ -8,10 +8,28 @@ Retrieves all Entra ID applications configured for SAML SSO.
 
 ## SYNTAX
 
+### All (Default)
+
 ```powershell
 Get-MgApplicationSAML [-ForceNewToken] [-ExportToExcel] [-RunFromAzureAutomation]
- [[-ExpirationThresholdDays] <Int32>] [[-NotificationRecipient] <String>] [[-NotificationSender] <String>]
- [-ProgressAction <ActionPreference>] [<CommonParameters>]
+ [-ExpirationThresholdDays <Int32>] [-NotificationRecipient <String>] [-NotificationSender <String>]
+ [-IncludeSignInStats] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+```
+
+### ByObjectId
+
+```powershell
+Get-MgApplicationSAML [-ObjectID <String>] [-ForceNewToken] [-ExportToExcel] [-RunFromAzureAutomation]
+ [-ExpirationThresholdDays <Int32>] [-NotificationRecipient <String>] [-NotificationSender <String>]
+ [-IncludeSignInStats] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+```
+
+### ByDisplayName
+
+```powershell
+Get-MgApplicationSAML [-DisplayName <String>] [-ForceNewToken] [-ExportToExcel] [-RunFromAzureAutomation]
+ [-ExpirationThresholdDays <Int32>] [-NotificationRecipient <String>] [-NotificationSender <String>]
+ [-IncludeSignInStats] [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -33,12 +51,36 @@ Retrieves all Entra ID applications configured for SAML SSO.
 ### EXAMPLE 2
 
 ```powershell
+Get-MgApplicationSAML -IncludeSignInStats
+```
+
+Retrieves all Entra ID applications configured for SAML SSO with sign-in statistics for the last 30 days.
+
+### EXAMPLE 3
+
+```powershell
+Get-MgApplicationSAML -ObjectID "xxx-xxx-xxx"
+```
+
+Retrieves the SAML configuration for a specific application by its ObjectID.
+
+### EXAMPLE 4
+
+```powershell
+Get-MgApplicationSAML -DisplayName "My SAML App"
+```
+
+Retrieves the SAML configuration for a specific application by its DisplayName.
+
+### EXAMPLE 5
+
+```powershell
 Get-MgApplicationSAML -ForceNewToken
 ```
 
 Forces the function to disconnect and reconnect to Microsoft Graph to obtain a new access token.
 
-### EXAMPLE 3
+### EXAMPLE 6
 
 ```powershell
 Get-MgApplicationSAML -ExportToExcel
@@ -46,7 +88,7 @@ Get-MgApplicationSAML -ExportToExcel
 
 Gets all SAML applications and exports them to an Excel file.
 
-### EXAMPLE 4
+### EXAMPLE 7
 
 ```powershell
 Get-MgApplicationSAML -RunFromAzureAutomation -ExpirationThresholdDays 30 -NotificationRecipient 'admin@company.com' -NotificationSender 'automation@company.com'
@@ -54,7 +96,7 @@ Get-MgApplicationSAML -RunFromAzureAutomation -ExpirationThresholdDays 30 -Notif
 
 Gets all SAML applications using managed identity authentication and sends notification for certificates expiring within 30 days.
 
-### EXAMPLE 5
+### EXAMPLE 8
 
 ```powershell
 Get-MgApplicationSAML -RunFromAzureAutomation -ExpirationThresholdDays 7 -NotificationRecipient 'admin@company.com' -NotificationSender 'automation@company.com'
@@ -63,6 +105,38 @@ Get-MgApplicationSAML -RunFromAzureAutomation -ExpirationThresholdDays 7 -Notifi
 Gets all SAML applications using managed identity and sends email notification for certificates expiring within 7 days.
 
 ## PARAMETERS
+
+### -ObjectID
+
+(Optional) Retrieves the SAML configuration for a specific application by its ObjectID.
+
+```yaml
+Type: String
+Parameter Sets: ByObjectId
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DisplayName
+
+(Optional) Retrieves the SAML configuration for a specific application by its DisplayName.
+
+```yaml
+Type: String
+Parameter Sets: ByDisplayName
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
 
 ### -ForceNewToken
 
@@ -131,7 +205,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 1
+Position: Named
 Default value: 30
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -147,7 +221,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 2
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -163,8 +237,26 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 3
+Position: Named
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -IncludeSignInStats
+
+(Optional) If specified, includes sign-in statistics for the last 30 days for each application.
+Requires AuditLog.Read.All permission.
+Please be advised that this process is time-consuming.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

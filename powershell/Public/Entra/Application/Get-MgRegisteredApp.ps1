@@ -3,15 +3,31 @@
     Get registered application in Microsoft Graph
 
     .DESCRIPTION
-    Retrieves registered applications from Microsoft Graph. If no ApplicationID is provided, returns all applications with selected properties.
+    Retrieves registered applications from Microsoft Graph. If no ApplicationID, ObjectID, or DisplayName is provided, returns all applications with selected properties.
 
     .PARAMETER ApplicationID
-    The unique identifier of the registered application to retrieve. If not provided, all applications are returned.
+    The unique identifier (AppId) of the registered application to retrieve. If not provided, all applications are returned.
+
+    .PARAMETER ObjectID
+    (Optional) Retrieves the application for a specific application by its ObjectID.
+
+    .PARAMETER DisplayName
+    (Optional) Retrieves the application for a specific application by its DisplayName.
 
     .EXAMPLE
     Get-MgRegisteredApp -ApplicationID "your-application-id"
 
-    This command retrieves the registered application with the specified Application ID.
+    This command retrieves the registered application with the specified Application ID (AppId).
+
+    .EXAMPLE
+    Get-MgRegisteredApp -ObjectID "xxx-xxx-xxx"
+
+    This command retrieves the registered application with the specified ObjectID.
+
+    .EXAMPLE
+    Get-MgRegisteredApp -DisplayName "My Application"
+
+    This command retrieves the registered application with the specified DisplayName.
 
     .EXAMPLE
     Get-MgRegisteredApp
@@ -26,28 +42,81 @@
 #>
 
 function Get-MgRegisteredApp {
+    [CmdletBinding(DefaultParameterSetName = 'All')]
     param (
-        [Parameter(Mandatory = $false, Position = 0)]
-        [string]$ApplicationID
+        [Parameter(Mandatory = $false, Position = 0, ParameterSetName = 'ByAppId')]
+        [string]$ApplicationID,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'ByObjectId')]
+        [string]$ObjectID,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'ByDisplayName')]
+        [string]$DisplayName
     )
 
     [System.Collections.Generic.List[PSCustomObject]]$registeredAppsArray = @()
 
+    # Determine how to search for the Application(s): by ApplicationID (AppId), by ObjectID (GUID), by DisplayName, or all
     if ($ApplicationID) {
-        # Get specific application
-        $uri = "/beta/applications/$($ApplicationID)"
+        # Get specific application by AppId
+        $uri = "/beta/applications?`$filter=appId eq '$ApplicationID'&`$select=uniqueName,id,createdByAppId,displayName,signInAudience,disabledByMicrosoftStatus,isDisabled,appId"
+        $result = Invoke-MgGraphRequest -Uri $uri -Method GET
+        $apps = if ($result.Value) { $result.Value } else { @() }
+    }
+    elseif ($ObjectID) {
+        # Get specific application by ObjectID
+        $uri = "/beta/applications/$ObjectID?`$select=uniqueName,id,createdByAppId,displayName,signInAudience,disabledByMicrosoftStatus,isDisabled,appId"
         $apps = @(Invoke-MgGraphRequest -Uri $uri -Method GET)
+    }
+    elseif ($DisplayName) {
+        # Get application by DisplayName
+        $escaped = $DisplayName -replace "'", "''"
+        $uri = "/beta/applications?`$filter=displayName eq '$escaped'&`$select=uniqueName,id,createdByAppId,displayName,signInAudience,disabledByMicrosoftStatus,isDisabled,appId"
+        Write-Verbose "Filtering applications with: displayName eq '$escaped'"
+        $result = Invoke-MgGraphRequest -Uri $uri -Method GET
+        $apps = if ($result.Value) { $result.Value } else { @() }
+        
+        # If no exact match found, try to find apps where trimmed DisplayName matches
+        if (-not $apps -or $apps.Count -eq 0) {
+            Write-Verbose "No exact match found. Searching for apps with trimmed DisplayName matching '$DisplayName'..."
+            $uri = "/beta/applications?`$filter=startswith(displayName,'$escaped')&`$select=uniqueName,id,createdByAppId,displayName,signInAudience,disabledByMicrosoftStatus,isDisabled,appId"
+            $result = Invoke-MgGraphRequest -Uri $uri -Method GET
+            $candidateApps = if ($result.Value) { $result.Value } else { @() }
+            
+            # Filter in PowerShell to find apps where trimmed name matches
+            $apps = $candidateApps | Where-Object { $_.displayName.Trim() -eq $DisplayName }
+            
+            if ($apps) {
+                Write-Verbose "Found $($apps.Count) application(s) with trimmed DisplayName matching '$DisplayName'"
+            }
+        }
     }
     else {
         # Get all applications with selected properties
         $uri = "/beta/applications?`$select=uniqueName,id,createdByAppId,displayName,signInAudience,disabledByMicrosoftStatus,isDisabled,appId"
-        $apps = Invoke-MgGraphRequest -Uri $uri | Select-Object -ExpandProperty Value
+        $result = Invoke-MgGraphRequest -Uri $uri -Method GET
+        $apps = if ($result.Value) { $result.Value } else { @() }
     }
 
+    if (-not $apps -or $apps.Count -eq 0) {
+        Write-Host 'No applications found' -ForegroundColor Yellow
+        return
+    }
+
+    Write-Host "$($apps.Count) application(s) found" -ForegroundColor Green
+
     foreach ($app in $apps) {
-        $customApp = [PSCustomObject]@{
+        # Check for leading/trailing spaces in DisplayName
+        $recommendation = $null
+        if ($app.displayName -ne $app.displayName.Trim()) {
+            $recommendation = 'DisplayName contains leading or trailing spaces - consider renaming'
+            Write-Warning "Application '$($app.displayName)' has leading or trailing spaces in the displayName"
+        }
+
+        $customApp = [PSCustomObject][ordered]@{
             AppId                     = $app.appId
             DisplayName               = $app.displayName
+            Recommendation            = $recommendation
             Id                        = $app.id
             UniqueName                = $app.uniqueName
             CreatedByAppId            = $app.createdByAppId

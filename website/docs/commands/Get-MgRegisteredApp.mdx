@@ -8,14 +8,34 @@ Get registered application in Microsoft Graph
 
 ## SYNTAX
 
+### All (Default)
+
+```powershell
+Get-MgRegisteredApp [-ProgressAction <ActionPreference>] [<CommonParameters>]
+```
+
+### ByAppId
+
 ```powershell
 Get-MgRegisteredApp [[-ApplicationID] <String>] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+```
+
+### ByObjectId
+
+```powershell
+Get-MgRegisteredApp [-ObjectID <String>] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+```
+
+### ByDisplayName
+
+```powershell
+Get-MgRegisteredApp [-DisplayName <String>] [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
 
 Retrieves registered applications from Microsoft Graph.
-If no ApplicationID is provided, returns all applications with selected properties.
+If no ApplicationID, ObjectID, or DisplayName is provided, returns all applications with selected properties.
 
 ## EXAMPLES
 
@@ -25,9 +45,25 @@ If no ApplicationID is provided, returns all applications with selected properti
 Get-MgRegisteredApp -ApplicationID "your-application-id"
 ```
 
-This command retrieves the registered application with the specified Application ID.
+This command retrieves the registered application with the specified Application ID (AppId).
 
 ### EXAMPLE 2
+
+```powershell
+Get-MgRegisteredApp -ObjectID "xxx-xxx-xxx"
+```
+
+This command retrieves the registered application with the specified ObjectID.
+
+### EXAMPLE 3
+
+```powershell
+Get-MgRegisteredApp -DisplayName "My Application"
+```
+
+This command retrieves the registered application with the specified DisplayName.
+
+### EXAMPLE 4
 
 ```powershell
 Get-MgRegisteredApp
@@ -39,16 +75,48 @@ This command retrieves all registered applications.
 
 ### -ApplicationID
 
-The unique identifier of the registered application to retrieve.
+The unique identifier (AppId) of the registered application to retrieve.
 If not provided, all applications are returned.
 
 ```yaml
 Type: String
-Parameter Sets: (All)
+Parameter Sets: ByAppId
 Aliases:
 
 Required: False
 Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ObjectID
+
+(Optional) Retrieves the application for a specific application by its ObjectID.
+
+```yaml
+Type: String
+Parameter Sets: ByObjectId
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DisplayName
+
+(Optional) Retrieves the application for a specific application by its DisplayName.
+
+```yaml
+Type: String
+Parameter Sets: ByDisplayName
+Aliases:
+
+Required: False
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

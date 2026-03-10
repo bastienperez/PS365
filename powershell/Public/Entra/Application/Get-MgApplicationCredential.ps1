@@ -7,6 +7,12 @@
     including key credentials and password credentials, along with their validity status.
     The function also retrieves the owners of each application.
     
+    .PARAMETER ObjectID
+    (Optional) Retrieves the credentials for a specific application by its ObjectID.
+
+    .PARAMETER DisplayName
+    (Optional) Retrieves the credentials for a specific application by its DisplayName.
+
     .PARAMETER ExportToExcel
     (Optional) If specified, exports the results to an Excel file in the user's profile directory.
 
@@ -37,6 +43,16 @@
     Retrieves all Microsoft Entra ID applications and their credentials.
 
     .EXAMPLE
+    Get-MgApplicationCredential -ObjectID "xxx-xxx-xxx"
+
+    Retrieves the credentials for a specific application by its ObjectID.
+
+    .EXAMPLE
+    Get-MgApplicationCredential -DisplayName "My Application"
+
+    Retrieves the credentials for a specific application by its DisplayName.
+
+    .EXAMPLE
     Get-MgApplicationCredential -ForceNewToken
 
     Forces the function to disconnect and reconnect to Microsoft Graph to obtain a new access token.
@@ -65,8 +81,14 @@
 #>
 
 function Get-MgApplicationCredential {
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName = 'All')]
     param (
+        [Parameter(Mandatory = $false, ParameterSetName = 'ByObjectId')]
+        [string]$ObjectID,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'ByDisplayName')]
+        [string]$DisplayName,
+
         [Parameter(Mandatory = $false)]
         [switch]$ExportToExcel,
 
@@ -174,7 +196,40 @@ function Get-MgApplicationCredential {
 
     [System.Collections.Generic.List[PSCustomObject]]$credentialsArray = @()
 
-    $mgApps = Get-MgApplication -All
+    # Determine how to search for the Application(s): by ObjectID (GUID), by DisplayName, or all
+    if ($ObjectID) {
+        $mgApps = Get-MgApplication -ApplicationId $ObjectID
+    }
+    elseif ($DisplayName) {
+        $escaped = $DisplayName -replace "'", "''"
+        $filter = "DisplayName eq '$escaped'"
+        Write-Verbose "Filtering applications with: $filter"
+        $mgApps = Get-MgApplication -Filter $filter -All
+        
+        # If no exact match found, try to find apps where trimmed DisplayName matches
+        if (-not $mgApps) {
+            Write-Verbose "No exact match found. Searching for apps with trimmed DisplayName matching '$DisplayName'..."
+            $filter = "startswith(DisplayName, '$escaped')"
+            $candidateApps = Get-MgApplication -Filter $filter -All
+            
+            # Filter in PowerShell to find apps where trimmed name matches
+            $mgApps = $candidateApps | Where-Object { $_.DisplayName.Trim() -eq $DisplayName }
+            
+            if ($mgApps) {
+                Write-Verbose "Found $($mgApps.Count) application(s) with trimmed DisplayName matching '$DisplayName'"
+            }
+        }
+    }
+    else {
+        $mgApps = Get-MgApplication -All
+    }
+
+    if (-not $mgApps) {
+        Write-Host 'No applications found' -ForegroundColor Yellow
+        return
+    }
+
+    Write-Host "$($mgApps.Count) application(s) found" -ForegroundColor Green
 
     foreach ($mgApp in $mgApps) {
         # Reset to $null before each call: prevents previous iteration's value from bleeding through on silent errors
@@ -191,9 +246,17 @@ function Get-MgApplicationCredential {
                 }) -join '|'
         }
 
+        # Check for leading/trailing spaces in DisplayName
+        $recommendation = $null
+        if ($mgApp.DisplayName -ne $mgApp.DisplayName.Trim()) {
+            $recommendation = 'DisplayName contains leading or trailing spaces - consider renaming'
+            Write-Warning "Application '$($mgApp.DisplayName)' has leading or trailing spaces in the displayName"
+        }
+
         foreach ($keyCredential in $mgApp.KeyCredentials) {
             $object = [PSCustomObject][ordered]@{
                 DisplayName             = $mgApp.DisplayName
+                Recommendation          = $recommendation
                 CredentialType          = 'KeyCredentials'
                 AppId                   = $mgApp.AppId
                 EntraUrl                = "https://entra.microsoft.com/#view/Microsoft_AAD_RegisteredApps/ApplicationMenuBlade/~/Credentials/appId/$($mgApp.AppId)"
@@ -214,6 +277,7 @@ function Get-MgApplicationCredential {
         foreach ($passwordCredential in $mgApp.PasswordCredentials) {
             $object = [PSCustomObject][ordered]@{
                 DisplayName             = $mgApp.DisplayName
+                Recommendation          = $recommendation
                 CredentialType          = 'PasswordCredentials'
                 AppId                   = $mgApp.AppId
                 EntraUrl                = "https://entra.microsoft.com/#view/Microsoft_AAD_RegisteredApps/ApplicationMenuBlade/~/Credentials/appId/$($mgApp.AppId)"
