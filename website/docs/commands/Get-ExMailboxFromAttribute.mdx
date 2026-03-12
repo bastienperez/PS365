@@ -9,7 +9,7 @@ Get mailboxes based on a custom attribute and compare specified attributes.
 ## SYNTAX
 
 ```powershell
-Get-ExMailboxFromAttribute [[-Attribute] <String>] [-CheckAttributes <String[]>]
+Get-ExMailboxFromAttribute [[-Attribute] <String>] [-CheckAttributes <String[]>] [-ExportToExcel]
  [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
@@ -36,6 +36,13 @@ Get-ExMailboxFromAttribute -Attribute "CustomAttribute"
 ```
 
 This example retrieves mailboxes with the custom attribute "CustomAttribute" without comparing any attributes.
+
+### EXAMPLE 3
+
+```powershell
+Get-ExMailboxFromAttribute -Attribute "CustomAttribute" -ExportToExcel
+Exports results to an Excel file.
+```
 
 ## PARAMETERS
 
@@ -70,6 +77,22 @@ Aliases:
 Required: False
 Position: Named
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ExportToExcel
+
+If specified, exports the results to an Excel file in the user's profile directory.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

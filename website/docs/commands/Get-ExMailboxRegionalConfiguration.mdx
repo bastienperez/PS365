@@ -9,7 +9,7 @@ Get the regional configuration of Exchange Online mailboxes.
 ## SYNTAX
 
 ```powershell
-Get-ExMailboxRegionalConfiguration [[-Identity] <String>] [-ByDomain <String>]
+Get-ExMailboxRegionalConfiguration [[-Identity] <String>] [-ByDomain <String>] [-ExportToExcel]
  [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
@@ -45,6 +45,13 @@ Get-ExMailboxRegionalConfiguration -ByDomain "example.com"
 
 Retrieves the regional configuration for all mailboxes in the specified domain.
 
+### EXAMPLE 4
+
+```powershell
+Get-ExMailboxRegionalConfiguration -ExportToExcel
+Exports results to an Excel file.
+```
+
 ## PARAMETERS
 
 ### -Identity
@@ -78,6 +85,22 @@ Aliases:
 Required: False
 Position: Named
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ExportToExcel
+
+If specified, exports the results to an Excel file in the user's profile directory.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

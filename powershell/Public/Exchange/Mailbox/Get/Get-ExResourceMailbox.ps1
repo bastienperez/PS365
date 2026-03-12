@@ -34,6 +34,13 @@
 
     Exports resource mailboxes from the contoso.com domain with group expansion.
 
+    .PARAMETER ExportToExcel
+    If specified, exports the results to an Excel file in the user's profile directory.
+
+    .EXAMPLE
+    Get-ExResourceMailbox -ExportToExcel
+    Exports results to an Excel file.
+
     .LINK
     https://ps365.clidsys.com/docs/commands/Get-ExResourceMailbox
     #>
@@ -51,11 +58,15 @@ function Get-ExResourceMailbox {
         [String[]] $Filter,
 
         [Parameter()]
-        [switch] $UseExchangeDNHash
+        [switch] $UseExchangeDNHash,
+
+        [Parameter()]
+        [switch] $ExportToExcel
     )
 
     begin {
         [System.Collections.Generic.List[PSCustomObject]]$ResourceMailboxes = @()
+        [System.Collections.Generic.List[PSCustomObject]]$resourceMailboxesResults = @()
 
         if ($UseExchangeDNHash) {
             $MailboxLegacyExchangeDNHash = Get-Mailbox -ResultSize Unlimited | Get-MailboxLegacyExchangeDNHash
@@ -141,7 +152,7 @@ function Get-ExResourceMailbox {
                 }
             }
 
-            [PSCustomObject][ordered]@{
+            $resourceMailboxesResults.Add([PSCustomObject][ordered]@{
                 DisplayName                         = $resource.DisplayName
                 Office                              = $resource.Office
                 RecipientTypeDetails                = $resource.RecipientTypeDetails
@@ -193,7 +204,18 @@ function Get-ExResourceMailbox {
                 MailboxOwnerId                      = $calProc.MailboxOwnerId
                 MailboxWhenCreated                  = $resource.WhenCreated
                 MailboxWhenModified                 = $resource.WhenChanged
-            }
+            })
+        }
+
+        if ($ExportToExcel.IsPresent) {
+            $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
+            $excelFilePath = "$($env:userprofile)\$now-ExResourceMailbox.xlsx"
+            Write-Host -ForegroundColor Cyan "Exporting to Excel file: $excelFilePath"
+            $resourceMailboxesResults | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'ExResourceMailbox'
+            Write-Host -ForegroundColor Green 'Export completed successfully!'
+        }
+        else {
+            return $resourceMailboxesResults
         }
     }
 }

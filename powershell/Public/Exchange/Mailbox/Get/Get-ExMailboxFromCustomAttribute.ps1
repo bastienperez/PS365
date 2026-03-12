@@ -23,6 +23,13 @@
 
     This example retrieves mailboxes with the custom attribute "CustomAttribute" without comparing any attributes.
 
+    .PARAMETER ExportToExcel
+    If specified, exports the results to an Excel file in the user's profile directory.
+
+    .EXAMPLE
+    Get-ExMailboxFromAttribute -Attribute "CustomAttribute" -ExportToExcel
+    Exports results to an Excel file.
+
     .LINK
     https://ps365.clidsys.com/docs/commands/Get-ExMailboxFromAttribute
 
@@ -38,7 +45,10 @@ function Get-ExMailboxFromAttribute {
         [string]$Attribute,
 
         [Parameter(Mandatory = $false)]
-        [string[]]$CheckAttributes
+        [string[]]$CheckAttributes,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$ExportToExcel
     )
 
     [System.Collections.Generic.List[PSCustomObject]] $mailboxesFound = @()
@@ -72,5 +82,14 @@ function Get-ExMailboxFromAttribute {
         $mailboxesFound.Add($object)
     }
 
-    return $mailboxesFound
+    if ($ExportToExcel.IsPresent) {
+        $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
+        $excelFilePath = "$($env:userprofile)\$now-ExMailboxFromAttribute.xlsx"
+        Write-Host -ForegroundColor Cyan "Exporting to Excel file: $excelFilePath"
+        $mailboxesFound | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'ExMailboxFromAttribute'
+        Write-Host -ForegroundColor Green 'Export completed successfully!'
+    }
+    else {
+        return $mailboxesFound
+    }
 }

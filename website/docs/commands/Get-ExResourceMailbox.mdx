@@ -10,7 +10,7 @@ Exports Exchange Online resource mailboxes and their calendar processing setting
 
 ```powershell
 Get-ExResourceMailbox [[-PrimarySmtpAddress] <String[]>] [-Filter <String[]>] [-UseExchangeDNHash]
- [-ProgressAction <ActionPreference>] [<CommonParameters>]
+ [-ExportToExcel] [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -42,6 +42,13 @@ Get-ExResourceMailbox -Filter '{emailaddresses -like "*contoso.com"}' -ExpandGro
 ```
 
 Exports resource mailboxes from the contoso.com domain with group expansion.
+
+### EXAMPLE 3
+
+```powershell
+Get-ExResourceMailbox -ExportToExcel
+Exports results to an Excel file.
+```
 
 ## PARAMETERS
 
@@ -82,6 +89,22 @@ Accept wildcard characters: False
 
 Uses a hash of Exchange Legacy DNs to optimize performance when processing
 delegates and reservation strategies.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ExportToExcel
+
+If specified, exports the results to an Excel file in the user's profile directory.
 
 ```yaml
 Type: SwitchParameter

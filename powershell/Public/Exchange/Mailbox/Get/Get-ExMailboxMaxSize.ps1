@@ -26,6 +26,13 @@
     
     Retrieves the max send and receive size limits for the specified mailbox.
 
+    .PARAMETER ExportToExcel
+    If specified, exports the results to an Excel file in the user's profile directory.
+
+    .EXAMPLE
+    Get-ExMailboxMaxSize -ExportToExcel
+    Exports results to an Excel file.
+
     .LINK
     https://ps365.clidsys.com/docs/commands/Get-ExMailboxMaxSize
 #>
@@ -36,7 +43,10 @@ function Get-ExMailboxMaxSize {
         [string]$Identity,
 
         [Parameter(Mandatory = $false)]
-        [string]$ByDomain
+        [string]$ByDomain,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$ExportToExcel
     )
 
     [System.Collections.Generic.List[PSCustomObject]]$exoMailboxesMaxSizeArray = @()
@@ -73,5 +83,14 @@ function Get-ExMailboxMaxSize {
         $exoMailboxesMaxSizeArray.Add($object)
     }
 
-    return $exoMailboxesMaxSizeArray
+    if ($ExportToExcel.IsPresent) {
+        $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
+        $excelFilePath = "$($env:userprofile)\$now-ExMailboxMaxSize.xlsx"
+        Write-Host -ForegroundColor Cyan "Exporting to Excel file: $excelFilePath"
+        $exoMailboxesMaxSizeArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'ExMailboxMaxSize'
+        Write-Host -ForegroundColor Green 'Export completed successfully!'
+    }
+    else {
+        return $exoMailboxesMaxSizeArray
+    }
 }

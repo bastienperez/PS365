@@ -29,6 +29,13 @@
 
     Retrieves the regional configuration for all mailboxes in the specified domain.
 
+    .PARAMETER ExportToExcel
+    If specified, exports the results to an Excel file in the user's profile directory.
+
+    .EXAMPLE
+    Get-ExMailboxRegionalConfiguration -ExportToExcel
+    Exports results to an Excel file.
+
     .LINK
     https://ps365.clidsys.com/docs/commands/Get-ExMailboxRegionalConfiguration
 #>
@@ -39,7 +46,10 @@ function Get-ExMailboxRegionalConfiguration {
         [ValidateNotNullOrEmpty()]
         [string]$Identity,
         [Parameter(Mandatory = $false)]
-        [string]$ByDomain
+        [string]$ByDomain,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$ExportToExcel
     )
 
     [System.Collections.Generic.List[PSCustomObject]]$exoMbxRegionalConfigArray = @()
@@ -90,5 +100,14 @@ function Get-ExMailboxRegionalConfiguration {
         $exoMbxRegionalConfigArray.Add($object)
     }
 
-    return $exoMbxRegionalConfigArray
+    if ($ExportToExcel.IsPresent) {
+        $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
+        $excelFilePath = "$($env:userprofile)\$now-ExMailboxRegionalConfiguration.xlsx"
+        Write-Host -ForegroundColor Cyan "Exporting to Excel file: $excelFilePath"
+        $exoMbxRegionalConfigArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'ExMailboxRegionalConfiguration'
+        Write-Host -ForegroundColor Green 'Export completed successfully!'
+    }
+    else {
+        return $exoMbxRegionalConfigArray
+    }
 }

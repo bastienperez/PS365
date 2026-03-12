@@ -9,8 +9,8 @@ Get the working hours configuration of Exchange Online mailboxes.
 ## SYNTAX
 
 ```powershell
-Get-ExMailboxWorkingHours [[-Identity] <String>] [-ByDomain <String>] [-ProgressAction <ActionPreference>]
- [<CommonParameters>]
+Get-ExMailboxWorkingHours [[-Identity] <String>] [-ByDomain <String>] [-ExportToExcel]
+ [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -47,6 +47,13 @@ Get-ExMailboxWorkingHours -ByDomain "example.com"
 
 Retrieves the working hours configuration for all mailboxes in the specified domain.
 
+### EXAMPLE 4
+
+```powershell
+Get-ExMailboxWorkingHours -ExportToExcel
+Exports results to an Excel file.
+```
+
 ## PARAMETERS
 
 ### -Identity
@@ -80,6 +87,22 @@ Aliases:
 Required: False
 Position: Named
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ExportToExcel
+
+If specified, exports the results to an Excel file in the user's profile directory.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

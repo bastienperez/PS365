@@ -9,8 +9,8 @@ Gets detailed mailbox statistics for Exchange Online including item count by typ
 ## SYNTAX
 
 ```powershell
-Get-ExMailboxStatisticsInfo [[-Identity] <String>] [-IncludeFolderDetails] [-ProgressAction <ActionPreference>]
- [<CommonParameters>]
+Get-ExMailboxStatisticsInfo [[-Identity] <String>] [-IncludeFolderDetails] [-ExportToExcel]
+ [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -41,6 +41,13 @@ Get-ExMailboxStatisticsInfo -Identity "user@domain.com" -IncludeFolderDetails
 
 Gets statistics with folder details included.
 
+### EXAMPLE 3
+
+```powershell
+Get-ExMailboxStatisticsInfo -ExportToExcel
+Exports results to an Excel file.
+```
+
 ## PARAMETERS
 
 ### -Identity
@@ -62,6 +69,22 @@ Accept wildcard characters: False
 ### -IncludeFolderDetails
 
 Include folder details in the results
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ExportToExcel
+
+If specified, exports the results to an Excel file in the user's profile directory.
 
 ```yaml
 Type: SwitchParameter

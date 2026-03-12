@@ -26,6 +26,13 @@
 
 	Returns only mailboxes with inbox rules that forward emails.
 
+	.PARAMETER ExportToExcel
+	If specified, exports the results to an Excel file in the user's profile directory.
+
+	.EXAMPLE
+	Get-ExMailboxForwarding -ExportToExcel
+	Exports results to an Excel file.
+
 	.LINK
 	https://ps365.clidsys.com/docs/commands/Get-ExMailboxForwarding
 
@@ -46,13 +53,13 @@ function Get-ExMailboxForwarding {
 		[Parameter(Mandatory = $false)] 
 		[switch]$ForwardingAndForwardingSMTPOnly,
 
-		[Parameter(Mandatory = $false)] 
+		[Parameter(Mandatory = $false)]
 		[switch]$InboxRulesOnly,
 
-		[Parameter(Mandatory = $false)] 
-		[switch]$ExportResults,
+		[Parameter(Mandatory = $false)]
+		[switch]$ExportToExcel,
 
-		[Parameter(Mandatory = $false)] 
+		[Parameter(Mandatory = $false)]
 		[switch]$ExchangeOnPremise
 	)
 
@@ -563,13 +570,12 @@ function Get-ExMailboxForwarding {
 		}
 	}
 
-	if ($ExportResults) {
-		$filepath = "$($env:temp)\$(Get-Date -Format yyyyMMdd_hhmm)_forward.csv"
-		Write-Host -ForegroundColor green "Export results to $filepath"
-				
-		$forwardList | Export-Csv -NoTypeInformation -Encoding UTF8 $filepath
-
-		Invoke-Item $filepath
+	if ($ExportToExcel.IsPresent) {
+		$now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
+		$excelFilePath = "$($env:userprofile)\$now-ExMailboxForwarding.xlsx"
+		Write-Host -ForegroundColor Cyan "Exporting to Excel file: $excelFilePath"
+		$forwardList | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'ExMailboxForwarding'
+		Write-Host -ForegroundColor Green 'Export completed successfully!'
 	}
 	else {
 		return $forwardList

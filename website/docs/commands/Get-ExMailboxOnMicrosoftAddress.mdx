@@ -9,7 +9,7 @@ Lists Exchange Online mailboxes with an @onmicrosoft.com email address
 ## SYNTAX
 
 ```powershell
-Get-ExMailboxOnMicrosoftAddress [[-Identity] <String[]>] [-ByDomain <String>]
+Get-ExMailboxOnMicrosoftAddress [[-Identity] <String[]>] [-ByDomain <String>] [-ExportToExcel]
  [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
@@ -50,6 +50,13 @@ Returns the @onmicrosoft.com address for the specified mailbox identity.
 $mailboxes | Get-ExMailboxOnMicrosoftAddress
 ```
 
+### EXAMPLE 5
+
+```powershell
+Get-ExMailboxOnMicrosoftAddress -ExportToExcel
+Exports results to an Excel file.
+```
+
 ## PARAMETERS
 
 ### -Identity
@@ -80,6 +87,22 @@ Aliases:
 Required: False
 Position: Named
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ExportToExcel
+
+If specified, exports the results to an Excel file in the user's profile directory.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

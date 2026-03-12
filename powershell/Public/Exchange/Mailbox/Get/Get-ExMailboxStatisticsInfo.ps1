@@ -27,6 +27,13 @@
 
 	Gets statistics with folder details included.
 
+	.PARAMETER ExportToExcel
+	If specified, exports the results to an Excel file in the user's profile directory.
+
+	.EXAMPLE
+	Get-ExMailboxStatisticsInfo -ExportToExcel
+	Exports results to an Excel file.
+
 	.LINK
 	https://ps365.clidsys.com/docs/commands/Get-ExMailboxStatisticsInfo
 
@@ -43,7 +50,10 @@ function Get-ExMailboxStatisticsInfo {
 		[string]$Identity,
         
 		[Parameter(Mandatory = $false)]
-		[switch]$IncludeFolderDetails
+		[switch]$IncludeFolderDetails,
+
+		[Parameter(Mandatory = $false)]
+		[switch]$ExportToExcel
 	)
 
 	begin {
@@ -51,7 +61,9 @@ function Get-ExMailboxStatisticsInfo {
 		if (-not (Get-Command 'Get-MailboxStatistics' -ErrorAction SilentlyContinue)) {
 			throw 'Exchange Online PowerShell module is not available. Please connect using Connect-ExchangeOnline.'
 		}
-        
+
+		$resultsArray = [System.Collections.Generic.List[PSCustomObject]]@()
+
 		Write-Verbose "Starting statistics retrieval for mailbox $Identity"
 	}
 
@@ -127,7 +139,7 @@ function Get-ExMailboxStatisticsInfo {
 				$result | Add-Member -MemberType NoteProperty -Name 'FolderDetails' -Value $folderDetails
 			}
             
-			Write-Output $result
+			$resultsArray.Add($result)
             
 		}
 		catch {
@@ -137,5 +149,16 @@ function Get-ExMailboxStatisticsInfo {
 
 	end {
 		Write-Verbose 'Statistics retrieval completed'
+
+		if ($ExportToExcel.IsPresent) {
+			$now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
+			$excelFilePath = "$($env:userprofile)\$now-ExMailboxStatisticsInfo.xlsx"
+			Write-Host -ForegroundColor Cyan "Exporting to Excel file: $excelFilePath"
+			$resultsArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'ExMailboxStatisticsInfo'
+			Write-Host -ForegroundColor Green 'Export completed successfully!'
+		}
+		else {
+			return $resultsArray
+		}
 	}
 }

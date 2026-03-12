@@ -34,6 +34,13 @@
     Requires connection to Exchange Online using Connect-ExchangeOnline.
     The function retrieves data from Get-MailboxCalendarConfiguration.
 
+    .PARAMETER ExportToExcel
+    If specified, exports the results to an Excel file in the user's profile directory.
+
+    .EXAMPLE
+    Get-ExMailboxWorkingHours -ExportToExcel
+    Exports results to an Excel file.
+
     .LINK
     https://ps365.clidsys.com/docs/commands/Get-ExMailboxWorkingHours
 #>
@@ -44,7 +51,10 @@ function Get-ExMailboxWorkingHours {
         [ValidateNotNullOrEmpty()]
         [string]$Identity,
         [Parameter(Mandatory = $false)]
-        [string]$ByDomain
+        [string]$ByDomain,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$ExportToExcel
     )
 
     [System.Collections.Generic.List[PSCustomObject]]$exoMbxWorkingHoursArray = @()
@@ -90,5 +100,14 @@ function Get-ExMailboxWorkingHours {
         $exoMbxWorkingHoursArray.Add($object)
     }
 
-    return $exoMbxWorkingHoursArray
+    if ($ExportToExcel.IsPresent) {
+        $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
+        $excelFilePath = "$($env:userprofile)\$now-ExMailboxWorkingHours.xlsx"
+        Write-Host -ForegroundColor Cyan "Exporting to Excel file: $excelFilePath"
+        $exoMbxWorkingHoursArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'ExMailboxWorkingHours'
+        Write-Host -ForegroundColor Green 'Export completed successfully!'
+    }
+    else {
+        return $exoMbxWorkingHoursArray
+    }
 }

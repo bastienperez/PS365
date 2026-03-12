@@ -24,6 +24,13 @@
     .EXAMPLE
     $mailboxes | Get-ExMailboxOnMicrosoftAddress
 
+    .PARAMETER ExportToExcel
+    If specified, exports the results to an Excel file in the user's profile directory.
+
+    .EXAMPLE
+    Get-ExMailboxOnMicrosoftAddress -ExportToExcel
+    Exports results to an Excel file.
+
     .LINK
     https://ps365.clidsys.com/docs/commands/Get-ExMailboxOnMicrosoftAddress
 #>
@@ -35,7 +42,10 @@ function Get-ExMailboxOnMicrosoftAddress {
         [string[]]$Identity,
         
         [Parameter(Mandatory = $false)]
-        [string]$ByDomain
+        [string]$ByDomain,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$ExportToExcel
     )
 
     begin {
@@ -178,6 +188,15 @@ function Get-ExMailboxOnMicrosoftAddress {
             }
         }
         
-        return $results
+        if ($ExportToExcel.IsPresent) {
+            $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
+            $excelFilePath = "$($env:userprofile)\$now-ExMailboxOnMicrosoftAddress.xlsx"
+            Write-Host -ForegroundColor Cyan "Exporting to Excel file: $excelFilePath"
+            $results | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'ExMailboxOnMicrosoftAddress'
+            Write-Host -ForegroundColor Green 'Export completed successfully!'
+        }
+        else {
+            return $results
+        }
     }
 }
