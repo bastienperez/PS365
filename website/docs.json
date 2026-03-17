@@ -166,7 +166,8 @@
       {
         "group": "M S Commerce",
         "pages": [
-          "docs/commands/Disable-MSSelfServicePurchase"
+          "docs/commands/Disable-MSSelfServicePurchase",
+          "docs/commands/Enable-MSSelfServicePurchase"
         ]
       }
     ]

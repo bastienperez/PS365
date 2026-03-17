@@ -4,30 +4,30 @@ Module Name: PS365
 
 ## SYNOPSIS
 
-Disables self-service purchase for ALL products in Microsoft 365.
+Enables self-service purchase for all products in Microsoft 365.
 
 ## SYNTAX
 
 ```powershell
-Disable-MSSelfServicePurchase [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]
+Enable-MSSelfServicePurchase [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
 
-This function connects to the Microsoft Commerce service and disables the self-service purchase
-option for all products that currently have it enabled.
+This function connects to the Microsoft Commerce service and enables the self-service purchase
+option for all products that currently have it disabled.
 This is useful for organizations that
-want to prevent users from purchasing additional services or products on their own.
+want to allow users to purchase additional services or products on their own.
 
 ## EXAMPLES
 
 ### EXAMPLE 1
 
 ```powershell
-Disable-MSSelfServicePurchase
+Enable-MSSelfServicePurchase
 ```
 
-Disables self-service purchase for all products in the Microsoft 365 tenant.
+Enables self-service purchase for all products in the Microsoft 365 tenant.
 
 ## PARAMETERS
 
@@ -75,4 +75,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## RELATED LINKS
 
-[https://ps365.clidsys.com/docs/commands/Disable-MSSelfServicePurchase](https://ps365.clidsys.com/docs/commands/Disable-MSSelfServicePurchase)
+[https://ps365.clidsys.com/docs/commands/Enable-MSSelfServicePurchase](https://ps365.clidsys.com/docs/commands/Enable-MSSelfServicePurchase)
