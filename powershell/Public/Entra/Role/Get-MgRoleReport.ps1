@@ -182,7 +182,6 @@ function Get-MgRoleReport {
             RoleTemplate             = $assignment.RoleDefinitionExtended.templateId
             DirectMember             = $true
             Recommendations          = 'Check if the user has alternate email or alternate phone number on Microsoft Entra ID'
-            RecommendationSync       = $null
         }
 
         $rolesMembersArray.Add($object)
@@ -225,7 +224,6 @@ function Get-MgRoleReport {
                     RoleTemplate         = $assignment.RoleDefinitionExtended.templateId
                     DirectMember         = $false
                     Recommendations      = 'Check if the user has alternate email or alternate phone number on Microsoft Entra ID'
-                    RecommendationSync   = $null
                 }
 
                 $rolesMembersArray.Add($object)
@@ -244,7 +242,6 @@ function Get-MgRoleReport {
         RoleTemplate         = 'Not applicable'
         DirectMember         = 'Not applicable'
         Recommendations      = 'Please check this URL to identify if you have partner with admin roles https: / / admin.microsoft.com / AdminPortal / Home#/partners. More information on https://practical365.com/identifying-potential-unwanted-access-by-your-msp-csp-reseller/'
-        RecommendationSync   = $null
     }    
     
     $rolesMembersArray.Add($object)
@@ -257,10 +254,24 @@ function Get-MgRoleReport {
 
     $rolesMembersArray | ForEach-Object {
         if ($globalAdminsHash.ContainsKey($_.Principal) -and $_.AssignedRole -ne 'Global Administrator') {
-            $_ | Add-Member -MemberType NoteProperty -Name 'RecommandationRole' -Value 'This user is Global Administrator. The other role(s) is/are not useful'
+            $_.Recommendations += ' | This user is Global Administrator. The other role(s) is/are not useful.'
         }
-        else {
-            $_ | Add-Member -MemberType NoteProperty -Name 'RecommandationRole' -Value ''
+    }
+
+    # Roles that have been deprecated by Microsoft and should no longer be used
+    $deprecatedRoles = @(
+        'AdHoc License Administrator'
+        'Device Join'
+        'Device Managers'
+        'Device Users'
+        'Email Verified User Creator'
+        'Mailbox Administrator'
+        'Workplace Device Join'
+    )
+
+    $rolesMembersArray | ForEach-Object {
+        if ($deprecatedRoles -contains $_.AssignedRole) {
+            $_.Recommendations = 'This role is deprecated by Microsoft and should no longer be used. Remove this assignment.'
         }
     }
 
@@ -341,7 +352,7 @@ function Get-MgRoleReport {
         $member | Add-Member -MemberType NoteProperty -Name 'OnPremisesSyncEnabled' -Value $onPremisesSyncEnabled
 
         if ($onPremisesSyncEnabled) {
-            $member.RecommendationSync = 'Privileged accounts should be cloud-only.'
+            $member.Recommendations += ' | Privileged accounts should be cloud-only.'
         }
 
         # only add if not already in the cache
@@ -376,7 +387,6 @@ function Get-MgRoleReport {
                     LastNonInteractiveSignInDateTime = $null
                     AccountEnabled                   = $null
                     OnPremisesSyncEnabled            = $null
-                    RecommandationRole               = $null
                 }
 
                 $rolesMembersArray.Add($object)

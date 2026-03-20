@@ -9,7 +9,8 @@ Disables self-service purchase for ALL products in Microsoft 365.
 ## SYNTAX
 
 ```powershell
-Disable-MSSelfServicePurchase [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]
+Disable-MSSelfServicePurchase [-Force] [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -27,9 +28,33 @@ want to prevent users from purchasing additional services or products on their o
 Disable-MSSelfServicePurchase
 ```
 
-Disables self-service purchase for all products in the Microsoft 365 tenant.
+Disables self-service purchase for all products in the Microsoft 365 tenant, prompting for confirmation for each product.
+
+### EXAMPLE 2
+
+```powershell
+Disable-MSSelfServicePurchase -Force
+```
+
+Disables self-service purchase for all products without prompting for confirmation.
 
 ## PARAMETERS
+
+### -Force
+
+Skips confirmation prompts and disables self-service purchase for all products without asking.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
 
 ### -WhatIf
 
