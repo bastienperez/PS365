@@ -58,7 +58,7 @@
           {
             "group": "Group",
             "pages": [
-              "docs/commands/Get-MgDynamicGroup"
+              "docs/commands/Get-DynamicGroup"
             ]
           },
           {

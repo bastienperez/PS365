@@ -110,7 +110,7 @@
 # msDS-ExternalDirectoryObjectId       externalDirectoryObjectId
 
 
-function Get-MgDynamicGroup {
+function Get-DynamicGroup {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $false, Position = 0)]
