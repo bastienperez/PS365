@@ -1,0 +1,90 @@
+---
+Module Name: PS365
+---
+
+## SYNOPSIS
+
+Retrieves all empty groups (zero members) in Microsoft Entra ID.
+
+## SYNTAX
+
+```powershell
+Get-EmptyGroup [-ExportToExcel] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+```
+
+## DESCRIPTION
+
+The Get-EmptyGroup function retrieves all groups from Microsoft Entra ID via the
+Microsoft Graph API and identifies those with no members.
+It supports optional
+export to Excel or CSV for further analysis and cleanup.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Get-EmptyGroup
+```
+
+Retrieves all empty groups and outputs them to the console.
+
+### EXAMPLE 2
+
+```powershell
+Get-EmptyGroup -ExportToExcel
+```
+
+Retrieves all empty groups and exports the results to an Excel file.
+
+### EXAMPLE 3
+
+```powershell
+Get-EmptyGroup -ExportCsv 'C:\temp\empty-groups.csv'
+```
+
+Retrieves all empty groups and exports the results to a CSV file.
+
+## PARAMETERS
+
+### -ExportToExcel
+
+When specified, exports the results to an Excel file in the user's profile directory.
+Requires the ImportExcel module.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+### System.Collections.Generic.List[Object]
+
+## NOTES
+OUTPUT PROPERTIES
+Returns a collection of custom objects with the following properties:
+- DisplayName: Display name of the group
+- ObjectId: Unique identifier of the group
+- Type: Type of group (Microsoft 365, Dynamic, Mail-enabled Security, Security, Distribution, Other)
+- Mail: Primary email address of the group
+- Created: Creation date of the group (yyyy-MM-dd)
+- Description: Description of the group
+
+Requires Microsoft.Graph module: Connect-MgGraph -Scopes 'Group.Read.All'
+
+## RELATED LINKS
+
+[https://ps365.clidsys.com/docs/commands/Get-EmptyGroup](https://ps365.clidsys.com/docs/commands/Get-EmptyGroup)

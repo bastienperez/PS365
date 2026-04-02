@@ -197,18 +197,26 @@ function Get-MgApplicationSCIM {
 
             # status Value
             $job | Add-Member -MemberType NoteProperty -Name StatusCode -Value $job.Status.Code
-            $job | Add-Member -MemberType NoteProperty -Name CountSuccessiveCompleteFailures -Value $job.Status.CountSuccessiveCompleteFailures
-            $job | Add-Member -MemberType NoteProperty -Name EscrowsPruned -Value $job.Status.EscrowsPruned
-            $job | Add-Member -MemberType NoteProperty -Name SteadyStateFirstAchievedTime -Value $job.Status.SteadyStateFirstAchievedTime
-            $job | Add-Member -MemberType NoteProperty -Name SteadyStateLastAchievedTime -Value $job.Status.SteadyStateLastAchievedTime
-            $job | Add-Member -MemberType NoteProperty -Name TroubleshootingUrl -Value $job.Status.TroubleshootingUrl
+            $job | Add-Member -MemberType NoteProperty -Name StatusCountSuccessiveCompleteFailures -Value $job.Status.CountSuccessiveCompleteFailures
+            $job | Add-Member -MemberType NoteProperty -Name StatusEscrowsPruned -Value $job.Status.EscrowsPruned
+            $job | Add-Member -MemberType NoteProperty -Name StatusSteadyStateFirstAchievedTime -Value $job.Status.SteadyStateFirstAchievedTime
+            $job | Add-Member -MemberType NoteProperty -Name StatusSteadyStateLastAchievedTime -Value $job.Status.SteadyStateLastAchievedTime
+            $job | Add-Member -MemberType NoteProperty -Name StatusTroubleshootingUrl -Value $job.Status.TroubleshootingUrl
 
             # synchronizationJobSettings Value
             foreach ($property in $job.SynchronizationJobSettings) {
                 $job | Add-Member -MemberType NoteProperty -Name $property.Name -Value $property.Value
             }
 
-            $job = $job | Select-Object -ExcludeProperty Status, SynchronizationJobSettings
+            <#
+            `$job.SynchronizationJobSettings` not useful
+            Name                                Value
+            ----                                -----
+            AzureIngestionAttributeOptimization True
+            LookaheadQueryEnabled               False
+            Domain                              {"DomainDiscoveredAt":null,"DomainFQDN":null,"DomainNetBios":null,"ForestFQDN":null,"ForestNetBios":null}
+            #>
+            $job = $job | Select-Object -ExcludeProperty SynchronizationJobSettings
             $synchronizationJobsArray.Add($job)
         }
         else {
@@ -239,7 +247,8 @@ function Get-MgApplicationSCIM {
         }
 
         foreach ($type in $job.Status.SynchronizedEntryCountByType) {
-            $key = $type.Key
+            $key = $type.Key -replace 'urn:ietf:params:scim:schemas:extension:enterprise:2\.0:', '' `
+                             -replace 'urn:ietf:params:scim:schemas:core:2\.0:', ''
             $count = $type.Value
 
             $job | Add-Member -MemberType NoteProperty -Name "SynchronizedEntryCountByType_$key" -Value $count
@@ -252,7 +261,25 @@ function Get-MgApplicationSCIM {
             foreach ($mapping in $objectMapping) {
                 $res = $null
 
-                $targetObjectType = $mapping.TargetObjectName
+                if($mapping.TargetObjectName -like 'urn:ietf:params:scim:schemas:extension:enterprise:2.0:*') {
+                    Write-Warning "Object type '$($mapping.TargetObjectName)' includes 'urn:ietf:params:scim:schemas:extension:enterprise:2.0:'. It is removed to improve column name readability and allow reuse of the same column for other SCIM types using only user/group instead of urn:ietf:params:scim:schemas:extension:enterprise:2.0:x"
+                    $targetObjectType = $mapping.TargetObjectName -replace 'urn:ietf:params:scim:schemas:extension:enterprise:2.0:', ''
+                }
+                elseif($mapping.TargetObjectName -like 'urn:ietf:params:scim:schemas:core:2.0:*') {
+                    Write-Warning "Object type '$($mapping.TargetObjectName)' includes 'urn:ietf:params:scim:schemas:core:2.0:'. It is removed to improve column name readability and allow reuse of the same column for other SCIM types using only user/group instead of urn:ietf:params:scim:schemas:core:2.0:x"
+                    $targetObjectType = $mapping.TargetObjectName -replace 'urn:ietf:params:scim:schemas:core:2.0:', ''
+                }
+                else {
+                    $targetObjectType = $mapping.TargetObjectName
+                }
+
+                $flowTypes = ($mapping.FlowTypes -join ',')
+                $mappingMeta = "Enabled: $($mapping.Enabled) | FlowTypes: $flowTypes | Name: $($mapping.Name) | Source: $($mapping.SourceObjectName)"
+                $job | Add-Member -MemberType NoteProperty -Name "ObjectMapping-$targetObjectType" -Value $mappingMeta -Force
+
+                if ($flowTypes -ne 'Add,Update,Delete') {
+                    $job | Add-Member -MemberType NoteProperty -Name "ObjectMapping-$targetObjectType-FlowTypeWarning" -Value "FlowType is '$flowTypes', expected 'Add,Update,Delete', please review to be sure it's intentional" -Force
+                }
 
                 foreach ($attribute in $mapping.AttributeMappings) {
 
@@ -281,12 +308,12 @@ function Get-MgApplicationSCIM {
                         $res = "$res$($object.SourceAttributeName) --> $($object.TargetAttributeName)"
                     }
                 }
-                try {
-                    $job | Add-Member -MemberType NoteProperty -Name "Attributes-$($object.Type)" -Value $res
+
+                if($objectType -like 'urn:ietf:params:scim:schemas:extension:enterprise:2.0:*') {
+                    Write-Warning "Object type '$objectType' includes 'urn:ietf:params:scim:schemas:extension:enterprise:2.0:'. It is removed to improve column name readability and allow reuse of the same column for other SCIM types using only user/group instead of urn:ietf:params:scim:schemas:extension:enterprise:2.0:x"
+                    $object.Type = $object.Type -replace 'urn:ietf:params:scim:schemas:extension:enterprise:2.0:', ''
                 }
-                catch {
-                    Write-Host "Error adding member to job: $($_.Exception.Message)" -ForegroundColor Red
-                }
+                $job | Add-Member -MemberType NoteProperty -Name "Attributes-$($object.Type)" -Value $res -Force
             }
         }
 

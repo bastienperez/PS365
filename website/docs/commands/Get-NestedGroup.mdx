@@ -1,0 +1,111 @@
+---
+Module Name: PS365
+---
+
+## SYNOPSIS
+
+Lists all nested group dependencies (group-in-group) in Microsoft Entra ID.
+
+## SYNTAX
+
+```powershell
+Get-NestedGroup [-ExportToExcel] [-ExportToHtml] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+```
+
+## DESCRIPTION
+
+The Get-NestedGroup function fetches all groups via the Microsoft Graph API,
+scans the members of each group to detect group-type members (nested groups),
+and outputs the dependencies.
+It supports optional export to Excel or CSV for
+further analysis.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Get-NestedGroup
+```
+
+Retrieves all nested group dependencies and outputs them to the console.
+
+### EXAMPLE 2
+
+```powershell
+Get-NestedGroup -ExportToExcel
+```
+
+Retrieves all nested group dependencies and exports the results to an Excel file.
+
+### EXAMPLE 3
+
+```powershell
+Get-NestedGroup -ExportToHtml
+```
+
+Retrieves all nested group dependencies and exports an interactive HTML graph to the user's profile directory.
+
+## PARAMETERS
+
+### -ExportToExcel
+
+When specified, exports the results to an Excel file in the user's profile directory.
+Requires the ImportExcel module.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ExportToHtml
+
+When specified, exports the results to an interactive HTML graph file in the user's profile directory.
+The graph is rendered in the browser using D3.js (loaded from CDN).
+Nodes are color-coded by group type.
+Clicking a node zooms in and reveals its parent and child groups.
+The graph is frozen after stabilisation: individual nodes can be dragged without affecting the others.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+### System.Collections.Generic.List[Object]
+
+## NOTES
+OUTPUT PROPERTIES
+Returns a collection of custom objects with the following properties:
+- MemberGroup: Display name of the nested (child) group
+- MemberGroupId: Unique identifier of the nested (child) group
+- MemberGroupType: Type of the nested group (Microsoft 365, Dynamic, Mail-enabled Security, Security, Distribution, Other)
+- ParentGroup: Display name of the parent group containing the nested group
+- ParentGroupId: Unique identifier of the parent group
+- ParentGroupType: Type of the parent group
+
+Requires Microsoft.Graph module: Connect-MgGraph -Scopes 'Group.Read.All'
+
+## RELATED LINKS
+
+[https://ps365.clidsys.com/docs/commands/Get-NestedGroup](https://ps365.clidsys.com/docs/commands/Get-NestedGroup)

@@ -29,7 +29,7 @@ function Set-IntuneAutoMDMEnrollmentPolicy {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
-        [ValidateSet('enabled', 'disabled')]
+        [ValidateSet('Enabled', 'Disabled')]
         [string]$State
     )
 

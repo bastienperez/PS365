@@ -58,7 +58,9 @@
           {
             "group": "Group",
             "pages": [
-              "docs/commands/Get-DynamicGroup"
+              "docs/commands/Get-DynamicGroup",
+              "docs/commands/Get-EmptyGroup",
+              "docs/commands/Get-NestedGroup"
             ]
           },
           {
