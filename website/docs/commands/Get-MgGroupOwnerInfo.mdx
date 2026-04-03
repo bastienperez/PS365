@@ -1,0 +1,132 @@
+---
+Module Name: PS365
+---
+
+## SYNOPSIS
+
+Retrieves the owners of all or a specific Entra ID group.
+
+## SYNTAX
+
+```powershell
+Get-MgGroupOwnerInfo [[-GroupId] <String>] [[-DisplayName] <String>] [-ExportToExcel]
+ [-ProgressAction <ActionPreference>] [<CommonParameters>]
+```
+
+## DESCRIPTION
+
+The Get-MgGroupOwnerInfo function queries Microsoft Entra ID via the Microsoft Graph API
+to return the owners of each group.
+Results can be filtered by a specific group ID
+or display name, and are exported to Excel by default.
+
+Groups with no owners are included in the output with an empty owner list, which is
+useful for identifying groups that lack an accountable owner.
+
+Note: This function is named Get-MgGroupOwnerInfo to avoid conflict with the built-in
+Microsoft Graph PowerShell cmdlet Get-MgGroupOwner.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Get-MgGroupOwnerInfo
+```
+
+Retrieves the owners for all Entra ID groups and outputs them to the console.
+
+### EXAMPLE 2
+
+```powershell
+Get-MgGroupOwnerInfo -ExportToExcel
+```
+
+Retrieves the owners of all groups and exports the results to an Excel file.
+
+### EXAMPLE 3
+
+```powershell
+Get-MgGroupOwnerInfo -GroupId 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
+```
+
+Retrieves owners for a specific group by its object ID and exports to Excel.
+
+### EXAMPLE 4
+
+```powershell
+Get-MgGroupOwnerInfo -DisplayName 'Marketing Team'
+```
+
+Retrieves owners for the group named 'Marketing Team' and outputs to the console only.
+
+## PARAMETERS
+
+### -GroupId
+
+Optional.
+The unique object ID of a specific Entra ID group to retrieve owners for.
+If omitted, all groups are processed.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DisplayName
+
+Optional.
+Filter groups by display name (exact match).
+Use with GroupId to narrow the scope.
+If omitted, all groups are processed.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 2
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ExportToExcel
+
+When specified, exports the results to an Excel file in the user's profile directory.
+Requires the ImportExcel module.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+## NOTES
+
+Requires Connect-MgGraph with scopes: 'Group.Read.All', 'User.Read.All'
+
+## RELATED LINKS
+
+[https://ps365.clidsys.com/docs/commands/Get-MgGroupOwnerInfo](https://ps365.clidsys.com/docs/commands/Get-MgGroupOwnerInfo)

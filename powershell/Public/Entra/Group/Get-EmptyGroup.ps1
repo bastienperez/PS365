@@ -55,15 +55,6 @@ function Get-EmptyGroup {
         [switch]$ExportToExcel
     )
 
-    # Ensure we have an active Graph session
-    try {
-        $null = Invoke-MgGraphRequest -Method GET -Uri 'https://graph.microsoft.com/v1.0/organization' -ErrorAction Stop
-    }
-    catch {
-        Write-Error "No active Microsoft Graph session. Run: Connect-MgGraph -Scopes 'Group.Read.All'"
-        return
-    }
-
     Write-Verbose 'Fetching all groups...'
 
     # Fetch all groups with pagination
