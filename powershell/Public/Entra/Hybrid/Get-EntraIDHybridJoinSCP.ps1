@@ -5,7 +5,7 @@
     .DESCRIPTION
     This function queries the Active Directory configuration naming context to retrieve
     the Service Connection Point (SCP) object for device registration, which contains
-    Azure AD tenant information. If Active Directory is not accessible, it returns
+    Microsoft Entra ID tenant information. If Active Directory is not accessible, it returns
     an object with error information and null values for the SCP data.
 
     .EXAMPLE

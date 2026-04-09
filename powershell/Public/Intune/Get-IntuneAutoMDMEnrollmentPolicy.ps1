@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Retrieves the current MDM enrollment policy for Azure AD.
+    Retrieves the current MDM enrollment policy for Microsoft Entra ID.
 
 .DESCRIPTION
     This function retrieves the current state of automatic MDM enrollment during device 

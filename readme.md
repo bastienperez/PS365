@@ -4,7 +4,7 @@
 [![PowerShell Gallery](https://img.shields.io/powershellgallery/v/PS365.svg)](https://www.powershellgallery.com/packages/PS365)
 [![PowerShell Gallery](https://img.shields.io/powershellgallery/dt/PS365.svg)](https://www.powershellgallery.com/packages/PS365)
 
-PS365 is a comprehensive collection of PowerShell functions designed to simplify and automate Microsoft 365 administration tasks. Whether you're managing Exchange Online, Azure AD, or other Microsoft 365 services, PS365 provides you with secure and reliable tools for efficient tenant management.
+PS365 is a comprehensive collection of PowerShell functions designed to simplify and automate Microsoft 365 administration tasks. Whether you're managing Exchange Online, Microsoft Entra ID, or other Microsoft 365 services, PS365 provides you with secure and reliable tools for efficient tenant management.
 
 ## 🚀 Features
 

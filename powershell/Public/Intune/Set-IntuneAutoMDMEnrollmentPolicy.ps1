@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Configures the MDM enrollment policy for Azure AD.
+    Configures the MDM enrollment policy for Microsoft Entra ID.
 
 .DESCRIPTION
     This function enables or disables automatic MDM enrollment during device 

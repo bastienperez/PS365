@@ -8,7 +8,7 @@ Welcome to **PS365** - the comprehensive PowerShell module for managing your **M
 
 ## What is PS365?
 
-PS365 is a collection of PowerShell functions designed to simplify and automate Microsoft 365 administration tasks. Whether you're managing Exchange Online, Azure AD, or other Microsoft 365 services, PS365 provides you with the tools you need.
+PS365 is a collection of PowerShell functions designed to simplify and automate Microsoft 365 administration tasks. Whether you're managing Exchange Online, Microsoft Entra ID, or other Microsoft 365 services, PS365 provides you with the tools you need.
 
 ### Key Features
 
