@@ -12,9 +12,17 @@
     (Optional) One or more Application IDs to filter the results. If not provided, all
     applications will be processed.
 
-    .PARAMETER OnlyAssignedToAllUsers
-    (Optional) If specified, only applications that are assigned to "all users" (i.e., do not require assignment)
+    .PARAMETER AllApplications
+    (Optional) If specified, retrieves all service principals regardless of type.
+    By default, only Enterprise Applications (tagged 'WindowsAzureActiveDirectoryIntegratedApp') are returned.
+
+    .PARAMETER AssignmentNotEnforced
+    (Optional) If specified, only applications where AppRoleAssignmentRequired is $false (open to all users, no assignment needed)
     will be returned.
+
+    .PARAMETER AssignmentEmpty
+    (Optional) If specified, only applications with no specific user/group/service principal assignments will be returned.
+    Note: these apps may still be accessible to all users if AppRoleAssignmentRequired is $false.
 
     .PARAMETER ExportToExcel
     (Optional) If specified, exports the results to an Excel file in the user's profile directory.
@@ -30,9 +38,9 @@
     Retrieves assignment types for the specified application IDs.
     
     .EXAMPLE
-    Get-MgApplicationAssignment -OnlyAssignedToAllUsers
+    Get-MgApplicationAssignment -AssignmentEmpty
 
-    Retrieves only applications that are assigned to all users (no assignment required).
+    Retrieves only applications with no specific user/group/service principal assignments.
 
     .EXAMPLE
     Get-MgApplicationAssignment -ExportToExcel
@@ -49,18 +57,26 @@ function Get-MgApplicationAssignment {
         [String[]]$ApplicationId,
 
         [Parameter(Mandatory = $false)]
-        [switch]$OnlyAssignedToAllUsers,
+        [switch]$AllApplications,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$AssignmentNotEnforced,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$AssignmentEmpty,
 
         [Parameter(Mandatory = $false)]
         [switch]$ExportToExcel
     )
     
+    $spProperty = 'Id,AppId,DisplayName,AppRoles,AppRoleAssignmentRequired,PublisherName,Tags,ServicePrincipalType,CreatedDateTime'
+
     # Get all service principals (enterprise applications)
     if ($ApplicationId) {
         $servicePrincipals = @()
         foreach ($appId in $ApplicationId) {
             try {
-                $sp = Get-MgServicePrincipal -Filter "AppId eq '$appId'" -ErrorAction Stop
+                $sp = Get-MgServicePrincipal -Filter "AppId eq '$appId'" -Property $spProperty -ErrorAction Stop
                 if ($sp) {
                     $servicePrincipals += $sp
                 }
@@ -70,8 +86,13 @@ function Get-MgApplicationAssignment {
             }
         }
     }
+    elseif ($AllApplications) {
+        $servicePrincipals = Get-MgServicePrincipal -All -Property $spProperty
+    }
     else {
-        $servicePrincipals = Get-MgServicePrincipal -All
+        # Default: Enterprise Applications only (tagged 'WindowsAzureActiveDirectoryIntegratedApp')
+        $servicePrincipals = Get-MgServicePrincipal -All -Property $spProperty `
+            -Filter "tags/Any(x: x eq 'WindowsAzureActiveDirectoryIntegratedApp')"
     }
     
     # Initialize results array
@@ -94,6 +115,7 @@ function Get-MgApplicationAssignment {
                 $assignmentProps = [ordered]@{
                     # Application info (most important first)
                     ApplicationName            = $sp.DisplayName
+                    ApplicationType            = if ($sp.Tags -contains 'WindowsAzureActiveDirectoryIntegratedApp') { 'Enterprise Application' } else { $sp.ServicePrincipalType }
                     AssignmentType             = ''
                     PrincipalType              = ''
                     IsRoleAssignableGroup      = $null
@@ -248,6 +270,7 @@ function Get-MgApplicationAssignment {
             $assignmentProps = [ordered]@{
                 # Application info (most important first)
                 ApplicationName            = $sp.DisplayName
+                ApplicationType            = if ($sp.Tags -contains 'WindowsAzureActiveDirectoryIntegratedApp') { 'Enterprise Application' } else { $sp.ServicePrincipalType }
                 AssignmentType             = ''
                 PrincipalType              = ''
                 IsRoleAssignableGroup      = $null
@@ -282,7 +305,7 @@ function Get-MgApplicationAssignment {
                 CreatedDate                = $sp.CreatedDateTime
             }
             
-            if ($sp.AppRoleAssignmentRequired -eq $false) {
+            if (-not $sp.AppRoleAssignmentRequired) {
                 $assignmentProps.AssignmentType = 'All Users (No Assignment Required)'
                 $assignmentProps.PrincipalType = 'All Users'
                 Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')]   -> Application available to all users (no assignment required)" -ForegroundColor Yellow
@@ -302,12 +325,20 @@ function Get-MgApplicationAssignment {
     Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] Analysis completed. Total items found: $($applicationAssignmentsArray.Count)" -ForegroundColor Cyan
     
     # Apply filtering if requested
-    if ($OnlyAssignedToAllUsers.IsPresent) {
+    if ($AssignmentNotEnforced.IsPresent) {
+        $beforeCount = $applicationAssignmentsArray.Count
+        $applicationAssignmentsArray = $applicationAssignmentsArray | Where-Object {
+            $_.AppRoleAssignmentRequired -eq $false
+        }
+        Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] Filtering applied (AssignmentNotEnforced): $($applicationAssignmentsArray.Count)/$beforeCount items retained" -ForegroundColor Cyan
+    }
+
+    if ($AssignmentEmpty.IsPresent) {
         $beforeCount = $applicationAssignmentsArray.Count
         $applicationAssignmentsArray = $applicationAssignmentsArray | Where-Object { 
             $_.AssignmentType -eq 'All Users (No Assignment Required)' 
         }
-        Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] Filtering applied (OnlyAssignedToAllUsers): $($applicationAssignmentsArray.Count)/$beforeCount items retained" -ForegroundColor Cyan
+        Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] Filtering applied (AssignmentEmpty): $($applicationAssignmentsArray.Count)/$beforeCount items retained" -ForegroundColor Cyan
     }
     
     if ($ExportToExcel.IsPresent) {
