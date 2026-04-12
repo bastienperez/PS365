@@ -91,12 +91,12 @@ function Get-MgApplicationAssignment {
 
     # Get all service principals (enterprise applications)
     if ($ApplicationId) {
-        $servicePrincipals = @()
+        [System.Collections.Generic.List[object]]$servicePrincipals = @()
         foreach ($appId in $ApplicationId) {
             try {
                 $sp = Get-MgServicePrincipal -Filter "AppId eq '$appId'" -Property $spProperty -ErrorAction Stop
                 if ($sp) {
-                    $servicePrincipals += $sp
+                    $servicePrincipals.Add($sp)
                 }
             }
             catch {
@@ -125,7 +125,13 @@ function Get-MgApplicationAssignment {
         
         # Get app role assignments for this service principal
         $appRoleAssignments = Get-MgServicePrincipalAppRoleAssignedTo -ServicePrincipalId $sp.Id
-        
+
+        # Pre-hash AppRoles by Id for O(1) per-assignment lookup (instead of a Where-Object per assignment)
+        $appRoleById = @{}
+        foreach ($appRole in $sp.AppRoles) {
+            $appRoleById[$appRole.Id] = $appRole
+        }
+
         if ($appRoleAssignments.Count -gt 0) {
             # Process each assignment individually
             foreach ($assignment in $appRoleAssignments) {
@@ -149,7 +155,7 @@ function Get-MgApplicationAssignment {
                     PrincipalDisplayName       = $null
                     
                     # Role and permission details
-                    AppRoleValue               = ($sp.AppRoles | Where-Object { $_.Id -eq $assignment.AppRoleId }).Value
+                    AppRoleValue               = $appRoleById[$assignment.AppRoleId].Value
                     AppRoleId                  = $assignment.AppRoleId
                     AppRoleAssignmentRequired  = $sp.AppRoleAssignmentRequired
                     

@@ -206,7 +206,7 @@ function Set-ExMailboxRegionalConfiguration {
 		return 1
 	}
 
-	$commands = @()
+	[System.Collections.Generic.List[string]]$commands = @()
 	$totalCount = @($Mailboxes).Count
 	$currentCount = 0
 
@@ -307,7 +307,7 @@ function Set-ExMailboxRegionalConfiguration {
 		$FullCommand = "$cmdletString $cmdParamstring"
 
 		if ($GenerateCmdlets) {
-			$Commands += $FullCommand
+			$commands.Add($FullCommand)
 		}
 
 		if (-not $GenerateCmdlets -and $PSCmdlet.ShouldProcess($mbx.PrimarySmtpAddress, 'Set regional configuration')) {

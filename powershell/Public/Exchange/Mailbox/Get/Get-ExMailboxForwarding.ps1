@@ -91,6 +91,9 @@ function Get-ExMailboxForwarding {
 
 	[System.Collections.Generic.List[PSCustomObject]]$mailboxesList = @()
 	[System.Collections.Generic.List[PSCustomObject]]$forwardList = @()
+	# HashSet of mailboxes already added to $forwardList as ForwardingAddress/ForwardingSMTPAddress entries.
+	# Used for O(1) membership tests that would otherwise be O(N^2) when checking precedence rules.
+	$forwardListMailboxSet = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
 	# inboxForwardList is use to contains the mailbox with inbox rules with forward. We need to use it as temporary storage to check if the mailbox has already a forward set by forwardingAddress or forwardingSMTPAddress
 	[System.Collections.Generic.List[PSCustomObject]]$inboxForwardList = @()
 
@@ -186,14 +189,21 @@ function Get-ExMailboxForwarding {
 
 	# if mailboxes is specified, get only these mailboxes
 	if ($null -ne $Identity -and $Identity.Count -gt 0) {
+		# Build a hashtable keyed on PrimarySMTPAddress for O(1) lookups instead of O(N*M)
+		# linear scans when the caller passes multiple identities against a large mailbox list.
+		$mailboxByPrimarySmtp = @{}
+		foreach ($mbxObj in $mailboxesList) {
+			$mailboxByPrimarySmtp[[string]$mbxObj.PrimarySMTPAddress] = $mbxObj
+		}
+
 		[System.Collections.Generic.List[Object]]$tempMailboxesList = @()
 		foreach ($mbx in $Identity) {
-			try {
-				$mailbox = $mailboxesList | Where-Object { $_.PrimarySMTPAddress -eq $mbx }
+			$mailbox = $mailboxByPrimarySmtp[$mbx]
+			if ($mailbox) {
 				$tempMailboxesList.Add($mailbox)
 			}
-			catch {
-				Write-Warning "$mbx mailbox not found. $($_.Exception.Message)"
+			else {
+				Write-Warning "$mbx mailbox not found."
 			}
 		}
 
@@ -286,8 +296,9 @@ function Get-ExMailboxForwarding {
 
 				#Add object to an array
 				$forwardList.Add($object)
+				[void]$forwardListMailboxSet.Add([string]$mailbox.PrimarySmtpAddress)
 			}
-			
+
 			<# --- Forwarding SMTP Address part ---
 			On the other hand, ForwardingSMTPAddress, it is a ProxyAddresses Value and has lower priority than ForwardingAddress.
 			You can set this attribute with a remote SMTP address even if there is no mail-enabled Object exists in your ActiveDirectory | Exchange Online
@@ -304,9 +315,8 @@ function Get-ExMailboxForwarding {
 			if ($null -ne $forwardingSMTPAddress) {
 				Write-Host -ForegroundColor yellow "$($mailbox.Name) - $($mailbox.PrimarySMTPAddress) - 1 forwardingSMTPAddress parameter found"
  
-				# we need to check if the forwardList.PrimarySMTPAddress already contains 
-				#if ($forwardList.PrimarySMTPAddress -contains $mailbox.PrimarySmtpAddress) {
-				if ($forwardList.PrimarySMTPAddress -contains $mailbox.PrimarySmtpAddress) {
+				# O(1) HashSet lookup instead of an O(N) scan through $forwardList.PrimarySMTPAddress
+				if ($forwardListMailboxSet.Contains([string]$mailbox.PrimarySmtpAddress)) {
 					$precedence = 'ForwardingAddress is already set for this mailbox. ForwardingAddress has a higher priority than the ForwardingSMTPAddress. This ForwardingSMTPAddress is ignored'
 				}
 				else {
@@ -360,6 +370,7 @@ function Get-ExMailboxForwarding {
 
 				#Add object to an array
 				$forwardList.Add($object)
+				[void]$forwardListMailboxSet.Add([string]$mailbox.PrimarySmtpAddress)
 			}
 		}
 	}
@@ -377,7 +388,8 @@ function Get-ExMailboxForwarding {
 			}
 
 			foreach ($inboxForwardRule in $inboxForwardRules) {
-				if ($forwardList.PrimarySMTPAddress -contains $mailbox.PrimarySmtpAddress -and ($forwardList.ForwardingAddress -ne '-' -or $forwardList.ForwardingSMTPAddress -ne '-')) {
+				# O(1) HashSet lookup instead of an O(N) scan over $forwardList.PrimarySMTPAddress
+				if ($forwardListMailboxSet.Contains([string]$mailbox.PrimarySmtpAddress)) {
 					$precedence = 'ForwardingAddress | ForwardingSMTPAddress is already set for this mailbox. They have a higher priority than inbox rules. This inbox rule will be ignored unless DeliverToMailboxAndForward is set to $true'
 				}
 				else {

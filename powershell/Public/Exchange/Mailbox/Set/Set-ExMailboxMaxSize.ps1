@@ -104,7 +104,7 @@ function Set-ExMailboxMaxSize {
 		return 1
 	}
 
-	$commands = @()
+	[System.Collections.Generic.List[string]]$commands = @()
 	$totalCount = @($Mailboxes).Count
 	$currentCount = 0
 
@@ -119,7 +119,7 @@ function Set-ExMailboxMaxSize {
 		$cmdParamstring = '-MaxReceiveSize 150MB -MaxSendSize 150MB -ErrorAction Stop'
 		$fullCommand = "$cmdletString $($cmdParams.Identity) $cmdParamstring"
 		if ($GenerateCmdlets) {
-			$Commands += $fullCommand
+			$commands.Add($fullCommand)
 		}
 
 		if (-not $GenerateCmdlets -and $PSCmdlet.ShouldProcess($mbx.PrimarySmtpAddress, 'Set regional configuration')) {

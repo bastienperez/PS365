@@ -354,6 +354,15 @@ function Get-MgBitlockerKeyInfo {
         }
     }
 
+    # Build a DeviceId -> device hashtable once so per-key lookups later in the main loop are O(1)
+    # instead of O(N*M) Where-Object scans (tens of thousands of keys * thousands of devices).
+    $devicesByDeviceId = @{}
+    foreach ($d in $devices) {
+        if ($d.DeviceId) {
+            $devicesByDeviceId[[string]$d.DeviceId] = $d
+        }
+    }
+
     # Get BitLocker keys with plain text values if needed
     Write-Verbose 'Retrieving BitLocker recovery keys...'
     [System.Collections.Generic.List[Object]]$keys = @()
@@ -467,8 +476,8 @@ function Get-MgBitlockerKeyInfo {
             try {
                 Write-Verbose "[$keyCounter/$totalKeys] Backing up BitLocker key to Key Vault..."
                 
-                # Get device name for Key Vault secret name from already-loaded $devices list
-                $deviceInfo = $devices | Where-Object { $_.DeviceId -eq $key.DeviceId }
+                # Get device name for Key Vault secret name from already-loaded $devices list (O(1) hashtable lookup)
+                $deviceInfo = $devicesByDeviceId[[string]$key.DeviceId]
                 $deviceName = if ($deviceInfo -and $deviceInfo.DisplayName) { $deviceInfo.DisplayName } else { "UnknownDevice-$($key.DeviceId)" }
                 
                 $keyCreationDate = if ($key.CreatedDateTime) { (Get-Date $key.CreatedDateTime -Format 'yyyy-MM-dd-HHmmss') } else { 'unknown' }
@@ -520,7 +529,7 @@ function Get-MgBitlockerKeyInfo {
         # If requested, include the device details
         if ($PSBoundParameters['IncludeDeviceInfo']) {
             Write-Verbose "[$keyCounter/$totalKeys] Looking up device information for $($key.DeviceId)..."
-            $device = $devices | Where-Object { $key.DeviceId -eq $_.DeviceId }
+            $device = $devicesByDeviceId[[string]$key.DeviceId]
             if (-not $device) {
                 Write-Warning "[$keyCounter/$totalKeys] Device with ID $($key.DeviceId) not found!"
                 $key | Add-Member -MemberType NoteProperty -Name 'DeviceName' -Value 'Device not found'
@@ -554,14 +563,14 @@ function Get-MgBitlockerKeyInfo {
         }
         elseif ($PSBoundParameters.ContainsKey('DeviceName') -or $PSBoundParameters.ContainsKey('DeviceID')) {
             # Add device display name even without -IncludeDeviceInfo when filtering by device
-            $device = $devices | Where-Object { $key.DeviceId -eq $_.DeviceId }
+            $device = $devicesByDeviceId[[string]$key.DeviceId]
             if ($device) {
                 $key | Add-Member -MemberType NoteProperty -Name 'DeviceName' -Value $device.DisplayName
             }
         }
         else {
             # Resolve device display name from pre-loaded devices
-            $device = $devices | Where-Object { $key.DeviceId -eq $_.DeviceId }
+            $device = $devicesByDeviceId[[string]$key.DeviceId]
             $key | Add-Member -MemberType NoteProperty -Name 'DeviceName' -Value (& { if ($device -and $device.DisplayName) { $device.DisplayName } else { 'Unknown' } })
         }
     }

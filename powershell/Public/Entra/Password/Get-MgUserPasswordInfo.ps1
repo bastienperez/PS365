@@ -284,12 +284,18 @@ function Get-MgUserPasswordInfo {
 
     if ($OnlySyncedUsers) {
         Write-Host -ForegroundColor Cyan 'Filtering synchronized users only (OnPremisesSyncEnabled = true)'
-        $mgUsersList = $mgUsersList | Where-Object { $_.OnPremisesSyncEnabled}
+        $mgUsersList = $mgUsersList | Where-Object { $_.OnPremisesSyncEnabled }
+    }
+
+    # Index domain policies by domain name for O(1) lookup per user (O(N) instead of O(N*M))
+    $policyByDomain = @{}
+    foreach ($policy in $domainPasswordPolicies) {
+        $policyByDomain[$policy.DomainName] = $policy
     }
 
     foreach ($mgUser in $mgUsersList) {
         $userDomain = $mgUser.UserPrincipalName.Split('@')[1]
-        $originalDomainPolicy = $domainPasswordPolicies | Where-Object { $_.DomainName -eq $userDomain }
+        $originalDomainPolicy = $policyByDomain[$userDomain]
         
         # Create a copy of the domain policy to avoid modifying the original object
         $userDomainPolicy = [PSCustomObject][ordered]@{

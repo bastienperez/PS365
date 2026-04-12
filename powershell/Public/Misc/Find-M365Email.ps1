@@ -45,15 +45,18 @@ function Find-M365Email {
         }
     }
 
+    # $EmailIndex is a hashtable keyed on lower-cased email address pointing at the existing
+    # PSCustomObject in $EmailObjects. It makes existence check and update O(1) instead of
+    # a linear scan (-> O(N^2) on tens of thousands of addresses).
     function Add-EmailObjects {
         param
         (
             $EmailObjects,
+            $EmailIndex,
             $Users
         )
         foreach ($user in $users) {
             foreach ($emailaddress in $user.emailaddresses) {
-                #Write-Host 'Processing' $emailaddress -ForegroundColor green
                 $emailaddress = $emailaddress -replace 'X500:', ''
                 $emailaddress = $emailaddress -replace 'smtp:', ''
                 $emailaddress = $emailaddress -replace 'sip:', ''
@@ -64,26 +67,25 @@ function Find-M365Email {
                         continue
                     }
                 }
-				
-                # Check if email already exists in our objects array
-                $existingEmail = $EmailObjects | Where-Object { $_.EmailAddress -eq $emailaddress }
-                
+
+                $key = $emailaddress.ToLowerInvariant()
+                $existingEmail = $EmailIndex[$key]
+
                 if (-not $existingEmail) {
-                    # Create new email object
                     $emailObject = [PSCustomObject]@{
                         EmailAddress  = $emailaddress
                         ObjectID      = $user.objectID
                         DisplayName   = $user.DisplayName
                         RecipientType = $user.RecipientTypeDetails
                         WhenCreated   = $user.WhenCreated
-                        Sources       = @($user.RecipientTypeDetails)
+                        Sources       = [System.Collections.Generic.List[string]]@($user.RecipientTypeDetails)
                     }
                     $EmailObjects.Add($emailObject)
+                    $EmailIndex[$key] = $emailObject
                 }
                 else {
-                    # Add additional source/type if not already present
-                    if ($existingEmail.Sources -notcontains $user.RecipientTypeDetails) {
-                        $existingEmail.Sources += $user.RecipientTypeDetails
+                    if (-not $existingEmail.Sources.Contains($user.RecipientTypeDetails)) {
+                        $existingEmail.Sources.Add($user.RecipientTypeDetails)
                     }
                 }
             }
@@ -116,6 +118,7 @@ function Find-M365Email {
     }
 
     [System.Collections.Generic.List[PSCustomObject]]$allM365EmailObjects = @()
+    $allM365EmailIndex = @{}
 
     Write-Host 'Get All Exchange Online recipients...' -ForegroundColor Green
     $allExchangeRecipients = Get-Recipient * -ResultSize unlimited | Select-Object DisplayName, RecipientTypeDetails, EmailAddresses, @{Name = 'objectID'; Expression = { $_.ExternalDirectoryObjectId } }, @{Name = 'WhenCreated'; Expression = { $_.WhenCreatedUTC } }
@@ -139,20 +142,20 @@ function Find-M365Email {
 
     # Creating email objects collection
     Write-Host 'Creating Email Objects Collection...' -ForegroundColor Green
-    Add-EmailObjects -EmailObjects $allM365EmailObjects -Users $allExchangeRecipients
-    Add-EmailObjects -EmailObjects $allM365EmailObjects -Users $softDeleted
+    Add-EmailObjects -EmailObjects $allM365EmailObjects -EmailIndex $allM365EmailIndex -Users $allExchangeRecipients
+    Add-EmailObjects -EmailObjects $allM365EmailObjects -EmailIndex $allM365EmailIndex -Users $softDeleted
 
-    Add-EmailObjects -EmailObjects $allM365EmailObjects -Users $m365UPNUsers 
-    Add-EmailObjects -EmailObjects $allM365EmailObjects -Users $m365Emails
-    Add-EmailObjects -EmailObjects $allM365EmailObjects -Users $m365AlternateEmails
+    Add-EmailObjects -EmailObjects $allM365EmailObjects -EmailIndex $allM365EmailIndex -Users $m365UPNUsers
+    Add-EmailObjects -EmailObjects $allM365EmailObjects -EmailIndex $allM365EmailIndex -Users $m365Emails
+    Add-EmailObjects -EmailObjects $allM365EmailObjects -EmailIndex $allM365EmailIndex -Users $m365AlternateEmails
 
-    Add-EmailObjects -EmailObjects $allM365EmailObjects -Users $entraIDDeletedUsersUPN 
-    Add-EmailObjects -EmailObjects $allM365EmailObjects -Users $entraIDDeletedUsersEmails
+    Add-EmailObjects -EmailObjects $allM365EmailObjects -EmailIndex $allM365EmailIndex -Users $entraIDDeletedUsersUPN
+    Add-EmailObjects -EmailObjects $allM365EmailObjects -EmailIndex $allM365EmailIndex -Users $entraIDDeletedUsersEmails
 
     if ($SearchEmail) {
         foreach ($email in $SearchEmail) {
-            $foundEmail = $allM365EmailObjects | Where-Object { $_.EmailAddress -eq $email }
-            
+            $foundEmail = $allM365EmailIndex[$email.ToLowerInvariant()]
+
             if ($foundEmail) {
                 Write-Host "$email found:" -ForegroundColor Green
                 $foundEmail | Format-Table -AutoSize
