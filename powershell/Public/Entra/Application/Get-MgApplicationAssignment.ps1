@@ -70,6 +70,7 @@ function Get-MgApplicationAssignment {
         [switch]$AssignmentEmpty,
 
         [Parameter(Mandatory = $false)]
+        [switch]$ExportToExcel,
 
         [Parameter(Mandatory = $false)]
         [switch]$NoPermissionCheck
