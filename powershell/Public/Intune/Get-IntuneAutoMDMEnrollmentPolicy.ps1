@@ -31,8 +31,18 @@ function Get-IntuneAutoMDMEnrollmentPolicy {
     [CmdletBinding()]
     param (
         [Parameter()]
-        [switch]$AsObject
+        [switch]$AsObject,
+
+        [Parameter()]
+        [switch]$NoPermissionCheck
     )
+
+    if (-not $NoPermissionCheck.IsPresent) {
+        $requiredScopes = @('Policy.Read.All')
+        if (-not (Test-MgGraphPermission -RequiredScopes $requiredScopes -CallerName $MyInvocation.MyCommand.Name)) {
+            return
+        }
+    }
 
     try {
         $policyId = '0000000a-0000-0000-c000-000000000000'

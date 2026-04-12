@@ -86,6 +86,11 @@
 
     Backs up LAPS passwords for all devices using managed identity authentication. Suitable for Azure Automation runbooks.
 
+    .EXAMPLE
+    Get-MgLAPSPassword -ShowPassword -ExportToExcel
+
+    Retrieves the current LAPS password in plain text for all devices and exports the results to an Excel file.
+
     .LINK
     https://ps365.clidsys.com/docs/commands/Get-MgLAPSPassword
 
@@ -115,8 +120,16 @@ function Get-MgLAPSPassword {
 
         [Parameter(Mandatory, ParameterSetName = 'KeyVault', HelpMessage = 'Azure Key Vault name to backup LAPS passwords')]
         [ValidateNotNullOrEmpty()]
-        [string]$KeyVaultName
+        [string]$KeyVaultName,
+
+        [Parameter(HelpMessage = 'Export the results to an Excel file in the user profile directory')]
+        [switch]$ExportToExcel,
+
+        [Parameter(HelpMessage = 'Skip the Microsoft Graph scope verification performed against the current Get-MgContext token')]
+        [switch]$NoPermissionCheck
     )
+
+    [System.Collections.Generic.List[PSCustomObject]]$lapsResults = @()
 
     # Validate that only one device filter is specified
     if ($PSBoundParameters.ContainsKey('DeviceName') -and $PSBoundParameters.ContainsKey('DeviceID')) {
@@ -129,7 +142,10 @@ function Get-MgLAPSPassword {
         Write-Warning '-IncludeHistory has no effect without -ShowPassword or -BackupToKeyVault.'
     }
 
-    $requiredScopes = @('DeviceLocalCredential.Read.All', 'Device.Read.All')
+    # DeviceLocalCredential.ReadBasic.All suffices for metadata-only reads; DeviceLocalCredential.Read.All
+    # is only needed when fetching the password credentials ($fetchPasswords = true).
+    $deviceLocalCredentialScope = if ($fetchPasswords) { 'DeviceLocalCredential.Read.All' } else { 'DeviceLocalCredential.ReadBasic.All' }
+    $requiredScopes = @($deviceLocalCredentialScope, 'Device.Read.All')
 
     # Version check for Azure Automation before connecting
     if ($RunFromAzureAutomation.IsPresent) {
@@ -152,6 +168,14 @@ function Get-MgLAPSPassword {
         else {
             Write-Verbose "Connecting to Microsoft Graph. Scopes: $($requiredScopes -join ',')"
             $null = Connect-MgGraph -Scopes $requiredScopes -NoWelcome
+        }
+    }
+
+    # Skip scope check in Azure Automation: Managed Identity uses fixed app-registration scopes,
+    # and Test-MgGraphPermission lives in Private/ which isn't available when the script is deployed standalone in a runbook.
+    if (-not $NoPermissionCheck.IsPresent -and -not $RunFromAzureAutomation.IsPresent) {
+        if (-not (Test-MgGraphPermission -RequiredScopes $requiredScopes -CallerName $MyInvocation.MyCommand.Name)) {
+            return
         }
     }
 
@@ -250,33 +274,26 @@ function Get-MgLAPSPassword {
         }
         catch {
             Write-Warning "Device ID: $deviceCredentialId $($_.Exception.Message -replace "`n", ' ' -replace "`r", ' ')"
-            $object = [PSCustomObject][ordered]@{
-                DeviceName             = '$null'
-                DeviceId               = $deviceCredentialId
-                PasswordExpirationTime = $null
-            }
-
-            $object
+            $lapsResults.Add([PSCustomObject][ordered]@{
+                    DeviceName             = $null
+                    DeviceId               = $deviceCredentialId
+                    PasswordExpirationTime = $null
+                })
             continue
         }
 
         if ([string]::IsNullOrWhitespace($response)) {
-            $object = [PSCustomObject][ordered]@{
-                DeviceName             = '$null'
-                DeviceId               = $deviceCredentialId
-                PasswordExpirationTime = $null
-            }
-
-            $object
+            $lapsResults.Add([PSCustomObject][ordered]@{
+                    DeviceName             = $null
+                    DeviceId               = $deviceCredentialId
+                    PasswordExpirationTime = $null
+                })
             continue
         }
 
         # Build custom PS output object
         $resultsJson = ConvertFrom-Json $response
-    
-        $lapsDeviceId = $resultsJson.deviceName
 
-        $lapsDeviceId = New-Object([System.Guid])
         $lapsDeviceId = [System.Guid]::Parse($resultsJson.id)
 
         # Grab password expiration time (only applies to the latest password)
@@ -352,31 +369,41 @@ function Get-MgLAPSPassword {
                     }
                 }
                 else {
-                    $object = [PSCustomObject][ordered]@{
-                        DeviceName             = $resultsJson.deviceName
-                        DeviceId               = $lapsDeviceId
-                        Account                = $credential.accountName
-                        IsCurrent              = ($credential -eq $currentCredential)
-                        Password               = $plainText
-                        PasswordExpirationTime = $lapsPasswordExpirationTime
-                        PasswordUpdateTime     = if ($credential.backupDateTime) { Get-Date $credential.backupDateTime } else { $null }
-                    }
-
-                    $object
+                    $lapsResults.Add([PSCustomObject][ordered]@{
+                            DeviceName             = $resultsJson.deviceName
+                            DeviceId               = $lapsDeviceId
+                            Account                = $credential.accountName
+                            IsCurrent              = ($credential -eq $currentCredential)
+                            Password               = $plainText
+                            PasswordExpirationTime = $lapsPasswordExpirationTime
+                            PasswordUpdateTime     = if ($credential.backupDateTime) { Get-Date $credential.backupDateTime } else { $null }
+                        })
                 }
             }
         }
         else {
             # Output a single object that just displays latest password expiration time
             # Note, $IncludeHistory is ignored even if specified in this case
-            $object = [PSCustomObject][ordered]@{
-                DeviceName             = $resultsJson.deviceName
-                DeviceId               = $lapsDeviceId
-                Password               = '[HIDDEN - Use -ShowPassword to display]'
-                PasswordExpirationTime = $lapsPasswordExpirationTime
-            }
-
-            $object
+            $lapsResults.Add([PSCustomObject][ordered]@{
+                    DeviceName             = $resultsJson.deviceName
+                    DeviceId               = $lapsDeviceId
+                    Password               = '[HIDDEN - Use -ShowPassword to display]'
+                    PasswordExpirationTime = $lapsPasswordExpirationTime
+                })
         }
+    }
+
+    if ($ExportToExcel.IsPresent) {
+        $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
+        $excelFilePath = "$($env:userprofile)\$now-MgLAPSPassword.xlsx"
+        Write-Host -ForegroundColor Cyan "Exporting LAPS passwords to Excel file: $excelFilePath"
+        $lapsResults | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'MgLAPSPassword'
+        Write-Host -ForegroundColor Green 'Export completed successfully!'
+        if ($ShowPassword.IsPresent) {
+            Write-Warning 'SECURITY ALERT: The Excel file contains LAPS passwords in PLAIN TEXT! Store it securely.'
+        }
+    }
+    elseif (-not $BackupToKeyVault.IsPresent) {
+        return $lapsResults
     }
 }

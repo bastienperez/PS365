@@ -13,6 +13,9 @@
     .PARAMETER ByDomain
     An array of domains to search for.
 
+    .PARAMETER NoPermissionCheck
+    (Optional) Skip the Microsoft Graph scope verification performed against the current Get-MgContext token.
+
     .EXAMPLE
     Find-M365Email -SearchEmail "user@example.com"
 
@@ -31,8 +34,16 @@ function Find-M365Email {
     [CmdletBinding()]
     param(
         [String[]]$SearchEmail,
-        [String]$ByDomain
+        [String]$ByDomain,
+        [switch]$NoPermissionCheck
     )
+
+    if (-not $NoPermissionCheck.IsPresent) {
+        $requiredScopes = @('User.Read.All')
+        if (-not (Test-MgGraphPermission -RequiredScopes $requiredScopes -CallerName $MyInvocation.MyCommand.Name)) {
+            return
+        }
+    }
 
     function Add-EmailObjects {
         param
@@ -87,35 +98,21 @@ function Find-M365Email {
 
     foreach ($module in $modules) {
         try {
-            Import-Module $modules -ErrorAction stop
+            Import-Module $module -ErrorAction Stop
         }
         catch {
-            Write-Warning "First, install the Microsoft $modules module first : Install-Module $modules"
+            Write-Warning "First, install the $module module: Install-Module $module"
             return
         }
     }
 
+    # Verify Exchange Online session — Get-Recipient will throw if not connected
     try {
-        #Connect-MgGraph -Scopes 'User.Read.All' -NoWelcome
+        $null = Get-Recipient -ResultSize 1 -ErrorAction Stop -WarningAction SilentlyContinue
     }
     catch {
-        Write-Warning "Failed to connect Microsoft Graph. $($_.Exception.Message)"
+        Write-Warning "Exchange Online session required. Run: Connect-ExchangeOnline"
         return
-    }
-    
-    try {
-        #WarningAction = silentlycontinue because of warning message when resultsize is bigger than 10
-        $null = Get-Recipient -ResultSize 1 -ErrorAction Stop -WarningAction silentlycontinue
-    }
-    catch {
-        Write-Host 'Connect Exchange Online' -ForegroundColor Green
-        try {
-            #Connect-ExchangeOnline -ErrorAction Stop -ShowBanner:$false
-        }
-        catch {
-            Write-Warning "Failed to connect Exchange Online. $($_.Exception.Message)"
-            return
-        }
     }
 
     [System.Collections.Generic.List[PSCustomObject]]$allM365EmailObjects = @()

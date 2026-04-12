@@ -42,6 +42,9 @@
     (Optional) If specified, includes sign-in statistics for the last 30 days for each application. Requires AuditLog.Read.All permission.
     Please be advised that this process is time-consuming.
 
+    .PARAMETER NoPermissionCheck
+    (Optional) Skip the Microsoft Graph scope verification performed against the current Get-MgContext token.
+
     .EXAMPLE
     Get-MgApplicationSAML
 
@@ -114,16 +117,22 @@ function Get-MgApplicationSAML {
         [switch]$RunFromAzureAutomation,
 
         [Parameter(Mandatory = $false)]
+        [ValidateRange(1, [int]::MaxValue)]
         [int]$ExpirationThresholdDays = 30,
 
         [Parameter(Mandatory = $false)]
+        [ValidatePattern('^[^@\s]+@[^@\s]+\.[^@\s]+$')]
         [string]$NotificationRecipient,
 
         [Parameter(Mandatory = $false)]
+        [ValidatePattern('^[^@\s]+@[^@\s]+\.[^@\s]+$')]
         [string]$NotificationSender,
 
         [Parameter(Mandatory = $false)]
-        [switch]$IncludeSignInStats
+        [switch]$IncludeSignInStats,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$NoPermissionCheck
     )
 
     # Validate notification parameters
@@ -142,26 +151,20 @@ function Get-MgApplicationSAML {
         }
 
         try {
-            Import-Module 'Microsoft.Graph.Users.Actions' -ErrorAction Stop -ErrorVariable mgGraphMailMissing
+            Import-Module 'Microsoft.Graph.Users.Actions' -ErrorAction Stop
         }
         catch {
-            if ($mgGraphMailMissing) {
-                Write-Warning "Failed to import Microsoft.Graph.Users.Actions module: $($mgGraphMailMissing.Exception.Message)"
-            }
-
+            Write-Warning "Failed to import Microsoft.Graph.Users.Actions module: $($_.Exception.Message)"
             return
         }
     }
 
     try {
         # At the date of writing (december 2023), PreferredTokenSigningKeyEndDateTime parameter is only on Beta profile
-        Import-Module 'Microsoft.Graph.Beta.Applications' -ErrorAction Stop -ErrorVariable mgGraphAppsMissing
+        Import-Module 'Microsoft.Graph.Beta.Applications' -ErrorAction Stop
     }
     catch {
-        if ($mgGraphAppsMissing) {
-            Write-Warning "Please install the Microsoft.Graph.Beta.Applications module: $($mgGraphAppsMissing.Exception.Message)"
-        }
-
+        Write-Warning "Please install the Microsoft.Graph.Beta.Applications module: $($_.Exception.Message)"
         return
     }
 
@@ -211,6 +214,14 @@ function Get-MgApplicationSAML {
         else {
             Write-Verbose "Connecting to Microsoft Graph. Scopes: $($permissionsNeeded -join ',')"
             $null = Connect-MgGraph -Scopes $permissionsNeeded -NoWelcome
+        }
+    }
+
+    # Skip scope check in Azure Automation: Managed Identity uses fixed app-registration scopes,
+    # and Test-MgGraphPermission lives in Private/ which isn't available when the script is deployed standalone in a runbook.
+    if (-not $NoPermissionCheck.IsPresent -and -not $RunFromAzureAutomation.IsPresent) {
+        if (-not (Test-MgGraphPermission -RequiredScopes $permissionsNeeded -CallerName $MyInvocation.MyCommand.Name)) {
+            return
         }
     }
 
@@ -280,7 +291,7 @@ function Get-MgApplicationSAML {
                     else { $_.Id }
                 }) -join '|'
         }
-        
+
         # Check for leading/trailing spaces in DisplayName
         $recommendation = $null
         if ($samlApp.DisplayName -ne $samlApp.DisplayName.Trim()) {
@@ -296,16 +307,12 @@ function Get-MgApplicationSAML {
                 Write-Verbose "Sign-in filter: $signInFilter"
                 $encodedFilter = [uri]::EscapeDataString($signInFilter)
                 $uri = "https://graph.microsoft.com/v1.0/auditLogs/signIns?`$filter=$encodedFilter&`$count=true&`$top=999"
-                try{
-                    $signInResponse = Invoke-MgGraphRequest -Uri $uri -Method GET -Headers @{ ConsistencyLevel = 'eventual' } -ErrorAction Stop -WarningAction Stop
-                }
-                catch {
-                    $signInCount = "Problem to get sign-ins - $($_.Exception.Message)"
-                }
+                $signInResponse = Invoke-MgGraphRequest -Uri $uri -Method GET -Headers @{ ConsistencyLevel = 'eventual' } -ErrorAction Stop
 
                 if ($null -ne $signInResponse.'@odata.count') {
                     $signInCount = [int]$signInResponse.'@odata.count'
-                } else {
+                }
+                else {
                     $allSignIns = [System.Collections.Generic.List[object]]@()
                     $signInResponse.value | Where-Object { $_.isInteractive -eq $true } | ForEach-Object { $null = $allSignIns.Add($_) }
                     $nextLink = $signInResponse.'@odata.nextLink'
@@ -316,12 +323,12 @@ function Get-MgApplicationSAML {
                     }
                     $signInCount = $allSignIns.Count
                 }
-                
+
                 Write-Verbose "Found $signInCount sign-ins in the last 30 days for $($samlApp.DisplayName)"
             }
             catch {
                 Write-Warning "Could not retrieve sign-in statistics for '$($samlApp.DisplayName)': $($_.Exception.Message)"
-                $signInCount = $null
+                $signInCount = "Problem to get sign-ins - $($_.Exception.Message)"
             }
         }
 
@@ -567,7 +574,7 @@ function Get-MgApplicationSAML {
     <div class="footer">
         $emailFooter
         <hr style="border: none; border-top: 1px solid #d2d0ce; margin: 15px 0;">
-        <p><em>Generated on $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') by Get-MgApplicationSAML v0.71.0</em></p>
+        <p><em>Generated on $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') by Get-MgApplicationSAML v$((Get-Module PS365).Version)</em></p>
     </div>
 </body>
 </html>

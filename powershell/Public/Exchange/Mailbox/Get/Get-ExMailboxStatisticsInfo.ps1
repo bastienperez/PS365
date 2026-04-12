@@ -17,6 +17,9 @@
 	.PARAMETER IncludeFolderDetails
 	Include folder details in the results
 
+	.PARAMETER ExportToExcel
+	If specified, exports the results to an Excel file in the user's profile directory.
+
 	.EXAMPLE
 	Get-ExMailboxStatisticsInfo -Identity "user@domain.com"
 
@@ -27,12 +30,10 @@
 
 	Gets statistics with folder details included.
 
-	.PARAMETER ExportToExcel
-	If specified, exports the results to an Excel file in the user's profile directory.
-
 	.EXAMPLE
 	Get-ExMailboxStatisticsInfo -ExportToExcel
-	Exports results to an Excel file.
+
+	Exports results to an Excel file in the user's profile directory.
 
 	.LINK
 	https://ps365.clidsys.com/docs/commands/Get-ExMailboxStatisticsInfo

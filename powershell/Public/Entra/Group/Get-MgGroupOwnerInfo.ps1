@@ -25,6 +25,9 @@
     When specified, exports the results to an Excel file in the user's profile directory.
     Requires the ImportExcel module.
 
+    .PARAMETER NoPermissionCheck
+    (Optional) Skip the Microsoft Graph scope verification performed against the current Get-MgContext token.
+
     .EXAMPLE
     Get-MgGroupOwnerInfo
 
@@ -62,9 +65,18 @@ function Get-MgGroupOwnerInfo {
         [string]$DisplayName,
 
         [Parameter(Mandatory = $false)]
-        [switch]$ExportToExcel
+        [switch]$ExportToExcel,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$NoPermissionCheck
     )
 
+    if (-not $NoPermissionCheck.IsPresent) {
+        $requiredScopes = @('Group.Read.All')
+        if (-not (Test-MgGraphPermission -RequiredScopes $requiredScopes -CallerName $MyInvocation.MyCommand.Name)) {
+            return
+        }
+    }
 
     [System.Collections.Generic.List[PSCustomObject]]$results = @()
     $headers = @{ ConsistencyLevel = 'eventual' }
@@ -176,7 +188,9 @@ function Get-MgGroupOwnerInfo {
         $excelFilePath = "$($env:userprofile)\$now-MgGroupOwnerInfo_Report.xlsx"
         Write-Host -ForegroundColor Cyan "Exporting to Excel file: $excelFilePath"
         $results | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'Entra-GroupOwners'
+        Write-Host -ForegroundColor Green 'Export completed successfully!'
     }
-
-    return $results
+    else {
+        return $results
+    }
 }

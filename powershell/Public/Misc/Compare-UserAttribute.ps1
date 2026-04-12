@@ -26,6 +26,9 @@
     .PARAMETER Return
     Specifies whether to return users with 'Matching' or 'NotMatching' attributes.
 
+    .PARAMETER NoPermissionCheck
+    (Optional) Skip the Microsoft Graph scope verification performed against the current Get-MgContext token. Only applies when -Source is 'EntraID'.
+
     .EXAMPLE
     Compare-UserAttribute -Attribute1 "mail" -Attribute2 "proxyAddresses" -
 
@@ -63,8 +66,18 @@ function Compare-UserAttribute {
 
         [Parameter(Mandatory = $true)]
         [ValidateSet('Matching', 'NotMatching')]
-        [String]$Return
+        [String]$Return,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$NoPermissionCheck
     )
+
+    if ($Source -eq 'EntraID' -and -not $NoPermissionCheck.IsPresent) {
+        $requiredScopes = @('User.Read.All')
+        if (-not (Test-MgGraphPermission -RequiredScopes $requiredScopes -CallerName $MyInvocation.MyCommand.Name)) {
+            return
+        }
+    }
 
     switch ($Source) {
         'AD' {

@@ -14,6 +14,12 @@
     .PARAMETER DisplayName
     (Optional) Retrieves the application for a specific application by its DisplayName.
 
+    .PARAMETER ExportToExcel
+    (Optional) If specified, exports the results to an Excel file in the user's profile directory.
+
+    .PARAMETER NoPermissionCheck
+    (Optional) Skip the Microsoft Graph scope verification performed against the current Get-MgContext token.
+
     .EXAMPLE
     Get-MgRegisteredApp -ApplicationID "your-application-id"
 
@@ -34,6 +40,11 @@
 
     This command retrieves all registered applications.
 
+    .EXAMPLE
+    Get-MgRegisteredApp -ExportToExcel
+
+    Exports the list of registered applications to an Excel file.
+
     .LINK
     https://ps365.clidsys.com/docs/commands/Get-MgRegisteredApp
 
@@ -51,8 +62,21 @@ function Get-MgRegisteredApp {
         [string]$ObjectID,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'ByDisplayName')]
-        [string]$DisplayName
+        [string]$DisplayName,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$ExportToExcel,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$NoPermissionCheck
     )
+
+    if (-not $NoPermissionCheck.IsPresent) {
+        $requiredScopes = @('Application.Read.All')
+        if (-not (Test-MgGraphPermission -RequiredScopes $requiredScopes -CallerName $MyInvocation.MyCommand.Name)) {
+            return
+        }
+    }
 
     [System.Collections.Generic.List[PSCustomObject]]$registeredAppsArray = @()
 
@@ -127,5 +151,14 @@ function Get-MgRegisteredApp {
         $registeredAppsArray.Add($customApp)
     }
 
-    return $registeredAppsArray
+    if ($ExportToExcel.IsPresent) {
+        $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
+        $excelFilePath = "$($env:userprofile)\$now-MgRegisteredApp.xlsx"
+        Write-Host -ForegroundColor Cyan "Exporting registered applications to Excel file: $excelFilePath"
+        $registeredAppsArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'MgRegisteredApp'
+        Write-Host -ForegroundColor Green 'Export completed successfully!'
+    }
+    else {
+        return $registeredAppsArray
+    }
 }

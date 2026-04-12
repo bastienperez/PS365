@@ -18,14 +18,27 @@
 
     .NOTES
     Scope(s) required:
-    - ServicePrincipal.ReadWrite.All
+    - Application.ReadWrite.All
     Microsoft documentation:
     https://learn.microsoft.com/en-us/intune/intune-service/enrollment/multi-factor-authentication
     > The Microsoft Intune Enrollment cloud app isn't created automatically for new tenants. To add the app for new tenants, a Microsoft Entra administrator must create a service principal object, with app ID d4ebce55-015a-49b5-a083-c84d1797ae8c, in PowerShell or Microsoft Graph.
 #>
 
 function New-IntuneEnrollmentServicePrincipal {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $false)]
+        [switch]$NoPermissionCheck
+    )
 
+    if (-not $NoPermissionCheck.IsPresent) {
+        $requiredScopes = @('Application.ReadWrite.All')
+        if (-not (Test-MgGraphPermission -RequiredScopes $requiredScopes -CallerName $MyInvocation.MyCommand.Name)) {
+            return
+        }
+    }
+
+    $intuneEnrollmentAppUri = "https://graph.microsoft.com/v1.0/servicePrincipals?`$filter=appId eq 'd4ebce55-015a-49b5-a083-c84d1797ae8c'"
     $intuneEnrollmentAppExists = [bool](Invoke-MgGraphRequest -Method GET -Uri $intuneEnrollmentAppUri -ContentType 'PSObject' -OutputType PSObject).value.Count -gt 0
 
     if (-not $intuneEnrollmentAppExists) {

@@ -11,8 +11,14 @@
     The number of days to check for expiring credentials. Applications with credentials expiring within this timeframe will be returned.
     Default is 30 days.
 
+    .PARAMETER ForceNewToken
+    (Optional) Forces a disconnect and reconnect to Microsoft Graph to obtain a new access token.
+
     .PARAMETER ExportToExcel
     Exports the results to an Excel file.
+
+    .PARAMETER NoPermissionCheck
+    (Optional) Skip the Microsoft Graph scope verification performed by the underlying Get-MgApplicationCredential and Get-MgApplicationSAML calls.
 
     .EXAMPLE
     Get-MgApplicationExpiringCertAndKey
@@ -46,9 +52,12 @@ function Get-MgApplicationExpiringCertAndKey {
         
         [Parameter(Mandatory = $false)]
         [switch]$ForceNewToken,
-        
+
         [Parameter(Mandatory = $false)]
-        [switch]$ExportToExcel
+        [switch]$ExportToExcel,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$NoPermissionCheck
     )
 
     Write-Verbose "Checking for credentials expiring within $DaysUntilExpiry days"
@@ -58,7 +67,7 @@ function Get-MgApplicationExpiringCertAndKey {
     try {
         # Get application credentials
         Write-Verbose 'Retrieving application credentials...'
-        $appCredentials = Get-MgApplicationCredential -ForceNewToken:$ForceNewToken
+        $appCredentials = Get-MgApplicationCredential -ForceNewToken:$ForceNewToken -NoPermissionCheck:$NoPermissionCheck
 
         # Filter credentials expiring within specified days
         $expiringAppCredentials = $appCredentials | Where-Object { 
@@ -80,7 +89,7 @@ function Get-MgApplicationExpiringCertAndKey {
 
         # Get SAML applications
         Write-Verbose 'Retrieving SAML applications...'
-        $samlApps = Get-MgApplicationSAML -ForceNewToken:$false  # Don't force token again
+        $samlApps = Get-MgApplicationSAML -ForceNewToken:$false -NoPermissionCheck:$NoPermissionCheck  # Don't force token again
 
         # Filter SAML certificates expiring within specified days
         $expiringSamlCerts = $samlApps | Where-Object { 

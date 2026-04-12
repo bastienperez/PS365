@@ -29,7 +29,10 @@
 
     .PARAMETER ExportToExcel
     (Optional) If specified, exports the results to an Excel file in the user's profile directory.
-    
+
+    .PARAMETER NoPermissionCheck
+    (Optional) Skip the Microsoft Graph scope verification performed against the current Get-MgContext token.
+
     .EXAMPLE
     Get-MgUserPasswordInfo
 
@@ -54,7 +57,12 @@
     Get-MgUserPasswordInfo -SimulatedMaxPasswordAgeDays 180
 
     Retrieves password information for all users and simulates what would happen with a 180-day password expiration policy, showing both current and simulated expiration dates.
-    
+
+    .EXAMPLE
+    Get-MgUserPasswordInfo -ExportToExcel
+
+    Retrieves password information for all users and exports the results to an Excel file in the user's profile directory.
+
     .NOTES
     Ensure you have the necessary permissions and modules installed to run this script, such as the Microsoft Graph PowerShell module.
     The script assumes that the necessary authentication to Microsoft Graph has already been handled with the Connect-MgGraph function.
@@ -120,7 +128,10 @@ function Get-MgUserPasswordInfo {
         [int]$SimulatedMaxPasswordAgeDays,
 
         [Parameter(Mandatory = $false)]
-        [switch]$OnlyUsersWithForceChangePasswordNextSignIn
+        [switch]$OnlyUsersWithForceChangePasswordNextSignIn,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$NoPermissionCheck
     )
     
     # Import required modules
@@ -188,6 +199,13 @@ function Get-MgUserPasswordInfo {
     if (-not (Get-MgContext)) {
         Write-Host -ForegroundColor Cyan 'Connecting to Microsoft Graph'
         Connect-MgGraph -Scopes 'User.Read.All', 'Domain.Read.All', 'OnPremDirectorySynchronization.Read.All' -NoWelcome
+    }
+
+    if (-not $NoPermissionCheck.IsPresent) {
+        $requiredScopes = @('User.Read.All', 'Domain.Read.All', 'OnPremDirectorySynchronization.Read.All')
+        if (-not (Test-MgGraphPermission -RequiredScopes $requiredScopes -CallerName $MyInvocation.MyCommand.Name)) {
+            return
+        }
     }
 
     # Get tenant-level password policy for synced users

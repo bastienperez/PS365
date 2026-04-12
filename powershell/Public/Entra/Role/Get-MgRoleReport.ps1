@@ -13,8 +13,9 @@
     .PARAMETER IncludeEmptyRoles
     Switch parameter to include empty roles in the report
 
-    .PARAMETER IncludePIMEligibleAssignments
-    Boolean parameter to include PIM eligible assignments in the report. Default is $true
+    .PARAMETER ExcludePIMEligibleAssignments
+    Switch parameter to exclude PIM eligible assignments from the report.
+    By default, PIM eligible assignments are included.
 
     .PARAMETER ForceNewToken
     Switch parameter to force getting a new token from Microsoft Graph
@@ -24,6 +25,9 @@
 
     .PARAMETER ExportToExcel
     Switch parameter to export the report to an Excel file in the user's profile directory
+
+    .PARAMETER NoPermissionCheck
+    (Optional) Skip the Microsoft Graph scope verification performed against the current Get-MgContext token.
     
     .EXAMPLE
     Get-MgRoleReport
@@ -36,7 +40,7 @@
     Get all the roles, including the ones without members
 
     .EXAMPLE
-    Get-MgRoleReport -IncludePIMEligibleAssignments $false
+    Get-MgRoleReport -ExcludePIMEligibleAssignments
     
     Get all the roles with members (without empty roles), but without PIM eligible assignments
 
@@ -57,10 +61,10 @@ function Get-MgRoleReport {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $false)]
-        [switch]$IncludeEmptyRoles = $false,
+        [switch]$IncludeEmptyRoles,
 
         [Parameter(Mandatory = $false)]
-        [boolean]$IncludePIMEligibleAssignments = $true,
+        [switch]$ExcludePIMEligibleAssignments,
 
         [Parameter(Mandatory = $false)]
         [switch]$ForceNewToken,
@@ -70,11 +74,14 @@ function Get-MgRoleReport {
         [switch]$MaesterMode,
         
         [Parameter(Mandatory = $false)]
-        [switch]$ExportToExcel
+        [switch]$ExportToExcel,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$NoPermissionCheck
     )
 
     [System.Collections.Generic.List[PSObject]]$rolesMembersArray = @()
-    [System.Collections.Generic.List[Object]]$objectsCacheArray = @()
+    $objectsCache = @{}
     [System.Collections.Generic.List[Object]]$mgRolesArrayAssignment = @()
 
     $modules = @(
@@ -105,36 +112,30 @@ function Get-MgRoleReport {
         $isConnected = $false
     }
     
-    $scopes = (Get-MgContext).Scopes
-
     # Audit.Log.Read.All for sign-in activity
     # RoleManagement.Read.All for role assignment (PIM eligible and permanent)
     # Directory.Read.All for user and group and service principal information
     $permissionsNeeded = 'Directory.Read.All', 'RoleManagement.Read.All', 'AuditLog.Read.All'
-    foreach ($permission in $permissionsNeeded) {
-        if ($scopes -notcontains $permission) {
-            Write-Verbose "You need to have the $permission permission in the current token, disconnect to force getting a new token with the right permissions"
-        }
-    }
 
     if (-not $isConnected) {
         Write-Verbose "Connecting to Microsoft Graph. Scopes: $permissionsNeeded"
         $null = Connect-MgGraph -Scopes $permissionsNeeded -NoWelcome
     }
 
-    Write-Verbose 'Collecting  roles with assignments...'
+    if (-not $NoPermissionCheck.IsPresent) {
+        if (-not (Test-MgGraphPermission -RequiredScopes $permissionsNeeded -CallerName $MyInvocation.MyCommand.Name)) {
+            return
+        }
+    }
+
+    Write-Verbose 'Collecting roles with assignments...'
 
     try {
-        #$mgRolesArrayAssignment = Get-MgRoleManagementDirectoryRoleDefinition -ErrorAction Stop
-        
         Get-MgRoleManagementDirectoryRoleAssignment -All -ExpandProperty Principal | ForEach-Object {
             $mgRolesArrayAssignment.Add($_)
         }
 
-        #$mgRolesArrayAssignment = (Invoke-MgGraphRequest -Method GET -Uri 'https://graph.microsoft.com/v1.0/roleManagement/directory/roleAssignments' -OutputType PSObject).Value
-
         $mgRolesDefinition = Get-MgRoleManagementDirectoryRoleAssignment -All -ExpandProperty roleDefinition
-
     }
     catch {
         Write-Warning $($_.Exception.Message)
@@ -142,19 +143,15 @@ function Get-MgRoleReport {
 
     # In *Assignment, we don't have the role definition, so we need to get it and add it to the object
     foreach ($assignment in $mgRolesArrayAssignment) {
-        # Add the role definition to the object
-        Add-Member -InputObject $assignment -MemberType NoteProperty -Name RoleDefinitionExtended -Value ($mgRolesDefinition | Where-Object { $_.id -eq $assignment.id }).roleDefinition 
-        # Add-Member -InputObject $assignment -MemberType NoteProperty -Name RoleDefinitionExtended -Value ($mgRolesDefinition | Where-Object { $_.id -eq $assignment.id }).roleDefinition.description 
-    } 
-    
+        Add-Member -InputObject $assignment -MemberType NoteProperty -Name RoleDefinitionExtended -Value ($mgRolesDefinition | Where-Object { $_.id -eq $assignment.id }).roleDefinition
+    }
 
-    if ($IncludePIMEligibleAssignments) {
+    if (-not $ExcludePIMEligibleAssignments.IsPresent) {
         Write-Verbose 'Collecting PIM eligible role assignments...'
         try {
-            (Get-MgRoleManagementDirectoryRoleEligibilitySchedule -All -ExpandProperty * -ErrorAction Stop | Select-Object id, principalId, directoryScopeId, roleDefinitionId, status, principal, @{Name = 'RoleDefinitionExtended'; Expression = { $_.roleDefinition } }) | ForEach-Object {
+            (Get-MgRoleManagementDirectoryRoleEligibilitySchedule -All -ExpandProperty 'principal', 'roleDefinition' -ErrorAction Stop | Select-Object id, principalId, directoryScopeId, roleDefinitionId, status, principal, @{Name = 'RoleDefinitionExtended'; Expression = { $_.roleDefinition } }) | ForEach-Object {
                 $mgRolesArrayAssignment.Add($_)
             }
-            #$mgRoles += (Invoke-MgGraphRequest -Method GET -Uri 'https://graph.microsoft.com/v1.0/roleManagement/directory/roleEligibilitySchedule' -OutputType PSObject).Value
         }
         catch {
             Write-Warning "Unable to get PIM eligible role assignments: $($_.Exception.Message)"
@@ -166,7 +163,7 @@ function Get-MgRoleReport {
             '#microsoft.graph.user' { $assignment.principal.AdditionalProperties.userPrincipalName; break }
             '#microsoft.graph.servicePrincipal' { $assignment.principal.AdditionalProperties.appId; break }
             '#microsoft.graph.group' { $assignment.principalid; break }
-            'default' { '-' }
+            default { '-' }
         }
 
         $object = [PSCustomObject][ordered]@{    
@@ -191,10 +188,7 @@ function Get-MgRoleReport {
             $group = Get-MgGroup -GroupId $object.Principal -Property Id, onPremisesSyncEnabled
             $object | Add-Member -MemberType NoteProperty -Name 'OnPremisesSyncEnabled' -Value $([bool]($group.onPremisesSyncEnabled -eq $true))
 
-            #$group = (Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/groups/$($object.Principal)" -OutputType PSObject)
-
             $groupMembers = Get-MgGroupMember -GroupId $group.Id -Property displayName, userPrincipalName
-            #$groupMembers = (Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/groups/$($group.Id)/members" -OutputType PSObject).Value
 
             foreach ($member in $groupMembers) {
                 $typeMapping = @{
@@ -282,11 +276,12 @@ function Get-MgRoleReport {
         $accountEnabled = $null
         $onPremisesSyncEnabled = $null
         
-        if ($objectsCacheArray.Principal -contains $member.Principal) {
-            $accountEnabled = ($objectsCacheArray | Where-Object { $_.Principal -eq $member.Principal }).AccountEnabled
-            $lastSignInDateTime = ($objectsCacheArray | Where-Object { $_.Principal -eq $member.Principal }).LastSignInDateTime
-            $lastNonInteractiveSignInDateTime = ($objectsCacheArray | Where-Object { $_.Principal -eq $member.Principal }).LastNonInteractiveSignInDateTime
-            $onPremisesSyncEnabled = ($objectsCacheArray | Where-Object { $_.Principal -eq $member.Principal }).onPremisesSyncEnabled
+        if ($objectsCache.ContainsKey($member.Principal)) {
+            $cached = $objectsCache[$member.Principal]
+            $accountEnabled = $cached.AccountEnabled
+            $lastSignInDateTime = $cached.LastSignInDateTime
+            $lastNonInteractiveSignInDateTime = $cached.LastNonInteractiveSignInDateTime
+            $onPremisesSyncEnabled = $cached.OnPremisesSyncEnabled
         }
         else {
             $lastSignInActivity = $null
@@ -336,7 +331,7 @@ function Get-MgRoleReport {
                     break
                 }
 
-                'default' {
+                default {
                     $accountEnabled = 'Not applicable'
                     $lastSignInDateTime = 'Not applicable'
                     $lastNonInteractiveSignInDateTime = 'Not applicable'
@@ -356,16 +351,14 @@ function Get-MgRoleReport {
         }
 
         # only add if not already in the cache
-        if (-not $objectsCacheArray.Principal -contains $member.Principal) {
-            $objectsCacheArray.Add($member)
+        if (-not $objectsCache.ContainsKey($member.Principal)) {
+            $objectsCache[$member.Principal] = $member
         }
     }
     
     if ($IncludeEmptyRoles.IsPresent) {
-
         Write-Verbose 'Collecting all roles...'
         try {
-            #$mgRolesArrayAssignment = (Invoke-MgGraphRequest -Method GET -Uri 'https://graph.microsoft.com/v1.0/roleManagement/directory/roleDefinitions' -OutputType PSObject).Value
             $mgRolesDefinition = Get-MgRoleManagementDirectoryRoleDefinition -All -ErrorAction Stop
 
             $emptyRoles = $mgRolesDefinition | Where-Object { $mgRolesArrayAssignment.RoleDefinitionId -notcontains $_.id }

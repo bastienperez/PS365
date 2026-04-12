@@ -18,6 +18,9 @@
     Nodes are color-coded by group type. Clicking a node zooms in and reveals its parent and child groups.
     The graph is frozen after stabilisation: individual nodes can be dragged without affecting the others.
 
+    .PARAMETER NoPermissionCheck
+    (Optional) Skip the Microsoft Graph scope verification performed against the current Get-MgContext token.
+
     .EXAMPLE
     Get-NestedGroup
 
@@ -59,16 +62,17 @@ function Get-NestedGroup {
         [switch]$ExportToExcel,
 
         [Parameter(Mandatory = $false)]
-        [switch]$ExportToHtml
+        [switch]$ExportToHtml,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$NoPermissionCheck
     )
 
-    # Ensure we have an active Graph session
-    try {
-        $null = Invoke-MgGraphRequest -Method GET -Uri 'https://graph.microsoft.com/v1.0/organization' -ErrorAction Stop
-    }
-    catch {
-        Write-Error "No active Microsoft Graph session. Run: Connect-MgGraph -Scopes 'Group.Read.All'"
-        return
+    if (-not $NoPermissionCheck.IsPresent) {
+        $requiredScopes = @('Group.Read.All')
+        if (-not (Test-MgGraphPermission -RequiredScopes $requiredScopes -CallerName $MyInvocation.MyCommand.Name)) {
+            return
+        }
     }
 
     Write-Verbose 'Fetching all groups...'
@@ -160,7 +164,12 @@ function Get-NestedGroup {
     Write-Progress -Activity 'Scanning group members' -Completed
 
     # Compute summary stats
-    $uniqueGroups = ($dependencies | ForEach-Object { $_.MemberGroupId; $_.ParentGroupId } | Sort-Object -Unique).Count
+    $uniqueGroupIds = [System.Collections.Generic.HashSet[string]]::new()
+    foreach ($dependency in $dependencies) {
+        [void]$uniqueGroupIds.Add($dependency.MemberGroupId)
+        [void]$uniqueGroupIds.Add($dependency.ParentGroupId)
+    }
+    $uniqueGroups = $uniqueGroupIds.Count
 
     Write-Host -ForegroundColor Yellow "`nNested Group Dependencies: $($dependencies.Count) relationships across $uniqueGroups groups`n"
 

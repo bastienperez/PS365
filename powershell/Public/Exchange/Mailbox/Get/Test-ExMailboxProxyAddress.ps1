@@ -32,6 +32,9 @@
     .PARAMETER NotMatchOnly
     If specified, only returns entries where the proxy address does not match.
 
+    .PARAMETER ExportToExcel
+    (Optional) If specified, exports the results to an Excel file in the user's profile directory.
+
     .EXAMPLE
     Test-ExMailboxProxyAddress -Mailbox "user@example.com" -ProxyAddress "alias@example.com"
 
@@ -48,9 +51,14 @@
     Reads mailbox and proxy address pairs from the specified CSV file and returns only those that match.
 
     .EXAMPLE
-    Test-ExMailboxProxyAddress -CsvPath "C:\path\to\file.csv" -NotMatchOnly 
+    Test-ExMailboxProxyAddress -CsvPath "C:\path\to\file.csv" -NotMatchOnly
 
     Reads mailbox and proxy address pairs from the specified CSV file and returns only those that do not match.
+
+    .EXAMPLE
+    Test-ExMailboxProxyAddress -CsvPath "C:\path\to\file.csv" -ExportToExcel
+
+    Reads mailbox and proxy address pairs from the specified CSV file and exports the results to an Excel file.
 
     .LINK
     https://ps365.clidsys.com/docs/commands/Test-ExMailboxProxyAddress
@@ -75,9 +83,12 @@ function Test-ExMailboxProxyAddress {
         
         [Parameter(Mandatory = $false)]
         [switch]$MatchOnly,
-        
+
         [Parameter(Mandatory = $false)]
-        [switch]$NotMatchOnly
+        [switch]$NotMatchOnly,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$ExportToExcel
     )
 
     # Validation: If Mailbox or ProxyAddress is provided, both must be provided
@@ -143,13 +154,24 @@ function Test-ExMailboxProxyAddress {
         $results.Add($object)
     }
 
-    if ($MatchOnly) {
-        return $results | Where-Object { $_.Status -eq 'MATCH' }
+    $filteredResults = if ($MatchOnly) {
+        $results | Where-Object { $_.Status -eq 'MATCH' }
     }
     elseif ($NotMatchOnly) {
-        return $results | Where-Object { $_.Status -ne 'MATCH' }
+        $results | Where-Object { $_.Status -ne 'MATCH' }
     }
     else {
-        return $results
+        $results
+    }
+
+    if ($ExportToExcel.IsPresent) {
+        $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
+        $excelFilePath = "$($env:userprofile)\$now-ExMailboxProxyAddress.xlsx"
+        Write-Host -ForegroundColor Cyan "Exporting results to Excel file: $excelFilePath"
+        $filteredResults | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'ExMailboxProxyAddress'
+        Write-Host -ForegroundColor Green 'Export completed successfully!'
+    }
+    else {
+        return $filteredResults
     }
 }

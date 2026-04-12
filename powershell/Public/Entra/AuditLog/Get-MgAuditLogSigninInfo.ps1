@@ -82,6 +82,9 @@
     .PARAMETER ForceNewToken
     Switch to force the acquisition of a new authentication token.
 
+    .PARAMETER NoPermissionCheck
+    (Optional) Skip the Microsoft Graph scope verification performed against the current Get-MgContext token.
+
     .EXAMPLE
     Get-MgAuditLogSigninInfo -StartDate '2024-01-01' -EndDate '2024-01-31' -Users 'user1@contoso.com', 'user2@contoso.com'
 
@@ -123,7 +126,7 @@ function Get-MgAuditLogSigninInfo {
         [int]$LastXSignIns,
 
         [Parameter(Mandatory = $false)]
-        [int]$IPAddresses,
+        [string[]]$IPAddresses,
 
         [Parameter(Mandatory = $false)]
         [switch]$BasicAuthenticationOnly,
@@ -193,26 +196,19 @@ function Get-MgAuditLogSigninInfo {
         [switch]$AnalyzeCAPInReportOnly,
 
         [Parameter(Mandatory = $false)]
-        [switch]$ExportToExcel
-    )
-    
-    <# Excluded because can be used in PowerShell 5.1 or 7.x
-    $modules = @(
-        #'Microsoft.Graph.Reports',
-        'Microsoft.Graph.Authentication'
+        [switch]$ExportToExcel,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$NoPermissionCheck
     )
 
-    foreach ($module in $modules) {
-        
-        try {
-            $null = Get-InstalledModule $module -ErrorAction Stop
-        }
-        catch {
-            Write-Warning "Please install $module first"
+    if (-not $NoPermissionCheck.IsPresent) {
+        $requiredScopes = @('AuditLog.Read.All', 'Directory.Read.All')
+        if (-not (Test-MgGraphPermission -RequiredScopes $requiredScopes -CallerName $MyInvocation.MyCommand.Name)) {
             return
         }
     }
-#>
+
     Write-Verbose 'Connect MgGraph with AuditLog.Read.All scope'
 
     # Open a Windows Forms date+time-range picker when -UseDatePicker is requested

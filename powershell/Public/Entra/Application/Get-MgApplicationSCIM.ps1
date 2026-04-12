@@ -34,6 +34,9 @@
     .PARAMETER NotificationSender
     (Required when RunFromAzureAutomation is enabled) Email address of the sender for synchronization health notifications.
 
+    .PARAMETER NoPermissionCheck
+    (Optional) Skip the Microsoft Graph scope verification performed against the current Get-MgContext token.
+
     .EXAMPLE
     $scimApps = Get-MgApplicationSCIM
 
@@ -88,10 +91,15 @@ function Get-MgApplicationSCIM {
         [switch]$RunFromAzureAutomation,
 
         [Parameter(Mandatory = $false)]
+        [ValidatePattern('^[^@\s]+@[^@\s]+\.[^@\s]+$')]
         [string]$NotificationRecipient,
 
         [Parameter(Mandatory = $false)]
-        [string]$NotificationSender
+        [ValidatePattern('^[^@\s]+@[^@\s]+\.[^@\s]+$')]
+        [string]$NotificationSender,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$NoPermissionCheck
     )
 
     # Validate notification parameters
@@ -106,13 +114,10 @@ function Get-MgApplicationSCIM {
         }
 
         try {
-            Import-Module 'Microsoft.Graph.Users.Actions' -ErrorAction Stop -ErrorVariable mgGraphMailMissing
+            Import-Module 'Microsoft.Graph.Users.Actions' -ErrorAction Stop
         }
         catch {
-            if ($mgGraphMailMissing) {
-                Write-Warning "Failed to import Microsoft.Graph.Users.Actions module: $($mgGraphMailMissing.Exception.Message)"
-            }
-
+            Write-Warning "Failed to import Microsoft.Graph.Users.Actions module: $($_.Exception.Message)"
             return
         }
 
@@ -135,15 +140,27 @@ function Get-MgApplicationSCIM {
         }
     }
 
+    $permissionsNeeded = @('Application.Read.All', 'Synchronization.Read.All')
+    if ($RunFromAzureAutomation.IsPresent) {
+        $permissionsNeeded += 'Mail.Send'
+    }
+
     if (-not (Get-MgContext -ErrorAction SilentlyContinue)) {
         if ($RunFromAzureAutomation.IsPresent) {
             Write-Verbose 'Connecting to Microsoft Graph using Managed Identity'
             Connect-MgGraph -Identity -NoWelcome
         }
         else {
-            $scopes = @('Directory.Read.All')
-            Write-Verbose "Connecting to Microsoft Graph. Scopes: $($scopes -join ',')"
-            Connect-MgGraph -Scopes $scopes -NoWelcome
+            Write-Verbose "Connecting to Microsoft Graph. Scopes: $($permissionsNeeded -join ',')"
+            Connect-MgGraph -Scopes $permissionsNeeded -NoWelcome
+        }
+    }
+
+    # Skip scope check in Azure Automation: Managed Identity uses fixed app-registration scopes,
+    # and Test-MgGraphPermission lives in Private/ which isn't available when the script is deployed standalone in a runbook.
+    if (-not $NoPermissionCheck.IsPresent -and -not $RunFromAzureAutomation.IsPresent) {
+        if (-not (Test-MgGraphPermission -RequiredScopes $permissionsNeeded -CallerName $MyInvocation.MyCommand.Name)) {
+            return
         }
     }
 
@@ -176,7 +193,7 @@ function Get-MgApplicationSCIM {
             $job | Add-Member -MemberType NoteProperty -Name DisplayName -Value $servicePrincipal.DisplayName
             $job | Add-Member -MemberType NoteProperty -Name EntraUrl -Value "https://entra.microsoft.com/#view/Microsoft_AAD_IAM/ManagedAppMenuBlade/~/ProvisioningActivity/objectId/$($servicePrincipal.Id)"
 
-            $provisioningSettings = Invoke-GraphRequest -Uri "https://graph.microsoft.com/v1.0/servicePrincipals/$($job.ServicePrincipalId)/synchronization/secrets" -Method Get -OutputType PSObject
+            $provisioningSettings = Invoke-MgGraphRequest -Uri "https://graph.microsoft.com/v1.0/servicePrincipals/$($job.ServicePrincipalId)/synchronization/secrets" -Method GET -OutputType PSObject
 
             $job | Add-Member -MemberType NoteProperty -Name ProvisioningBaseAddress -Value $($provisioningSettings.Value | Where-Object { $_.key -eq 'BaseAddress' }).Value
             $job | Add-Member -MemberType NoteProperty -Name ProvisioningSyncAll -Value $($provisioningSettings.Value | Where-Object { $_.key -eq 'SyncAll' }).Value
@@ -327,11 +344,11 @@ function Get-MgApplicationSCIM {
         $unhealthyJobs = $synchronizationJobsDetailsArray | Where-Object {
             $_.StatusCode -ne 'Steady' -or
             $_.Quarantined -eq $true -or
-            $_.CountSuccessiveCompleteFailures -gt 0
+            $_.StatusCountSuccessiveCompleteFailures -gt 0
         }
 
         $quarantinedJobs = $synchronizationJobsDetailsArray | Where-Object { $_.Quarantined -eq $true }
-        $failingJobs = $synchronizationJobsDetailsArray | Where-Object { $_.CountSuccessiveCompleteFailures -gt 0 }
+        $failingJobs = $synchronizationJobsDetailsArray | Where-Object { $_.StatusCountSuccessiveCompleteFailures -gt 0 }
         $nonSteadyJobs = $synchronizationJobsDetailsArray | Where-Object { $_.StatusCode -ne 'Steady' -and $_.Quarantined -ne $true }
 
         Write-Verbose "Sending SCIM health report email ($($unhealthyJobs.Count) issues found out of $($synchronizationJobsDetailsArray.Count) jobs)."
@@ -520,10 +537,10 @@ function Get-MgApplicationSCIM {
             $unhealthyJobs = $unhealthyJobs | Sort-Object Quarantined -Descending
 
             foreach ($job in $unhealthyJobs) {
-                $rowClass = if ($job.Quarantined) { 'critical' } elseif ($job.CountSuccessiveCompleteFailures -gt 0) { 'warning' } else { 'caution' }
+                $rowClass = if ($job.Quarantined) { 'critical' } elseif ($job.StatusCountSuccessiveCompleteFailures -gt 0) { 'warning' } else { 'caution' }
                 $appLink = "<strong style=`"color:#11100f;font-size:12px;line-height:16px;`">$($job.DisplayName)</strong> <a href=`"$($job.EntraUrl)`" style=`"text-decoration:none;font-size:14px;line-height:16px;`" title=`"Open in Entra`">&#x1F517;</a>"
                 $quarantinedDisplay = if ($job.Quarantined) { '<strong>Yes</strong>' } else { 'No' }
-                $emailBody += "<tr class=`"$rowClass`"><td>$appLink</td><td>$($job.StatusCode)</td><td>$quarantinedDisplay</td><td>$($job.CountSuccessiveCompleteFailures)</td><td>$($job.LastSuccessfulExecutionDate)</td><td>$($job.SchedulingState)</td></tr>"
+                $emailBody += "<tr class=`"$rowClass`"><td>$appLink</td><td>$($job.StatusCode)</td><td>$quarantinedDisplay</td><td>$($job.StatusCountSuccessiveCompleteFailures)</td><td>$($job.LastSuccessfulExecutionDate)</td><td>$($job.SchedulingState)</td></tr>"
             }
 
             $emailBody += '    </table>'
@@ -537,7 +554,7 @@ function Get-MgApplicationSCIM {
     <div class="footer">
         $(if ($unhealthyJobs.Count -gt 0) { '<p class="action-required">Action Required:</p><p>Please review these SCIM provisioning jobs to avoid user provisioning disruptions.</p>' } else { '<p>No action required. All provisioning jobs are running as expected.</p>' })
         <hr style="border: none; border-top: 1px solid #d2d0ce; margin: 15px 0;">
-        <p><em>Generated on $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') by Get-MgApplicationSCIM v0.71.0</em></p>
+        <p><em>Generated on $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') by Get-MgApplicationSCIM v$((Get-Module PS365).Version)</em></p>
     </div>
 </body>
 </html>

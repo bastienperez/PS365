@@ -139,7 +139,10 @@ function Get-MgBitlockerKeyInfo {
         
         [Parameter(HelpMessage = 'Filter by device ID (cannot be used with DeviceName)')]
         [ValidateNotNullOrEmpty()]
-        [string]$DeviceID
+        [string]$DeviceID,
+
+        [Parameter(HelpMessage = 'Skip the Microsoft Graph scope verification performed against the current Get-MgContext token')]
+        [switch]$NoPermissionCheck
     )
 
     # Validate that only one device filter is specified
@@ -177,7 +180,15 @@ function Get-MgBitlockerKeyInfo {
 
     # Determine the required scopes, based on the parameters passed to the script
     # Device.Read.All is always required since Get-MgDevice is always called
-    $requiredScopes = [System.Collections.Generic.List[string]]@('BitLockerKey.Read.All', 'Device.Read.All')
+    # BitlockerKey.ReadBasic.All suffices for metadata-only reads; BitlockerKey.Read.All is only
+    # needed when fetching the recovery key in plain text (ShowKeyInPlainText or BackupToKeyVault).
+    $bitlockerScope = if ($PSBoundParameters['ShowKeyInPlainText'] -or $PSBoundParameters['BackupToKeyVault']) {
+        'BitlockerKey.Read.All'
+    }
+    else {
+        'BitlockerKey.ReadBasic.All'
+    }
+    $requiredScopes = [System.Collections.Generic.List[string]]@($bitlockerScope, 'Device.Read.All')
     if ($PSBoundParameters['IncludeDeviceOwner']) { $requiredScopes.Add('User.ReadBasic.All') }
 
     Write-Verbose 'Importing required PowerShell modules...'
@@ -213,21 +224,12 @@ function Get-MgBitlockerKeyInfo {
         }
     }
 
-    # Verify we have all required permissions
-    Write-Verbose 'Verifying Microsoft Graph permissions...'
-    try {
-        $currentScopes = (Get-MgContext).Scopes
-        $missingScopes = $requiredScopes | Where-Object { $_ -notin $currentScopes }
-        
-        if ($missingScopes) {
-            $missingScopesString = $missingScopes -join ', '
-            Write-Error "Missing required Microsoft Graph permissions: $missingScopesString. Please rerun the script and consent to the missing scopes." -ErrorAction Stop
+    # Skip scope check in Azure Automation: Managed Identity uses fixed app-registration scopes,
+    # and Test-MgGraphPermission lives in Private/ which isn't available when the script is deployed standalone in a runbook.
+    if (-not $NoPermissionCheck.IsPresent -and -not $RunFromAzureAutomation.IsPresent) {
+        if (-not (Test-MgGraphPermission -RequiredScopes $requiredScopes -CallerName $MyInvocation.MyCommand.Name)) {
+            return
         }
-        
-        Write-Verbose 'All required permissions are available'
-    }
-    catch {
-        Write-Error "Failed to verify permissions: $($_.Exception.Message)" -ErrorAction Stop
     }
     
     # Setup Azure Key Vault connection if backup is requested
@@ -347,7 +349,7 @@ function Get-MgBitlockerKeyInfo {
         }
         if ($PSBoundParameters['IncludeDeviceOwner']) {
             foreach ($device in $devices) {
-                $device | Add-Member -MemberType NoteProperty -Name 'DeviceOwner' -Value (& { if ($device.registeredOwners) { $device.registeredOwners[0].AdditionalProperties.userPrincipalName } else { '$null' } })
+                $device | Add-Member -MemberType NoteProperty -Name 'DeviceOwner' -Value (& { if ($device.registeredOwners) { $device.registeredOwners[0].AdditionalProperties.userPrincipalName } else { $null } })
             }
         }
     }
@@ -443,7 +445,7 @@ function Get-MgBitlockerKeyInfo {
                 }
 
                 if ($ShowKeyInPlainText) {
-                    $keyValue = if ($actualKeyValue) { $actualKeyValue } else { '$null' }
+                    $keyValue = if ($actualKeyValue) { $actualKeyValue } else { $null }
                 }
                 else {
                     $keyValue = '[HIDDEN - Backed up to Key Vault]'
@@ -455,10 +457,10 @@ function Get-MgBitlockerKeyInfo {
             }
         }
         
-        $key | Add-Member -MemberType NoteProperty -Name 'BitLockerKeyId' -Value (& { if ($null -eq $key.Id) { '$null' } else { $key.Id } })
+        $key | Add-Member -MemberType NoteProperty -Name 'BitLockerKeyId' -Value (& { if ($null -eq $key.Id) { $null } else { $key.Id } })
         $key | Add-Member -MemberType NoteProperty -Name 'BitLockerRecoveryKey' -Value $keyValue
-        $key | Add-Member -MemberType NoteProperty -Name 'BitLockerDriveType' -Value (& { if ($null -eq $key.VolumeType) { '$null' } else { Get-DriveTypeName -DriveType $key.VolumeType } })
-        $key | Add-Member -MemberType NoteProperty -Name 'BitlockerKeyCreatedDateTime' -Value (& { if ($key.CreatedDateTime) { Get-Date($key.CreatedDateTime) -Format g } else { '$null' } })
+        $key | Add-Member -MemberType NoteProperty -Name 'BitLockerDriveType' -Value (& { if ($null -eq $key.VolumeType) { $null } else { Get-DriveTypeName -DriveType $key.VolumeType } })
+        $key | Add-Member -MemberType NoteProperty -Name 'BitlockerKeyCreatedDateTime' -Value (& { if ($key.CreatedDateTime) { Get-Date($key.CreatedDateTime) -Format g } else { $null } })
 
         # Backup to Key Vault if requested
         if ($KeyVaultName -and $actualKeyValue) {
@@ -534,7 +536,7 @@ function Get-MgBitlockerKeyInfo {
             $device.BitLockerKeyId = $key.Id
             $device.BitLockerRecoveryKey = $keyValue
             $device.BitLockerDriveType = (Get-DriveTypeName -DriveType $key.VolumeType)
-            $device.BitlockerKeyCreatedDateTime = (& { if ($key.CreatedDateTime) { Get-Date($key.CreatedDateTime) -Format g } else { '$null' } })
+            $device.BitlockerKeyCreatedDateTime = (& { if ($key.CreatedDateTime) { Get-Date($key.CreatedDateTime) -Format g } else { $null } })
 
             $key | Add-Member -MemberType NoteProperty -Name 'DeviceName' -Value $device.DisplayName
             $key | Add-Member -MemberType NoteProperty -Name 'DeviceGUID' -Value $device.Id # key actually used by the stupid module...
@@ -542,12 +544,12 @@ function Get-MgBitlockerKeyInfo {
             $key | Add-Member -MemberType NoteProperty -Name 'DeviceTrustType' -Value $device.TrustType
             $key | Add-Member -MemberType NoteProperty -Name 'DeviceMDM' -Value $device.AdditionalProperties.managementType # can be null! ALWAYS null when using a filter...
             $key | Add-Member -MemberType NoteProperty -Name 'DeviceCompliant' -Value $device.isCompliant # can be null!
-            $key | Add-Member -MemberType NoteProperty -Name 'DeviceRegistered' -Value (& { if ($device.registrationDateTime) { Get-Date($device.registrationDateTime) -Format g } else { '$null' } })
-            $key | Add-Member -MemberType NoteProperty -Name 'DeviceLastActivity' -Value (& { if ($device.approximateLastSignInDateTime) { Get-Date($device.approximateLastSignInDateTime) -Format g } else { '$null' } })
+            $key | Add-Member -MemberType NoteProperty -Name 'DeviceRegistered' -Value (& { if ($device.registrationDateTime) { Get-Date($device.registrationDateTime) -Format g } else { $null } })
+            $key | Add-Member -MemberType NoteProperty -Name 'DeviceLastActivity' -Value (& { if ($device.approximateLastSignInDateTime) { Get-Date($device.approximateLastSignInDateTime) -Format g } else { $null } })
 
             # If requested, include the device owner
             if ($PSBoundParameters['IncludeDeviceOwner']) {
-                $key | Add-Member -MemberType NoteProperty -Name 'DeviceOwner' -Value (& { if ($device.registeredOwners) { $device.registeredOwners[0].AdditionalProperties.userPrincipalName } else { '$null' } })
+                $key | Add-Member -MemberType NoteProperty -Name 'DeviceOwner' -Value (& { if ($device.registeredOwners) { $device.registeredOwners[0].AdditionalProperties.userPrincipalName } else { $null } })
             }
         }
         elseif ($PSBoundParameters.ContainsKey('DeviceName') -or $PSBoundParameters.ContainsKey('DeviceID')) {

@@ -30,8 +30,18 @@ function Set-IntuneAutoMDMEnrollmentPolicy {
     param (
         [Parameter(Mandatory = $true)]
         [ValidateSet('Enabled', 'Disabled')]
-        [string]$State
+        [string]$State,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$NoPermissionCheck
     )
+
+    if (-not $NoPermissionCheck.IsPresent) {
+        $requiredScopes = @('Policy.ReadWrite.MobilityManagement')
+        if (-not (Test-MgGraphPermission -RequiredScopes $requiredScopes -CallerName $MyInvocation.MyCommand.Name)) {
+            return
+        }
+    }
 
     try {
         # Convert State to the correct boolean value for the API
@@ -43,7 +53,7 @@ function Set-IntuneAutoMDMEnrollmentPolicy {
         
         # Get current policy value using Get function
         Write-Verbose 'Retrieving current MDM enrollment policy...'
-        $currentValue = Get-IntuneAutoMDMEnrollmentPolicy
+        $currentValue = Get-IntuneAutoMDMEnrollmentPolicy -NoPermissionCheck
         $currentState = if ($currentValue.ToLower() -eq 'disabled') { 'disabled' } else { 'enabled' }
         
         Write-Verbose "Current state: $currentState (isMdmEnrollmentDuringRegistrationDisabled: $currentValue)"

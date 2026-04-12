@@ -18,6 +18,9 @@
     .PARAMETER GenerateCmdlets
     If specified, the function will generate the cmdlets and save them to a file instead of executing them.
 
+    .PARAMETER NoPermissionCheck
+    (Optional) Skip the Microsoft Graph scope verification performed against the current Get-MgContext token.
+
     .EXAMPLE
     Set-MgEnterpriseAppStatus -ApplicationID "12345678-1234-1234-1234-123456789012" -Status "Disabled"
 
@@ -48,8 +51,18 @@ function Set-MgEnterpriseAppStatus {
         [string]$Status,
 
         [Parameter(Mandatory = $false)]
-        [switch]$GenerateCmdlets
+        [switch]$GenerateCmdlets,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$NoPermissionCheck
     )
+
+    if (-not $NoPermissionCheck.IsPresent -and -not $GenerateCmdlets.IsPresent) {
+        $requiredScopes = @('Application.ReadWrite.All')
+        if (-not (Test-MgGraphPermission -RequiredScopes $requiredScopes -CallerName $MyInvocation.MyCommand.Name)) {
+            return
+        }
+    }
 
     if ($PSCmdlet.ParameterSetName -eq 'ByApplicationID') {
         $uri = "/v1.0/servicePrincipals?`$filter=appId eq '$ApplicationID'"

@@ -38,6 +38,9 @@
     .PARAMETER NotificationSender
     (Required when RunFromAzureAutomation is enabled) Email address of the sender for expiration notifications.
 
+    .PARAMETER NoPermissionCheck
+    (Optional) Skip the Microsoft Graph scope verification performed against the current Get-MgContext token.
+
     .EXAMPLE
     Get-MgApplicationCredential
     Retrieves all Microsoft Entra ID applications and their credentials.
@@ -99,13 +102,19 @@ function Get-MgApplicationCredential {
         [switch]$RunFromAzureAutomation,
 
         [Parameter(Mandatory = $false)]
+        [ValidateRange(1, [int]::MaxValue)]
         [int]$ExpirationThresholdDays = 30,
 
         [Parameter(Mandatory = $false)]
+        [ValidatePattern('^[^@\s]+@[^@\s]+\.[^@\s]+$')]
         [string]$NotificationRecipient,
 
         [Parameter(Mandatory = $false)]
-        [string]$NotificationSender
+        [ValidatePattern('^[^@\s]+@[^@\s]+\.[^@\s]+$')]
+        [string]$NotificationSender,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$NoPermissionCheck
     )
 
     # Validate notification parameters
@@ -124,27 +133,20 @@ function Get-MgApplicationCredential {
         }
 
         try {
-            Import-Module 'Microsoft.Graph.Users.Actions' -ErrorAction Stop -ErrorVariable mgGraphMailMissing
+            Import-Module 'Microsoft.Graph.Users.Actions' -ErrorAction Stop
         }
         catch {
-            if ($mgGraphMailMissing) {
-                Write-Warning "Failed to import Microsoft.Graph.Users.Actions module: $($mgGraphMailMissing.Exception.Message)"
-            }
-
+            Write-Warning "Failed to import Microsoft.Graph.Users.Actions module: $($_.Exception.Message)"
             return
         }
     }
 
     try {
         # for Get-MgApplication/Get-MgApplicationOwner
-        Import-Module 'Microsoft.Graph.Applications' -ErrorAction Stop -ErrorVariable mgGraphAppsMissing
-        # for Send-MgMail (when RunFromAzureAutomation is enabled)
+        Import-Module 'Microsoft.Graph.Applications' -ErrorAction Stop
     }
     catch {
-        if ($mgGraphAppsMissing) {
-            Write-Warning "Failed to import Microsoft.Graph.Applications module: $($mgGraphAppsMissing.Exception.Message)"
-        }
-
+        Write-Warning "Failed to import Microsoft.Graph.Applications module: $($_.Exception.Message)"
         return
     }
 
@@ -191,6 +193,14 @@ function Get-MgApplicationCredential {
         else {
             Write-Verbose "Connecting to Microsoft Graph. Scopes: $($permissionsNeeded -join ',')"
             $null = Connect-MgGraph -Scopes $permissionsNeeded -NoWelcome
+        }
+    }
+
+    # Skip scope check in Azure Automation: Managed Identity uses fixed app-registration scopes,
+    # and Test-MgGraphPermission lives in Private/ which isn't available when the script is deployed standalone in a runbook.
+    if (-not $NoPermissionCheck.IsPresent -and -not $RunFromAzureAutomation.IsPresent) {
+        if (-not (Test-MgGraphPermission -RequiredScopes $permissionsNeeded -CallerName $MyInvocation.MyCommand.Name)) {
+            return
         }
     }
 
@@ -510,7 +520,7 @@ function Get-MgApplicationCredential {
     <div class="footer">
         $emailFooter
         <hr style="border: none; border-top: 1px solid #d2d0ce; margin: 15px 0;">
-        <p><em>Generated on $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') by Get-MgApplicationCredential v0.71.0</em></p>
+        <p><em>Generated on $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') by Get-MgApplicationCredential v$((Get-Module PS365).Version)</em></p>
     </div>
 </body>
 </html>

@@ -17,8 +17,11 @@
     Requires an active Microsoft Graph connection (use Connect-MgGraph).
 
     .PARAMETER ExchangeOnlineOnly
-    When specified, retrieves only Exchange Online Dynamic Distribution Groups.  
+    When specified, retrieves only Exchange Online Dynamic Distribution Groups.
     Requires an active Exchange Online session (use Connect-ExchangeOnline).
+
+    .PARAMETER NoPermissionCheck
+    (Optional) Skip the Microsoft Graph scope verification performed against the current Get-MgContext token.
 
     .EXAMPLE
     Get-DynamicGroup
@@ -123,8 +126,18 @@ function Get-DynamicGroup {
         [switch]$EntraIDOnly,
 
         [Parameter(Mandatory = $false)]
-        [switch]$ExportToExcel
+        [switch]$ExportToExcel,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$NoPermissionCheck
     )
+
+    if (-not $NoPermissionCheck.IsPresent -and -not $ExchangeOnlineOnly.IsPresent) {
+        $requiredScopes = @('Group.Read.All')
+        if (-not (Test-MgGraphPermission -RequiredScopes $requiredScopes -CallerName $MyInvocation.MyCommand.Name)) {
+            return
+        }
+    }
 
     $propertySetsAttribute = @(
         'assistant'
@@ -174,8 +187,9 @@ function Get-DynamicGroup {
             }
         }
         else {
+            $exchangeGroups = @()
             try {
-                $exchangeGroups = Get-DynamicDistributionGroup -ErrorAction Stop
+                $exchangeGroups = @(Get-DynamicDistributionGroup -ErrorAction Stop)
                 Write-Verbose "Found $($exchangeGroups.Count) Exchange Online Dynamic Distribution Groups"
             }
             catch {
@@ -266,8 +280,9 @@ function Get-DynamicGroup {
             }
         }
         else {
+            $entraGroups = @()
             try {
-                $entraGroups = Get-MgGroup -All -Filter "groupTypes/any(c:c eq 'DynamicMembership')" -ErrorAction Stop
+                $entraGroups = @(Get-MgGroup -All -Filter "groupTypes/any(c:c eq 'DynamicMembership')" -ErrorAction Stop)
                 Write-Verbose "Found $($entraGroups.Count) Entra ID Dynamic Groups"
             }
             catch {
@@ -359,14 +374,16 @@ function Get-DynamicGroup {
         }
     }
 
-    # foreach attribute, check if it's in the `Personal-Information` property set attribute
-    # if it's, add a warning to the object 
+    # foreach attribute, check if it's in the Personal-Information property set attribute
+    # if it's, add a warning to the object
     Write-Verbose "Analyzing security attributes for $($dynGroupArray.Count) groups..."
     foreach ($group in $dynGroupArray) {
         $group | Add-Member -MemberType NoteProperty -Name Warning -Value $null
-        foreach ($attribute in $group.UserAttributes.Split('|')) {
+        if ([string]::IsNullOrWhiteSpace($group.UserAttributes)) { continue }
+        foreach ($rawAttribute in $group.UserAttributes.Split('|')) {
+            $attribute = $rawAttribute.Trim()
             if ($propertySetsAttribute -contains $attribute) {
-                $group.Warning = "'$attribute' is in the `Personal-Information` property set, the user can modify it and add himself to the group. See https://itpro-tips.com/property-set-personal-information-and-active-directory-security-and-governance/"
+                $group.Warning = "'$attribute' is in the 'Personal-Information' property set, the user can modify it and add himself to the group. See https://itpro-tips.com/property-set-personal-information-and-active-directory-security-and-governance/"
             }
         }
     }

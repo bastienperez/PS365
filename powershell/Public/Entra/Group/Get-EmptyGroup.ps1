@@ -11,8 +11,8 @@
     When specified, exports the results to an Excel file in the user's profile directory.
     Requires the ImportExcel module.
 
-    .PARAMETER ExportCsv
-    Optional path to export the results as a CSV file.
+    .PARAMETER NoPermissionCheck
+    (Optional) Skip the Microsoft Graph scope verification performed against the current Get-MgContext token.
 
     .EXAMPLE
     Get-EmptyGroup
@@ -25,9 +25,9 @@
     Retrieves all empty groups and exports the results to an Excel file.
 
     .EXAMPLE
-    Get-EmptyGroup -ExportCsv 'C:\temp\empty-groups.csv'
+    Get-EmptyGroup | Export-Csv 'C:\temp\empty-groups.csv' -NoTypeInformation
 
-    Retrieves all empty groups and exports the results to a CSV file.
+    Retrieves all empty groups and pipes the results to Export-Csv.
 
     .OUTPUTS
     System.Collections.Generic.List[Object]
@@ -52,8 +52,18 @@ function Get-EmptyGroup {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $false)]
-        [switch]$ExportToExcel
+        [switch]$ExportToExcel,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$NoPermissionCheck
     )
+
+    if (-not $NoPermissionCheck.IsPresent) {
+        $requiredScopes = @('Group.Read.All')
+        if (-not (Test-MgGraphPermission -RequiredScopes $requiredScopes -CallerName $MyInvocation.MyCommand.Name)) {
+            return
+        }
+    }
 
     Write-Verbose 'Fetching all groups...'
 
