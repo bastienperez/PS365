@@ -280,13 +280,17 @@ function Get-MgRoleReport {
         Write-Warning $($_.Exception.Message)
     }
 
+    # Build an assignment-id -> roleDefinition hashtable once so the loop below is O(N)
+    # instead of O(N^2) scans with Where-Object.
+    $roleDefByAssignmentId = @{}
+    foreach ($r in $mgRolesDefinition) {
+        $roleDefByAssignmentId[$r.id] = $r.roleDefinition
+    }
+
     # In *Assignment, we don't have the role definition, so we need to get it and add it to the object
     foreach ($assignment in $mgRolesArrayAssignment) {
-        # Add the role definition to the object
-        Add-Member -InputObject $assignment -MemberType NoteProperty -Name RoleDefinitionExtended -Value ($mgRolesDefinition | Where-Object { $_.id -eq $assignment.id }).roleDefinition 
-        # Add-Member -InputObject $assignment -MemberType NoteProperty -Name RoleDefinitionExtended -Value ($mgRolesDefinition | Where-Object { $_.id -eq $assignment.id }).roleDefinition.description 
-    } 
-    
+        Add-Member -InputObject $assignment -MemberType NoteProperty -Name RoleDefinitionExtended -Value $roleDefByAssignmentId[$assignment.id]
+    }
 
     if (-not $ExcludePIMEligibleAssignments) {
         Write-Verbose 'Collecting PIM eligible role assignments...'

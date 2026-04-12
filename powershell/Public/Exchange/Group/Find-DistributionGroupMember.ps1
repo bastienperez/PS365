@@ -52,47 +52,58 @@ function Find-DistributionGroupMember {
         [string]$FilterRecipientTypeDetails
     )
 
-    # Usage example : 
-    #	Connect-ExchangeOnline
-    #	Find-DistributionGroupMember Export-Csv "AllContactsMember.csv" -NoTypeInformation -Encoding utf8 -Delimiter ';'
-    # Ignore GroupMailbox type (Office 365 groups-unified groups)
-    $distributionGroups = Get-DistributionGroup -ResultSize unlimited -RecipientTypeDetails MailUniversalDistributionGroup
-	
-    [System.Collections.Generic.List[PSObject]]$foundMembers = @()
-
-    $i = 0
-
     if (-not ($FilterByDomain -or $FilterByEmailAddresses -or $FilterByExternalDomains.IsPresent)) {
         Write-Warning 'Please fill at least one parameter FilterByDomain or FilterByEmailAddresses'
         return
     }
 
+    # Usage example :
+    #	Connect-ExchangeOnline
+    #	Find-DistributionGroupMember Export-Csv "AllContactsMember.csv" -NoTypeInformation -Encoding utf8 -Delimiter ';'
+    # Ignore GroupMailbox type (Office 365 groups-unified groups)
+    $distributionGroups = Get-DistributionGroup -ResultSize unlimited -RecipientTypeDetails MailUniversalDistributionGroup
+
+    [System.Collections.Generic.List[PSObject]]$foundMembers = @()
+
+    # Fetch accepted domains once outside the loop (was a per-DG remote Exchange round-trip, 30-100 ms each).
+    # Use a HashSet for O(1) -notcontains checks.
+    $acceptedDomainSet = $null
+    if ($FilterByExternalDomains.IsPresent) {
+        $acceptedDomainSet = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+        foreach ($d in (Get-AcceptedDomain).DomainName) {
+            [void]$acceptedDomainSet.Add($d)
+        }
+    }
+
+    # HashSet of requested email addresses (case-insensitive) for O(1) membership test
+    $emailAddressSet = $null
+    if ($FilterByEmailAddresses) {
+        $emailAddressSet = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+        foreach ($e in $FilterByEmailAddresses) {
+            [void]$emailAddressSet.Add($e)
+        }
+    }
+
+    $i = 0
     foreach ($dg in $distributionGroups) {
         $i++
         $members = @()
         Write-Host "Processing $($dg.Name) ($($dg.PrimarySmtpAddress)) [$i/$($distributionGroups.count)]" -ForegroundColor Cyan
-	
-        if ($FilterByEmailAddresses) {
-		
-            $members = @()
 
-            foreach ($emailAddress in $FilterByEmailAddresses) {
-                $members += Get-DistributionGroupMember $dg.PrimarySMTPAddress | Where-Object { $_.PrimarySmtpAddress -eq $emailAddress } | Select-Object @{Name = 'DGName'; expression = { $DG.Identity } }, @{Name = 'DGPrimaryStmpAddress'; expression = { $DG.PrimarySmtpAddress } }, Name, PrimarySMTPAddress, RecipientTypeDetails	
-            }
+        # Single Get-DistributionGroupMember call per DG (previously: one call per requested email).
+        $dgMembers = Get-DistributionGroupMember $dg.PrimarySMTPAddress
+
+        if ($FilterByEmailAddresses) {
+            $members = $dgMembers | Where-Object { $emailAddressSet.Contains([string]$_.PrimarySmtpAddress) }
         }
         elseif ($FilterByDomain) {
-            $members = Get-DistributionGroupMember $dg.PrimarySMTPAddress | Where-Object { $_.EmailAddresses -like "*$FilterByDomain*" } | Select-Object @{Name = 'DGName'; expression = { $DG.Identity } }, @{Name = 'DGPrimaryStmpAddress'; expression = { $DG.PrimarySmtpAddress } }, Name, PrimarySMTPAddress, RecipientTypeDetails
+            $members = $dgMembers | Where-Object { $_.EmailAddresses -like "*$FilterByDomain*" }
         }
         elseif ($FilterByExternalDomains.IsPresent) {
-            # Get domain managed in this Exchange Online
-            $acceptedDomains = (Get-AcceptedDomain).DomainName
-
             # Find messaging objects with a domain outside the domain managed in this Exchange Online
-            $members = Get-DistributionGroupMember $dg.PrimarySMTPAddress | Where-Object { $acceptedDomains -notcontains $_.PrimarySmtpAddress.split('@')[1] } | Select-Object @{Name = 'DGName'; expression = { $DG.Identity } }, @{Name = 'DGPrimaryStmpAddress'; expression = { $DG.PrimarySmtpAddress } }, Name, PrimarySMTPAddress, RecipientTypeDetails
-            #$members = Get-Recipient | Where-Object { $acceptedDomains -notcontains $_.PrimarySmtpAddress.split('@')[1] }
+            $members = $dgMembers | Where-Object { -not $acceptedDomainSet.Contains([string]$_.PrimarySmtpAddress.Split('@')[1]) }
         }
 
-		
         if ($FilterRecipientTypeDetails) {
             $members = $members | Where-Object { $_.RecipientTypeDetails -eq $FilterRecipientTypeDetails }
         }
