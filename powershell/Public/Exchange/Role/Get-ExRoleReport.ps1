@@ -1,24 +1,47 @@
 <#
     .SYNOPSIS
-    Get-ExRoleReport - Reports on Exchange RBAC roles and permissions.
+    Reports on Exchange RBAC roles and their effective membership, including groups expanded recursively.
 
-    .DESCRIPTION 
-    This script produces a report of the membership of Exchange RBAC role groups.
-    By default, the report contains only the groups with members.
+    .DESCRIPTION
+    Produces a report of the membership of Exchange RBAC role groups.
+    By default, the report contains only the roles that have at least one member.
+
+    When a role member is itself a group (distribution group, mail-enabled security group,
+    dynamic distribution group, or a nested role group), its members are resolved recursively
+    and included in the report with DirectMember set to $false and MemberViaGroup set to the
+    name of the group that is a direct member of the role. Circular group references are
+    detected and skipped automatically.
+
+    .PARAMETER OnPrem
+    When specified, queries an on-premises Exchange server instead of Exchange Online.
+    Group expansion is also performed for on-premises role groups.
 
     .OUTPUTS
-    The report is output to an array contained all the audit logs found.
-    To export in a csv, do Get-ExRoleReport | Export-CSV -NoTypeInformation "$(Get-Date -Format yyyyMMdd)_adminRoles.csv" -Encoding UTF8
+    [System.Collections.Generic.List[Object]] containing PSCustomObject rows with the following properties:
+    Role, MemberName, MemberDisplayName, MemberPrimarySMTPAddres, MemberIsDirSynced,
+    MemberObjectID, MemberRecipientTypeDetails, RoleDescription, DirectMember, MemberViaGroup.
 
     .EXAMPLE
     Get-ExRoleReport
 
-    This command retrieves the Exchange RBAC role report for Exchange Online.
+    Retrieves the Exchange RBAC role report for Exchange Online, including recursive group expansion.
+
+    .EXAMPLE
+    Get-ExRoleReport | Where-Object { $_.DirectMember -eq $false } | Format-Table Role, MemberName, MemberViaGroup
+
+    Lists all users/objects resolved through group membership, showing which group is a direct member of the role.
+
+    .EXAMPLE
+    Get-ExRoleReport | Export-Csv -NoTypeInformation "$(Get-Date -Format yyyyMMdd)_adminRoles.csv" -Encoding UTF8
+
+    Exports the full report (including group-expanded members) to a CSV file.
+
+    .NOTES
+    Requires ExchangeOnlineManagement module and an active Connect-ExchangeOnline session for Exchange Online.
+    For on-premises Exchange, requires the Exchange Management Shell or the Exchange snap-in loaded.
 
     .LINK
     https://ps365.clidsys.com/docs/commands/Get-ExRoleReport
-
-    .NOTES
 #>
 function Get-ExRoleReport {
     [CmdletBinding()]
@@ -37,6 +60,75 @@ function Get-ExRoleReport {
 
         if (-not (Get-ConnectionInformation | Where-Object { $_.ConnectionUri -eq 'https://outlook.office365.com' })) {
             Connect-ExchangeOnline
+        }
+    }
+
+    # Recursively expands a group member and adds its individual members to $ResultList.
+    # $VisitedGroups prevents infinite loops when circular group references exist.
+    function Expand-ExGroupMember {
+        param (
+            [Parameter(Mandatory = $true)]
+            $Member,
+            [Parameter(Mandatory = $true)]
+            [string]$ParentGroupName,
+            [Parameter(Mandatory = $true)]
+            [string]$RoleName,
+            [Parameter(Mandatory = $true)]
+            [string]$RoleDescription,
+            [Parameter(Mandatory = $true)]
+            [System.Collections.Generic.List[Object]]$ResultList,
+            [Parameter(Mandatory = $true)]
+            [System.Collections.Generic.HashSet[string]]$VisitedGroups,
+            [Parameter(Mandatory = $true)]
+            [bool]$IsOnPrem
+        )
+
+        # Use ExchangeObjectId when available, fall back to PrimarySmtpAddress as deduplication key
+        $groupKey = if ($Member.ExchangeObjectId) { $Member.ExchangeObjectId.ToString() } else { $Member.PrimarySmtpAddress }
+        if (-not $VisitedGroups.Add($groupKey)) {
+            return
+        }
+
+        try {
+            # Role groups are expanded via Get-RoleGroupMember; all other group types via Get-DistributionGroupMember
+            if ($Member.RecipientTypeDetails -eq 'RoleGroup') {
+                $subMembers = @(Get-RoleGroupMember -Identity $Member.ExchangeObjectId -ResultSize Unlimited -ErrorAction Stop)
+            }
+            else {
+                $subMembers = @(Get-DistributionGroupMember -Identity $Member.PrimarySmtpAddress -ResultSize Unlimited -ErrorAction Stop)
+            }
+        }
+        catch {
+            Write-Warning "Could not expand group '$($Member.Name)': $($_.Exception.Message)"
+            return
+        }
+
+        foreach ($subMember in $subMembers) {
+            $object = [PSCustomObject][ordered]@{
+                'Role'                       = $RoleName
+                'MemberName'                 = $subMember.Name
+                'MemberDisplayName'          = $subMember.DisplayName
+                'MemberPrimarySMTPAddres'    = $subMember.PrimarySmtpAddress
+                'MemberIsDirSynced'          = $subMember.IsDirSynced
+                'MemberObjectID'             = $subMember.ExternalDirectoryObjectId
+                'MemberRecipientTypeDetails' = $subMember.RecipientTypeDetails
+                'RoleDescription'            = $RoleDescription
+                'DirectMember'               = $false
+                'MemberViaGroup'             = $ParentGroupName
+            }
+
+            $ResultList.Add($object)
+
+            # Recurse into any nested group
+            if ($subMember.RecipientTypeDetails -like '*Group*') {
+                Expand-ExGroupMember -Member $subMember `
+                    -ParentGroupName $ParentGroupName `
+                    -RoleName $RoleName `
+                    -RoleDescription $RoleDescription `
+                    -ResultList $ResultList `
+                    -VisitedGroups $VisitedGroups `
+                    -IsOnPrem $IsOnPrem
+            }
         }
     }
 
@@ -86,12 +178,16 @@ function Get-ExRoleReport {
                     'MemberObjectID'             = '-'
                     'MemberRecipientTypeDetails' = '-'
                     'RoleDescription'            = $roleDescription
+                    'DirectMember'               = '-'
+                    'MemberViaGroup'             = '-'
                 }
                 
                 $exchangeRolesMembership.Add($object)
 
             }
             else {         
+                # Fresh set per role to allow the same group to appear in multiple roles
+                $visitedGroups = [System.Collections.Generic.HashSet[string]]::new()
 
                 foreach ($roleMember in $roleMembers) {
                     $object = [PSCustomObject][ordered]@{
@@ -103,9 +199,22 @@ function Get-ExRoleReport {
                         'MemberObjectID'             = $roleMember.ExternalDirectoryObjectId
                         'MemberRecipientTypeDetails' = $roleMember.RecipientTypeDetails
                         'RoleDescription'            = $roleDescription
+                        'DirectMember'               = $true
+                        'MemberViaGroup'             = '-'
                     }
 
                     $exchangeRolesMembership.Add($object)
+
+                    # Expand group members recursively
+                    if ($roleMember.RecipientTypeDetails -like '*Group*') {
+                        Expand-ExGroupMember -Member $roleMember `
+                            -ParentGroupName $roleMember.Name `
+                            -RoleName $exchangeRole.Name `
+                            -RoleDescription $roleDescription `
+                            -ResultList $exchangeRolesMembership `
+                            -VisitedGroups $visitedGroups `
+                            -IsOnPrem ([bool]$OnPrem)
+                    }
                 }
             }
         }
@@ -114,7 +223,5 @@ function Get-ExRoleReport {
         }
     }
 
-
-    
     return $exchangeRolesMembership
 }

@@ -4,7 +4,7 @@ Module Name: PS365
 
 ## SYNOPSIS
 
-Get-ExRoleReport - Reports on Exchange RBAC roles and permissions.
+Reports on Exchange RBAC roles and their effective membership, including groups expanded recursively.
 
 ## SYNTAX
 
@@ -14,8 +14,15 @@ Get-ExRoleReport [-OnPrem] [-ProgressAction <ActionPreference>] [<CommonParamete
 
 ## DESCRIPTION
 
-This script produces a report of the membership of Exchange RBAC role groups.
-By default, the report contains only the groups with members.
+Produces a report of the membership of Exchange RBAC role groups.
+By default, the report contains only the roles that have at least one member.
+
+When a role member is itself a group (distribution group, mail-enabled security group,
+dynamic distribution group, or a nested role group), its members are resolved recursively
+and included in the report with DirectMember set to $false and MemberViaGroup set to the
+name of the group that is a direct member of the role.
+Circular group references are
+detected and skipped automatically.
 
 ## EXAMPLES
 
@@ -25,13 +32,30 @@ By default, the report contains only the groups with members.
 Get-ExRoleReport
 ```
 
-This command retrieves the Exchange RBAC role report for Exchange Online.
+Retrieves the Exchange RBAC role report for Exchange Online, including recursive group expansion.
+
+### EXAMPLE 2
+
+```powershell
+Get-ExRoleReport | Where-Object { $_.DirectMember -eq $false } | Format-Table Role, MemberName, MemberViaGroup
+```
+
+Lists all users/objects resolved through group membership, showing which group is a direct member of the role.
+
+### EXAMPLE 3
+
+```powershell
+Get-ExRoleReport | Export-Csv -NoTypeInformation "$(Get-Date -Format yyyyMMdd)_adminRoles.csv" -Encoding UTF8
+```
+
+Exports the full report (including group-expanded members) to a CSV file.
 
 ## PARAMETERS
 
 ### -OnPrem
 
-\{\{ Fill OnPrem Description \}\}
+When specified, queries an on-premises Exchange server instead of Exchange Online.
+Group expansion is also performed for on-premises role groups.
 
 ```yaml
 Type: SwitchParameter
@@ -52,10 +76,13 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## OUTPUTS
 
-### The report is output to an array contained all the audit logs found.
+### [System.Collections.Generic.List[Object]] containing PSCustomObject rows with the following properties:
 
-### To export in a csv, do Get-ExRoleReport | Export-CSV -NoTypeInformation "$(Get-Date -Format yyyyMMdd)_adminRoles.csv" -Encoding UTF8
+### Role, MemberName, MemberDisplayName, MemberPrimarySMTPAddres, MemberIsDirSynced,
+### MemberObjectID, MemberRecipientTypeDetails, RoleDescription, DirectMember, MemberViaGroup.
 ## NOTES
+Requires ExchangeOnlineManagement module and an active Connect-ExchangeOnline session for Exchange Online.
+For on-premises Exchange, requires the Exchange Management Shell or the Exchange snap-in loaded.
 
 ## RELATED LINKS
 

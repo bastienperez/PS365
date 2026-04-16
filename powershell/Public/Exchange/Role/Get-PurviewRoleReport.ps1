@@ -1,25 +1,45 @@
 <#
     .SYNOPSIS
-    Get-PurviewRoleReport - Reports on Purview RBAC roles and permissions.
+    Reports on Purview RBAC roles and their effective membership, including groups expanded recursively.
 
-    .DESCRIPTION 
-    This script produces a report of the membership of Purview RBAC role groups.
-    By default, the report contains only the groups with members.
+    .DESCRIPTION
+    Produces a report of the membership of Purview RBAC role groups.
+    By default, the report contains only the roles that have at least one member.
+
+    When a role member is itself a group (distribution group, mail-enabled security group,
+    dynamic distribution group, or a nested role group), its members are resolved recursively
+    and included in the report with DirectMember set to $false and MemberViaGroup set to the
+    name of the group that is a direct member of the role. Circular group references are
+    detected and skipped automatically.
+
+    .PARAMETER ShowGraph
+    Reserved for future use. When specified, displays a graphical representation of the role membership.
 
     .OUTPUTS
-    The report is output to an array contained all the audit logs found.
-    To export in a csv, do Get-PurviewRoleReport | Export-CSV -NoTypeInformation "$(Get-Date -Format yyyyMMdd)_adminRoles.csv" -Encoding UTF8
+    [System.Collections.Generic.List[Object]] containing PSCustomObject rows with the following properties:
+    Role, MemberName, MemberDisplayName, MemberPrimarySMTPAddres, MemberIsDirSynced,
+    MemberObjectID, MemberRecipientTypeDetails, RoleDescription, DirectMember, MemberViaGroup.
 
     .EXAMPLE
     Get-PurviewRoleReport
 
-    This command retrieves the Purview RBAC role report.
+    Retrieves the Purview RBAC role report, including recursive group expansion.
+
+    .EXAMPLE
+    Get-PurviewRoleReport | Where-Object { $_.DirectMember -eq $false } | Format-Table Role, MemberName, MemberViaGroup
+
+    Lists all users/objects resolved through group membership, showing which group is a direct member of the role.
+
+    .EXAMPLE
+    Get-PurviewRoleReport | Export-Csv -NoTypeInformation "$(Get-Date -Format yyyyMMdd)_purviewRoles.csv" -Encoding UTF8
+
+    Exports the full report (including group-expanded members) to a CSV file.
+
+    .NOTES
+    Requires ExchangeOnlineManagement module and an active Connect-IPPSSession session.
 
     .LINK
     https://ps365.clidsys.com/docs/commands/Get-PurviewRoleReport
-
-    .NOTES
-    
 #>
 function Get-PurviewRoleReport {
     [CmdletBinding()]
@@ -38,6 +58,72 @@ function Get-PurviewRoleReport {
     # if at least one result, we are connected
     if (-not (Get-ConnectionInformation | Where-Object { $_.ConnectionUri -like '*.compliance.protection.outlook.com' })) {
         Connect-IPPSSession
+    }
+
+    # Recursively expands a group member and adds its individual members to $ResultList.
+    # $VisitedGroups prevents infinite loops when circular group references exist.
+    function Expand-PurviewGroupMember {
+        param (
+            [Parameter(Mandatory = $true)]
+            $Member,
+            [Parameter(Mandatory = $true)]
+            [string]$ParentGroupName,
+            [Parameter(Mandatory = $true)]
+            [string]$RoleName,
+            [Parameter(Mandatory = $true)]
+            [string]$RoleDescription,
+            [Parameter(Mandatory = $true)]
+            [System.Collections.Generic.List[Object]]$ResultList,
+            [Parameter(Mandatory = $true)]
+            [System.Collections.Generic.HashSet[string]]$VisitedGroups
+        )
+
+        # Use ExchangeObjectId when available, fall back to PrimarySmtpAddress as deduplication key
+        $groupKey = if ($Member.ExchangeObjectId) { $Member.ExchangeObjectId.ToString() } else { $Member.PrimarySmtpAddress }
+        if (-not $VisitedGroups.Add($groupKey)) {
+            return
+        }
+
+        try {
+            # Role groups are expanded via Get-RoleGroupMember; all other group types via Get-DistributionGroupMember
+            if ($Member.RecipientTypeDetails -eq 'RoleGroup') {
+                $subMembers = @(Get-RoleGroupMember -Identity $Member.ExchangeObjectId -ResultSize Unlimited -ErrorAction Stop)
+            }
+            else {
+                $subMembers = @(Get-DistributionGroupMember -Identity $Member.PrimarySmtpAddress -ResultSize Unlimited -ErrorAction Stop)
+            }
+        }
+        catch {
+            Write-Warning "Could not expand group '$($Member.Name)': $($_.Exception.Message)"
+            return
+        }
+
+        foreach ($subMember in $subMembers) {
+            $object = [PSCustomObject][ordered]@{
+                'Role'                       = $RoleName
+                'MemberName'                 = $subMember.Name
+                'MemberDisplayName'          = $subMember.DisplayName
+                'MemberPrimarySMTPAddres'    = $subMember.PrimarySmtpAddress
+                'MemberIsDirSynced'          = $subMember.IsDirSynced
+                'MemberObjectID'             = $subMember.ExternalDirectoryObjectId
+                'MemberRecipientTypeDetails' = $subMember.RecipientTypeDetails
+                'RoleDescription'            = $RoleDescription
+                'DirectMember'               = $false
+                'MemberViaGroup'             = $ParentGroupName
+            }
+
+            $ResultList.Add($object)
+
+            # Recurse into any nested group
+            if ($subMember.RecipientTypeDetails -like '*Group*') {
+                Expand-PurviewGroupMember -Member $subMember `
+                    -ParentGroupName $ParentGroupName `
+                    -RoleName $RoleName `
+                    -RoleDescription $RoleDescription `
+                    -ResultList $ResultList `
+                    -VisitedGroups $VisitedGroups
+            }
+        }
     }
 
     try {
@@ -86,12 +172,16 @@ function Get-PurviewRoleReport {
                     'MemberObjectID'             = '-'
                     'MemberRecipientTypeDetails' = '-'
                     'RoleDescription'            = $roleDescription
+                    'DirectMember'               = '-'
+                    'MemberViaGroup'             = '-'
                 }
 
                 $purviewRolesMembership.Add($object)
 
             }
             else {         
+                # Fresh set per role to allow the same group to appear in multiple roles
+                $visitedGroups = [System.Collections.Generic.HashSet[string]]::new()
 
                 foreach ($roleMember in $roleMembers) {                
                    
@@ -104,9 +194,21 @@ function Get-PurviewRoleReport {
                         'MemberObjectID'             = $roleMember.ExternalDirectoryObjectId
                         'MemberRecipientTypeDetails' = $roleMember.RecipientTypeDetails
                         'RoleDescription'            = $roleDescription
+                        'DirectMember'               = $true
+                        'MemberViaGroup'             = '-'
                     }
 
                     $purviewRolesMembership.Add($object)
+
+                    # Expand group members recursively
+                    if ($roleMember.RecipientTypeDetails -like '*Group*') {
+                        Expand-PurviewGroupMember -Member $roleMember `
+                            -ParentGroupName $roleMember.Name `
+                            -RoleName $purviewRole.Name `
+                            -RoleDescription $roleDescription `
+                            -ResultList $purviewRolesMembership `
+                            -VisitedGroups $visitedGroups
+                    }
                 }
 
             }
