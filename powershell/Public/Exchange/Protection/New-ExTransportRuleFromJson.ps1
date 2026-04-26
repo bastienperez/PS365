@@ -52,7 +52,8 @@
 
 	.NOTES
 	Prerequisites:
-	- PowerShell 7.x (this function uses ConvertFrom-Json -AsHashtable, introduced in PowerShell 6.0).
+	- PowerShell 5.1 or later. JSON content is converted to an ordered hashtable through a local helper to stay
+	  compatible with Windows PowerShell 5.1, which does not support ConvertFrom-Json -AsHashtable.
 	- ExchangeOnlineManagement module installed and an active session opened with Connect-ExchangeOnline before
 	  running the function (unless -GenerateCmdlets is specified, which only emits the cmdlet text).
 	- The signed-in account must hold a role with permission to manage mail flow rules, typically Exchange
@@ -122,7 +123,8 @@ function New-ExTransportRuleFromJson {
 				Write-Host -ForegroundColor Cyan "Processing: $($file.FullName)"
 
 				try {
-					$ruleParams = Get-Content -LiteralPath $file.FullName -Raw -Encoding UTF8 | ConvertFrom-Json -AsHashtable -ErrorAction Stop
+					$jsonObject = Get-Content -LiteralPath $file.FullName -Raw -Encoding UTF8 | ConvertFrom-Json -ErrorAction Stop
+						$ruleParams = ConvertTo-OrderedHashtable -InputObject $jsonObject
 				}
 				catch {
 					Write-Host -ForegroundColor Red "[$($file.Name)] Invalid JSON: $($_.Exception.Message)"
@@ -135,7 +137,7 @@ function New-ExTransportRuleFromJson {
 					continue
 				}
 
-				if (-not $ruleParams.ContainsKey('Name') -or [string]::IsNullOrWhiteSpace([string]$ruleParams['Name'])) {
+				if (-not $ruleParams.Contains('Name') -or [string]::IsNullOrWhiteSpace([string]$ruleParams['Name'])) {
 					Write-Host -ForegroundColor Red "[$($file.Name)] Missing mandatory 'Name' property."
 					$resultsArray.Add([PSCustomObject]@{
 						File   = $file.FullName
@@ -286,4 +288,35 @@ function Format-TransportRuleValue {
 
 	$escaped = ([string]$Value).Replace("'", "''")
 	return "'$escaped'"
+}
+
+function ConvertTo-OrderedHashtable {
+	<#
+		Recursively converts the output of ConvertFrom-Json (PSCustomObject tree) into an [ordered] hashtable so the
+		result can be splatted to New-TransportRule. Used as a Windows PowerShell 5.1 substitute for
+		ConvertFrom-Json -AsHashtable (PowerShell 6.0+).
+	#>
+	param(
+		[Parameter(Mandatory = $false)]
+		$InputObject
+	)
+
+	if ($null -eq $InputObject) {
+		return $null
+	}
+	if ($InputObject -is [System.Management.Automation.PSCustomObject]) {
+		$result = [ordered]@{}
+		foreach ($prop in $InputObject.PSObject.Properties) {
+			$result[$prop.Name] = ConvertTo-OrderedHashtable -InputObject $prop.Value
+		}
+		return $result
+	}
+	if ($InputObject -is [System.Collections.IList] -and -not ($InputObject -is [string])) {
+		$list = New-Object System.Collections.ArrayList
+		foreach ($item in $InputObject) {
+			$null = $list.Add((ConvertTo-OrderedHashtable -InputObject $item))
+		}
+		return , $list.ToArray()
+	}
+	return $InputObject
 }
