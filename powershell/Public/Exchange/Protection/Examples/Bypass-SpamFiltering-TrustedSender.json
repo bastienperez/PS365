@@ -3,7 +3,6 @@
 	"Comments": "Skip spam filtering for messages from contoso.com that pass DMARC (dmarc=pass or dmarc=bestguesspass). Adds an X-ETR header for traceability. Replace contoso.com with the actual partner domain. Never use accepted domains or popular consumer domains here, this widens the attack surface.",
 	"Mode": "Enforce",
 	"Enabled": true,
-	"Priority": 0,
 	"FromScope": "NotInOrganization",
 	"SenderDomainIs": ["contoso.com"],
 	"HeaderContainsMessageHeader": "Authentication-Results",
