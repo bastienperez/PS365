@@ -1,0 +1,13 @@
+{
+	"Name": "Block outbound onmicrosoft.com sender",
+	"Comments": "Reject any outbound message whose sender address is on a *.onmicrosoft.com domain. Forces users to send from a corporate vanity domain only.",
+	"Mode": "Enforce",
+	"Priority": 0,
+	"Enabled": true,
+	"FromScope": "InOrganization",
+	"SentToScope": "NotInOrganization",
+	"FromAddressMatchesPatterns": ["@.*\\.onmicrosoft\\.com$"],
+	"RejectMessageReasonText": "Sending from an onmicrosoft.com address is not allowed. Please use your corporate domain.",
+	"RejectMessageEnhancedStatusCode": "5.7.1",
+	"StopRuleProcessing": true
+}
