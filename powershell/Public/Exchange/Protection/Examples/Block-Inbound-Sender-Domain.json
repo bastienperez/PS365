@@ -1,0 +1,13 @@
+{
+	"Name": "Block inbound from blocked-sender.example",
+	"Comments": "Reject inbound mail from a specific external sender domain at the gateway. Replace blocked-sender.example with the actual domain to block. Apply at the highest priority slot you control so the rule matches before any allow/bypass rule downstream.",
+	"Mode": "Enforce",
+	"Enabled": true,
+	"Priority": 0,
+	"FromScope": "NotInOrganization",
+	"SentToScope": "InOrganization",
+	"SenderDomainIs": ["blocked-sender.example"],
+	"RejectMessageReasonText": "Mail from this sender domain is not accepted by this organization.",
+	"RejectMessageEnhancedStatusCode": "5.7.1",
+	"StopRuleProcessing": true
+}
