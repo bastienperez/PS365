@@ -25,9 +25,11 @@
 	If specified, the function generates the New-TransportRule cmdlets and saves them to a file instead of executing them.
 
 	.PARAMETER OutputFile
-	Path to the output file used by -GenerateCmdlets. Defaults to a timestamped file in the user profile.
+	Path to the output file used by -GenerateCmdlets. If omitted while -GenerateCmdlets is set, defaults to a timestamped
+	file in the user profile (cross-platform). Ignored unless -GenerateCmdlets is specified.
 
 	.EXAMPLE
+	Connect-ExchangeOnline
 	New-ExTransportRuleFromJson -Path "C:\eop-rules\Block-Outbound-OnMicrosoft.json"
 
 	Creates a single transport rule from the specified JSON file.
@@ -48,6 +50,14 @@
 	Emits the equivalent New-TransportRule cmdlets to the specified file without executing them. Useful for review or for
 	running the rule provisioning from another host.
 
+	.NOTES
+	Prerequisites:
+	- PowerShell 7.x (this function uses ConvertFrom-Json -AsHashtable, introduced in PowerShell 6.0).
+	- ExchangeOnlineManagement module installed and an active session opened with Connect-ExchangeOnline before
+	  running the function (unless -GenerateCmdlets is specified, which only emits the cmdlet text).
+	- The signed-in account must hold a role with permission to manage mail flow rules, typically Exchange
+	  Administrator or a member of the Organization Management role group.
+
 	.LINK
 	https://ps365.clidsys.com/docs/commands/New-ExTransportRuleFromJson
 #>
@@ -66,14 +76,21 @@ function New-ExTransportRuleFromJson {
 		[switch]$GenerateCmdlets,
 
 		[Parameter(Mandatory = $false)]
-		[string]$OutputFile = (Join-Path $env:USERPROFILE "$(Get-Date -Format 'yyyy-MM-dd_HHmmss')-NewExTransportRuleFromJson-Commands.ps1")
+		[string]$OutputFile
 	)
 
 	begin {
 		[System.Collections.Generic.List[string]]$commands = @()
 		[System.Collections.Generic.List[PSCustomObject]]$resultsArray = @()
 
-		if (-not $GenerateCmdlets.IsPresent) {
+		if ($GenerateCmdlets.IsPresent) {
+			if ([string]::IsNullOrWhiteSpace($OutputFile)) {
+				$userProfile = [Environment]::GetFolderPath('UserProfile')
+				if ([string]::IsNullOrWhiteSpace($userProfile)) { $userProfile = $HOME }
+				$OutputFile = Join-Path $userProfile "$(Get-Date -Format 'yyyy-MM-dd_HHmmss')-NewExTransportRuleFromJson-Commands.ps1"
+			}
+		}
+		else {
 			if (-not (Get-Command -Name New-TransportRule -ErrorAction SilentlyContinue)) {
 				Write-Error 'New-TransportRule is not available. Connect to Exchange Online first with Connect-ExchangeOnline.'
 				return
@@ -161,6 +178,17 @@ function New-ExTransportRuleFromJson {
 								continue
 							}
 						}
+
+						if (Get-TransportRule -Identity $ruleName -ErrorAction SilentlyContinue) {
+							Write-Host -ForegroundColor Yellow "[$ruleName] Removal not performed (declined or skipped); creation aborted."
+							$resultsArray.Add([PSCustomObject]@{
+								File   = $file.FullName
+								Name   = $ruleName
+								Status = 'RemoveDeclined'
+								Error  = $null
+							})
+							continue
+						}
 					}
 					else {
 						Write-Host -ForegroundColor Yellow "[$ruleName] Already exists. Use -Force to recreate."
@@ -212,13 +240,15 @@ function New-ExTransportRuleFromJson {
 function ConvertTo-NewTransportRuleCommand {
 	param(
 		[Parameter(Mandatory = $true)]
-		[hashtable]$RuleParams
+		[System.Collections.IDictionary]$RuleParams
 	)
 
 	$sb = [System.Text.StringBuilder]::new()
 	$null = $sb.Append('New-TransportRule')
 
-	foreach ($key in $RuleParams.Keys) {
+	# Iterate keys in a deterministic order so -GenerateCmdlets output is stable across runs.
+	$orderedKeys = @($RuleParams.Keys) | Sort-Object
+	foreach ($key in $orderedKeys) {
 		$value = $RuleParams[$key]
 		$null = $sb.Append(" -$key ")
 		$null = $sb.Append((Format-TransportRuleValue -Value $value))
@@ -241,6 +271,13 @@ function Format-TransportRuleValue {
 	}
 	if ($Value -is [int] -or $Value -is [long] -or $Value -is [double]) {
 		return [string]$Value
+	}
+	if ($Value -is [System.Collections.IDictionary]) {
+		$nestedKeys = @($Value.Keys) | Sort-Object
+		$parts = foreach ($k in $nestedKeys) {
+			'{0} = {1}' -f $k, (Format-TransportRuleValue -Value $Value[$k])
+		}
+		return '@{ ' + ($parts -join '; ') + ' }'
 	}
 	if ($Value -is [System.Collections.IEnumerable] -and -not ($Value -is [string])) {
 		$parts = foreach ($item in $Value) { Format-TransportRuleValue -Value $item }
