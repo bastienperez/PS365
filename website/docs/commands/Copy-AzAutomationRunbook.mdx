@@ -17,7 +17,6 @@ Copy-AzAutomationRunbook [-SourceAutomationAccount] <String> [-DestinationAutoma
 
 This function exports all runbooks from a source Azure Automation account and imports them
 into a destination Azure Automation account within the same resource group.
-Supports Managed Identity authentication for use within Azure Automation.
 
 ## EXAMPLES
 
@@ -27,7 +26,7 @@ Supports Managed Identity authentication for use within Azure Automation.
 Copy-AzAutomationRunbook -SourceAutomationAccount 'newauto' -DestinationAutomationAccount 'newauto1' -ResourceGroup 'my-rg'
 ```
 
-Copies all runbooks from 'newauto' to 'newauto1' interactively.
+Copies all runbooks from 'newauto' to 'newauto1'.
 
 ### EXAMPLE 2
 
@@ -91,6 +90,8 @@ Accept wildcard characters: False
 
 (Optional) The temporary folder path used to store exported runbooks.
 Defaults to a timestamped folder in the system temp directory.
+Note: Only auto-generated folders are deleted at the end.
+If you provide an existing folder, its contents are NOT cleaned up.
 
 ```yaml
 Type: String

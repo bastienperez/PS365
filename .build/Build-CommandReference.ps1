@@ -137,6 +137,25 @@ foreach ($mainFolder in $mainFolders) {
     }
 }
 
+# Add Private Functions section if any private PS1 files exist
+$privatePs1Files = Get-ChildItem -Path "./$powershellModuleFolder/Private" -Filter '*.ps1' -File -Recurse -ErrorAction SilentlyContinue | Sort-Object Name
+if ($privatePs1Files.Count -gt 0) {
+    [System.Collections.Generic.List[string]]$privatePages = @()
+    foreach ($ps1File in $privatePs1Files) {
+        $mdxPath = "docs/commands/$($ps1File.BaseName)"
+        if (Test-Path "./website/$mdxPath.mdx") {
+            $null = $privatePages.Add($mdxPath)
+        }
+    }
+    if ($privatePages.Count -gt 0) {
+        $privateGroup = [PSCustomObject]@{
+            group = 'Private Functions'
+            pages = $privatePages.ToArray()
+        }
+        $null = $newGroups.Add($privateGroup)
+    }
+}
+
 # Update the navigation groups in docs.json
 $docsJson.navigation.groups = $newGroups.ToArray()
 

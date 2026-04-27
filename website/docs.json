@@ -127,6 +127,12 @@
             ]
           },
           {
+            "group": "Protection",
+            "pages": [
+              "docs/commands/New-ExTransportRuleFromJson"
+            ]
+          },
+          {
             "group": "Role",
             "pages": [
               "docs/commands/Get-ExRoleReport",
@@ -171,6 +177,14 @@
         "pages": [
           "docs/commands/Disable-MSSelfServicePurchase",
           "docs/commands/Enable-MSSelfServicePurchase"
+        ]
+      },
+      {
+        "group": "Private Functions",
+        "pages": [
+          "docs/commands/ConvertTo-NewTransportRuleCommand",
+          "docs/commands/ConvertTo-OrderedHashtable",
+          "docs/commands/Format-TransportRuleValue"
         ]
       }
     ]

@@ -138,12 +138,12 @@ function Get-MgApplicationSCIM {
     if (-not (Get-MgContext -ErrorAction SilentlyContinue)) {
         if ($RunFromAzureAutomation.IsPresent) {
             Write-Verbose 'Connecting to Microsoft Graph using Managed Identity'
-            Connect-MgGraph -Identity -NoWelcome
+            $null = Connect-MgGraph -Identity -NoWelcome
         }
         else {
             $scopes = @('Directory.Read.All')
             Write-Verbose "Connecting to Microsoft Graph. Scopes: $($scopes -join ',')"
-            Connect-MgGraph -Scopes $scopes -NoWelcome
+            $null = Connect-MgGraph -Scopes $scopes -NoWelcome
         }
     }
 
@@ -301,7 +301,7 @@ function Get-MgApplicationSCIM {
                         $res = "$res # "
                     }
 
-                    if ([string]::IsNullOrWhitespace($object.SourceAttributeName)) {
+                    if ([string]::IsNullOrWhiteSpace($object.SourceAttributeName)) {
                         $res = "$res$($object.SourceExpression) --> $($object.TargetAttributeName)"
                     }
                     else {
@@ -559,7 +559,7 @@ function Get-MgApplicationSCIM {
                         }
                     )
                 }
-                SaveToSentItems = 'false'
+                SaveToSentItems = $false
             }
 
             Send-MgUserMail -UserId $NotificationSender -BodyParameter $params

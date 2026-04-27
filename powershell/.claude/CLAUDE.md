@@ -125,6 +125,9 @@ end     { if ($ExportToExcel.IsPresent) { ... Export-Excel ... } else { return $
 | Green  | Success / completed operations       |
 | Red    | Errors (use `Write-Error` instead when appropriate) |
 
+### Encoding
+Never use Unicode symbols or emoji (✓, ✗, ⚠, etc.) in PowerShell strings — they break compatibility with PowerShell 5.1 which uses a non-Unicode console encoding by default. Use plain ASCII alternatives instead (e.g. `OK`, `KO`, `WARNING`).
+
 ### Comment-Based Help
 Every function requires `.SYNOPSIS`, `.DESCRIPTION`, `.PARAMETER` (each param), `.EXAMPLE` (at minimum one showing `-ExportToExcel`), and `.LINK` pointing to `https://ps365.clidsys.com/docs/commands/<FunctionName>`.
 

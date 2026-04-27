@@ -24,6 +24,11 @@
 .NOTES
     Requires the following Microsoft Graph permissions:
     - Policy.ReadWrite.MobilityManagement
+
+    Connect-MgGraph -Scopes 'Policy.ReadWrite.MobilityManagement'
+
+.LINK
+    https://ps365.clidsys.com/docs/commands/Set-IntuneAutoMDMEnrollmentPolicy
 #>
 function Set-IntuneAutoMDMEnrollmentPolicy {
     [CmdletBinding()]
@@ -41,16 +46,16 @@ function Set-IntuneAutoMDMEnrollmentPolicy {
         
         $policyId = '0000000a-0000-0000-c000-000000000000'
         
-        # Get current policy value using Get function
         Write-Verbose 'Retrieving current MDM enrollment policy...'
-        $currentValue = Get-IntuneAutoMDMEnrollmentPolicy
-        $currentState = if ($currentValue.ToLower() -eq 'disabled') { 'disabled' } else { 'enabled' }
-        
-        Write-Verbose "Current state: $currentState (isMdmEnrollmentDuringRegistrationDisabled: $currentValue)"
+        $policyObject = Get-IntuneAutoMDMEnrollmentPolicy -AsObject
+        $isDisabled = $policyObject.isMdmEnrollmentDuringRegistrationDisabled
+        $currentState = if ($isDisabled) { 'Disabled' } else { 'Enabled' }
+
+        Write-Verbose "Current state: $currentState (isMdmEnrollmentDuringRegistrationDisabled: $isDisabled)"
         Write-Verbose "Target state: $State (isMdmEnrollmentDuringRegistrationDisabled: $disableEnrollment)"
-        
+
         # Check if change is needed
-        if ($currentState.ToLower() -eq $State.ToLower()) {
+        if ($currentState -eq $State) {
             Write-Host "MDM enrollment policy is already set to $State - No change needed" -ForegroundColor Green
             return
         }

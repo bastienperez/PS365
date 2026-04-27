@@ -114,6 +114,7 @@ PROGRESS/STATUS MESSAGES
 - Use Write-Host with cyan color for progress: `Write-Host -ForegroundColor Cyan 'Status message'`
 - Use Write-Host with yellow/green for completion states
 - Avoid Write-Output for status messages
+- Never use Unicode symbols or emoji (✓, ✗, ⚠, etc.) in PowerShell strings — they break compatibility with PowerShell 5.1 which uses a non-Unicode console encoding by default. Use plain ASCII alternatives instead (e.g. `OK`, `KO`, `WARNING`).
 
 USER FILTERING PATTERNS
 - Filter guest users: `$users | Where-Object { $_.UserPrincipalName -notmatch '#EXT#' }`

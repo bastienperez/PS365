@@ -1,0 +1,194 @@
+---
+Module Name: PS365
+---
+
+## SYNOPSIS
+
+Creates Exchange Online transport (mail flow) rules from one or more JSON definition files.
+
+## SYNTAX
+
+```powershell
+New-ExTransportRuleFromJson [-Path] <String[]> [-Force] [-GenerateCmdlets] [-OutputFile <String>]
+ [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]
+```
+
+## DESCRIPTION
+
+This function reads JSON files describing Exchange Online transport rules and provisions them by splatting their content
+to New-TransportRule.
+The recommended layout is one JSON file per rule, which makes the rule set version-controllable and
+reproducible across tenants.
+Each JSON file must be a single object whose keys match New-TransportRule parameter names.
+
+If a rule with the same Name already exists in the tenant, the rule is skipped (use -Force to recreate it after deletion).
+Supports -WhatIf and -Confirm via SupportsShouldProcess.
+Use -GenerateCmdlets to emit the equivalent New-TransportRule
+cmdlets to a file instead of executing them.
+
+The function expects a connected ExchangeOnlineManagement session (Connect-ExchangeOnline).
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Connect-ExchangeOnline
+New-ExTransportRuleFromJson -Path "C:\eop-rules\Block-Outbound-OnMicrosoft.json"
+```
+
+Creates a single transport rule from the specified JSON file.
+
+### EXAMPLE 2
+
+```powershell
+New-ExTransportRuleFromJson -Path "C:\eop-rules" -WhatIf
+```
+
+Lists every transport rule that would be created from the JSON files in the directory without applying any change.
+
+### EXAMPLE 3
+
+```powershell
+New-ExTransportRuleFromJson -Path "C:\eop-rules" -Force
+```
+
+Creates every rule defined in the directory; pre-existing rules with the same Name are removed first.
+
+### EXAMPLE 4
+
+```powershell
+New-ExTransportRuleFromJson -Path "C:\eop-rules" -GenerateCmdlets -OutputFile "C:\temp\eop-rules.ps1"
+```
+
+Emits the equivalent New-TransportRule cmdlets to the specified file without executing them.
+Useful for review or for
+running the rule provisioning from another host.
+
+## PARAMETERS
+
+### -Path
+
+Path to a JSON file or to a directory containing one or more JSON files.
+When a directory is provided, every *.json file
+in the directory is processed in alphabetical order.
+
+```yaml
+Type: String[]
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 1
+Default value: None
+Accept pipeline input: True (ByPropertyName, ByValue)
+Accept wildcard characters: False
+```
+
+### -Force
+
+If a rule with the same Name already exists, remove it before creating the new one.
+Without this switch, existing rules
+are skipped with a warning.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -GenerateCmdlets
+
+If specified, the function generates the New-TransportRule cmdlets and saves them to a file instead of executing them.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -OutputFile
+
+Path to the output file used by -GenerateCmdlets.
+If omitted while -GenerateCmdlets is set, defaults to a timestamped
+file in the user profile (cross-platform).
+Ignored unless -GenerateCmdlets is specified.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -WhatIf
+
+Shows what would happen if the cmdlet runs.
+The cmdlet is not run.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases: wi
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Confirm
+
+Prompts you for confirmation before running the cmdlet.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases: cf
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+## NOTES
+
+Prerequisites:
+- PowerShell 5.1 or later.
+JSON content is converted to an ordered hashtable through a local helper to stay
+  compatible with Windows PowerShell 5.1, which does not support ConvertFrom-Json -AsHashtable.
+- ExchangeOnlineManagement module installed and an active session opened with Connect-ExchangeOnline before
+  running the function (unless -GenerateCmdlets is specified, which only emits the cmdlet text).
+- The signed-in account must hold a role with permission to manage mail flow rules, typically Exchange
+  Administrator or a member of the Organization Management role group.
+
+## RELATED LINKS
+
+[https://ps365.clidsys.com/docs/commands/New-ExTransportRuleFromJson](https://ps365.clidsys.com/docs/commands/New-ExTransportRuleFromJson)

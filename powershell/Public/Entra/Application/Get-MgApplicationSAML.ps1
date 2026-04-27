@@ -206,7 +206,7 @@ function Get-MgApplicationSAML {
     if (-not $isConnected) {
         if ($RunFromAzureAutomation.IsPresent) {
             Write-Verbose 'Connecting to Microsoft Graph using Managed Identity'
-            Connect-MgGraph -Identity -NoWelcome
+            $null = Connect-MgGraph -Identity -NoWelcome
         }
         else {
             Write-Verbose "Connecting to Microsoft Graph. Scopes: $($permissionsNeeded -join ',')"
@@ -589,7 +589,7 @@ function Get-MgApplicationSAML {
                         }
                     )
                 }
-                SaveToSentItems = 'false'
+                SaveToSentItems = $false
             }
 
             Send-MgUserMail -UserId $NotificationSender -BodyParameter $params

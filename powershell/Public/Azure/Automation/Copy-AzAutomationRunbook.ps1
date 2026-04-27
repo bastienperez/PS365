@@ -5,7 +5,6 @@
     .DESCRIPTION
     This function exports all runbooks from a source Azure Automation account and imports them
     into a destination Azure Automation account within the same resource group.
-    Supports Managed Identity authentication for use within Azure Automation.
 
     .PARAMETER SourceAutomationAccount
     The name of the source Azure Automation account to export runbooks from.
@@ -18,11 +17,12 @@
 
     .PARAMETER TempFolder
     (Optional) The temporary folder path used to store exported runbooks. Defaults to a timestamped folder in the system temp directory.
+    Note: Only auto-generated folders are deleted at the end. If you provide an existing folder, its contents are NOT cleaned up.
 
     .EXAMPLE
     Copy-AzAutomationRunbook -SourceAutomationAccount 'newauto' -DestinationAutomationAccount 'newauto1' -ResourceGroup 'my-rg'
 
-    Copies all runbooks from 'newauto' to 'newauto1' interactively.
+    Copies all runbooks from 'newauto' to 'newauto1'.
 
     .EXAMPLE
     Copy-AzAutomationRunbook -SourceAutomationAccount 'newauto' -DestinationAutomationAccount 'newauto1' -ResourceGroup 'my-rg' -TempFolder 'C:\Temp\Runbooks'
@@ -49,8 +49,10 @@ function Copy-AzAutomationRunbook {
         [string]$TempFolder
     )
 
+    $tempFolderCreated = $false
     if (-not $TempFolder) {
         $TempFolder = Join-Path $env:TEMP "AzAutomationRunbooks_$(Get-Date -Format 'yyyyMMdd_HHmmss')"
+        $tempFolderCreated = $true
     }
 
     $isConnected = $null -ne (Get-AzContext -ErrorAction SilentlyContinue)
@@ -63,6 +65,7 @@ function Copy-AzAutomationRunbook {
     # Create temp folder if it doesn't exist
     if (-not (Test-Path $TempFolder)) {
         $null = New-Item -ItemType Directory -Path $TempFolder -Force
+        $tempFolderCreated = $true
         Write-Verbose "Created temp folder: $TempFolder"
     }
 
@@ -72,6 +75,9 @@ function Copy-AzAutomationRunbook {
 
     if (-not $runbooks) {
         Write-Warning "No runbooks found in source account '$SourceAutomationAccount'."
+        if ($tempFolderCreated -and (Test-Path $TempFolder)) {
+            Remove-Item -Path $TempFolder -Recurse -Force -ErrorAction SilentlyContinue
+        }
         return
     }
 
@@ -86,19 +92,20 @@ function Copy-AzAutomationRunbook {
         Write-Host "($i/$($runbooks.Count)) Exporting: $($runbook.Name)" -ForegroundColor Cyan -NoNewline
 
         try {
-            $exportPath = Join-Path $TempFolder "$($runbook.Name).ps1"
             Export-AzAutomationRunbook -ResourceGroupName $ResourceGroup -AutomationAccountName $SourceAutomationAccount -Name $runbook.Name -OutputFolder $TempFolder -Force
-            Write-Host ' ✓' -ForegroundColor Green
+            $exportedFile = Get-ChildItem -Path $TempFolder -Filter "$($runbook.Name).*" | Select-Object -First 1
+            Write-Host ' OK' -ForegroundColor Green
 
             $exportedRunbooks.Add([PSCustomObject]@{
                 Name     = $runbook.Name
                 Type     = $runbook.RunbookType
-                Path     = $exportPath
+                Path     = $exportedFile.FullName
                 Exported = $true
+                Imported = $null
             })
         }
         catch {
-            Write-Host ' ✗' -ForegroundColor Red
+            Write-Host ' KO' -ForegroundColor Red
             Write-Warning "Failed to export '$($runbook.Name)': $($_.Exception.Message)"
 
             $exportedRunbooks.Add([PSCustomObject]@{
@@ -106,6 +113,7 @@ function Copy-AzAutomationRunbook {
                 Type     = $runbook.RunbookType
                 Path     = $null
                 Exported = $false
+                Imported = $null
             })
         }
     }
@@ -119,29 +127,43 @@ function Copy-AzAutomationRunbook {
         Write-Host "($j/$($exportedRunbooks.Where({$_.Exported}).Count)) Importing: $($runbook.Name)" -ForegroundColor Cyan -NoNewline
 
         try {
-            Import-AzAutomationRunbook -Path $runbook.Path -ResourceGroupName $ResourceGroup -AutomationAccountName $DestinationAutomationAccount -Name $runbook.Name -Type $runbook.Type -Force
-            Write-Host ' ✓' -ForegroundColor Green
+            Import-AzAutomationRunbook -Path $runbook.Path -ResourceGroupName $ResourceGroup -AutomationAccountName $DestinationAutomationAccount -Name $runbook.Name -Type $runbook.Type -Force -ErrorAction Stop
+            $runbook.Imported = $true
+            Write-Host ' OK' -ForegroundColor Green
         }
         catch {
-            Write-Host ' ✗' -ForegroundColor Red
+            $runbook.Imported = $false
+            Write-Host ' KO' -ForegroundColor Red
             Write-Warning "Failed to import '$($runbook.Name)': $($_.Exception.Message)"
         }
     }
 
     # Summary
-    $successCount = ($exportedRunbooks | Where-Object { $_.Exported }).Count
-    $failCount = ($exportedRunbooks | Where-Object { -not $_.Exported }).Count
+    $exportSuccess = ($exportedRunbooks | Where-Object { $_.Exported }).Count
+    $exportFail    = ($exportedRunbooks | Where-Object { -not $_.Exported }).Count
+    $importSuccess = ($exportedRunbooks | Where-Object { $_.Imported -eq $true }).Count
+    $importFail    = ($exportedRunbooks | Where-Object { $_.Imported -eq $false }).Count
 
     Write-Host "`n--- Summary ---" -ForegroundColor Cyan
-    Write-Host "Exported:  $successCount/$($runbooks.Count)" -ForegroundColor $(if ($failCount -eq 0) { 'Green' } else { 'Yellow' })
-    if ($failCount -gt 0) {
-        Write-Host "Failed:    $failCount" -ForegroundColor Red
+    Write-Host "Exported:  $exportSuccess/$($runbooks.Count)" -ForegroundColor $(if ($exportFail -eq 0) { 'Green' } else { 'Yellow' })
+    Write-Host "Imported:  $importSuccess/$exportSuccess" -ForegroundColor $(if ($importFail -eq 0) { 'Green' } else { 'Yellow' })
+
+    if ($exportFail -gt 0) {
+        Write-Host "Export failures ($exportFail):" -ForegroundColor Red
         $exportedRunbooks | Where-Object { -not $_.Exported } | ForEach-Object {
             Write-Host "  - $($_.Name)" -ForegroundColor Red
         }
     }
+    if ($importFail -gt 0) {
+        Write-Host "Import failures ($importFail):" -ForegroundColor Red
+        $exportedRunbooks | Where-Object { $_.Imported -eq $false } | ForEach-Object {
+            Write-Host "  - $($_.Name)" -ForegroundColor Red
+        }
+    }
 
-    # Cleanup temp folder
-    Write-Verbose "Cleaning up temp folder: $TempFolder"
-    Remove-Item -Path $TempFolder -Recurse -Force -ErrorAction SilentlyContinue
+    # Cleanup temp folder (only if it was auto-generated by this function)
+    if ($tempFolderCreated -and (Test-Path $TempFolder)) {
+        Write-Verbose "Cleaning up temp folder: $TempFolder"
+        Remove-Item -Path $TempFolder -Recurse -Force -ErrorAction SilentlyContinue
+    }
 }

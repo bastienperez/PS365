@@ -22,7 +22,12 @@
 .NOTES
     Requires the following Microsoft Graph permissions:
     - Policy.Read.All
-    
+
+    Connect-MgGraph -Scopes 'Policy.Read.All'
+
+.LINK
+    https://ps365.clidsys.com/docs/commands/Get-IntuneAutoMDMEnrollmentPolicy
+
 .OUTPUTS
     String - Returns 'Enabled' or 'Disabled' by default
     PSObject - Returns full policy object when -AsObject is used
