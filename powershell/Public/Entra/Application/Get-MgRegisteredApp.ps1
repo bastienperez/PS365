@@ -13,6 +13,7 @@
 
     .PARAMETER DisplayName
     (Optional) Retrieves the application for a specific application by its DisplayName.
+    Supports wildcards (* and ?) for partial name matching (e.g. "Azure*", "*Portal*").
 
     .EXAMPLE
     Get-MgRegisteredApp -ApplicationID "your-application-id"
@@ -28,6 +29,16 @@
     Get-MgRegisteredApp -DisplayName "My Application"
 
     This command retrieves the registered application with the specified DisplayName.
+
+    .EXAMPLE
+    Get-MgRegisteredApp -DisplayName "Azure*"
+
+    This command retrieves all registered applications whose DisplayName starts with "Azure".
+
+    .EXAMPLE
+    Get-MgRegisteredApp -DisplayName "*Portal*"
+
+    This command retrieves all registered applications whose DisplayName contains "Portal".
 
     .EXAMPLE
     Get-MgRegisteredApp
@@ -69,25 +80,53 @@ function Get-MgRegisteredApp {
         $apps = @(Invoke-MgGraphRequest -Uri $uri -Method GET)
     }
     elseif ($DisplayName) {
-        # Get application by DisplayName
-        $escaped = $DisplayName -replace "'", "''"
-        $uri = "/beta/applications?`$filter=displayName eq '$escaped'&`$select=uniqueName,id,createdByAppId,displayName,signInAudience,disabledByMicrosoftStatus,isDisabled,appId"
-        Write-Verbose "Filtering applications with: displayName eq '$escaped'"
-        $result = Invoke-MgGraphRequest -Uri $uri -Method GET
-        $apps = if ($result.Value) { $result.Value } else { @() }
-        
-        # If no exact match found, try to find apps where trimmed DisplayName matches
-        if (-not $apps -or $apps.Count -eq 0) {
-            Write-Verbose "No exact match found. Searching for apps with trimmed DisplayName matching '$DisplayName'..."
-            $uri = "/beta/applications?`$filter=startswith(displayName,'$escaped')&`$select=uniqueName,id,createdByAppId,displayName,signInAudience,disabledByMicrosoftStatus,isDisabled,appId"
-            $result = Invoke-MgGraphRequest -Uri $uri -Method GET
+        $selectFields = 'uniqueName,id,createdByAppId,displayName,signInAudience,disabledByMicrosoftStatus,isDisabled,appId'
+
+        if ($DisplayName -match '[*?]') {
+            # Wildcard mode: extract base search keyword (strip wildcard chars) for server-side pre-filter
+            $searchKeyword = ($DisplayName -replace '[*?]', '').Trim()
+            Write-Verbose "Wildcard detected. Using Graph \$search with keyword '$searchKeyword' then PowerShell -like '$DisplayName'"
+
+            if ($searchKeyword) {
+                $uri = "/beta/applications?`$search=`"displayName:$searchKeyword`"&`$count=true&`$select=$selectFields"
+                $result = Invoke-MgGraphRequest -Uri $uri -Method GET -Headers @{ 'ConsistencyLevel' = 'eventual' }
+            }
+            else {
+                # Pattern is only wildcards (e.g. "*") — fetch all
+                $uri = "/beta/applications?`$select=$selectFields"
+                $result = Invoke-MgGraphRequest -Uri $uri -Method GET
+            }
+
             $candidateApps = if ($result.Value) { $result.Value } else { @() }
-            
-            # Filter in PowerShell to find apps where trimmed name matches
-            $apps = $candidateApps | Where-Object { $_.displayName.Trim() -eq $DisplayName }
-            
+
+            # Apply precise wildcard matching client-side
+            $apps = $candidateApps | Where-Object { $_.displayName -like $DisplayName }
+
             if ($apps) {
-                Write-Verbose "Found $($apps.Count) application(s) with trimmed DisplayName matching '$DisplayName'"
+                Write-Verbose "Found $($apps.Count) application(s) matching wildcard pattern '$DisplayName'"
+            }
+        }
+        else {
+            # Exact match mode (no wildcards)
+            $escaped = $DisplayName -replace "'", "''"
+            $uri = "/beta/applications?`$filter=displayName eq '$escaped'&`$select=$selectFields"
+            Write-Verbose "Filtering applications with: displayName eq '$escaped'"
+            $result = Invoke-MgGraphRequest -Uri $uri -Method GET
+            $apps = if ($result.Value) { $result.Value } else { @() }
+
+            # If no exact match found, try to find apps where trimmed DisplayName matches
+            if (-not $apps -or $apps.Count -eq 0) {
+                Write-Verbose "No exact match found. Searching for apps with trimmed DisplayName matching '$DisplayName'..."
+                $uri = "/beta/applications?`$filter=startswith(displayName,'$escaped')&`$select=$selectFields"
+                $result = Invoke-MgGraphRequest -Uri $uri -Method GET
+                $candidateApps = if ($result.Value) { $result.Value } else { @() }
+
+                # Filter in PowerShell to find apps where trimmed name matches
+                $apps = $candidateApps | Where-Object { $_.displayName.Trim() -eq $DisplayName }
+
+                if ($apps) {
+                    Write-Verbose "Found $($apps.Count) application(s) with trimmed DisplayName matching '$DisplayName'"
+                }
             }
         }
     }

@@ -12,6 +12,7 @@
 
     .PARAMETER DisplayName
     (Optional) Retrieves the credentials for a specific application by its DisplayName.
+    Supports wildcards (* and ?) for partial name matching (e.g. "Azure*", "*Portal*").
 
     .PARAMETER ExportToExcel
     (Optional) If specified, exports the results to an Excel file in the user's profile directory.
@@ -51,6 +52,16 @@
     Get-MgApplicationCredential -DisplayName "My Application"
 
     Retrieves the credentials for a specific application by its DisplayName.
+
+    .EXAMPLE
+    Get-MgApplicationCredential -DisplayName "Azure*"
+
+    Retrieves the credentials for all applications whose DisplayName starts with "Azure".
+
+    .EXAMPLE
+    Get-MgApplicationCredential -DisplayName "*Portal*"
+
+    Retrieves the credentials for all applications whose DisplayName contains "Portal".
 
     .EXAMPLE
     Get-MgApplicationCredential -ForceNewToken
@@ -201,22 +212,51 @@ function Get-MgApplicationCredential {
         $mgApps = Get-MgApplication -ApplicationId $ObjectID
     }
     elseif ($DisplayName) {
-        $escaped = $DisplayName -replace "'", "''"
-        $filter = "DisplayName eq '$escaped'"
-        Write-Verbose "Filtering applications with: $filter"
-        $mgApps = Get-MgApplication -Filter $filter -All
-        
-        # If no exact match found, try to find apps where trimmed DisplayName matches
-        if (-not $mgApps) {
-            Write-Verbose "No exact match found. Searching for apps with trimmed DisplayName matching '$DisplayName'..."
-            $filter = "startswith(DisplayName, '$escaped')"
-            $candidateApps = Get-MgApplication -Filter $filter -All
-            
-            # Filter in PowerShell to find apps where trimmed name matches
-            $mgApps = $candidateApps | Where-Object { $_.DisplayName.Trim() -eq $DisplayName }
-            
-            if ($mgApps) {
-                Write-Verbose "Found $($mgApps.Count) application(s) with trimmed DisplayName matching '$DisplayName'"
+        if ($DisplayName -match '[*?]') {
+            # Wildcard mode: extract base search keyword for server-side pre-filter
+            $searchKeyword = ($DisplayName -replace '[*?]', '').Trim()
+            Write-Verbose "Wildcard detected. Using Graph \$search with keyword '$searchKeyword' then PowerShell -like '$DisplayName'"
+
+            if ($searchKeyword) {
+                $uri = "/v1.0/applications?`$search=`"displayName:$searchKeyword`"&`$count=true&`$select=id,displayName"
+                $result = Invoke-MgGraphRequest -Uri $uri -Method GET -Headers @{ 'ConsistencyLevel' = 'eventual' }
+            }
+            else {
+                # Pattern is only wildcards (e.g. "*") — fetch all
+                $uri = '/v1.0/applications?$select=id,displayName'
+                $result = Invoke-MgGraphRequest -Uri $uri -Method GET
+            }
+
+            $candidateItems = if ($result.Value) { $result.Value } else { @() }
+            $matchingIds = ($candidateItems | Where-Object { $_.displayName -like $DisplayName }).id
+
+            if ($matchingIds) {
+                $mgApps = @($matchingIds | ForEach-Object { Get-MgApplication -ApplicationId $_ })
+                Write-Verbose "Found $($mgApps.Count) application(s) matching wildcard pattern '$DisplayName'"
+            }
+            else {
+                $mgApps = @()
+            }
+        }
+        else {
+            # Exact match mode (no wildcards)
+            $escaped = $DisplayName -replace "'", "''"
+            $filter = "DisplayName eq '$escaped'"
+            Write-Verbose "Filtering applications with: $filter"
+            $mgApps = Get-MgApplication -Filter $filter -All
+
+            # If no exact match found, try to find apps where trimmed DisplayName matches
+            if (-not $mgApps) {
+                Write-Verbose "No exact match found. Searching for apps with trimmed DisplayName matching '$DisplayName'..."
+                $filter = "startswith(DisplayName, '$escaped')"
+                $candidateApps = Get-MgApplication -Filter $filter -All
+
+                # Filter in PowerShell to find apps where trimmed name matches
+                $mgApps = $candidateApps | Where-Object { $_.DisplayName.Trim() -eq $DisplayName }
+
+                if ($mgApps) {
+                    Write-Verbose "Found $($mgApps.Count) application(s) with trimmed DisplayName matching '$DisplayName'"
+                }
             }
         }
     }

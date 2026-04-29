@@ -75,12 +75,28 @@ Retrieves the SAML configuration for a specific application by its DisplayName.
 ### EXAMPLE 5
 
 ```powershell
+Get-MgApplicationSAML -DisplayName "Azure*"
+```
+
+Retrieves the SAML configuration for all applications whose DisplayName starts with "Azure".
+
+### EXAMPLE 6
+
+```powershell
+Get-MgApplicationSAML -DisplayName "*Portal*"
+```
+
+Retrieves the SAML configuration for all applications whose DisplayName contains "Portal".
+
+### EXAMPLE 7
+
+```powershell
 Get-MgApplicationSAML -ForceNewToken
 ```
 
 Forces the function to disconnect and reconnect to Microsoft Graph to obtain a new access token.
 
-### EXAMPLE 6
+### EXAMPLE 8
 
 ```powershell
 Get-MgApplicationSAML -ExportToExcel
@@ -88,7 +104,7 @@ Get-MgApplicationSAML -ExportToExcel
 
 Gets all SAML applications and exports them to an Excel file.
 
-### EXAMPLE 7
+### EXAMPLE 9
 
 ```powershell
 Get-MgApplicationSAML -RunFromAzureAutomation -ExpirationThresholdDays 30 -NotificationRecipient 'admin@company.com' -NotificationSender 'automation@company.com'
@@ -96,7 +112,7 @@ Get-MgApplicationSAML -RunFromAzureAutomation -ExpirationThresholdDays 30 -Notif
 
 Gets all SAML applications using managed identity authentication and sends notification for certificates expiring within 30 days.
 
-### EXAMPLE 8
+### EXAMPLE 10
 
 ```powershell
 Get-MgApplicationSAML -RunFromAzureAutomation -ExpirationThresholdDays 7 -NotificationRecipient 'admin@company.com' -NotificationSender 'automation@company.com'
@@ -125,6 +141,8 @@ Accept wildcard characters: False
 ### -DisplayName
 
 (Optional) Retrieves the SAML configuration for a specific application by its DisplayName.
+Supports wildcards (* and ?) for partial name matching (e.g.
+"Azure*", "*Portal*").
 
 ```yaml
 Type: String

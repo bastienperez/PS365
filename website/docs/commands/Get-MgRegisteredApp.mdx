@@ -66,6 +66,22 @@ This command retrieves the registered application with the specified DisplayName
 ### EXAMPLE 4
 
 ```powershell
+Get-MgRegisteredApp -DisplayName "Azure*"
+```
+
+This command retrieves all registered applications whose DisplayName starts with "Azure".
+
+### EXAMPLE 5
+
+```powershell
+Get-MgRegisteredApp -DisplayName "*Portal*"
+```
+
+This command retrieves all registered applications whose DisplayName contains "Portal".
+
+### EXAMPLE 6
+
+```powershell
 Get-MgRegisteredApp
 ```
 
@@ -109,6 +125,8 @@ Accept wildcard characters: False
 ### -DisplayName
 
 (Optional) Retrieves the application for a specific application by its DisplayName.
+Supports wildcards (* and ?) for partial name matching (e.g.
+"Azure*", "*Portal*").
 
 ```yaml
 Type: String

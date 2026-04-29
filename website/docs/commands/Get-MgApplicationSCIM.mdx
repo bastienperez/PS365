@@ -11,25 +11,25 @@ Retrieves all Entra ID applications configured for SCIM provisioning.
 ### All (Default)
 
 ```powershell
-Get-MgApplicationSCIM [-ForceNewToken] [-ExportToExcel] [-RunFromAzureAutomation]
- [-NotificationRecipient <String>] [-NotificationSender <String>] [-ProgressAction <ActionPreference>]
- [<CommonParameters>]
+Get-MgApplicationSCIM [-ExcludeAttributeMappings] [-IncludeFailedObjects] [-ForceNewToken] [-ExportToExcel]
+ [-RunFromAzureAutomation] [-NotificationRecipient <String>] [-NotificationSender <String>]
+ [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ### ByObjectId
 
 ```powershell
-Get-MgApplicationSCIM [-ObjectID <String>] [-ForceNewToken] [-ExportToExcel] [-RunFromAzureAutomation]
- [-NotificationRecipient <String>] [-NotificationSender <String>] [-ProgressAction <ActionPreference>]
- [<CommonParameters>]
+Get-MgApplicationSCIM [-ObjectID <String>] [-ExcludeAttributeMappings] [-IncludeFailedObjects] [-ForceNewToken]
+ [-ExportToExcel] [-RunFromAzureAutomation] [-NotificationRecipient <String>] [-NotificationSender <String>]
+ [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ### ByDisplayName
 
 ```powershell
-Get-MgApplicationSCIM [-DisplayName <String>] [-ForceNewToken] [-ExportToExcel] [-RunFromAzureAutomation]
- [-NotificationRecipient <String>] [-NotificationSender <String>] [-ProgressAction <ActionPreference>]
- [<CommonParameters>]
+Get-MgApplicationSCIM [-DisplayName <String>] [-ExcludeAttributeMappings] [-IncludeFailedObjects]
+ [-ForceNewToken] [-ExportToExcel] [-RunFromAzureAutomation] [-NotificationRecipient <String>]
+ [-NotificationSender <String>] [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -74,6 +74,30 @@ Retrieves the SCIM configuration for a specific application by its ObjectID.
 ### EXAMPLE 5
 
 ```powershell
+Get-MgApplicationSCIM -DisplayName "My App"
+```
+
+Retrieves the SCIM configuration for a specific application by its DisplayName.
+
+### EXAMPLE 6
+
+```powershell
+Get-MgApplicationSCIM -DisplayName "Azure*"
+```
+
+Retrieves the SCIM configuration for all applications whose DisplayName starts with "Azure".
+
+### EXAMPLE 7
+
+```powershell
+Get-MgApplicationSCIM -DisplayName "*Provisioning*"
+```
+
+Retrieves the SCIM configuration for all applications whose DisplayName contains "Provisioning".
+
+### EXAMPLE 8
+
+```powershell
 Get-MgApplicationSCIM -RunFromAzureAutomation -NotificationRecipient 'admin@company.com' -NotificationSender 'automation@company.com'
 ```
 
@@ -100,6 +124,8 @@ Accept wildcard characters: False
 ### -DisplayName
 
 (Optional) Retrieves the SCIM configuration for a specific application by its DisplayName.
+Supports wildcards (* and ?) for partial name matching (e.g.
+"Azure*", "*Portal*").
 
 ```yaml
 Type: String
@@ -109,6 +135,41 @@ Aliases:
 Required: False
 Position: Named
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ExcludeAttributeMappings
+
+(Optional) If specified, skips the retrieval of the attribute mapping schema (ObjectMappings).
+This speeds up execution significantly when mapping details are not needed.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -IncludeFailedObjects
+
+(Optional) If specified, fetches the list of objects currently in error (escrowed) for each synchronization job via the provisioning audit logs API.
+Requires the AuditLog.Read.All permission.
+If connecting interactively, this scope is added automatically.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

@@ -12,6 +12,7 @@
 
     .PARAMETER DisplayName
     (Optional) Retrieves the SAML configuration for a specific application by its DisplayName.
+    Supports wildcards (* and ?) for partial name matching (e.g. "Azure*", "*Portal*").
 
     .PARAMETER ExportToExcel
     (Optional) If specified, exports the results to an Excel file in the user's profile directory.
@@ -61,6 +62,16 @@
     Get-MgApplicationSAML -DisplayName "My SAML App"
 
     Retrieves the SAML configuration for a specific application by its DisplayName.
+
+    .EXAMPLE
+    Get-MgApplicationSAML -DisplayName "Azure*"
+
+    Retrieves the SAML configuration for all applications whose DisplayName starts with "Azure".
+
+    .EXAMPLE
+    Get-MgApplicationSAML -DisplayName "*Portal*"
+
+    Retrieves the SAML configuration for all applications whose DisplayName contains "Portal".
 
     .EXAMPLE
     Get-MgApplicationSAML -ForceNewToken
@@ -226,22 +237,52 @@ function Get-MgApplicationSAML {
         }
     }
     elseif ($DisplayName) {
-        $escaped = $DisplayName -replace "'", "''"
-        $filter = "DisplayName eq '$escaped' and PreferredSingleSignOnMode eq 'saml'"
-        Write-Verbose "Filtering service principals with: $filter"
-        $samlApplications = Get-MgBetaServicePrincipal -Filter $filter -All
-        
-        # If no exact match found, try to find apps where trimmed DisplayName matches
-        if (-not $samlApplications) {
-            Write-Verbose "No exact match found. Searching for apps with trimmed DisplayName matching '$DisplayName'..."
-            $filter = "startswith(DisplayName, '$escaped') and PreferredSingleSignOnMode eq 'saml'"
-            $candidateApps = Get-MgBetaServicePrincipal -Filter $filter -All
-            
-            # Filter in PowerShell to find apps where trimmed name matches
-            $samlApplications = $candidateApps | Where-Object { $_.DisplayName.Trim() -eq $DisplayName }
-            
-            if ($samlApplications) {
-                Write-Verbose "Found $($samlApplications.Count) application(s) with trimmed DisplayName matching '$DisplayName'"
+        if ($DisplayName -match '[*?]') {
+            # Wildcard mode: extract base search keyword for server-side pre-filter
+            $searchKeyword = ($DisplayName -replace '[*?]', '').Trim()
+            Write-Verbose "Wildcard detected. Using Graph \$search with keyword '$searchKeyword' then PowerShell -like '$DisplayName'"
+
+            if ($searchKeyword) {
+                $uri = "/beta/servicePrincipals?`$search=`"displayName:$searchKeyword`"&`$count=true&`$select=id,displayName,preferredSingleSignOnMode"
+                $result = Invoke-MgGraphRequest -Uri $uri -Method GET -Headers @{ 'ConsistencyLevel' = 'eventual' }
+            }
+            else {
+                # Pattern is only wildcards — fetch all SAML apps
+                $uri = "/beta/servicePrincipals?`$filter=preferredSingleSignOnMode eq 'saml'&`$select=id,displayName,preferredSingleSignOnMode"
+                $result = Invoke-MgGraphRequest -Uri $uri -Method GET
+            }
+
+            $candidateItems = if ($result.Value) { $result.Value } else { @() }
+            # Post-filter: wildcard name match + SAML only
+            $matchingIds = ($candidateItems | Where-Object { $_.displayName -like $DisplayName -and $_.preferredSingleSignOnMode -eq 'saml' }).id
+
+            if ($matchingIds) {
+                $samlApplications = @($matchingIds | ForEach-Object { Get-MgBetaServicePrincipal -ServicePrincipalId $_ })
+                Write-Verbose "Found $($samlApplications.Count) SAML application(s) matching wildcard pattern '$DisplayName'"
+            }
+            else {
+                $samlApplications = @()
+            }
+        }
+        else {
+            # Exact match mode (no wildcards)
+            $escaped = $DisplayName -replace "'", "''"
+            $filter = "DisplayName eq '$escaped' and PreferredSingleSignOnMode eq 'saml'"
+            Write-Verbose "Filtering service principals with: $filter"
+            $samlApplications = Get-MgBetaServicePrincipal -Filter $filter -All
+
+            # If no exact match found, try to find apps where trimmed DisplayName matches
+            if (-not $samlApplications) {
+                Write-Verbose "No exact match found. Searching for apps with trimmed DisplayName matching '$DisplayName'..."
+                $filter = "startswith(DisplayName, '$escaped') and PreferredSingleSignOnMode eq 'saml'"
+                $candidateApps = Get-MgBetaServicePrincipal -Filter $filter -All
+
+                # Filter in PowerShell to find apps where trimmed name matches
+                $samlApplications = $candidateApps | Where-Object { $_.DisplayName.Trim() -eq $DisplayName }
+
+                if ($samlApplications) {
+                    Write-Verbose "Found $($samlApplications.Count) application(s) with trimmed DisplayName matching '$DisplayName'"
+                }
             }
         }
     }
