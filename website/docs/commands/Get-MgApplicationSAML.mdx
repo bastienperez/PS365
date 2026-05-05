@@ -35,8 +35,14 @@ Get-MgApplicationSAML [-DisplayName <String>] [-ForceNewToken] [-ExportToExcel] 
 ## DESCRIPTION
 
 This function returns a list of all Entra ID applications configured for SAML Single Sign-On
-along with their SAML-related properties, including the PreferredTokenSigningKeyEndDateTime
-and its validity status.
+along with their SAML-related properties.
+Each row represents one SAML signing certificate
+(KeyCredential with Usage 'Sign'), so an application with multiple certificates will appear
+on multiple rows.
+
+The `SamlSigningCertificateIsPreferred` column identifies the currently active certificate:
+- True  : this is the active signing certificate
+- False : this certificate exists on the application but is not currently active
 
 ## EXAMPLES
 

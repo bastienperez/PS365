@@ -299,6 +299,15 @@ function Get-MgApplicationSCIM {
         }
         else {
             Write-Host "$($servicePrincipal.DisplayName) - No synchronization job found" -ForegroundColor Yellow
+
+            # No sync job: add a fallback row so the service principal always appears in the output
+            $fallbackJob = [PSCustomObject][ordered]@{
+                DisplayName       = $servicePrincipal.DisplayName
+                ServicePrincipalId = $servicePrincipal.Id
+                EntraUrl          = "https://entra.microsoft.com/#view/Microsoft_AAD_IAM/ManagedAppMenuBlade/~/ProvisioningActivity/objectId/$($servicePrincipal.Id)"
+                StatusCode        = '-'
+            }
+            $synchronizationJobsDetailsArray.Add($fallbackJob)
         }
     }
 
@@ -356,17 +365,30 @@ function Get-MgApplicationSCIM {
                     $failedStepDetails = if ($failedStep -and $failedStep['details']) {
                         ($failedStep['details'].GetEnumerator() | ForEach-Object { "$($_.Key): $($_.Value)" }) -join ' | '
                     } else { $null }
+
+                    $errorInfo    = $item['provisioningStatusInfo']['errorInformation']
+                    $errorCode    = if ($errorInfo) { $errorInfo['errorCode'] } elseif ($failedStep) { $failedStep['name'] } else { $null }
+                    $reason       = if ($errorInfo) { $errorInfo['reason'] } elseif ($failedStep) { $failedStep['description'] } else { $null }
+
+                    $srcDetails   = $item['sourceIdentity']['details']
+                    $dn           = if ($srcDetails -is [System.Collections.IDictionary]) {
+                                        $srcDetails['DistinguishedName']
+                                    } elseif ($srcDetails) {
+                                        ($srcDetails | Where-Object { $_['key'] -eq 'DistinguishedName' })['value']
+                                    } else { $null }
+
                     $escrowedObjectsList.Add([PSCustomObject]@{
                         ActivityDateTime      = $item['activityDateTime']
                         SourceDisplayName     = $item['sourceIdentity']['displayName']
                         SourceId              = $item['sourceIdentity']['id']
+                        DistinguishedName     = $dn
                         TargetDisplayName     = $item['targetIdentity']['displayName']
                         FailedStep            = if ($failedStep) { $failedStep['name'] } else { $null }
                         FailedStepType        = if ($failedStep) { $failedStep['provisioningStepType'] } else { $null }
                         FailedStepDescription = if ($failedStep) { $failedStep['description'] } else { $null }
                         FailedStepDetails     = $failedStepDetails
-                        ErrorCode             = $item['provisioningStatusInfo']['errorCode']
-                        Reason                = $item['provisioningStatusInfo']['reason']
+                        ErrorCode             = $errorCode
+                        Reason                = $reason
                     })
                 }
                 $escrowUri = $escrowResponse['@odata.nextLink']

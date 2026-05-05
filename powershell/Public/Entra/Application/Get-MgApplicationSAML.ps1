@@ -4,8 +4,13 @@
 
     .DESCRIPTION
     This function returns a list of all Entra ID applications configured for SAML Single Sign-On
-    along with their SAML-related properties, including the PreferredTokenSigningKeyEndDateTime
-    and its validity status.
+    along with their SAML-related properties. Each row represents one SAML signing certificate
+    (KeyCredential with Usage 'Sign'), so an application with multiple certificates will appear
+    on multiple rows.
+
+    The `SamlSigningCertificateIsPreferred` column identifies the currently active certificate:
+    - True  : this is the active signing certificate
+    - False : this certificate exists on the application but is not currently active
 
     .PARAMETER ObjectID
     (Optional) Retrieves the SAML configuration for a specific application by its ObjectID.
@@ -366,32 +371,79 @@ function Get-MgApplicationSAML {
             }
         }
 
-        $object = [PSCustomObject][ordered]@{
-            DisplayName                         = $samlApp.DisplayName
-            Recommendation                      = $recommendation
-            Id                                  = $samlApp.Id
-            AppId                               = $samlApp.AppId
-            EntraUrl                            = "https://entra.microsoft.com/#view/Microsoft_AAD_IAM/ManagedAppMenuBlade/~/Overview/objectId/$($samlApp.Id)/appId/$($samlApp.AppId)"
-            LoginUrl                            = $samlApp.LoginUrl
-            LogoutUrl                           = $samlApp.LogoutUrl
-            NotificationEmailAddresses          = $samlApp.NotificationEmailAddresses -join '|'
-            AppRoleAssignmentRequired           = $samlApp.AppRoleAssignmentRequired
-            PreferredSingleSignOnMode           = $samlApp.PreferredSingleSignOnMode
-            SamlSigningCertificateEndTime       = $samlApp.PreferredTokenSigningKeyEndDateTime
-            # PreferredTokenSigningKeyEndDateTime is date time, compared to now and see it is valid
-            SamlSigningCertificateValid         = $samlApp.PreferredTokenSigningKeyEndDateTime -gt (Get-Date)
-            SamlSigningCertificateExpiresInDays = if ($samlApp.PreferredTokenSigningKeyEndDateTime) { [int](New-TimeSpan -Start (Get-Date) -End $samlApp.PreferredTokenSigningKeyEndDateTime).TotalDays } else { $null }
-            ReplyUrls                           = $samlApp.ReplyUrls -join '|'
-            SignInAudience                      = $samlApp.SignInAudience
-            Owners                              = $ownerString
-        }
+        # Iterate over all signing certificates (KeyCredentials with Usage 'Sign')
+        $signingCerts = $samlApp.KeyCredentials | Where-Object { $_.Usage -eq 'Sign' }
 
-        # Add sign-in statistics only if requested
-        if ($IncludeSignInStats.IsPresent) {
-            $object | Add-Member -MemberType NoteProperty -Name InteractiveSignInsLast30Days -Value $signInCount
-        }
+        if ($signingCerts) {
+            foreach ($cert in $signingCerts) {
+                # Identify the currently active/preferred certificate by matching its expiry date
+                $isPreferred = $null -ne $cert.EndDateTime -and
+                               $null -ne $samlApp.PreferredTokenSigningKeyEndDateTime -and
+                               [datetime]$cert.EndDateTime -eq [datetime]$samlApp.PreferredTokenSigningKeyEndDateTime
 
-        $samlApplicationsArray.Add($object)
+                $object = [PSCustomObject][ordered]@{
+                    DisplayName                         = $samlApp.DisplayName
+                    Recommendation                      = $recommendation
+                    Id                                  = $samlApp.Id
+                    AppId                               = $samlApp.AppId
+                    EntraUrl                            = "https://entra.microsoft.com/#view/Microsoft_AAD_IAM/ManagedAppMenuBlade/~/Overview/objectId/$($samlApp.Id)/appId/$($samlApp.AppId)"
+                    LoginUrl                            = $samlApp.LoginUrl
+                    LogoutUrl                           = $samlApp.LogoutUrl
+                    NotificationEmailAddresses          = $samlApp.NotificationEmailAddresses -join '|'
+                    AppRoleAssignmentRequired           = $samlApp.AppRoleAssignmentRequired
+                    PreferredSingleSignOnMode           = $samlApp.PreferredSingleSignOnMode
+                    SamlSigningCertificateIsPreferred   = $isPreferred
+                    SamlSigningCertificateDisplayName   = $cert.DisplayName
+                    SamlSigningCertificateKeyId         = $cert.KeyId
+                    SamlSigningCertificateStartTime     = $cert.StartDateTime
+                    SamlSigningCertificateEndTime       = $cert.EndDateTime
+                    # EndDateTime compared to now to check validity
+                    SamlSigningCertificateValid         = $cert.EndDateTime -gt (Get-Date)
+                    SamlSigningCertificateExpiresInDays = if ($cert.EndDateTime) { [int](New-TimeSpan -Start (Get-Date) -End $cert.EndDateTime).TotalDays } else { $null }
+                    ReplyUrls                           = $samlApp.ReplyUrls -join '|'
+                    SignInAudience                      = $samlApp.SignInAudience
+                    Owners                              = $ownerString
+                }
+
+                if ($IncludeSignInStats.IsPresent) {
+                    $object | Add-Member -MemberType NoteProperty -Name InteractiveSignInsLast30Days -Value $signInCount
+                }
+
+                $samlApplicationsArray.Add($object)
+            }
+        }
+        else {
+            # No signing KeyCredentials found - fall back to PreferredTokenSigningKeyEndDateTime
+            $object = [PSCustomObject][ordered]@{
+                DisplayName                         = $samlApp.DisplayName
+                Recommendation                      = $recommendation
+                Id                                  = $samlApp.Id
+                AppId                               = $samlApp.AppId
+                EntraUrl                            = "https://entra.microsoft.com/#view/Microsoft_AAD_IAM/ManagedAppMenuBlade/~/Overview/objectId/$($samlApp.Id)/appId/$($samlApp.AppId)"
+                LoginUrl                            = $samlApp.LoginUrl
+                LogoutUrl                           = $samlApp.LogoutUrl
+                NotificationEmailAddresses          = $samlApp.NotificationEmailAddresses -join '|'
+                AppRoleAssignmentRequired           = $samlApp.AppRoleAssignmentRequired
+                PreferredSingleSignOnMode           = $samlApp.PreferredSingleSignOnMode
+                SamlSigningCertificateIsPreferred   = $null
+                SamlSigningCertificateDisplayName   = $null
+                SamlSigningCertificateKeyId         = $null
+                SamlSigningCertificateStartTime     = $null
+                SamlSigningCertificateEndTime       = $samlApp.PreferredTokenSigningKeyEndDateTime
+                # PreferredTokenSigningKeyEndDateTime compared to now to check validity
+                SamlSigningCertificateValid         = $samlApp.PreferredTokenSigningKeyEndDateTime -gt (Get-Date)
+                SamlSigningCertificateExpiresInDays = if ($samlApp.PreferredTokenSigningKeyEndDateTime) { [int](New-TimeSpan -Start (Get-Date) -End $samlApp.PreferredTokenSigningKeyEndDateTime).TotalDays } else { $null }
+                ReplyUrls                           = $samlApp.ReplyUrls -join '|'
+                SignInAudience                      = $samlApp.SignInAudience
+                Owners                              = $ownerString
+            }
+
+            if ($IncludeSignInStats.IsPresent) {
+                $object | Add-Member -MemberType NoteProperty -Name InteractiveSignInsLast30Days -Value $signInCount
+            }
+
+            $samlApplicationsArray.Add($object)
+        }
     }
 
     # Check for expiring certificates and send notification if enabled

@@ -334,6 +334,26 @@ function Get-MgApplicationCredential {
 
             $credentialsArray.Add($object)
         }
+
+        # No credentials at all: add a fallback row so the app always appears in the output
+        if (-not $mgApp.KeyCredentials -and -not $mgApp.PasswordCredentials) {
+            $object = [PSCustomObject][ordered]@{
+                DisplayName             = $mgApp.DisplayName
+                Recommendation          = $recommendation
+                CredentialType          = '-'
+                AppId                   = $mgApp.AppId
+                EntraUrl                = "https://entra.microsoft.com/#view/Microsoft_AAD_RegisteredApps/ApplicationMenuBlade/~/Credentials/appId/$($mgApp.AppId)"
+                CredentialDescription   = '-'
+                CredentialStartDate     = '-'
+                CredentialExpiryDate    = '-'
+                CredentialValid         = '-'
+                CredentialExpiresInDays = '-'
+                Type                    = '-'
+                Usage                   = '-'
+                Owners                  = $ownerString
+            }
+            $credentialsArray.Add($object)
+        }
     }
     
     # Check for expiring credentials and send notification if enabled
