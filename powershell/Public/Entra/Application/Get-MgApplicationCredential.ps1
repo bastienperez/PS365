@@ -205,7 +205,15 @@ function Get-MgApplicationCredential {
         }
     }
 
-    [System.Collections.Generic.List[PSCustomObject]]$credentialsArray = @()
+    # When running from Azure Automation, verify that all required permissions are granted to the managed identity
+    if ($RunFromAzureAutomation.IsPresent) {
+        $currentScopes = (Get-MgContext).Scopes
+        $missingPermissions = $permissionsNeeded | Where-Object { $_ -notin $currentScopes }
+        if ($missingPermissions) {
+            Write-Error "The managed identity is missing the following required Graph permissions: $($missingPermissions -join ', '). Please grant these permissions to the managed identity and try again."
+            return
+        }
+    }
 
     # Determine how to search for the Application(s): by ObjectID (GUID), by DisplayName, or all
     if ($ObjectID) {
@@ -364,14 +372,15 @@ function Get-MgApplicationCredential {
         }
         
         # Calculate statistics for different expiration categories
+        $halfThreshold = [int]($ExpirationThresholdDays / 2)
         $expiredCredentials = $credentialsArray | Where-Object { 
             $null -ne $_.CredentialExpiresInDays -and $_.CredentialExpiresInDays -le 0 
         }
         $credentialsExpiring15Days = $credentialsArray | Where-Object { 
-            $null -ne $_.CredentialExpiresInDays -and $_.CredentialExpiresInDays -le 15 -and $_.CredentialExpiresInDays -gt 0 
+            $null -ne $_.CredentialExpiresInDays -and $_.CredentialExpiresInDays -le $halfThreshold -and $_.CredentialExpiresInDays -gt 0 
         }
         $credentialsExpiring30Days = $credentialsArray | Where-Object { 
-            $null -ne $_.CredentialExpiresInDays -and $_.CredentialExpiresInDays -le 30 -and $_.CredentialExpiresInDays -gt 0 
+            $null -ne $_.CredentialExpiresInDays -and $_.CredentialExpiresInDays -le $ExpirationThresholdDays -and $_.CredentialExpiresInDays -gt 0 
         }
         
         Write-Verbose "Sending notification email. Found $($expiringCredentials.Count) credentials expiring within $ExpirationThresholdDays days."
@@ -488,14 +497,14 @@ function Get-MgApplicationCredential {
                 <table border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;background:#FDEFD0;border-collapse:collapse;margin-bottom:0;box-shadow:none;" role="presentation">
                     <tr>
                         <td valign="top" style="padding:6pt 8pt 6pt 8pt;border-bottom:none;">
-                            <h4 align="center" style="margin:0 0 5pt 0;text-align:center;line-height:14pt;font-size:11pt;font-family:'Segoe UI Semibold',sans-serif;color:#7A3A00;font-weight:600;">Expiring within 15 days</h4>
+                            <h4 align="center" style="margin:0 0 5pt 0;text-align:center;line-height:14pt;font-size:11pt;font-family:'Segoe UI Semibold',sans-serif;color:#7A3A00;font-weight:600;">Expiring within $halfThreshold days</h4>
                             <table border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;border-collapse:collapse;margin-bottom:0;background:transparent;box-shadow:none;" role="presentation">
                                 <tr>
                                     <td width="50%" valign="top" style="width:50%;padding:2pt 0 2pt 0;text-align:right;border-bottom:none;">
                                         <span style="font-size:18pt;font-family:'Segoe UI',sans-serif;color:#7A3A00;font-weight:bold;">$($credentialsExpiring15Days.Count)</span>
                                     </td>
                                     <td width="50%" valign="middle" style="width:50%;padding:2pt 0 2pt 6pt;font-size:9pt;font-family:'Segoe UI',sans-serif;color:#7A3A00;border-bottom:none;vertical-align:middle;">
-                                        secrets expire within 15 days
+                                        secrets expire within $halfThreshold days
                                     </td>
                                 </tr>
                             </table>
@@ -507,14 +516,14 @@ function Get-MgApplicationCredential {
                 <table border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;background:#CCE4FF;border-collapse:collapse;margin-bottom:0;box-shadow:none;" role="presentation">
                     <tr>
                         <td valign="top" style="padding:6pt 8pt 6pt 8pt;border-bottom:none;">
-                            <h4 align="center" style="margin:0 0 5pt 0;text-align:center;line-height:14pt;font-size:11pt;font-family:'Segoe UI Semibold',sans-serif;color:#003882;font-weight:600;">Expiring within 30 days</h4>
+                            <h4 align="center" style="margin:0 0 5pt 0;text-align:center;line-height:14pt;font-size:11pt;font-family:'Segoe UI Semibold',sans-serif;color:#003882;font-weight:600;">Expiring within $ExpirationThresholdDays days</h4>
                             <table border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;border-collapse:collapse;margin-bottom:0;background:transparent;box-shadow:none;" role="presentation">
                                 <tr>
                                     <td width="50%" valign="top" style="width:50%;padding:2pt 0 2pt 0;text-align:right;border-bottom:none;">
                                         <span style="font-size:18pt;font-family:'Segoe UI',sans-serif;color:#003882;font-weight:bold;">$($credentialsExpiring30Days.Count)</span>
                                     </td>
                                     <td width="50%" valign="middle" style="width:50%;padding:2pt 0 2pt 6pt;font-size:9pt;font-family:'Segoe UI',sans-serif;color:#003882;border-bottom:none;vertical-align:middle;">
-                                        secrets expire within 30 days
+                                        secrets expire within $ExpirationThresholdDays days
                                     </td>
                                 </tr>
                             </table>
@@ -538,7 +547,7 @@ function Get-MgApplicationCredential {
 "@
 
         foreach ($cred in $expiringCredentials) {
-            $rowClass = if ($cred.CredentialExpiresInDays -le 0) { 'critical' } elseif ($cred.CredentialExpiresInDays -le 14) { 'warning' } else { 'caution' }
+            $rowClass = if ($cred.CredentialExpiresInDays -le 0) { 'critical' } elseif ($cred.CredentialExpiresInDays -le $halfThreshold) { 'warning' } else { 'caution' }
             $expiresInDaysDisplay = if ($cred.CredentialExpiresInDays -lt 0) { "$($cred.CredentialExpiresInDays) (already expired)" } else { $cred.CredentialExpiresInDays }
             $appLink = "<strong style=`"color:#11100f;font-size:12px;line-height:16px;`">$($cred.DisplayName)</strong> <a href=`"$($cred.EntraUrl)`" style=`"text-decoration:none;font-size:14px;line-height:16px;`" title=`"Open in Entra`">&#x1F517;</a>"
             $ownersList = @($cred.Owners -split '\|' | Where-Object { $_ })
@@ -554,7 +563,7 @@ function Get-MgApplicationCredential {
             '<p class="action-required">Action Required:</p><p>Please review and renew these credentials before they expire to avoid service disruptions.</p>'
         }
         else {
-            '<p style="color:#107C10;font-weight:600;">&#10003; All credentials are healthy. No action required at this time.</p>'
+            '<p style="color:#107C10;font-weight:600;">All credentials are healthy. No action required at this time.</p>'
         }
 
         $emailSubject = if ($expiringCredentials.Count -gt 0) {

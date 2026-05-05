@@ -230,7 +230,24 @@ function Get-MgApplicationSAML {
         }
     }
 
-    [System.Collections.Generic.List[PSCustomObject]]$samlApplicationsArray = @()
+    # When running from Azure Automation, verify that all required permissions are granted to the managed identity
+    # AuditLog.Read.All is non-blocking: the script continues but sign-in stats will be unavailable
+    $auditLogPermissionMissing = $false
+    if ($RunFromAzureAutomation.IsPresent) {
+        $currentScopes = (Get-MgContext).Scopes
+        $missingPermissions = $permissionsNeeded | Where-Object { $_ -notin $currentScopes }
+        if ($missingPermissions) {
+            $criticalMissing = $missingPermissions | Where-Object { $_ -ne 'AuditLog.Read.All' }
+            if ($criticalMissing) {
+                Write-Error "The managed identity is missing the following required Graph permissions: $($criticalMissing -join ', '). Please grant these permissions to the managed identity and try again."
+                return
+            }
+            if ($missingPermissions -contains 'AuditLog.Read.All') {
+                $auditLogPermissionMissing = $true
+                Write-Warning "The managed identity is missing the 'AuditLog.Read.All' permission. Sign-in statistics will not be available. The script will continue without sign-in data."
+            }
+        }
+    }
     
     # Determine how to search for the Service Principal(s): by ObjectID (GUID), by DisplayName, or all
     if ($ObjectID) {
@@ -302,6 +319,8 @@ function Get-MgApplicationSAML {
 
     Write-Host "$($samlApplications.Count) SAML application(s) found" -ForegroundColor Green
 
+    [System.Collections.Generic.List[PSCustomObject]]$samlApplicationsArray = @()
+
     # Calculate date for 30 days ago for sign-in statistics
     $signInStartDate = (Get-Date).AddDays(-30).ToString('yyyy-MM-ddTHH:mm:ssZ')
 
@@ -336,7 +355,10 @@ function Get-MgApplicationSAML {
         
         # Get sign-in statistics if requested
         $signInCount = $null
-        if ($IncludeSignInStats.IsPresent) {
+        if ($auditLogPermissionMissing) {
+            $signInCount = 'N/A - AuditLog.Read.All permission missing'
+        }
+        elseif ($IncludeSignInStats.IsPresent) {
             try {
                 $signInFilter = "appId eq '$($samlApp.AppId)' and createdDateTime ge $signInStartDate"
                 Write-Verbose "Sign-in filter: $signInFilter"
@@ -405,7 +427,7 @@ function Get-MgApplicationSAML {
                     Owners                              = $ownerString
                 }
 
-                if ($IncludeSignInStats.IsPresent) {
+                if ($IncludeSignInStats.IsPresent -or $auditLogPermissionMissing) {
                     $object | Add-Member -MemberType NoteProperty -Name InteractiveSignInsLast30Days -Value $signInCount
                 }
 
@@ -438,7 +460,7 @@ function Get-MgApplicationSAML {
                 Owners                              = $ownerString
             }
 
-            if ($IncludeSignInStats.IsPresent) {
+            if ($IncludeSignInStats.IsPresent -or $auditLogPermissionMissing) {
                 $object | Add-Member -MemberType NoteProperty -Name InteractiveSignInsLast30Days -Value $signInCount
             }
 
@@ -454,14 +476,15 @@ function Get-MgApplicationSAML {
         }
 
         # Calculate statistics for different expiration categories
+        $halfThreshold = [int]($ExpirationThresholdDays / 2)
         $expiredCertificates = $samlApplicationsArray | Where-Object {
             $null -ne $_.SamlSigningCertificateExpiresInDays -and $_.SamlSigningCertificateExpiresInDays -le 0
         }
         $certificatesExpiring15Days = $samlApplicationsArray | Where-Object {
-            $null -ne $_.SamlSigningCertificateExpiresInDays -and $_.SamlSigningCertificateExpiresInDays -le 15 -and $_.SamlSigningCertificateExpiresInDays -gt 0
+            $null -ne $_.SamlSigningCertificateExpiresInDays -and $_.SamlSigningCertificateExpiresInDays -le $halfThreshold -and $_.SamlSigningCertificateExpiresInDays -gt 0
         }
         $certificatesExpiring30Days = $samlApplicationsArray | Where-Object {
-            $null -ne $_.SamlSigningCertificateExpiresInDays -and $_.SamlSigningCertificateExpiresInDays -le 30 -and $_.SamlSigningCertificateExpiresInDays -gt 0
+            $null -ne $_.SamlSigningCertificateExpiresInDays -and $_.SamlSigningCertificateExpiresInDays -le $ExpirationThresholdDays -and $_.SamlSigningCertificateExpiresInDays -gt 0
         }
 
         Write-Verbose "Sending notification email. Found $($expiringCertificates.Count) SAML certificates expiring within $ExpirationThresholdDays days."
@@ -578,14 +601,14 @@ function Get-MgApplicationSAML {
                 <table border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;background:#FDEFD0;border-collapse:collapse;margin-bottom:0;box-shadow:none;" role="presentation">
                     <tr>
                         <td valign="top" style="padding:6pt 8pt 6pt 8pt;border-bottom:none;">
-                            <h4 align="center" style="margin:0 0 5pt 0;text-align:center;line-height:14pt;font-size:11pt;font-family:'Segoe UI Semibold',sans-serif;color:#7A3A00;font-weight:600;">Expiring within 15 days</h4>
+                            <h4 align="center" style="margin:0 0 5pt 0;text-align:center;line-height:14pt;font-size:11pt;font-family:'Segoe UI Semibold',sans-serif;color:#7A3A00;font-weight:600;">Expiring within $halfThreshold days</h4>
                             <table border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;border-collapse:collapse;margin-bottom:0;background:transparent;box-shadow:none;" role="presentation">
                                 <tr>
                                     <td width="50%" valign="top" style="width:50%;padding:2pt 0 2pt 0;text-align:right;border-bottom:none;">
                                         <span style="font-size:18pt;font-family:'Segoe UI',sans-serif;color:#7A3A00;font-weight:bold;">$($certificatesExpiring15Days.Count)</span>
                                     </td>
                                     <td width="50%" valign="middle" style="width:50%;padding:2pt 0 2pt 6pt;font-size:9pt;font-family:'Segoe UI',sans-serif;color:#7A3A00;border-bottom:none;vertical-align:middle;">
-                                        certificates expire within 15 days
+                                        certificates expire within $halfThreshold days
                                     </td>
                                 </tr>
                             </table>
@@ -597,14 +620,14 @@ function Get-MgApplicationSAML {
                 <table border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;background:#CCE4FF;border-collapse:collapse;margin-bottom:0;box-shadow:none;" role="presentation">
                     <tr>
                         <td valign="top" style="padding:6pt 8pt 6pt 8pt;border-bottom:none;">
-                            <h4 align="center" style="margin:0 0 5pt 0;text-align:center;line-height:14pt;font-size:11pt;font-family:'Segoe UI Semibold',sans-serif;color:#003882;font-weight:600;">Expiring within 30 days</h4>
+                            <h4 align="center" style="margin:0 0 5pt 0;text-align:center;line-height:14pt;font-size:11pt;font-family:'Segoe UI Semibold',sans-serif;color:#003882;font-weight:600;">Expiring within $ExpirationThresholdDays days</h4>
                             <table border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;border-collapse:collapse;margin-bottom:0;background:transparent;box-shadow:none;" role="presentation">
                                 <tr>
                                     <td width="50%" valign="top" style="width:50%;padding:2pt 0 2pt 0;text-align:right;border-bottom:none;">
                                         <span style="font-size:18pt;font-family:'Segoe UI',sans-serif;color:#003882;font-weight:bold;">$($certificatesExpiring30Days.Count)</span>
                                     </td>
                                     <td width="50%" valign="middle" style="width:50%;padding:2pt 0 2pt 6pt;font-size:9pt;font-family:'Segoe UI',sans-serif;color:#003882;border-bottom:none;vertical-align:middle;">
-                                        certificates expire within 30 days
+                                        certificates expire within $ExpirationThresholdDays days
                                     </td>
                                 </tr>
                             </table>
@@ -624,27 +647,30 @@ function Get-MgApplicationSAML {
             <th>Expiry Date</th>
             <th>Login URL</th>
             <th>Owners</th>
+            $(if ($IncludeSignInStats.IsPresent -or $auditLogPermissionMissing) { '<th>Sign-ins (30d)</th>' })
         </tr>
 "@
 
         foreach ($cert in $expiringCertificates) {
-            $rowClass = if ($cert.SamlSigningCertificateExpiresInDays -le 0) { 'critical' } elseif ($cert.SamlSigningCertificateExpiresInDays -le 14) { 'warning' } else { 'caution' }
+            $rowClass = if ($cert.SamlSigningCertificateExpiresInDays -le 0) { 'critical' } elseif ($cert.SamlSigningCertificateExpiresInDays -le $halfThreshold) { 'warning' } else { 'caution' }
             $expiresInDaysDisplay = if ($cert.SamlSigningCertificateExpiresInDays -lt 0) { "$($cert.SamlSigningCertificateExpiresInDays) (already expired)" } else { $cert.SamlSigningCertificateExpiresInDays }
             $appLink = "<strong style=`"color:#11100f;font-size:12px;line-height:16px;`">$($cert.DisplayName)</strong> <a href=`"$($cert.EntraUrl)`" style=`"text-decoration:none;font-size:14px;line-height:16px;`" title=`"Open in Entra`">&#x1F517;</a>"
             $ownersList = @($cert.Owners -split '\|' | Where-Object { $_ })
             $ownersHtml = if ($ownersList.Count -gt 1) { ($ownersList | ForEach-Object { "- $_" }) -join '<br>' } else { $ownersList -join '' }
-            $emailBody += "<tr class=`"$rowClass`"><td>$appLink</td><td>$($cert.AppId)</td><td><strong>$expiresInDaysDisplay</strong></td><td>$($cert.SamlSigningCertificateEndTime)</td><td>$($cert.LoginUrl)</td><td>$ownersHtml</td></tr>"
+            $signInsHtml = if ($IncludeSignInStats.IsPresent -or $auditLogPermissionMissing) { "<td>$($cert.InteractiveSignInsLast30Days)</td>" } else { '' }
+            $emailBody += "<tr class=`"$rowClass`"><td>$appLink</td><td>$($cert.AppId)</td><td><strong>$expiresInDaysDisplay</strong></td><td>$($cert.SamlSigningCertificateEndTime)</td><td>$($cert.LoginUrl)</td><td>$ownersHtml</td>$signInsHtml</tr>"
         }
 
         if ($expiringCertificates.Count -eq 0) {
-            $emailBody += '<tr><td colspan="6" style="text-align:center;padding:12px 8px;color:#605e5c;font-style:italic;">No certificates requiring attention - all SAML signing certificates are healthy.</td></tr>'
+            $colSpan = if ($IncludeSignInStats.IsPresent -or $auditLogPermissionMissing) { 7 } else { 6 }
+            $emailBody += "<tr><td colspan=`"$colSpan`" style=`"text-align:center;padding:12px 8px;color:#605e5c;font-style:italic;`">No certificates requiring attention - all SAML signing certificates are healthy.</td></tr>"
         }
 
         $emailFooter = if ($expiringCertificates.Count -gt 0) {
             '<p class="action-required">Action Required:</p><p>Please review and renew these SAML signing certificates before they expire to avoid authentication disruptions.</p>'
         }
         else {
-            '<p style="color:#107C10;font-weight:600;">&#10003; All SAML signing certificates are healthy. No action required at this time.</p>'
+            '<p style="color:#107C10;font-weight:600;">All SAML signing certificates are healthy. No action required at this time.</p>'
         }
 
         $emailSubject = if ($expiringCertificates.Count -gt 0) {
