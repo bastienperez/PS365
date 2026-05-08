@@ -12,7 +12,7 @@
 RootModule = 'PS365.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.0.97'
+ModuleVersion = '0.0.98'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -80,7 +80,8 @@ FunctionsToExport = 'Copy-AzAutomationRunbook', 'Get-MgApplicationExpiringCertAn
                'Get-EntraIDHybridJoinComputerInfo', 
                'Get-EntraIDHybridJoinComputerRegistryKey', 
                'Get-EntraIDHybridJoinSCP', 'Get-EntraIDRegcmd', 'Get-MgLAPSPassword', 
-               'Convert-EntraObjectIDAndSID', 'Get-MgUserPasswordInfo', 
+               'Convert-EntraObjectIDAndSID', 'Get-MgCustomSecurityAttributeInfo',
+               'Get-MgUserPasswordInfo',
                'Get-MgRoleReport', 'Set-ExCalendarPermission', 
                'Find-DistributionGroupMember', 'Get-ExMailboxByDomain', 
                'Get-ExMailboxForwarding', 'Get-ExMailboxFromAttribute', 
