@@ -1,0 +1,164 @@
+---
+Module Name: PS365
+---
+
+## SYNOPSIS
+
+Reports custom security attributes assigned to users, devices, and service principals (enterprise apps) in Microsoft Entra ID.
+
+## SYNTAX
+
+```powershell
+Get-MgCustomSecurityAttributeInfo [[-AttributeSet] <String>] [-EntityType <String[]>] [-OnlyAssigned]
+ [-ForceNewToken] [-ExportToExcel] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+```
+
+## DESCRIPTION
+
+Queries Microsoft Graph to enumerate custom security attribute assignments across users, devices, and service principals.
+Auto-discovers all attribute sets in the tenant, or restricts the scope to a single set when -AttributeSet is provided.
+The output is one row per (entity, attribute set, attribute name, value) so it can be filtered/pivoted easily.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Get-MgCustomSecurityAttributeInfo
+```
+
+Auto-discovers all attribute sets and returns assignments across users, devices, and service principals.
+
+### EXAMPLE 2
+
+```powershell
+Get-MgCustomSecurityAttributeInfo -AttributeSet 'ComplianceData'
+```
+
+Returns assignments only for the 'ComplianceData' attribute set.
+
+### EXAMPLE 3
+
+```powershell
+Get-MgCustomSecurityAttributeInfo -EntityType User, ServicePrincipal
+```
+
+Returns assignments only for users and service principals (skips devices).
+
+### EXAMPLE 4
+
+```powershell
+Get-MgCustomSecurityAttributeInfo -ExportToExcel
+```
+
+Exports results to an Excel file in the user's profile directory, with one worksheet per entity type.
+
+## PARAMETERS
+
+### -AttributeSet
+
+Restricts the report to a single attribute set name.
+If omitted, all attribute sets discovered in the tenant are reported.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -EntityType
+
+Limits the entity types scanned.
+Valid values: User, Device, ServicePrincipal.
+Default is all three.
+
+```yaml
+Type: String[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: @('User', 'Device', 'ServicePrincipal')
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -OnlyAssigned
+
+If specified, only entities that actually have at least one custom security attribute assignment are returned.
+This is the default behavior; the switch is kept for explicit/discoverable usage.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ForceNewToken
+
+Switch parameter to force getting a new token from Microsoft Graph.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ExportToExcel
+
+(Optional) If specified, exports the results to an Excel file in the user's profile directory.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+## NOTES
+
+Required Microsoft Graph permissions:
+    - CustomSecAttributeDefinition.Read.All
+    - CustomSecAttributeAssignment.Read.All
+    - User.Read.All
+    - Device.Read.All
+    - Application.Read.All
+
+The custom security attribute on devices is in preview at the time of writing and uses the Graph beta endpoint.
+Reading customSecurityAttributes requires the caller to be granted the 'Attribute Assignment Reader' (or higher) directory role
+in addition to the application/delegated permissions above.
+
+## RELATED LINKS
+
+[https://ps365.clidsys.com/docs/commands/Get-MgCustomSecurityAttributeInfo](https://ps365.clidsys.com/docs/commands/Get-MgCustomSecurityAttributeInfo)

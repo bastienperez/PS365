@@ -82,7 +82,8 @@
           {
             "group": "Object",
             "pages": [
-              "docs/commands/Convert-EntraObjectIDAndSID"
+              "docs/commands/Convert-EntraObjectIDAndSID",
+              "docs/commands/Get-MgCustomSecurityAttributeInfo"
             ]
           },
           {
