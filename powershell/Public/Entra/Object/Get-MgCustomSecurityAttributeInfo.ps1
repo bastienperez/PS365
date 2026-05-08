@@ -179,6 +179,7 @@ function Get-MgCustomSecurityAttributeInfo {
                     DisplayName       = $Entity.displayName
                     Identifier        = if ($EntityType -eq 'User') { $Entity.userPrincipalName } elseif ($EntityType -eq 'ServicePrincipal') { $Entity.appId } else { $Entity.id }
                     ObjectId          = $Entity.id
+                    OperatingSystem   = if ($EntityType -eq 'Device') { $Entity.operatingSystem } else { $null }
                     AttributeSet      = $setName
                     AttributeName     = $attrProperty.Name
                     AttributeValue    = $valueText
@@ -194,7 +195,7 @@ function Get-MgCustomSecurityAttributeInfo {
     # Users
     if ($EntityType -contains 'User') {
         Write-Host -ForegroundColor Cyan 'Retrieving users with custom security attributes'
-        $uri = 'https://graph.microsoft.com/v1.0/users?$select=id,displayName,userPrincipalName,customSecurityAttributes&$count=true'
+        $uri = 'https://graph.microsoft.com/v1.0/users?$select=id,displayName,userPrincipalName,customSecurityAttributes&$count=true&$top=999'
         $headers = @{ ConsistencyLevel = 'eventual' }
 
         try {
@@ -215,7 +216,7 @@ function Get-MgCustomSecurityAttributeInfo {
     # Service principals (enterprise apps)
     if ($EntityType -contains 'ServicePrincipal') {
         Write-Host -ForegroundColor Cyan 'Retrieving service principals with custom security attributes'
-        $uri = 'https://graph.microsoft.com/v1.0/servicePrincipals?$select=id,displayName,appId,customSecurityAttributes&$count=true'
+        $uri = 'https://graph.microsoft.com/v1.0/servicePrincipals?$select=id,displayName,appId,customSecurityAttributes&$count=true&$top=999'
         $headers = @{ ConsistencyLevel = 'eventual' }
 
         try {
@@ -236,7 +237,7 @@ function Get-MgCustomSecurityAttributeInfo {
     # Devices (beta endpoint - preview)
     if ($EntityType -contains 'Device') {
         Write-Host -ForegroundColor Cyan 'Retrieving devices with custom security attributes (beta endpoint)'
-        $uri = 'https://graph.microsoft.com/beta/devices?$select=id,displayName,customSecurityAttributes&$count=true'
+        $uri = 'https://graph.microsoft.com/beta/devices?$select=id,displayName,operatingSystem,customSecurityAttributes&$count=true&$top=999'
         $headers = @{ ConsistencyLevel = 'eventual' }
 
         try {
