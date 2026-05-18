@@ -205,6 +205,8 @@ function Get-MgApplicationCredential {
         }
     }
 
+    [System.Collections.Generic.List[PSCustomObject]]$credentialsArray = @()
+
     # When running from Azure Automation, verify that all required permissions are granted to the managed identity
     if ($RunFromAzureAutomation.IsPresent) {
         $currentScopes = (Get-MgContext).Scopes
