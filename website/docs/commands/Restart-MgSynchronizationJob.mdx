@@ -1,0 +1,280 @@
+---
+Module Name: PS365
+---
+
+## SYNOPSIS
+
+Restarts synchronization jobs for one or more Entra ID applications.
+
+## SYNTAX
+
+### ByDisplayName (Default)
+
+```powershell
+Restart-MgSynchronizationJob -DisplayName <String> [-ForceNewToken] [-RunFromAzureAutomation]
+ [-ResetScope <String>] [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]
+```
+
+### ByObjectId
+
+```powershell
+Restart-MgSynchronizationJob -ObjectID <String> [-ForceNewToken] [-RunFromAzureAutomation]
+ [-ResetScope <String>] [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]
+```
+
+## DESCRIPTION
+
+Resolves the target service principal(s) by ObjectID or DisplayName (wildcards supported),
+retrieves all associated synchronization jobs, then restarts them via the Microsoft Graph API.
+
+Two authentication modes are available:
+- Interactive  : prompts for sign-in with delegated permissions.
+- Managed Identity (RunFromAzureAutomation) : uses the managed identity assigned to the Azure resource (Automation Account, Function App, VM, etc.) - no credentials required.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Restart-MgSynchronizationJob -ObjectID 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
+```
+
+Restarts all synchronization jobs for the application identified by its ObjectID.
+
+### EXAMPLE 2
+
+```powershell
+Restart-MgSynchronizationJob -DisplayName 'Workday to Entra'
+```
+
+Restarts all synchronization jobs for the application named exactly 'Workday to Entra'.
+
+### EXAMPLE 3
+
+```powershell
+Restart-MgSynchronizationJob -DisplayName '*Provisioning*'
+```
+
+Restarts all jobs for every application whose name contains 'Provisioning'.
+
+### EXAMPLE 4
+
+```powershell
+Restart-MgSynchronizationJob -DisplayName 'Workday to Entra' -RunFromAzureAutomation
+```
+
+Restarts all jobs for the matching application using Managed Identity authentication.
+Suitable for use in Azure Automation runbooks.
+
+### EXAMPLE 5
+
+```powershell
+Restart-MgSynchronizationJob -DisplayName 'Workday*' -ForceNewToken
+```
+
+Forces a new Graph token before resolving applications and restarting jobs.
+
+### EXAMPLE 6
+
+```powershell
+Restart-MgSynchronizationJob -DisplayName 'Workday to Entra' -ResetScope 'Escrows'
+```
+
+Retries only the objects currently in escrow (errored), without reprocessing the full directory.
+
+### EXAMPLE 7
+
+```powershell
+Restart-MgSynchronizationJob -DisplayName 'Workday to Entra' -ResetScope 'Watermark, Escrows'
+```
+
+Combines a full directory re-evaluation with an escrow retry.
+
+### EXAMPLE 8
+
+```powershell
+Restart-MgSynchronizationJob -DisplayName 'Workday to Entra' -ResetScope ''
+```
+
+Emulates the "Restart provisioning" button in the Entra portal
+(equivalent to QuarantineState + Watermark + Escrows with no explicit criteria body).
+
+## PARAMETERS
+
+### -ObjectID
+
+ObjectID (GUID) of the target service principal.
+Cannot be combined with -DisplayName.
+
+```yaml
+Type: String
+Parameter Sets: ByObjectId
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DisplayName
+
+Display name of the target service principal(s).
+Supports wildcards (* and ?):
+- "Workday*"          matches all apps whose name starts with "Workday"
+- "*Provisioning*"    matches all apps whose name contains "Provisioning"
+- "Workday to Entra"  exact match (no wildcard)
+Cannot be combined with -ObjectID.
+
+```yaml
+Type: String
+Parameter Sets: ByDisplayName
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ForceNewToken
+
+Disconnects the existing Microsoft Graph session before connecting, forcing a fresh
+token to be acquired.
+Useful when the current token has expired or lacks required scopes.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -RunFromAzureAutomation
+
+Authenticates using the Managed Identity of the Azure resource.
+Use this switch when the function runs inside:
+- Azure Automation runbooks
+- Azure Functions
+- Azure VMs / Container Apps with a managed identity enabled
+
+When active, authentication uses the Managed Identity (Out-GridView is unavailable).
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ResetScope
+
+Comma-separated combination of synchronizationJobRestartScope values controlling what is reset when
+the job restarts.
+Values can be combined (e.g.
+"Escrows, QuarantineState").
+
+Supported values:
+`Escrows` Provisioning failures are marked as escrows and retried.
+Clearing escrows will stop the service from retrying failures.
+`Watermark` Removing the watermark causes the service to re-evaluate all users again, rather than just processing changes since the last cycle.
+`QuarantineState` Temporarily lifts the quarantine.
+`Full` Applies all of the above options simultaneously (Escrows + Watermark + QuarantineState).
+`ForceDeletes` Forces the system to delete pending deleted users when the accidental-deletions prevention feature is enabled and the deletion threshold is exceeded.
+
+Values present in the API but NOT accepted by this script (should not be used directly):
+`None` Starts a paused or quarantined job.
+DO NOT USE - call the Start synchronizationJob API instead.
+`ConnectorDataStore` - Clears the underlying cache for all users.
+DO NOT USE - contact Microsoft Support for guidance.
+
+An empty string ("") emulates the "Restart provisioning" button in the Microsoft Entra admin
+center.
+It is similar to setting resetScope to include QuarantineState, Watermark, and Escrows,
+and meets most customer needs.
+If you use `RunFromAzureAutomation`, you need to explicitly choose a reset scope, as the portal default relies on delegated permissions which are not available with Managed Identity authentication.
+
+Default : 'Escrows'  (most common use case - retry errored objects without reprocessing
+the entire directory).
+
+Reference: https://learn.microsoft.com/en-us/graph/api/resources/synchronization-synchronizationjobrestartcriteria?view=graph-rest-1.0
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: Escrows
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -WhatIf
+
+Shows what would happen if the cmdlet runs.
+The cmdlet is not run.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases: wi
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Confirm
+
+Prompts you for confirmation before running the cmdlet.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases: cf
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+## NOTES
+
+Required Microsoft Graph permissions:
+- Application.Read.All
+- Synchronization.ReadWrite.All
+
+Required PowerShell modules:
+- Microsoft.Graph.Authentication
+- Microsoft.Graph.Applications
+
+API version used: v1.0
+
+## RELATED LINKS
+
+[https://learn.microsoft.com/en-us/graph/api/synchronization-synchronizationjob-restart](https://learn.microsoft.com/en-us/graph/api/synchronization-synchronizationjob-restart)
