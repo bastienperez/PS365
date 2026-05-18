@@ -40,15 +40,13 @@
     the job restarts. Values can be combined (e.g. "Escrows, QuarantineState").
 
     Supported values:
+    `None` Starts a paused or quarantined provisioning job. DO NOT USE. Use the Start synchronizationJob API instead.
+    `ConnectorDataStore` Clears the underlying cache for all users. DO NOT USE. Contact Microsoft Support for guidance.
     `Escrows` Provisioning failures are marked as escrows and retried. Clearing escrows will stop the service from retrying failures.
-    `Watermark` Removing the watermark causes the service to re-evaluate all users again, rather than just processing changes since the last cycle.
+    `Watermark` Removing the watermark causes the service to re-evaluate all the users again, rather than just processing changes.
     `QuarantineState` Temporarily lifts the quarantine.
-    `Full` Applies all of the above options simultaneously (Escrows + Watermark + QuarantineState).
-    `ForceDeletes` Forces the system to delete pending deleted users when the accidental-deletions prevention feature is enabled and the deletion threshold is exceeded.
-
-    Values present in the API but NOT accepted by this script (should not be used directly):
-    `None` Starts a paused or quarantined job. DO NOT USE - call the Start synchronizationJob API instead.
-    `ConnectorDataStore` - Clears the underlying cache for all users. DO NOT USE - contact Microsoft Support for guidance.
+    `Full` Use this if you want all of the options (Escrows + Watermark + QuarantineState).
+    `ForceDeletes` Forces the system to delete the pending deleted users when using the accidental deletions prevention feature and the deletion threshold is exceeded.
 
     An empty string ("") emulates the "Restart provisioning" button in the Microsoft Entra admin
     center. It is similar to setting resetScope to include QuarantineState, Watermark, and Escrows,
@@ -57,7 +55,7 @@
     Default : 'Escrows'  (most common use case - retry errored objects without reprocessing
     the entire directory).
 
-    Reference: https://learn.microsoft.com/en-us/graph/api/resources/synchronization-synchronizationjobrestartcriteria?view=graph-rest-1.0
+    Reference: https://learn.microsoft.com/en-us/graph/api/resources/synchronization-synchronizationjobrestartcriteria
 
     .EXAMPLE
     Restart-MgSynchronizationJob -ObjectID 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
@@ -132,18 +130,17 @@ function Restart-MgSynchronizationJob {
 
         # Scope of the reset applied when restarting the synchronization job.
         # Accepted values (combinable with commas):
-        #   Escrows         - Provisioning failures are marked as escrows and retried.
-        #                     Clearing escrows will stop the service from retrying failures.
-        #   Watermark       - Removing the watermark causes the service to re-evaluate all users,
-        #                     rather than just processing changes since the last cycle.
+        #   None                - DO NOT USE. Starts a paused or quarantined provisioning job. Use the Start synchronizationJob API instead.
+        #   ConnectorDataStore  - DO NOT USE. Clears the underlying cache for all users. Contact Microsoft Support for guidance
+        #
+        #   Escrows         - Provisioning failures are marked as escrows and retried. Clearing escrows will stop the service from retrying failures.
+        #   Watermark       - Removing the watermark causes the service to re-evaluate all the users again, rather than just processing changes.
         #   QuarantineState - Temporarily lifts the quarantine.
-        #   Full            - Applies Escrows + Watermark + QuarantineState simultaneously.
-        #   ForceDeletes    - Forces deletion of pending users when the accidental-deletion threshold
-        #                     is exceeded.
+        #   Full            - Use this if you want all of the options (Escrows + Watermark + QuarantineState).
+        #   ForceDeletes    - Forces the system to delete the pending deleted users when using the accidental deletions prevention feature and the deletion threshold is exceeded.
         # Empty string emulates the Entra portal "Restart provisioning" button
         #   (equivalent to QuarantineState + Watermark + Escrows with no explicit criteria body).
-        #   Note: if you use -RunFromAzureAutomation, explicitly choose a reset scope - the portal
-        #   default relies on delegated permissions unavailable with Managed Identity authentication.
+        #   Note: if you use -RunFromAzureAutomation, explicitly choose a reset scope - the portal default relies on delegated permissions unavailable with Managed Identity authentication.
         # Reference: https://learn.microsoft.com/en-us/graph/api/resources/synchronization-synchronizationjobrestartcriteria?view=graph-rest-1.0
         [Parameter(Mandatory = $false)]
         [ValidateScript({
