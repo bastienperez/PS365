@@ -10,11 +10,24 @@
     The report is output to an array contained all the audit logs found.
     To export in a csv, do Get-MgRoleReport | Export-CSV -NoTypeInformation "$(Get-Date -Format yyyyMMdd)_adminRoles.csv" -Encoding UTF8
 
+    .PARAMETER Identity
+    Filter the report on a specific role. Accepts the role display name (e.g. 'Global Administrator') or the role definition Id (GUID).
+
+    .PARAMETER PrincipalID
+    Filter the report on a specific principal. Accepts the UPN (user), AppId (service principal) or ObjectId.
+
+    .PARAMETER PrincipalDisplayName
+    Filter the report on a specific principal display name (exact match, case-insensitive).
+
+    .PARAMETER Scope
+    Filter the report on the assignment scope (AssignedRoleScope / directoryScopeId).
+    Examples: '/' (tenant-wide), '/administrativeUnits/<id>' (AU-scoped), or any resource scope.
+
     .PARAMETER IncludeEmptyRoles
     Switch parameter to include empty roles in the report
 
-    .PARAMETER IncludePIMEligibleAssignments
-    Boolean parameter to include PIM eligible assignments in the report. Default is $true
+    .PARAMETER ExcludePIMEligibleAssignments
+    Switch parameter to exclude PIM eligible assignments from the report. Default is $false (includes them)
 
     .PARAMETER ForceNewToken
     Switch parameter to force getting a new token from Microsoft Graph
@@ -24,11 +37,36 @@
 
     .PARAMETER ExportToExcel
     Switch parameter to export the report to an Excel file in the user's profile directory
-    
+
     .EXAMPLE
     Get-MgRoleReport
 
     Get all the roles with members, including PIM eligible assignments but without empty roles
+
+    .EXAMPLE
+    Get-MgRoleReport -Identity 'Global Administrator'
+
+    Returns only the assignments of the Global Administrator role (filter accepts both role name and roleDefinitionId).
+
+    .EXAMPLE
+    Get-MgRoleReport -PrincipalID 'alice@contoso.com'
+
+    Returns only the role assignments of alice@contoso.com (direct or via group membership).
+
+    .EXAMPLE
+    Get-MgRoleReport -PrincipalID '11111111-2222-3333-4444-555555555555'
+
+    Returns only the role assignments for the principal matching this ObjectId or AppId.
+
+    .EXAMPLE
+    Get-MgRoleReport -PrincipalDisplayName 'Alice Doe'
+
+    Returns only the role assignments for the principal whose DisplayName is 'Alice Doe'.
+
+    .EXAMPLE
+    Get-MgRoleReport -Scope '/'
+
+    Returns only the role assignments at tenant scope.
 
     .EXAMPLE
     Get-MgRoleReport -IncludeEmptyRoles
@@ -36,8 +74,8 @@
     Get all the roles, including the ones without members
 
     .EXAMPLE
-    Get-MgRoleReport -IncludePIMEligibleAssignments $false
-    
+    Get-MgRoleReport -ExcludePIMEligibleAssignments
+
     Get all the roles with members (without empty roles), but without PIM eligible assignments
 
     .EXAMPLE
@@ -57,10 +95,22 @@ function Get-MgRoleReport {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $false)]
-        [switch]$IncludeEmptyRoles = $false,
+        [string]$Identity,
 
         [Parameter(Mandatory = $false)]
-        [boolean]$IncludePIMEligibleAssignments = $true,
+        [string]$PrincipalID,
+
+        [Parameter(Mandatory = $false)]
+        [string]$PrincipalDisplayName,
+
+        [Parameter(Mandatory = $false)]
+        [string]$Scope,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$IncludeEmptyRoles,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$ExcludePIMEligibleAssignments,
 
         [Parameter(Mandatory = $false)]
         [switch]$ForceNewToken,
@@ -68,7 +118,7 @@ function Get-MgRoleReport {
         # using with the Maester framework
         [Parameter(Mandatory = $false)]
         [switch]$MaesterMode,
-        
+
         [Parameter(Mandatory = $false)]
         [switch]$ExportToExcel
     )
@@ -76,6 +126,7 @@ function Get-MgRoleReport {
     [System.Collections.Generic.List[PSObject]]$rolesMembersArray = @()
     [System.Collections.Generic.List[Object]]$objectsCacheArray = @()
     [System.Collections.Generic.List[Object]]$mgRolesArrayAssignment = @()
+    $scopeTypeCache = @{}
 
     $modules = @(
         'Microsoft.Graph.Authentication'
@@ -148,7 +199,7 @@ function Get-MgRoleReport {
     } 
     
 
-    if ($IncludePIMEligibleAssignments) {
+    if (-not $ExcludePIMEligibleAssignments) {
         Write-Verbose 'Collecting PIM eligible role assignments...'
         try {
             (Get-MgRoleManagementDirectoryRoleEligibilitySchedule -All -ExpandProperty * -ErrorAction Stop | Select-Object id, principalId, directoryScopeId, roleDefinitionId, status, principal, @{Name = 'RoleDefinitionExtended'; Expression = { $_.roleDefinition } }) | ForEach-Object {
@@ -161,7 +212,7 @@ function Get-MgRoleReport {
         }
     }
 
-    foreach ($assignment in $mgRolesArrayAssignment) {    
+    foreach ($assignment in $mgRolesArrayAssignment) {
         $principal = switch ($assignment.principal.AdditionalProperties.'@odata.type') {
             '#microsoft.graph.user' { $assignment.principal.AdditionalProperties.userPrincipalName; break }
             '#microsoft.graph.servicePrincipal' { $assignment.principal.AdditionalProperties.appId; break }
@@ -169,7 +220,55 @@ function Get-MgRoleReport {
             'default' { '-' }
         }
 
-        $object = [PSCustomObject][ordered]@{    
+        $directoryScopeId = $assignment.directoryScopeId
+        if ($scopeTypeCache.ContainsKey($directoryScopeId)) {
+            $scopeType = $scopeTypeCache[$directoryScopeId].Type
+            $scopeName = $scopeTypeCache[$directoryScopeId].Name
+        }
+        else {
+            $scopeType = 'Unknown'
+            $scopeName = $null
+
+            switch -Wildcard ($directoryScopeId) {
+                '/' {
+                    $scopeType = 'Tenant'
+                    $scopeName = 'Tenant'
+                    break
+                }
+                '/administrativeUnits/*' {
+                    $scopeType = 'AdministrativeUnit'
+                    $auId = $directoryScopeId -replace '^/administrativeUnits/', ''
+                    try {
+                        $auObject = Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/directory/administrativeUnits/$auId" -OutputType PSObject -ErrorAction Stop
+                        $scopeName = $auObject.displayName
+                    }
+                    catch {
+                        Write-Verbose "Unable to resolve AU displayName for '$directoryScopeId': $($_.Exception.Message)"
+                    }
+                    break
+                }
+                default {
+                    # Resolve directory object via Graph (e.g. application, servicePrincipal, group)
+                    try {
+                        $scopeObjectId = $directoryScopeId.TrimStart('/')
+                        $scopeObject = Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/directoryObjects/$scopeObjectId" -OutputType PSObject -ErrorAction Stop
+                        if ($scopeObject.'@odata.type') {
+                            $scopeType = $scopeObject.'@odata.type' -replace '^#microsoft\.graph\.', ''
+                        }
+                        if ($scopeObject.displayName) {
+                            $scopeName = $scopeObject.displayName
+                        }
+                    }
+                    catch {
+                        Write-Verbose "Unable to resolve scope for '$directoryScopeId': $($_.Exception.Message)"
+                    }
+                }
+            }
+
+            $scopeTypeCache[$directoryScopeId] = @{ Type = $scopeType; Name = $scopeName }
+        }
+
+        $object = [PSCustomObject][ordered]@{
             Principal                = $principal
             PrincipalDisplayName     = $assignment.principal.AdditionalProperties.displayName
             PrincipalType            = $assignment.principal.AdditionalProperties.'@odata.type'.Split('.')[-1]
@@ -177,11 +276,17 @@ function Get-MgRoleReport {
             AssignedRole             = $assignment.RoleDefinitionExtended.displayName
             AssignedRoleDefinitionId = $assignment.RoleDefinitionId
             AssignedRoleScope        = $assignment.directoryScopeId
+            AssignedRoleScopeType    = $scopeType
+            AssignedRoleScopeName    = $scopeName
             AssignmentType           = if ($assignment.status -eq 'Provisioned') { 'Eligible' } else { 'Permanent' }
             RoleIsBuiltIn            = $assignment.RoleDefinitionExtended.isBuiltIn
             RoleTemplate             = $assignment.RoleDefinitionExtended.templateId
             DirectMember             = $true
             Recommendations          = 'Check if the user has alternate email or alternate phone number on Microsoft Entra ID'
+        }
+
+        if ($object.PrincipalType -eq 'servicePrincipal') {
+            $object.Recommendations = 'Verify who is the owner of this resource'
         }
 
         $rolesMembersArray.Add($object)
@@ -214,16 +319,24 @@ function Get-MgRoleReport {
                 }
 
                 $object = [PSCustomObject][ordered]@{
-                    Principal            = $member.AdditionalProperties.userPrincipalName
-                    PrincipalDisplayName = $member.AdditionalProperties.displayName
-                    PrincipalType        = $memberType
-                    AssignedRole         = $assignment.RoleDefinitionExtended.displayName
-                    AssignedRoleScope    = $assignment.directoryScopeId
-                    AssignmentType       = if ($assignment.status -eq 'Provisioned') { 'Eligible' } else { 'Permanent' }
-                    RoleIsBuiltIn        = $assignment.RoleDefinitionExtended.isBuiltIn
-                    RoleTemplate         = $assignment.RoleDefinitionExtended.templateId
-                    DirectMember         = $false
+                    Principal                = $member.AdditionalProperties.userPrincipalName
+                    PrincipalDisplayName     = $member.AdditionalProperties.displayName
+                    PrincipalType            = $memberType
+                    PrincipalObjectID        = $member.Id
+                    AssignedRole             = $assignment.RoleDefinitionExtended.displayName
+                    AssignedRoleDefinitionId = $assignment.RoleDefinitionId
+                    AssignedRoleScope        = $assignment.directoryScopeId
+                    AssignedRoleScopeType    = $scopeType
+                    AssignedRoleScopeName    = $scopeName
+                    AssignmentType           = if ($assignment.status -eq 'Provisioned') { 'Eligible' } else { 'Permanent' }
+                    RoleIsBuiltIn            = $assignment.RoleDefinitionExtended.isBuiltIn
+                    RoleTemplate             = $assignment.RoleDefinitionExtended.templateId
+                    DirectMember             = $false
                     Recommendations      = 'Check if the user has alternate email or alternate phone number on Microsoft Entra ID'
+                }
+
+                if ($object.PrincipalType -eq 'servicePrincipal') {
+                    $object.Recommendations = 'Verify who is the owner of this resource'
                 }
 
                 $rolesMembersArray.Add($object)
@@ -232,17 +345,19 @@ function Get-MgRoleReport {
     }
 
     $object = [PSCustomObject] [ordered]@{
-        Principal            = 'Partners'
-        PrincipalDisplayName = 'Partners'
-        PrincipalType        = 'Partners'
-        AssignedRole         = 'Partners'
-        AssignedRoleScope    = 'Partners'
-        AssignmentType       = 'Partners'
-        RoleIsBuiltIn        = 'Not applicable'
-        RoleTemplate         = 'Not applicable'
-        DirectMember         = 'Not applicable'
-        Recommendations      = 'Please check this URL to identify if you have partner with admin roles https: / / admin.microsoft.com / AdminPortal / Home#/partners. More information on https://practical365.com/identifying-potential-unwanted-access-by-your-msp-csp-reseller/'
-    }    
+        Principal             = 'Partners'
+        PrincipalDisplayName  = 'Partners'
+        PrincipalType         = 'Partners'
+        AssignedRole          = 'Partners'
+        AssignedRoleScope     = 'Partners'
+        AssignedRoleScopeType = 'Partners'
+        AssignedRoleScopeName = 'Partners'
+        AssignmentType        = 'Partners'
+        RoleIsBuiltIn         = 'Not applicable'
+        RoleTemplate          = 'Not applicable'
+        DirectMember          = 'Not applicable'
+        Recommendations       = 'Please check this URL to identify if you have partner with admin roles https: / / admin.microsoft.com / AdminPortal / Home#/partners. More information on https://practical365.com/identifying-potential-unwanted-access-by-your-msp-csp-reseller/'
+    }
     
     $rolesMembersArray.Add($object)
 
@@ -276,7 +391,7 @@ function Get-MgRoleReport {
     }
 
     foreach ($member in $rolesMembersArray) {
-        Write-Verbose "Processing $($member.AssignedRole) - $($member.AssignedRole)"
+        Write-Verbose "Processing $($member.AssignedRole) - $($member.Principal)"
 
         $lastSignInDateTime = $null
         $accountEnabled = $null
@@ -349,7 +464,7 @@ function Get-MgRoleReport {
         $member | Add-Member -MemberType NoteProperty -Name 'LastSignInDateTime' -Value $lastSignInDateTime
         $member | Add-Member -MemberType NoteProperty -Name 'LastNonInteractiveSignInDateTime' -Value $lastNonInteractiveSignInDateTime
         $member | Add-Member -MemberType NoteProperty -Name 'AccountEnabled' -Value $accountEnabled
-        $member | Add-Member -MemberType NoteProperty -Name 'OnPremisesSyncEnabled' -Value $onPremisesSyncEnabled
+        $member | Add-Member -MemberType NoteProperty -Name 'OnPremisesSyncEnabled' -Value $onPremisesSyncEnabled -Force
 
         if ($onPremisesSyncEnabled) {
             $member.Recommendations += ' | Privileged accounts should be cloud-only.'
@@ -371,13 +486,16 @@ function Get-MgRoleReport {
             $emptyRoles = $mgRolesDefinition | Where-Object { $mgRolesArrayAssignment.RoleDefinitionId -notcontains $_.id }
 
             foreach ($emptyRole in $emptyRoles) {
-                $object = [PSCustomObject][ordered]@{    
+                $object = [PSCustomObject][ordered]@{
                     Principal                        = 'Role has no members'
                     PrincipalDisplayName             = $null
                     PrincipalType                    = $null
                     PrincipalObjectID                = $null
                     AssignedRole                     = $emptyRole.displayName
+                    AssignedRoleDefinitionId         = $emptyRole.id
                     AssignedRoleScope                = $null
+                    AssignedRoleScopeType            = $null
+                    AssignedRoleScopeName            = $null
                     AssignmentType                   = $null
                     RoleIsBuiltIn                    = $emptyRole.isBuiltIn
                     RoleTemplate                     = $emptyRole.templateId
@@ -396,6 +514,21 @@ function Get-MgRoleReport {
             Write-Warning $($_.Exception.Message)   
         }   
 
+    }
+
+    # Apply optional filters on the final result set
+    if ($Identity -or $PrincipalID -or $PrincipalDisplayName -or $Scope) {
+        $rolesMembersArray = $rolesMembersArray | Where-Object {
+            (-not $Identity             -or $_.AssignedRole -eq $Identity -or $_.AssignedRoleDefinitionId -eq $Identity) -and
+            (-not $PrincipalID          -or $_.Principal -eq $PrincipalID -or $_.PrincipalObjectID -eq $PrincipalID) -and
+            (-not $PrincipalDisplayName -or $_.PrincipalDisplayName -eq $PrincipalDisplayName) -and
+            (-not $Scope                -or $_.AssignedRoleScope -eq $Scope)
+        }
+
+        if (-not $rolesMembersArray) {
+            Write-Warning 'No role assignment found matching the specified filter(s).'
+            return
+        }
     }
 
     if ($ExportToExcel.IsPresent) {

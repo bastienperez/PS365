@@ -9,8 +9,9 @@ Get-MgRoleReport.ps1 - Reports on Microsoft Entra ID (Azure AD) roles
 ## SYNTAX
 
 ```powershell
-Get-MgRoleReport [-IncludeEmptyRoles] [[-IncludePIMEligibleAssignments] <Boolean>] [-ForceNewToken]
- [-MaesterMode] [-ExportToExcel] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+Get-MgRoleReport [[-Identity] <String>] [[-PrincipalID] <String>] [[-PrincipalDisplayName] <String>]
+ [[-Scope] <String>] [-IncludeEmptyRoles] [-ExcludePIMEligibleAssignments] [-ForceNewToken] [-MaesterMode]
+ [-ExportToExcel] [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -31,26 +32,134 @@ Get all the roles with members, including PIM eligible assignments but without e
 ### EXAMPLE 2
 
 ```powershell
+Get-MgRoleReport -Identity 'Global Administrator'
+```
+
+Returns only the assignments of the Global Administrator role (filter accepts both role name and roleDefinitionId).
+
+### EXAMPLE 3
+
+```powershell
+Get-MgRoleReport -PrincipalID 'alice@contoso.com'
+```
+
+Returns only the role assignments of alice@contoso.com (direct or via group membership).
+
+### EXAMPLE 4
+
+```powershell
+Get-MgRoleReport -PrincipalID '11111111-2222-3333-4444-555555555555'
+```
+
+Returns only the role assignments for the principal matching this ObjectId or AppId.
+
+### EXAMPLE 5
+
+```powershell
+Get-MgRoleReport -PrincipalDisplayName 'Alice Doe'
+```
+
+Returns only the role assignments for the principal whose DisplayName is 'Alice Doe'.
+
+### EXAMPLE 6
+
+```powershell
+Get-MgRoleReport -Scope '/'
+```
+
+Returns only the role assignments at tenant scope.
+
+### EXAMPLE 7
+
+```powershell
 Get-MgRoleReport -IncludeEmptyRoles
 ```
 
 Get all the roles, including the ones without members
 
-### EXAMPLE 3
+### EXAMPLE 8
 
 ```powershell
-Get-MgRoleReport -IncludePIMEligibleAssignments $false
+Get-MgRoleReport -ExcludePIMEligibleAssignments
 ```
 
 Get all the roles with members (without empty roles), but without PIM eligible assignments
 
-### EXAMPLE 4
+### EXAMPLE 9
 
 ```powershell
 Get-MgRoleReport | Export-CSV -NoTypeInformation "$(Get-Date -Format yyyyMMdd)_adminRoles.csv" -Encoding UTF8
 ```
 
 ## PARAMETERS
+
+### -Identity
+
+Filter the report on a specific role.
+Accepts the role display name (e.g.
+'Global Administrator') or the role definition Id (GUID).
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PrincipalID
+
+Filter the report on a specific principal.
+Accepts the UPN (user), AppId (service principal) or ObjectId.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 2
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PrincipalDisplayName
+
+Filter the report on a specific principal display name (exact match, case-insensitive).
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 3
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Scope
+
+Filter the report on the assignment scope (AssignedRoleScope / directoryScopeId).
+Examples: '/' (tenant-wide), '/administrativeUnits/&lt;id&gt;' (AU-scoped), or any resource scope.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 4
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
 
 ### -IncludeEmptyRoles
 
@@ -68,19 +177,19 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -IncludePIMEligibleAssignments
+### -ExcludePIMEligibleAssignments
 
-Boolean parameter to include PIM eligible assignments in the report.
-Default is $true
+Switch parameter to exclude PIM eligible assignments from the report.
+Default is $false (includes them)
 
 ```yaml
-Type: Boolean
+Type: SwitchParameter
 Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 1
-Default value: True
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
