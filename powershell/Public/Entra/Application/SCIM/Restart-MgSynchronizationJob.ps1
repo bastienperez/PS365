@@ -100,6 +100,8 @@
     (equivalent to QuarantineState + Watermark + Escrows with no explicit criteria body).
 
     .NOTES
+    In the logs, you can filter on `configurationCategory`: `ProvisioningManagement` and `Activity Type`: `Enable/restart provisioning`.
+
     Required Microsoft Graph permissions:
     - Application.Read.All
     - Synchronization.ReadWrite.All
@@ -109,6 +111,8 @@
     - Microsoft.Graph.Applications
 
     API version used: v1.0
+
+    In the log, you can configurationCategory: ProvisioningManagement and Activity Type: Enable/restart provisioning/
 
     .LINK
     https://learn.microsoft.com/en-us/graph/api/synchronization-synchronizationjob-restart
@@ -157,6 +161,24 @@ function Restart-MgSynchronizationJob {
         [string]$ResetScope = 'Escrows'
     )
 
+    # In Azure Automation, Write-Host colors are useless and Write-Output is the conventional stream for status messages.
+    function Write-StatusMessage {
+        param(
+            [Parameter(Mandatory = $true, Position = 0)]
+            [string]$Message,
+
+            [Parameter(Mandatory = $false, Position = 1)]
+            [string]$Color = 'Cyan'
+        )
+
+        if ($RunFromAzureAutomation) {
+            Write-Output $Message
+        }
+        else {
+            Write-Host $Message -ForegroundColor $Color
+        }
+    }
+
     # --- ResetScope / RunFromAzureAutomation compatibility check ---
     if ($RunFromAzureAutomation -and [string]::IsNullOrWhiteSpace($ResetScope)) {
         Write-Error "When using -RunFromAzureAutomation, -ResetScope cannot be empty. The portal default relies on delegated permissions unavailable with Managed Identity. Specify an explicit value (e.g. 'Escrows', 'Full')."
@@ -166,7 +188,7 @@ function Restart-MgSynchronizationJob {
     # --- Authentication ---
     if ($ForceNewToken) {
         if (Get-MgContext -ErrorAction SilentlyContinue) {
-            Write-Host '[i] Existing Microsoft Graph connection detected. Disconnecting to force new token...' -ForegroundColor Yellow
+            Write-StatusMessage '[i] Existing Microsoft Graph connection detected. Disconnecting to force new token...' 'Yellow'
             $null = Disconnect-MgGraph
         }
     }
@@ -280,13 +302,13 @@ function Restart-MgSynchronizationJob {
         }
     }
 
-    Write-Host "[i] $($servicePrincipals.Count) service principal(s) resolved." -ForegroundColor Cyan
+    Write-StatusMessage "[i] $($servicePrincipals.Count) service principal(s) resolved." 'Cyan'
 
     # --- Collect synchronization jobs ---
     [System.Collections.Generic.List[PSCustomObject]]$allSyncJobs = @()
 
     foreach ($sp in $servicePrincipals) {
-        Write-Host "[...] Retrieving sync jobs for: $($sp.DisplayName)" -ForegroundColor Cyan
+        Write-StatusMessage "[...] Retrieving sync jobs for: $($sp.DisplayName)" 'Cyan'
 
         $jobsResponse = Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/servicePrincipals/$($sp.Id)/synchronization/jobs" -OutputType PSObject
         $syncJobs = if ($jobsResponse.Value) { $jobsResponse.Value } else { @() }
@@ -311,7 +333,7 @@ function Restart-MgSynchronizationJob {
     }
 
     if ($allSyncJobs.Count -eq 0) {
-        Write-Host '[i] No synchronization jobs to restart.' -ForegroundColor Yellow
+        Write-StatusMessage '[i] No synchronization jobs to restart.' 'Yellow'
         return
     }
 
@@ -321,7 +343,7 @@ function Restart-MgSynchronizationJob {
     foreach ($job in $allSyncJobs) {
         $jobsToRestart.Add($job)
     }
-    Write-Host "[i] Restarting all $($jobsToRestart.Count) synchronization job(s)..." -ForegroundColor Yellow
+    Write-StatusMessage "[i] Restarting all $($jobsToRestart.Count) synchronization job(s)..." 'Yellow'
 
     # --- Restart jobs ---
     $successCount = 0
@@ -330,31 +352,40 @@ function Restart-MgSynchronizationJob {
     foreach ($job in $jobsToRestart) {
         $restartUri = "https://graph.microsoft.com/v1.0/servicePrincipals/$($job.ServicePrincipalId)/synchronization/jobs/$($job.SyncJobId)/restart"
         Write-Verbose "POST $restartUri"
-        Write-Host "[...] Restarting: $($job.ServicePrincipalName) / $($job.SyncJobId)" -ForegroundColor Cyan
+        Write-StatusMessage "[...] Restarting: $($job.ServicePrincipalName) / $($job.SyncJobId)" 'Cyan'
 
         if ($PSCmdlet.ShouldProcess("$($job.ServicePrincipalName) / $($job.SyncJobId)", 'Restart synchronization job')) {
-            $restartBody = if ([string]::IsNullOrWhiteSpace($ResetScope)) {
-                @{ criteria = @{} }
+            # Build request body based on ResetScope parameter
+            $body = @{ criteria = @{} }
+            if (-not [string]::IsNullOrWhiteSpace($ResetScope)) {
+                $body.criteria.resetScope = $ResetScope
             }
-            else {
-                @{ criteria = @{ resetScope = $ResetScope } }
-            }
-            $restartBodyJson = $restartBody | ConvertTo-Json -Depth 3 -Compress
+            
+            $restartBodyJson = $body | ConvertTo-Json -Depth 3 -Compress
             Write-Verbose "  Request body: $restartBodyJson"
 
             try {
-                $null = Invoke-MgGraphRequest -Method POST -Uri $restartUri -Body $restartBodyJson -ContentType 'application/json'
+                $statusCode = $null
+                $null = Invoke-MgGraphRequest -Method POST -Uri $restartUri -Body $restartBodyJson -ContentType 'application/json' -ErrorAction Stop -StatusCodeVariable statusCode -Verbose
                 $scopeLabel = if ([string]::IsNullOrWhiteSpace($ResetScope)) { '(portal default)' } else { $ResetScope }
-                Write-Host "  [OK] Restart initiated successfully. (ResetScope: $scopeLabel)" -ForegroundColor Green
-                $successCount++
+
+                # A successful restart returns HTTP 204 No Content (empty body).
+                if ($statusCode -eq 204) {
+                    Write-StatusMessage "  [OK] Restart initiated successfully. (ResetScope: $scopeLabel)" 'Green'
+                    $successCount++
+                }
+                else {
+                    Write-StatusMessage "  [X] Unexpected response: HTTP $statusCode (expected 204 No Content). (ResetScope: $scopeLabel)" 'Red'
+                    $failureCount++
+                }
             }
             catch {
-                Write-Host "  [X] Restart failed: $($_.Exception.Message)" -ForegroundColor Red
+                Write-StatusMessage "  [X] Restart failed: $($_.Exception.Message)" 'Red'
                 $failureCount++
             }
         }
     }
 
-    Write-Host "[i] Done. Success: $successCount | Failed: $failureCount" -ForegroundColor Cyan
+    Write-StatusMessage "[i] Done. Success: $successCount | Failed: $failureCount" 'Cyan'
     return
 }
