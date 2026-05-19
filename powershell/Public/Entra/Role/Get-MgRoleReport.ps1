@@ -280,6 +280,7 @@ function Get-MgRoleReport {
             AssignedRoleScopeName    = $scopeName
             AssignmentType           = if ($assignment.status -eq 'Provisioned') { 'Eligible' } else { 'Permanent' }
             RoleIsBuiltIn            = $assignment.RoleDefinitionExtended.isBuiltIn
+            RoleType                 = if ($assignment.RoleDefinitionExtended.isBuiltIn) { 'Built-in' } else { 'Custom' }
             RoleTemplate             = $assignment.RoleDefinitionExtended.templateId
             DirectMember             = $true
             Recommendations          = 'Check if the user has alternate email or alternate phone number on Microsoft Entra ID'
@@ -330,6 +331,7 @@ function Get-MgRoleReport {
                     AssignedRoleScopeName    = $scopeName
                     AssignmentType           = if ($assignment.status -eq 'Provisioned') { 'Eligible' } else { 'Permanent' }
                     RoleIsBuiltIn            = $assignment.RoleDefinitionExtended.isBuiltIn
+                    RoleType                 = if ($assignment.RoleDefinitionExtended.isBuiltIn) { 'Built-in' } else { 'Custom' }
                     RoleTemplate             = $assignment.RoleDefinitionExtended.templateId
                     DirectMember             = $false
                     Recommendations      = 'Check if the user has alternate email or alternate phone number on Microsoft Entra ID'
@@ -354,6 +356,7 @@ function Get-MgRoleReport {
         AssignedRoleScopeName = 'Partners'
         AssignmentType        = 'Partners'
         RoleIsBuiltIn         = 'Not applicable'
+        RoleType              = 'Not applicable'
         RoleTemplate          = 'Not applicable'
         DirectMember          = 'Not applicable'
         Recommendations       = 'Please check this URL to identify if you have partner with admin roles https: / / admin.microsoft.com / AdminPortal / Home#/partners. More information on https://practical365.com/identifying-potential-unwanted-access-by-your-msp-csp-reseller/'
@@ -498,6 +501,7 @@ function Get-MgRoleReport {
                     AssignedRoleScopeName            = $null
                     AssignmentType                   = $null
                     RoleIsBuiltIn                    = $emptyRole.isBuiltIn
+                    RoleType                         = if ($emptyRole.isBuiltIn) { 'Built-in' } else { 'Custom' }
                     RoleTemplate                     = $emptyRole.templateId
                     DirectMember                     = $null
                     Recommendations                  = $null
