@@ -300,6 +300,7 @@ function Get-MgApplicationSCIM {
         else {
             Write-Host "$($servicePrincipal.DisplayName) - No synchronization job found" -ForegroundColor Yellow
 
+            <#
             # No sync job: add a fallback row so the service principal always appears in the output
             $fallbackJob = [PSCustomObject][ordered]@{
                 DisplayName       = $servicePrincipal.DisplayName
@@ -307,7 +308,9 @@ function Get-MgApplicationSCIM {
                 EntraUrl          = "https://entra.microsoft.com/#view/Microsoft_AAD_IAM/ManagedAppMenuBlade/~/ProvisioningActivity/objectId/$($servicePrincipal.Id)"
                 StatusCode        = '-'
             }
+
             $synchronizationJobsDetailsArray.Add($fallbackJob)
+            #>
         }
     }
 
