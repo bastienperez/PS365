@@ -9,8 +9,14 @@
     Give information about assigned users, groups, or service principals and if the group is protected/static/dynamic.
     
     .PARAMETER ApplicationId
-    (Optional) One or more Application IDs to filter the results. If not provided, all
+    (Optional) One or more Application IDs (AppId) to filter the results. If not provided, all
     applications will be processed.
+
+    .PARAMETER ObjectID
+    (Optional) ObjectID (GUID) of a single service principal to target. Cannot be combined with -ApplicationId or -DisplayName.
+
+    .PARAMETER DisplayName
+    (Optional) Display name of a single service principal to target (exact match, with fallback on trimmed comparison). Cannot be combined with -ApplicationId or -ObjectID.
 
     .PARAMETER AllApplications
     (Optional) If specified, retrieves all service principals regardless of type.
@@ -36,6 +42,16 @@
     Get-MgApplicationAssignment -ApplicationId "xxx", "yyy"
 
     Retrieves assignment types for the specified application IDs.
+
+    .EXAMPLE
+    Get-MgApplicationAssignment -ObjectID '11111111-2222-3333-4444-555555555555'
+
+    Retrieves assignment types for the service principal matching this ObjectID.
+
+    .EXAMPLE
+    Get-MgApplicationAssignment -DisplayName 'My SAML App'
+
+    Retrieves assignment types for the service principal matching this DisplayName.
     
     .EXAMPLE
     Get-MgApplicationAssignment -AssignmentEmpty
@@ -52,11 +68,18 @@
 #>
     
 function Get-MgApplicationAssignment {
+    [CmdletBinding(DefaultParameterSetName = 'All')]
     param(
-        [Parameter(Mandatory = $false, Position = 0)]
+        [Parameter(Mandatory = $false, Position = 0, ParameterSetName = 'ByApplicationId')]
         [String[]]$ApplicationId,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'ByObjectId')]
+        [string]$ObjectID,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'ByDisplayName')]
+        [string]$DisplayName,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'All')]
         [switch]$AllApplications,
 
         [Parameter(Mandatory = $false)]
@@ -72,27 +95,59 @@ function Get-MgApplicationAssignment {
     $spProperty = 'Id,AppId,DisplayName,AppRoles,AppRoleAssignmentRequired,PublisherName,Tags,ServicePrincipalType,CreatedDateTime'
 
     # Get all service principals (enterprise applications)
-    if ($ApplicationId) {
-        $servicePrincipals = @()
-        foreach ($appId in $ApplicationId) {
-            try {
-                $sp = Get-MgServicePrincipal -Filter "AppId eq '$appId'" -Property $spProperty -ErrorAction Stop
-                if ($sp) {
-                    $servicePrincipals += $sp
+    switch ($PSCmdlet.ParameterSetName) {
+        'ByApplicationId' {
+            $servicePrincipals = @()
+            foreach ($appId in $ApplicationId) {
+                try {
+                    $sp = Get-MgServicePrincipal -Filter "AppId eq '$appId'" -Property $spProperty -ErrorAction Stop
+                    if ($sp) {
+                        $servicePrincipals += $sp
+                    }
+                }
+                catch {
+                    Write-Warning "Could not find application with ID: $appId"
                 }
             }
+        }
+        'ByObjectId' {
+            try {
+                $servicePrincipals = @(Get-MgServicePrincipal -ServicePrincipalId $ObjectID -Property $spProperty -ErrorAction Stop)
+            }
             catch {
-                Write-Warning "Could not find application with ID: $appId"
+                Write-Warning "Could not find service principal with ObjectID: $ObjectID"
+                return
             }
         }
-    }
-    elseif ($AllApplications) {
-        $servicePrincipals = Get-MgServicePrincipal -All -Property $spProperty
-    }
-    else {
-        # Default: Enterprise Applications only (tagged 'WindowsAzureActiveDirectoryIntegratedApp')
-        $servicePrincipals = Get-MgServicePrincipal -All -Property $spProperty `
-            -Filter "tags/Any(x: x eq 'WindowsAzureActiveDirectoryIntegratedApp')"
+        'ByDisplayName' {
+            $escaped = $DisplayName -replace "'", "''"
+            $filter = "DisplayName eq '$escaped'"
+            Write-Verbose "Filtering service principals with: $filter"
+            $servicePrincipals = @(Get-MgServicePrincipal -Filter $filter -All -Property $spProperty)
+
+            # Fallback: trimmed display name comparison if no exact match
+            if (-not $servicePrincipals) {
+                Write-Verbose "No exact match for '$DisplayName'. Searching with startswith and trimmed client-side comparison."
+                $startsWithFilter = "startswith(DisplayName, '$escaped')"
+                $candidates = Get-MgServicePrincipal -Filter $startsWithFilter -All -Property $spProperty
+                $servicePrincipals = @($candidates | Where-Object { $_.DisplayName.Trim() -eq $DisplayName.Trim() })
+            }
+
+            if (-not $servicePrincipals) {
+                Write-Warning "No service principal found matching DisplayName '$DisplayName'."
+                return
+            }
+        }
+        default {
+            if ($AllApplications) {
+                $servicePrincipals = Get-MgServicePrincipal -All -Property $spProperty
+            }
+            else {
+                # Default: Enterprise Applications only (tagged 'WindowsAzureActiveDirectoryIntegratedApp')
+                $servicePrincipals = Get-MgServicePrincipal -All -Property $spProperty `
+                    -Filter "tags/Any(x: x eq 'WindowsAzureActiveDirectoryIntegratedApp')"
+            }
+        }
     }
     
     # Initialize results array

@@ -8,9 +8,32 @@ Retrieves all Entra ID applications and their assignment types.
 
 ## SYNTAX
 
+### All (Default)
+
 ```powershell
-Get-MgApplicationAssignment [[-ApplicationId] <String[]>] [-AllApplications] [-AssignmentNotEnforced]
- [-AssignmentEmpty] [-ExportToExcel] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+Get-MgApplicationAssignment [-AllApplications] [-AssignmentNotEnforced] [-AssignmentEmpty] [-ExportToExcel]
+ [-ProgressAction <ActionPreference>] [<CommonParameters>]
+```
+
+### ByApplicationId
+
+```powershell
+Get-MgApplicationAssignment [[-ApplicationId] <String[]>] [-AssignmentNotEnforced] [-AssignmentEmpty]
+ [-ExportToExcel] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+```
+
+### ByObjectId
+
+```powershell
+Get-MgApplicationAssignment [-ObjectID <String>] [-AssignmentNotEnforced] [-AssignmentEmpty] [-ExportToExcel]
+ [-ProgressAction <ActionPreference>] [<CommonParameters>]
+```
+
+### ByDisplayName
+
+```powershell
+Get-MgApplicationAssignment [-DisplayName <String>] [-AssignmentNotEnforced] [-AssignmentEmpty]
+ [-ExportToExcel] [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -41,12 +64,28 @@ Retrieves assignment types for the specified application IDs.
 ### EXAMPLE 3
 
 ```powershell
+Get-MgApplicationAssignment -ObjectID '11111111-2222-3333-4444-555555555555'
+```
+
+Retrieves assignment types for the service principal matching this ObjectID.
+
+### EXAMPLE 4
+
+```powershell
+Get-MgApplicationAssignment -DisplayName 'My SAML App'
+```
+
+Retrieves assignment types for the service principal matching this DisplayName.
+
+### EXAMPLE 5
+
+```powershell
 Get-MgApplicationAssignment -AssignmentEmpty
 ```
 
 Retrieves only applications with no specific user/group/service principal assignments.
 
-### EXAMPLE 4
+### EXAMPLE 6
 
 ```powershell
 Get-MgApplicationAssignment -ExportToExcel
@@ -58,17 +97,51 @@ Gets all applications and exports them to an Excel file
 
 ### -ApplicationId
 
-(Optional) One or more Application IDs to filter the results.
+(Optional) One or more Application IDs (AppId) to filter the results.
 If not provided, all
 applications will be processed.
 
 ```yaml
 Type: String[]
-Parameter Sets: (All)
+Parameter Sets: ByApplicationId
 Aliases:
 
 Required: False
 Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ObjectID
+
+(Optional) ObjectID (GUID) of a single service principal to target.
+Cannot be combined with -ApplicationId or -DisplayName.
+
+```yaml
+Type: String
+Parameter Sets: ByObjectId
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DisplayName
+
+(Optional) Display name of a single service principal to target (exact match, with fallback on trimmed comparison).
+Cannot be combined with -ApplicationId or -ObjectID.
+
+```yaml
+Type: String
+Parameter Sets: ByDisplayName
+Aliases:
+
+Required: False
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -81,7 +154,7 @@ By default, only Enterprise Applications (tagged 'WindowsAzureActiveDirectoryInt
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: (All)
+Parameter Sets: All
 Aliases:
 
 Required: False
