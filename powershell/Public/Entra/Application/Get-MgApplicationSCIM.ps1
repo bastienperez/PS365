@@ -42,12 +42,12 @@
     .PARAMETER NotificationSender
     (Required when RunFromAzureAutomation is enabled) Email address of the sender for synchronization health notifications.
 
-    .PARAMETER Parallel
-    (Optional) Scans service principals in parallel to speed up discovery on large tenants.
-    Requires PowerShell 7 or later (uses ForEach-Object -Parallel). Ignored/blocked on PowerShell 5.1.
+    .PARAMETER DisableParallel
+    (Optional) Forces sequential processing. By default, on PowerShell 7+ the function scans service principals in
+    parallel (ForEach-Object -Parallel) to speed up discovery; on PowerShell 5.1 it always runs sequentially.
 
     .PARAMETER ThrottleLimit
-    (Optional) Maximum number of concurrent runspaces when -Parallel is used. Default is 5.
+    (Optional) Maximum number of concurrent runspaces when running in parallel. Default is 5.
     Keep this value moderate to avoid Microsoft Graph throttling (HTTP 429).
 
     .PARAMETER EntraCloudSync
@@ -62,9 +62,9 @@
     Retrieves all Entra ID applications with SCIM provisioning enabled.
 
     .EXAMPLE
-    Get-MgApplicationSCIM -Parallel -ThrottleLimit 8
+    Get-MgApplicationSCIM -DisableParallel
 
-    Scans service principals in parallel (8 concurrent runspaces) to speed up discovery. Requires PowerShell 7+.
+    Forces sequential processing even on PowerShell 7+ (useful for debugging or to avoid concurrent Graph calls).
 
     .EXAMPLE
     Get-MgApplicationSCIM -EntraCloudSync
@@ -147,7 +147,7 @@ function Get-MgApplicationSCIM {
         [string]$NotificationSender,
 
         [Parameter(Mandatory = $false)]
-        [switch]$Parallel,
+        [switch]$DisableParallel,
 
         [Parameter(Mandatory = $false)]
         [ValidateRange(1, 20)]
@@ -161,11 +161,8 @@ function Get-MgApplicationSCIM {
     $cloudSyncTemplateIds = @('AD2AADProvisioning', 'AD2AADPasswordHash')
     $templateFilter = if ($EntraCloudSync) { $cloudSyncTemplateIds } else { $null }
 
-    # -Parallel relies on ForEach-Object -Parallel, available only in PowerShell 7+
-    if ($Parallel -and $PSVersionTable.PSVersion.Major -lt 7) {
-        Write-Error "-Parallel requires PowerShell 7 or later. Current version: $($PSVersionTable.PSVersion). Run without -Parallel or upgrade to PowerShell 7."
-        return
-    }
+    # Run in parallel by default on PowerShell 7+ (ForEach-Object -Parallel); always sequential on PowerShell 5.1.
+    $useParallel = ($PSVersionTable.PSVersion.Major -ge 7) -and -not $DisableParallel
 
     # Validate notification parameters
     if ($RunFromAzureAutomation.IsPresent) {
@@ -349,8 +346,8 @@ function Get-MgApplicationSCIM {
         }
     }
 
-    if ($Parallel) {
-        Write-Host "Scanning service principals in parallel (ThrottleLimit: $ThrottleLimit)..." -ForegroundColor Cyan
+    if ($useParallel) {
+        Write-Verbose "Scanning service principals in parallel (ThrottleLimit: $ThrottleLimit)..."
         # ForEach-Object -Parallel runs in separate runspaces of the same process; the Microsoft.Graph
         # auth session is process-wide, but the cmdlet modules must be imported in each runspace.
         # The scriptblock is passed as text and rebuilt to avoid runspace affinity issues.
@@ -834,7 +831,7 @@ function Get-MgApplicationSCIM {
     <div class="footer">
         $(if ($unhealthyJobs.Count -gt 0) { '<p class="action-required">Action Required:</p><p>Please review these SCIM provisioning jobs to avoid user provisioning disruptions.</p>' } else { '<p>No action required. All provisioning jobs are running as expected.</p>' })
         <hr style="border: none; border-top: 1px solid #d2d0ce; margin: 15px 0;">
-        <p><em>Generated on $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') by Get-MgApplicationSCIM v0.1.3</em></p>
+        <p><em>Generated on $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') by Get-MgApplicationSCIM v0.1.9</em></p>
     </div>
 </body>
 </html>

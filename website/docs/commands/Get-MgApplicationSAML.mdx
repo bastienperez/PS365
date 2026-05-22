@@ -13,7 +13,8 @@ Retrieves all Entra ID applications configured for SAML SSO.
 ```powershell
 Get-MgApplicationSAML [-ForceNewToken] [-ExportToExcel] [-RunFromAzureAutomation]
  [-ExpirationThresholdDays <Int32>] [-NotificationRecipient <String>] [-NotificationSender <String>]
- [-IncludeSignInStats] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+ [-IncludeSignInStats] [-DisableParallel] [-ThrottleLimit <Int32>] [-ProgressAction <ActionPreference>]
+ [<CommonParameters>]
 ```
 
 ### ByObjectId
@@ -21,7 +22,8 @@ Get-MgApplicationSAML [-ForceNewToken] [-ExportToExcel] [-RunFromAzureAutomation
 ```powershell
 Get-MgApplicationSAML [-ObjectID <String>] [-ForceNewToken] [-ExportToExcel] [-RunFromAzureAutomation]
  [-ExpirationThresholdDays <Int32>] [-NotificationRecipient <String>] [-NotificationSender <String>]
- [-IncludeSignInStats] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+ [-IncludeSignInStats] [-DisableParallel] [-ThrottleLimit <Int32>] [-ProgressAction <ActionPreference>]
+ [<CommonParameters>]
 ```
 
 ### ByDisplayName
@@ -29,7 +31,8 @@ Get-MgApplicationSAML [-ObjectID <String>] [-ForceNewToken] [-ExportToExcel] [-R
 ```powershell
 Get-MgApplicationSAML [-DisplayName <String>] [-ForceNewToken] [-ExportToExcel] [-RunFromAzureAutomation]
  [-ExpirationThresholdDays <Int32>] [-NotificationRecipient <String>] [-NotificationSender <String>]
- [-IncludeSignInStats] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+ [-IncludeSignInStats] [-DisableParallel] [-ThrottleLimit <Int32>] [-ProgressAction <ActionPreference>]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -57,12 +60,20 @@ Retrieves all Entra ID applications configured for SAML SSO.
 ### EXAMPLE 2
 
 ```powershell
+Get-MgApplicationSAML -DisableParallel
+```
+
+Forces sequential processing even on PowerShell 7+ (useful for debugging or to avoid concurrent Graph calls).
+
+### EXAMPLE 3
+
+```powershell
 Get-MgApplicationSAML -IncludeSignInStats
 ```
 
 Retrieves all Entra ID applications configured for SAML SSO with sign-in statistics for the last 30 days.
 
-### EXAMPLE 3
+### EXAMPLE 4
 
 ```powershell
 Get-MgApplicationSAML -ObjectID "xxx-xxx-xxx"
@@ -70,7 +81,7 @@ Get-MgApplicationSAML -ObjectID "xxx-xxx-xxx"
 
 Retrieves the SAML configuration for a specific application by its ObjectID.
 
-### EXAMPLE 4
+### EXAMPLE 5
 
 ```powershell
 Get-MgApplicationSAML -DisplayName "My SAML App"
@@ -78,7 +89,7 @@ Get-MgApplicationSAML -DisplayName "My SAML App"
 
 Retrieves the SAML configuration for a specific application by its DisplayName.
 
-### EXAMPLE 5
+### EXAMPLE 6
 
 ```powershell
 Get-MgApplicationSAML -DisplayName "Azure*"
@@ -86,7 +97,7 @@ Get-MgApplicationSAML -DisplayName "Azure*"
 
 Retrieves the SAML configuration for all applications whose DisplayName starts with "Azure".
 
-### EXAMPLE 6
+### EXAMPLE 7
 
 ```powershell
 Get-MgApplicationSAML -DisplayName "*Portal*"
@@ -94,7 +105,7 @@ Get-MgApplicationSAML -DisplayName "*Portal*"
 
 Retrieves the SAML configuration for all applications whose DisplayName contains "Portal".
 
-### EXAMPLE 7
+### EXAMPLE 8
 
 ```powershell
 Get-MgApplicationSAML -ForceNewToken
@@ -102,7 +113,7 @@ Get-MgApplicationSAML -ForceNewToken
 
 Forces the function to disconnect and reconnect to Microsoft Graph to obtain a new access token.
 
-### EXAMPLE 8
+### EXAMPLE 9
 
 ```powershell
 Get-MgApplicationSAML -ExportToExcel
@@ -110,7 +121,7 @@ Get-MgApplicationSAML -ExportToExcel
 
 Gets all SAML applications and exports them to an Excel file.
 
-### EXAMPLE 9
+### EXAMPLE 10
 
 ```powershell
 Get-MgApplicationSAML -RunFromAzureAutomation -ExpirationThresholdDays 30 -NotificationRecipient 'admin@company.com' -NotificationSender 'automation@company.com'
@@ -118,7 +129,7 @@ Get-MgApplicationSAML -RunFromAzureAutomation -ExpirationThresholdDays 30 -Notif
 
 Gets all SAML applications using managed identity authentication and sends notification for certificates expiring within 30 days.
 
-### EXAMPLE 10
+### EXAMPLE 11
 
 ```powershell
 Get-MgApplicationSAML -RunFromAzureAutomation -ExpirationThresholdDays 7 -NotificationRecipient 'admin@company.com' -NotificationSender 'automation@company.com'
@@ -281,6 +292,42 @@ Aliases:
 Required: False
 Position: Named
 Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DisableParallel
+
+(Optional) Forces sequential processing.
+By default, on PowerShell 7+ the function processes SAML applications in
+parallel (ForEach-Object -Parallel) to speed up discovery; on PowerShell 5.1 it always runs sequentially.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ThrottleLimit
+
+(Optional) Maximum number of concurrent runspaces when running in parallel.
+Default is 5.
+Keep this value moderate to avoid Microsoft Graph throttling (HTTP 429).
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: 5
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

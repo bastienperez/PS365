@@ -12,7 +12,7 @@ Retrieves all Entra ID applications configured for SCIM provisioning.
 
 ```powershell
 Get-MgApplicationSCIM [-ExcludeAttributeMappings] [-IncludeFailedObjects] [-ForceNewToken] [-ExportToExcel]
- [-RunFromAzureAutomation] [-NotificationRecipient <String>] [-NotificationSender <String>] [-Parallel]
+ [-RunFromAzureAutomation] [-NotificationRecipient <String>] [-NotificationSender <String>] [-DisableParallel]
  [-ThrottleLimit <Int32>] [-EntraCloudSync] [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
@@ -21,7 +21,7 @@ Get-MgApplicationSCIM [-ExcludeAttributeMappings] [-IncludeFailedObjects] [-Forc
 ```powershell
 Get-MgApplicationSCIM [-ObjectID <String>] [-ExcludeAttributeMappings] [-IncludeFailedObjects] [-ForceNewToken]
  [-ExportToExcel] [-RunFromAzureAutomation] [-NotificationRecipient <String>] [-NotificationSender <String>]
- [-Parallel] [-ThrottleLimit <Int32>] [-EntraCloudSync] [-ProgressAction <ActionPreference>]
+ [-DisableParallel] [-ThrottleLimit <Int32>] [-EntraCloudSync] [-ProgressAction <ActionPreference>]
  [<CommonParameters>]
 ```
 
@@ -30,7 +30,7 @@ Get-MgApplicationSCIM [-ObjectID <String>] [-ExcludeAttributeMappings] [-Include
 ```powershell
 Get-MgApplicationSCIM [-DisplayName <String>] [-ExcludeAttributeMappings] [-IncludeFailedObjects]
  [-ForceNewToken] [-ExportToExcel] [-RunFromAzureAutomation] [-NotificationRecipient <String>]
- [-NotificationSender <String>] [-Parallel] [-ThrottleLimit <Int32>] [-EntraCloudSync]
+ [-NotificationSender <String>] [-DisableParallel] [-ThrottleLimit <Int32>] [-EntraCloudSync]
  [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
@@ -52,11 +52,10 @@ Retrieves all Entra ID applications with SCIM provisioning enabled.
 ### EXAMPLE 2
 
 ```powershell
-Get-MgApplicationSCIM -Parallel -ThrottleLimit 8
+Get-MgApplicationSCIM -DisableParallel
 ```
 
-Scans service principals in parallel (8 concurrent runspaces) to speed up discovery.
-Requires PowerShell 7+.
+Forces sequential processing even on PowerShell 7+ (useful for debugging or to avoid concurrent Graph calls).
 
 ### EXAMPLE 3
 
@@ -281,11 +280,11 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Parallel
+### -DisableParallel
 
-(Optional) Scans service principals in parallel to speed up discovery on large tenants.
-Requires PowerShell 7 or later (uses ForEach-Object -Parallel).
-Ignored/blocked on PowerShell 5.1.
+(Optional) Forces sequential processing.
+By default, on PowerShell 7+ the function scans service principals in
+parallel (ForEach-Object -Parallel) to speed up discovery; on PowerShell 5.1 it always runs sequentially.
 
 ```yaml
 Type: SwitchParameter
@@ -301,7 +300,7 @@ Accept wildcard characters: False
 
 ### -ThrottleLimit
 
-(Optional) Maximum number of concurrent runspaces when -Parallel is used.
+(Optional) Maximum number of concurrent runspaces when running in parallel.
 Default is 5.
 Keep this value moderate to avoid Microsoft Graph throttling (HTTP 429).
 

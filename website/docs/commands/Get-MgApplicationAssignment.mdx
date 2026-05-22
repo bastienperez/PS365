@@ -12,28 +12,30 @@ Retrieves all Entra ID applications and their assignment types.
 
 ```powershell
 Get-MgApplicationAssignment [-AllApplications] [-AssignmentNotEnforced] [-AssignmentEmpty] [-ExportToExcel]
- [-ProgressAction <ActionPreference>] [<CommonParameters>]
+ [-DisableParallel] [-ThrottleLimit <Int32>] [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ### ByApplicationId
 
 ```powershell
 Get-MgApplicationAssignment [[-ApplicationId] <String[]>] [-AssignmentNotEnforced] [-AssignmentEmpty]
- [-ExportToExcel] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+ [-ExportToExcel] [-DisableParallel] [-ThrottleLimit <Int32>] [-ProgressAction <ActionPreference>]
+ [<CommonParameters>]
 ```
 
 ### ByObjectId
 
 ```powershell
 Get-MgApplicationAssignment [-ObjectID <String>] [-AssignmentNotEnforced] [-AssignmentEmpty] [-ExportToExcel]
- [-ProgressAction <ActionPreference>] [<CommonParameters>]
+ [-DisableParallel] [-ThrottleLimit <Int32>] [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ### ByDisplayName
 
 ```powershell
 Get-MgApplicationAssignment [-DisplayName <String>] [-AssignmentNotEnforced] [-AssignmentEmpty]
- [-ExportToExcel] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+ [-ExportToExcel] [-DisableParallel] [-ThrottleLimit <Int32>] [-ProgressAction <ActionPreference>]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -56,12 +58,20 @@ Retrieves all applications and their assignment types.
 ### EXAMPLE 2
 
 ```powershell
+Get-MgApplicationAssignment -DisableParallel
+```
+
+Forces sequential processing even on PowerShell 7+ (useful for debugging or to avoid concurrent Graph calls).
+
+### EXAMPLE 3
+
+```powershell
 Get-MgApplicationAssignment -ApplicationId "xxx", "yyy"
 ```
 
 Retrieves assignment types for the specified application IDs.
 
-### EXAMPLE 3
+### EXAMPLE 4
 
 ```powershell
 Get-MgApplicationAssignment -ObjectID '11111111-2222-3333-4444-555555555555'
@@ -69,7 +79,7 @@ Get-MgApplicationAssignment -ObjectID '11111111-2222-3333-4444-555555555555'
 
 Retrieves assignment types for the service principal matching this ObjectID.
 
-### EXAMPLE 4
+### EXAMPLE 5
 
 ```powershell
 Get-MgApplicationAssignment -DisplayName 'My SAML App'
@@ -77,7 +87,7 @@ Get-MgApplicationAssignment -DisplayName 'My SAML App'
 
 Retrieves assignment types for the service principal matching this DisplayName.
 
-### EXAMPLE 5
+### EXAMPLE 6
 
 ```powershell
 Get-MgApplicationAssignment -AssignmentEmpty
@@ -85,7 +95,7 @@ Get-MgApplicationAssignment -AssignmentEmpty
 
 Retrieves only applications with no specific user/group/service principal assignments.
 
-### EXAMPLE 6
+### EXAMPLE 7
 
 ```powershell
 Get-MgApplicationAssignment -ExportToExcel
@@ -210,6 +220,42 @@ Aliases:
 Required: False
 Position: Named
 Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DisableParallel
+
+(Optional) Forces sequential processing.
+By default, on PowerShell 7+ the function analyzes applications in
+parallel (ForEach-Object -Parallel) to speed up processing; on PowerShell 5.1 it always runs sequentially.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ThrottleLimit
+
+(Optional) Maximum number of concurrent runspaces when running in parallel.
+Default is 5.
+Keep this value moderate to avoid Microsoft Graph throttling (HTTP 429).
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: 5
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

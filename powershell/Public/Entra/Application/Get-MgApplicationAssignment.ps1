@@ -33,10 +33,23 @@
     .PARAMETER ExportToExcel
     (Optional) If specified, exports the results to an Excel file in the user's profile directory.
 
+    .PARAMETER DisableParallel
+    (Optional) Forces sequential processing. By default, on PowerShell 7+ the function analyzes applications in
+    parallel (ForEach-Object -Parallel) to speed up processing; on PowerShell 5.1 it always runs sequentially.
+
+    .PARAMETER ThrottleLimit
+    (Optional) Maximum number of concurrent runspaces when running in parallel. Default is 5.
+    Keep this value moderate to avoid Microsoft Graph throttling (HTTP 429).
+
     .EXAMPLE
     Get-MgApplicationAssignment
 
     Retrieves all applications and their assignment types.
+
+    .EXAMPLE
+    Get-MgApplicationAssignment -DisableParallel
+
+    Forces sequential processing even on PowerShell 7+ (useful for debugging or to avoid concurrent Graph calls).
 
     .EXAMPLE
     Get-MgApplicationAssignment -ApplicationId "xxx", "yyy"
@@ -89,9 +102,19 @@ function Get-MgApplicationAssignment {
         [switch]$AssignmentEmpty,
 
         [Parameter(Mandatory = $false)]
-        [switch]$ExportToExcel
+        [switch]$ExportToExcel,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$DisableParallel,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateRange(1, 20)]
+        [int]$ThrottleLimit = 5
     )
-    
+
+    # Run in parallel by default on PowerShell 7+ (ForEach-Object -Parallel); always sequential on PowerShell 5.1.
+    $useParallel = ($PSVersionTable.PSVersion.Major -ge 7) -and -not $DisableParallel
+
     $spProperty = 'Id,AppId,DisplayName,AppRoles,AppRoleAssignmentRequired,PublisherName,Tags,ServicePrincipalType,CreatedDateTime'
 
     # Get all service principals (enterprise applications)
@@ -154,12 +177,14 @@ function Get-MgApplicationAssignment {
     [System.Collections.Generic.List[PSCustomObject]]$applicationAssignmentsArray = @()
     
     Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] Starting analysis of $($servicePrincipals.Count) applications..." -ForegroundColor Cyan
-    $counter = 0
-    
-    foreach ($sp in $servicePrincipals) {
-        $counter++
-        Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] [$counter/$($servicePrincipals.Count)] Analyzing application: $($sp.DisplayName)" -ForegroundColor Cyan
-        
+
+    # Per-service-principal processing. Emits one object per assignment (or a fallback object).
+    # Shared by the sequential and parallel paths.
+    $processSp = {
+        param($sp, $Prefix = '')
+
+        Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] ${Prefix}Analyzing application: $($sp.DisplayName)" -ForegroundColor Cyan
+
         # Get app role assignments for this service principal
         $appRoleAssignments = Get-MgServicePrincipalAppRoleAssignedTo -ServicePrincipalId $sp.Id
         
@@ -315,9 +340,8 @@ function Get-MgApplicationAssignment {
                     Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')]   -> Unhandled principal type: $($assignment.PrincipalType) (ID: $($assignment.PrincipalId))" -ForegroundColor DarkYellow
                 }
                 
-                # Create and add the assignment object
-                $object = [PSCustomObject]$assignmentProps
-                $applicationAssignmentsArray.Add($object)
+                # Emit the assignment object
+                [PSCustomObject]$assignmentProps
             }
         }
         else {
@@ -371,12 +395,37 @@ function Get-MgApplicationAssignment {
                 Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')]   -> No assignments found" -ForegroundColor Gray
             }
             
-            # Create and add the no-assignment object
-            $object = [PSCustomObject]$assignmentProps
-            $applicationAssignmentsArray.Add($object)
+            # Emit the no-assignment object
+            [PSCustomObject]$assignmentProps
         }
     }
-    
+
+    if ($useParallel) {
+        Write-Verbose "Analyzing applications in parallel (ThrottleLimit: $ThrottleLimit)..."
+        $processText = $processSp.ToString()
+        $parallelResults = $servicePrincipals | ForEach-Object -ThrottleLimit $ThrottleLimit -Parallel {
+            Import-Module Microsoft.Graph.Authentication -ErrorAction SilentlyContinue
+            Import-Module Microsoft.Graph.Applications -ErrorAction SilentlyContinue
+            Import-Module Microsoft.Graph.Users -ErrorAction SilentlyContinue
+            Import-Module Microsoft.Graph.Groups -ErrorAction SilentlyContinue
+            $sb = [scriptblock]::Create($using:processText)
+            & $sb $_
+        }
+        foreach ($result in $parallelResults) {
+            if ($result) { $applicationAssignmentsArray.Add($result) }
+        }
+    }
+    else {
+        $counter = 0
+        foreach ($sp in $servicePrincipals) {
+            $counter++
+            $results = & $processSp $sp "[$counter/$($servicePrincipals.Count)] "
+            foreach ($result in $results) {
+                if ($result) { $applicationAssignmentsArray.Add($result) }
+            }
+        }
+    }
+
     Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] Analysis completed. Total items found: $($applicationAssignmentsArray.Count)" -ForegroundColor Cyan
     
     # Apply filtering if requested

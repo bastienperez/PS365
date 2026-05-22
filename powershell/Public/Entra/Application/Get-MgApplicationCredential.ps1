@@ -39,9 +39,22 @@
     .PARAMETER NotificationSender
     (Required when RunFromAzureAutomation is enabled) Email address of the sender for expiration notifications.
 
+    .PARAMETER DisableParallel
+    (Optional) Forces sequential processing. By default, on PowerShell 7+ the function processes applications in
+    parallel (ForEach-Object -Parallel) to speed up discovery; on PowerShell 5.1 it always runs sequentially.
+
+    .PARAMETER ThrottleLimit
+    (Optional) Maximum number of concurrent runspaces when running in parallel. Default is 5.
+    Keep this value moderate to avoid Microsoft Graph throttling (HTTP 429).
+
     .EXAMPLE
     Get-MgApplicationCredential
     Retrieves all Microsoft Entra ID applications and their credentials.
+
+    .EXAMPLE
+    Get-MgApplicationCredential -DisableParallel
+
+    Forces sequential processing even on PowerShell 7+ (useful for debugging or to avoid concurrent Graph calls).
 
     .EXAMPLE
     Get-MgApplicationCredential -ObjectID "xxx-xxx-xxx"
@@ -116,8 +129,18 @@ function Get-MgApplicationCredential {
         [string]$NotificationRecipient,
 
         [Parameter(Mandatory = $false)]
-        [string]$NotificationSender
+        [string]$NotificationSender,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$DisableParallel,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateRange(1, 20)]
+        [int]$ThrottleLimit = 5
     )
+
+    # Run in parallel by default on PowerShell 7+ (ForEach-Object -Parallel); always sequential on PowerShell 5.1.
+    $useParallel = ($PSVersionTable.PSVersion.Major -ge 7) -and -not $DisableParallel
 
     # Validate notification parameters
     if ($RunFromAzureAutomation.IsPresent) {
@@ -281,7 +304,13 @@ function Get-MgApplicationCredential {
 
     Write-Host "$($mgApps.Count) application(s) found" -ForegroundColor Green
 
-    foreach ($mgApp in $mgApps) {
+    # Per-application processing. Emits one object per credential (or a fallback object).
+    # Shared by the sequential and parallel paths.
+    $processApp = {
+        param($mgApp, $Prefix = '')
+
+        Write-Host "$Prefix$($mgApp.DisplayName)" -ForegroundColor Cyan
+
         # Reset to $null before each call: prevents previous iteration's value from bleeding through on silent errors
         $ownerObjects = $null
         $ownerString = $null
@@ -304,7 +333,7 @@ function Get-MgApplicationCredential {
         }
 
         foreach ($keyCredential in $mgApp.KeyCredentials) {
-            $object = [PSCustomObject][ordered]@{
+            [PSCustomObject][ordered]@{
                 DisplayName             = $mgApp.DisplayName
                 Recommendation          = $recommendation
                 CredentialType          = 'KeyCredentials'
@@ -320,12 +349,10 @@ function Get-MgApplicationCredential {
                 Usage                   = $keyCredential.Usage
                 Owners                  = $ownerString
             }
-
-            $credentialsArray.Add($object)
         }
 
         foreach ($passwordCredential in $mgApp.PasswordCredentials) {
-            $object = [PSCustomObject][ordered]@{
+            [PSCustomObject][ordered]@{
                 DisplayName             = $mgApp.DisplayName
                 Recommendation          = $recommendation
                 CredentialType          = 'PasswordCredentials'
@@ -341,13 +368,11 @@ function Get-MgApplicationCredential {
                 Usage                   = 'NA'
                 Owners                  = $ownerString
             }
-
-            $credentialsArray.Add($object)
         }
 
         # No credentials at all: add a fallback row so the app always appears in the output
         if (-not $mgApp.KeyCredentials -and -not $mgApp.PasswordCredentials) {
-            $object = [PSCustomObject][ordered]@{
+            [PSCustomObject][ordered]@{
                 DisplayName             = $mgApp.DisplayName
                 Recommendation          = $recommendation
                 CredentialType          = '-'
@@ -362,10 +387,33 @@ function Get-MgApplicationCredential {
                 Usage                   = '-'
                 Owners                  = $ownerString
             }
-            $credentialsArray.Add($object)
         }
     }
-    
+
+    if ($useParallel) {
+        Write-Verbose "Processing applications in parallel (ThrottleLimit: $ThrottleLimit)..."
+        $processText = $processApp.ToString()
+        $parallelResults = $mgApps | ForEach-Object -ThrottleLimit $ThrottleLimit -Parallel {
+            Import-Module Microsoft.Graph.Authentication -ErrorAction SilentlyContinue
+            Import-Module Microsoft.Graph.Applications -ErrorAction SilentlyContinue
+            $sb = [scriptblock]::Create($using:processText)
+            & $sb $_
+        }
+        foreach ($result in $parallelResults) {
+            if ($result) { $credentialsArray.Add($result) }
+        }
+    }
+    else {
+        $i = 0
+        foreach ($mgApp in $mgApps) {
+            $i++
+            $results = & $processApp $mgApp "($i/$($mgApps.Count)) - "
+            foreach ($result in $results) {
+                if ($result) { $credentialsArray.Add($result) }
+            }
+        }
+    }
+
     # Check for expiring credentials and send notification if enabled
     if ($RunFromAzureAutomation.IsPresent) {
         $expiringCredentials = $credentialsArray | Where-Object { 
@@ -581,7 +629,7 @@ function Get-MgApplicationCredential {
     <div class="footer">
         $emailFooter
         <hr style="border: none; border-top: 1px solid #d2d0ce; margin: 15px 0;">
-        <p><em>Generated on $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') by Get-MgApplicationCredential v0.1.3</em></p>
+        <p><em>Generated on $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') by Get-MgApplicationCredential v0.1.9</em></p>
     </div>
 </body>
 </html>

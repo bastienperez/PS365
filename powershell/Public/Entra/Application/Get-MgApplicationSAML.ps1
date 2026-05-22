@@ -48,10 +48,23 @@
     (Optional) If specified, includes sign-in statistics for the last 30 days for each application. Requires AuditLog.Read.All permission.
     Please be advised that this process is time-consuming.
 
+    .PARAMETER DisableParallel
+    (Optional) Forces sequential processing. By default, on PowerShell 7+ the function processes SAML applications in
+    parallel (ForEach-Object -Parallel) to speed up discovery; on PowerShell 5.1 it always runs sequentially.
+
+    .PARAMETER ThrottleLimit
+    (Optional) Maximum number of concurrent runspaces when running in parallel. Default is 5.
+    Keep this value moderate to avoid Microsoft Graph throttling (HTTP 429).
+
     .EXAMPLE
     Get-MgApplicationSAML
 
     Retrieves all Entra ID applications configured for SAML SSO.
+
+    .EXAMPLE
+    Get-MgApplicationSAML -DisableParallel
+
+    Forces sequential processing even on PowerShell 7+ (useful for debugging or to avoid concurrent Graph calls).
 
     .EXAMPLE
     Get-MgApplicationSAML -IncludeSignInStats
@@ -139,8 +152,18 @@ function Get-MgApplicationSAML {
         [string]$NotificationSender,
 
         [Parameter(Mandatory = $false)]
-        [switch]$IncludeSignInStats
+        [switch]$IncludeSignInStats,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$DisableParallel,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateRange(1, 20)]
+        [int]$ThrottleLimit = 5
     )
+
+    # Run in parallel by default on PowerShell 7+ (ForEach-Object -Parallel); always sequential on PowerShell 5.1.
+    $useParallel = ($PSVersionTable.PSVersion.Major -ge 7) -and -not $DisableParallel
 
     # Validate notification parameters
     if ($RunFromAzureAutomation.IsPresent) {
@@ -328,10 +351,12 @@ function Get-MgApplicationSAML {
         Write-Host 'Retrieving sign-in statistics for each application - this may take several minutes...' -ForegroundColor Yellow
     }
 
-    $appCounter = 0
-    foreach ($samlApp in $samlApplications) {
-        $appCounter++
-        Write-Host "Processing $appCounter/$($samlApplications.Count): $($samlApp.DisplayName)" -ForegroundColor Cyan
+    # Per-application processing. Emits one object per signing certificate (or a fallback object).
+    # Shared by the sequential and parallel paths.
+    $processSamlApp = {
+        param($samlApp, $Prefix = '', $IncludeSignInStats = $false, $AuditLogPermissionMissing = $false, $SignInStartDate = $null)
+
+        Write-Host "$Prefix$($samlApp.DisplayName)" -ForegroundColor Cyan
         # Reset to $null before each call: prevents previous iteration's value from bleeding through on silent errors
         $ownerObjects = $null
         $ownerString = $null
@@ -355,12 +380,12 @@ function Get-MgApplicationSAML {
         
         # Get sign-in statistics if requested
         $signInCount = $null
-        if ($auditLogPermissionMissing) {
+        if ($AuditLogPermissionMissing) {
             $signInCount = 'N/A - AuditLog.Read.All permission missing'
         }
-        elseif ($IncludeSignInStats.IsPresent) {
+        elseif ($IncludeSignInStats) {
             try {
-                $signInFilter = "appId eq '$($samlApp.AppId)' and createdDateTime ge $signInStartDate"
+                $signInFilter = "appId eq '$($samlApp.AppId)' and createdDateTime ge $SignInStartDate"
                 Write-Verbose "Sign-in filter: $signInFilter"
                 $encodedFilter = [uri]::EscapeDataString($signInFilter)
                 $uri = "https://graph.microsoft.com/v1.0/auditLogs/signIns?`$filter=$encodedFilter&`$count=true&`$top=999"
@@ -427,11 +452,11 @@ function Get-MgApplicationSAML {
                     Owners                              = $ownerString
                 }
 
-                if ($IncludeSignInStats.IsPresent -or $auditLogPermissionMissing) {
+                if ($IncludeSignInStats -or $AuditLogPermissionMissing) {
                     $object | Add-Member -MemberType NoteProperty -Name InteractiveSignInsLast30Days -Value $signInCount
                 }
 
-                $samlApplicationsArray.Add($object)
+                $object
             }
         }
         else {
@@ -460,11 +485,36 @@ function Get-MgApplicationSAML {
                 Owners                              = $ownerString
             }
 
-            if ($IncludeSignInStats.IsPresent -or $auditLogPermissionMissing) {
+            if ($IncludeSignInStats -or $AuditLogPermissionMissing) {
                 $object | Add-Member -MemberType NoteProperty -Name InteractiveSignInsLast30Days -Value $signInCount
             }
 
-            $samlApplicationsArray.Add($object)
+            $object
+        }
+    }
+
+    if ($useParallel) {
+        Write-Verbose "Processing SAML applications in parallel (ThrottleLimit: $ThrottleLimit)..."
+        $processText = $processSamlApp.ToString()
+        $inclStats = $IncludeSignInStats.IsPresent
+        $parallelResults = $samlApplications | ForEach-Object -ThrottleLimit $ThrottleLimit -Parallel {
+            Import-Module Microsoft.Graph.Authentication -ErrorAction SilentlyContinue
+            Import-Module Microsoft.Graph.Beta.Applications -ErrorAction SilentlyContinue
+            $sb = [scriptblock]::Create($using:processText)
+            & $sb $_ '' $using:inclStats $using:auditLogPermissionMissing $using:signInStartDate
+        }
+        foreach ($result in $parallelResults) {
+            if ($result) { $samlApplicationsArray.Add($result) }
+        }
+    }
+    else {
+        $appCounter = 0
+        foreach ($samlApp in $samlApplications) {
+            $appCounter++
+            $results = & $processSamlApp $samlApp "Processing $appCounter/$($samlApplications.Count): " $IncludeSignInStats.IsPresent $auditLogPermissionMissing $signInStartDate
+            foreach ($result in $results) {
+                if ($result) { $samlApplicationsArray.Add($result) }
+            }
         }
     }
 
@@ -686,7 +736,7 @@ function Get-MgApplicationSAML {
     <div class="footer">
         $emailFooter
         <hr style="border: none; border-top: 1px solid #d2d0ce; margin: 15px 0;">
-        <p><em>Generated on $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') by Get-MgApplicationSAML v0.1.3</em></p>
+        <p><em>Generated on $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') by Get-MgApplicationSAML v0.1.9</em></p>
     </div>
 </body>
 </html>
