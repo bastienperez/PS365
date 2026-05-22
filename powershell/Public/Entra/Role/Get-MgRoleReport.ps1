@@ -23,6 +23,10 @@
     Filter the report on the assignment scope (AssignedRoleScope / directoryScopeId).
     Examples: '/' (tenant-wide), '/administrativeUnits/<id>' (AU-scoped), or any resource scope.
 
+    .PARAMETER TierLevel
+    Filter the report on a privileged role tier: '0' (control plane), '1' (service/workload admins) or '2' (lower-privilege / read-mostly).
+    Tiering is based on Sean Metcalf's (PyroTek3) classification. Regardless of this filter, every row is always annotated with a RoleTier property (Tier0/Tier1/Tier2/Untiered).
+
     .PARAMETER IncludeEmptyRoles
     Switch parameter to include empty roles in the report
 
@@ -69,6 +73,11 @@
     Returns only the role assignments at tenant scope.
 
     .EXAMPLE
+    Get-MgRoleReport -TierLevel 0
+
+    Returns only the assignments of Tier 0 (control plane) roles. Each row carries a RoleTier property.
+
+    .EXAMPLE
     Get-MgRoleReport -IncludeEmptyRoles
 
     Get all the roles, including the ones without members
@@ -107,6 +116,10 @@ function Get-MgRoleReport {
         [string]$Scope,
 
         [Parameter(Mandatory = $false)]
+        [ValidateSet('0', '1', '2')]
+        [string]$TierLevel,
+
+        [Parameter(Mandatory = $false)]
         [switch]$IncludeEmptyRoles,
 
         [Parameter(Mandatory = $false)]
@@ -127,6 +140,85 @@ function Get-MgRoleReport {
     [System.Collections.Generic.List[Object]]$objectsCacheArray = @()
     [System.Collections.Generic.List[Object]]$mgRolesArrayAssignment = @()
     $scopeTypeCache = @{}
+
+    # Privileged role tiering, inspired by Sean Metcalf's (PyroTek3) Get-EntraIDAdmins.ps1
+    # https://github.com/PyroTek3/EntraID/blob/main/Get-EntraIDAdmins.ps1
+    # Tier 0 = control plane (can compromise the whole tenant), Tier 1 = service/workload admins,
+    # Tier 2 = lower-privilege / read-mostly roles. Roles not listed are tagged 'Untiered'.
+    $tier0Roles = @(
+        'Application Administrator'
+        'Cloud Application Administrator'
+        'Conditional Access Administrator'
+        'Global Administrator'
+        'Hybrid Identity Administrator'
+        'Partner Tier2 Support'
+        'Privileged Authentication Administrator'
+        'Privileged Role Administrator'
+        'Security Administrator'
+    )
+
+    $tier1Roles = @(
+        'AI Administrator'
+        'Attribute Provisioning Administrator'
+        'Authentication Administrator'
+        'Authentication Extensibility Administrator'
+        'Authentication Policy Administrator'
+        'B2C IEF Keyset Administrator'
+        'Cloud App Security Administrator'
+        'Compliance Administrator'
+        'Directory Synchronization Accounts'
+        'Directory Writers'
+        'Domain Name Administrator'
+        'Dynamics 365 Administrator'
+        'Exchange Administrator'
+        'External ID User Flow Administrator'
+        'External Identity Provider Administrator'
+        'Global Secure Access Administrator'
+        'Groups Administrator'
+        'Helpdesk Administrator'
+        'Identity Governance Administrator'
+        'Intune Administrator'
+        'Knowledge Administrator'
+        'Lifecycle Workflows Administrator'
+        'Microsoft 365 Backup Administrator'
+        'Microsoft 365 Migration Administrator'
+        'On Premises Directory Sync Account'
+        'Partner Tier1 Support'
+        'Password Administrator'
+        'Power Platform Administrator'
+        'Security Operator'
+        'SharePoint Administrator'
+        'Skype for Business Administrator'
+        'Teams Administrator'
+        'Teams Telephony Administrator'
+        'User Administrator'
+        'Windows 365 Administrator'
+        'Yammer Administrator'
+    )
+
+    $tier2Roles = @(
+        'Application Developer'
+        'Azure DevOps Administrator'
+        'Azure Information Protection Administrator'
+        'B2C IEF Policy Administrator'
+        'Billing Administrator'
+        'Cloud Device Administrator'
+        'Customer Lockbox Access Approver'
+        'Exchange Recipient Administrator'
+        'External ID User Flow Attribute Administrator'
+        'Global Reader'
+        'License Administrator'
+        'Microsoft Entra Joined Device Local Administrator'
+        'Security Reader'
+        'Teams Communications Administrator'
+        'Teams Communications Support Engineer'
+    )
+
+    # Build a single role -> tier lookup for O(1) classification
+    $roleTierLookup = @{}
+    foreach ($role in $tier0Roles) { $roleTierLookup[$role] = 'Tier0' }
+    foreach ($role in $tier1Roles) { $roleTierLookup[$role] = 'Tier1' }
+    foreach ($role in $tier2Roles) { $roleTierLookup[$role] = 'Tier2' }
 
     $modules = @(
         'Microsoft.Graph.Authentication'
@@ -520,13 +612,31 @@ function Get-MgRoleReport {
 
     }
 
+    # Classify each assignment into its privileged tier (Tier0/Tier1/Tier2/Untiered)
+    $rolesMembersArray | ForEach-Object {
+        if ($_.PrincipalType -eq 'Partners') {
+            $roleTier = 'Not applicable'
+        }
+        elseif ($roleTierLookup.ContainsKey($_.AssignedRole)) {
+            $roleTier = $roleTierLookup[$_.AssignedRole]
+        }
+        else {
+            $roleTier = 'Untiered'
+        }
+
+        $_ | Add-Member -MemberType NoteProperty -Name 'RoleTier' -Value $roleTier -Force
+    }
+
     # Apply optional filters on the final result set
-    if ($Identity -or $PrincipalID -or $PrincipalDisplayName -or $Scope) {
+    if ($Identity -or $PrincipalID -or $PrincipalDisplayName -or $Scope -or $TierLevel) {
+        $tierFilter = if ($TierLevel) { "Tier$TierLevel" } else { $null }
+
         $rolesMembersArray = $rolesMembersArray | Where-Object {
             (-not $Identity             -or $_.AssignedRole -eq $Identity -or $_.AssignedRoleDefinitionId -eq $Identity) -and
             (-not $PrincipalID          -or $_.Principal -eq $PrincipalID -or $_.PrincipalObjectID -eq $PrincipalID) -and
             (-not $PrincipalDisplayName -or $_.PrincipalDisplayName -eq $PrincipalDisplayName) -and
-            (-not $Scope                -or $_.AssignedRoleScope -eq $Scope)
+            (-not $Scope                -or $_.AssignedRoleScope -eq $Scope) -and
+            (-not $tierFilter           -or $_.RoleTier -eq $tierFilter)
         }
 
         if (-not $rolesMembersArray) {

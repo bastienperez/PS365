@@ -10,8 +10,8 @@ Get-MgRoleReport.ps1 - Reports on Microsoft Entra ID (Azure AD) roles
 
 ```powershell
 Get-MgRoleReport [[-Identity] <String>] [[-PrincipalID] <String>] [[-PrincipalDisplayName] <String>]
- [[-Scope] <String>] [-IncludeEmptyRoles] [-ExcludePIMEligibleAssignments] [-ForceNewToken] [-MaesterMode]
- [-ExportToExcel] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+ [[-Scope] <String>] [[-TierLevel] <String>] [-IncludeEmptyRoles] [-ExcludePIMEligibleAssignments]
+ [-ForceNewToken] [-MaesterMode] [-ExportToExcel] [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -72,12 +72,21 @@ Returns only the role assignments at tenant scope.
 ### EXAMPLE 7
 
 ```powershell
+Get-MgRoleReport -TierLevel 0
+```
+
+Returns only the assignments of Tier 0 (control plane) roles.
+Each row carries a RoleTier property.
+
+### EXAMPLE 8
+
+```powershell
 Get-MgRoleReport -IncludeEmptyRoles
 ```
 
 Get all the roles, including the ones without members
 
-### EXAMPLE 8
+### EXAMPLE 9
 
 ```powershell
 Get-MgRoleReport -ExcludePIMEligibleAssignments
@@ -85,7 +94,7 @@ Get-MgRoleReport -ExcludePIMEligibleAssignments
 
 Get all the roles with members (without empty roles), but without PIM eligible assignments
 
-### EXAMPLE 9
+### EXAMPLE 10
 
 ```powershell
 Get-MgRoleReport | Export-CSV -NoTypeInformation "$(Get-Date -Format yyyyMMdd)_adminRoles.csv" -Encoding UTF8
@@ -156,6 +165,24 @@ Aliases:
 
 Required: False
 Position: 4
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -TierLevel
+
+Filter the report on a privileged role tier: '0' (control plane), '1' (service/workload admins) or '2' (lower-privilege / read-mostly).
+Tiering is based on Sean Metcalf's (PyroTek3) classification.
+Regardless of this filter, every row is always annotated with a RoleTier property (Tier0/Tier1/Tier2/Untiered).
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 5
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
