@@ -12,8 +12,8 @@ Retrieves all Entra ID applications configured for SCIM provisioning.
 
 ```powershell
 Get-MgApplicationSCIM [-ExcludeAttributeMappings] [-IncludeFailedObjects] [-ForceNewToken] [-ExportToExcel]
- [-RunFromAzureAutomation] [-NotificationRecipient <String>] [-NotificationSender <String>]
- [-ProgressAction <ActionPreference>] [<CommonParameters>]
+ [-RunFromAzureAutomation] [-NotificationRecipient <String>] [-NotificationSender <String>] [-Parallel]
+ [-ThrottleLimit <Int32>] [-EntraCloudSync] [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ### ByObjectId
@@ -21,7 +21,8 @@ Get-MgApplicationSCIM [-ExcludeAttributeMappings] [-IncludeFailedObjects] [-Forc
 ```powershell
 Get-MgApplicationSCIM [-ObjectID <String>] [-ExcludeAttributeMappings] [-IncludeFailedObjects] [-ForceNewToken]
  [-ExportToExcel] [-RunFromAzureAutomation] [-NotificationRecipient <String>] [-NotificationSender <String>]
- [-ProgressAction <ActionPreference>] [<CommonParameters>]
+ [-Parallel] [-ThrottleLimit <Int32>] [-EntraCloudSync] [-ProgressAction <ActionPreference>]
+ [<CommonParameters>]
 ```
 
 ### ByDisplayName
@@ -29,7 +30,8 @@ Get-MgApplicationSCIM [-ObjectID <String>] [-ExcludeAttributeMappings] [-Include
 ```powershell
 Get-MgApplicationSCIM [-DisplayName <String>] [-ExcludeAttributeMappings] [-IncludeFailedObjects]
  [-ForceNewToken] [-ExportToExcel] [-RunFromAzureAutomation] [-NotificationRecipient <String>]
- [-NotificationSender <String>] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+ [-NotificationSender <String>] [-Parallel] [-ThrottleLimit <Int32>] [-EntraCloudSync]
+ [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -50,12 +52,29 @@ Retrieves all Entra ID applications with SCIM provisioning enabled.
 ### EXAMPLE 2
 
 ```powershell
+Get-MgApplicationSCIM -Parallel -ThrottleLimit 8
+```
+
+Scans service principals in parallel (8 concurrent runspaces) to speed up discovery.
+Requires PowerShell 7+.
+
+### EXAMPLE 3
+
+```powershell
+Get-MgApplicationSCIM -EntraCloudSync
+```
+
+Returns only Entra Cloud Sync jobs, excluding application provisioning (SCIM) jobs.
+
+### EXAMPLE 4
+
+```powershell
 Get-MgApplicationSCIM -ForceNewToken
 ```
 
 Forces the function to disconnect and reconnect to Microsoft Graph to obtain a new access token.
 
-### EXAMPLE 3
+### EXAMPLE 5
 
 ```powershell
 Get-MgApplicationSCIM -ExportToExcel
@@ -63,7 +82,7 @@ Get-MgApplicationSCIM -ExportToExcel
 
 Exports the SCIM configuration details to an Excel file.
 
-### EXAMPLE 4
+### EXAMPLE 6
 
 ```powershell
 Get-MgApplicationSCIM -ObjectID "xxx-xxx-xxx"
@@ -71,7 +90,7 @@ Get-MgApplicationSCIM -ObjectID "xxx-xxx-xxx"
 
 Retrieves the SCIM configuration for a specific application by its ObjectID.
 
-### EXAMPLE 5
+### EXAMPLE 7
 
 ```powershell
 Get-MgApplicationSCIM -DisplayName "My App"
@@ -79,7 +98,7 @@ Get-MgApplicationSCIM -DisplayName "My App"
 
 Retrieves the SCIM configuration for a specific application by its DisplayName.
 
-### EXAMPLE 6
+### EXAMPLE 8
 
 ```powershell
 Get-MgApplicationSCIM -DisplayName "Azure*"
@@ -87,7 +106,7 @@ Get-MgApplicationSCIM -DisplayName "Azure*"
 
 Retrieves the SCIM configuration for all applications whose DisplayName starts with "Azure".
 
-### EXAMPLE 7
+### EXAMPLE 9
 
 ```powershell
 Get-MgApplicationSCIM -DisplayName "*Provisioning*"
@@ -95,7 +114,7 @@ Get-MgApplicationSCIM -DisplayName "*Provisioning*"
 
 Retrieves the SCIM configuration for all applications whose DisplayName contains "Provisioning".
 
-### EXAMPLE 8
+### EXAMPLE 10
 
 ```powershell
 Get-MgApplicationSCIM -RunFromAzureAutomation -NotificationRecipient 'admin@company.com' -NotificationSender 'automation@company.com'
@@ -258,6 +277,61 @@ Aliases:
 Required: False
 Position: Named
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Parallel
+
+(Optional) Scans service principals in parallel to speed up discovery on large tenants.
+Requires PowerShell 7 or later (uses ForEach-Object -Parallel).
+Ignored/blocked on PowerShell 5.1.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ThrottleLimit
+
+(Optional) Maximum number of concurrent runspaces when -Parallel is used.
+Default is 5.
+Keep this value moderate to avoid Microsoft Graph throttling (HTTP 429).
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: 5
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -EntraCloudSync
+
+(Optional) Returns only Entra Cloud Sync jobs (synchronization templateId 'AD2AADProvisioning' or 'AD2AADPasswordHash'),
+excluding application provisioning (SCIM) jobs.
+Note: Microsoft Graph has no tenant-wide endpoint to list synchronization jobs by templateId; jobs are nested per
+service principal, so this filter is applied client-side after enumerating service principals.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

@@ -42,10 +42,34 @@
     .PARAMETER NotificationSender
     (Required when RunFromAzureAutomation is enabled) Email address of the sender for synchronization health notifications.
 
+    .PARAMETER Parallel
+    (Optional) Scans service principals in parallel to speed up discovery on large tenants.
+    Requires PowerShell 7 or later (uses ForEach-Object -Parallel). Ignored/blocked on PowerShell 5.1.
+
+    .PARAMETER ThrottleLimit
+    (Optional) Maximum number of concurrent runspaces when -Parallel is used. Default is 5.
+    Keep this value moderate to avoid Microsoft Graph throttling (HTTP 429).
+
+    .PARAMETER EntraCloudSync
+    (Optional) Returns only Entra Cloud Sync jobs (synchronization templateId 'AD2AADProvisioning' or 'AD2AADPasswordHash'),
+    excluding application provisioning (SCIM) jobs.
+    Note: Microsoft Graph has no tenant-wide endpoint to list synchronization jobs by templateId; jobs are nested per
+    service principal, so this filter is applied client-side after enumerating service principals.
+
     .EXAMPLE
     $scimApps = Get-MgApplicationSCIM
 
     Retrieves all Entra ID applications with SCIM provisioning enabled.
+
+    .EXAMPLE
+    Get-MgApplicationSCIM -Parallel -ThrottleLimit 8
+
+    Scans service principals in parallel (8 concurrent runspaces) to speed up discovery. Requires PowerShell 7+.
+
+    .EXAMPLE
+    Get-MgApplicationSCIM -EntraCloudSync
+
+    Returns only Entra Cloud Sync jobs, excluding application provisioning (SCIM) jobs.
 
     .EXAMPLE
     Get-MgApplicationSCIM -ForceNewToken
@@ -120,8 +144,28 @@ function Get-MgApplicationSCIM {
         [string]$NotificationRecipient,
 
         [Parameter(Mandatory = $false)]
-        [string]$NotificationSender
+        [string]$NotificationSender,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$Parallel,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateRange(1, 20)]
+        [int]$ThrottleLimit = 5,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$EntraCloudSync
     )
+
+    # Entra Cloud Sync jobs are identified by these synchronization template IDs.
+    $cloudSyncTemplateIds = @('AD2AADProvisioning', 'AD2AADPasswordHash')
+    $templateFilter = if ($EntraCloudSync) { $cloudSyncTemplateIds } else { $null }
+
+    # -Parallel relies on ForEach-Object -Parallel, available only in PowerShell 7+
+    if ($Parallel -and $PSVersionTable.PSVersion.Major -lt 7) {
+        Write-Error "-Parallel requires PowerShell 7 or later. Current version: $($PSVersionTable.PSVersion). Run without -Parallel or upgrade to PowerShell 7."
+        return
+    }
 
     # Validate notification parameters
     if ($RunFromAzureAutomation.IsPresent) {
@@ -210,8 +254,8 @@ function Get-MgApplicationSCIM {
             $candidateItems = if ($result.Value) { $result.Value } else { @() }
             $matchingItems = $candidateItems | Where-Object { $_.displayName -like $DisplayName }
             $servicePrincipals = @($matchingItems | ForEach-Object {
-                [PSCustomObject]@{ DisplayName = $_.displayName; Id = $_.id }
-            })
+                    [PSCustomObject]@{ DisplayName = $_.displayName; Id = $_.id }
+                })
             Write-Verbose "Found $($servicePrincipals.Count) service principal(s) matching wildcard pattern '$DisplayName'"
         }
         else {
@@ -240,20 +284,34 @@ function Get-MgApplicationSCIM {
 
     Write-Host "$($servicePrincipals.Count) service principals found"
 
-    $i = 0
-    foreach ($servicePrincipal in $servicePrincipals) {
-        $i++
-        Write-Host "($i/$($servicePrincipals.Count)) - $($servicePrincipal.DisplayName): check for synchronization jobs " -ForegroundColor Cyan -NoNewline
-        $job = Get-MgServicePrincipalSynchronizationJob -ServicePrincipalId $servicePrincipal.Id -All
+    # Per-service-principal processing. Returns the enriched synchronization job object, or nothing
+    # if the service principal has no synchronization job. Shared by the sequential and parallel paths.
+    $processServicePrincipal = {
+        param($servicePrincipal, $Prefix = '', $TemplateFilter = $null)
 
-        if ($job) {
-            Write-Host "$($servicePrincipal.DisplayName) - Synchronization job found" -ForegroundColor Green
+        Write-Host "$Prefix$($servicePrincipal.DisplayName): check for synchronization jobs" -ForegroundColor Cyan
 
+        $jobs = Get-MgServicePrincipalSynchronizationJob -ServicePrincipalId $servicePrincipal.Id -All
+
+        # Optionally keep only jobs matching the requested synchronization template IDs (e.g. Entra Cloud Sync)
+        if ($TemplateFilter) {
+            $jobs = $jobs | Where-Object { $_.templateId -in $TemplateFilter }
+        }
+
+        if (-not $jobs) {
+            Write-Host "$($servicePrincipal.DisplayName) - No synchronization job found" -ForegroundColor Yellow
+            return
+        }
+
+        Write-Host "$($servicePrincipal.DisplayName) - $(@($jobs).Count) synchronization job(s) found" -ForegroundColor Green
+
+        # A service principal can hold more than one synchronization job: process each one individually.
+        foreach ($job in $jobs) {
             $job | Add-Member -MemberType NoteProperty -Name ServicePrincipalId -Value $servicePrincipal.Id
             $job | Add-Member -MemberType NoteProperty -Name DisplayName -Value $servicePrincipal.DisplayName
             $job | Add-Member -MemberType NoteProperty -Name EntraUrl -Value "https://entra.microsoft.com/#view/Microsoft_AAD_IAM/ManagedAppMenuBlade/~/ProvisioningActivity/objectId/$($servicePrincipal.Id)"
 
-            $provisioningSettings = Invoke-GraphRequest -Uri "https://graph.microsoft.com/v1.0/servicePrincipals/$($job.ServicePrincipalId)/synchronization/secrets" -Method Get -OutputType PSObject
+            $provisioningSettings = Invoke-MgGraphRequest -Uri "https://graph.microsoft.com/v1.0/servicePrincipals/$($servicePrincipal.Id)/synchronization/secrets" -Method Get -OutputType PSObject
 
             $job | Add-Member -MemberType NoteProperty -Name ProvisioningBaseAddress -Value $($provisioningSettings.Value | Where-Object { $_.key -eq 'BaseAddress' }).Value
             $job | Add-Member -MemberType NoteProperty -Name ProvisioningSyncAll -Value $($provisioningSettings.Value | Where-Object { $_.key -eq 'SyncAll' }).Value
@@ -283,34 +341,38 @@ function Get-MgApplicationSCIM {
 
             # synchronizationJobSettings Value
             foreach ($property in $job.SynchronizationJobSettings) {
-                $job | Add-Member -MemberType NoteProperty -Name $property.Name -Value $property.Value
+                $job | Add-Member -MemberType NoteProperty -Name $property.Name -Value $property.Value -Force
             }
 
-            <#
-            `$job.SynchronizationJobSettings` not useful
-            Name                                Value
-            ----                                -----
-            AzureIngestionAttributeOptimization True
-            LookaheadQueryEnabled               False
-            Domain                              {"DomainDiscoveredAt":null,"DomainFQDN":null,"DomainNetBios":null,"ForestFQDN":null,"ForestNetBios":null}
-            #>
-            $job = $job | Select-Object -ExcludeProperty SynchronizationJobSettings
-            $synchronizationJobsArray.Add($job)
+            # Emit the enriched job (SynchronizationJobSettings dropped - not useful as a column)
+            $job | Select-Object -ExcludeProperty SynchronizationJobSettings
         }
-        else {
-            Write-Host "$($servicePrincipal.DisplayName) - No synchronization job found" -ForegroundColor Yellow
+    }
 
-            <#
-            # No sync job: add a fallback row so the service principal always appears in the output
-            $fallbackJob = [PSCustomObject][ordered]@{
-                DisplayName       = $servicePrincipal.DisplayName
-                ServicePrincipalId = $servicePrincipal.Id
-                EntraUrl          = "https://entra.microsoft.com/#view/Microsoft_AAD_IAM/ManagedAppMenuBlade/~/ProvisioningActivity/objectId/$($servicePrincipal.Id)"
-                StatusCode        = '-'
+    if ($Parallel) {
+        Write-Host "Scanning service principals in parallel (ThrottleLimit: $ThrottleLimit)..." -ForegroundColor Cyan
+        # ForEach-Object -Parallel runs in separate runspaces of the same process; the Microsoft.Graph
+        # auth session is process-wide, but the cmdlet modules must be imported in each runspace.
+        # The scriptblock is passed as text and rebuilt to avoid runspace affinity issues.
+        $processText = $processServicePrincipal.ToString()
+        $parallelResults = $servicePrincipals | ForEach-Object -ThrottleLimit $ThrottleLimit -Parallel {
+            Import-Module Microsoft.Graph.Authentication -ErrorAction SilentlyContinue
+            Import-Module Microsoft.Graph.Applications -ErrorAction SilentlyContinue
+            $sb = [scriptblock]::Create($using:processText)
+            & $sb $_ '' $using:templateFilter
+        }
+        foreach ($result in $parallelResults) {
+            if ($result) { $synchronizationJobsArray.Add($result) }
+        }
+    }
+    else {
+        $i = 0
+        foreach ($servicePrincipal in $servicePrincipals) {
+            $i++
+            $results = & $processServicePrincipal $servicePrincipal "($i/$($servicePrincipals.Count)) - " $templateFilter
+            foreach ($result in $results) {
+                if ($result) { $synchronizationJobsArray.Add($result) }
             }
-
-            $synchronizationJobsDetailsArray.Add($fallbackJob)
-            #>
         }
     }
 
@@ -355,65 +417,68 @@ function Get-MgApplicationSCIM {
         if ($IncludeFailedObjects) {
             Write-Verbose "Fetching failed objects for $($job.DisplayName)..."
             [System.Collections.Generic.List[PSCustomObject]]$escrowedObjectsList = @()
-            $dateFrom    = (Get-Date).AddDays(-30).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffZ')
-            $dateTo      = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffZ')
-            $spId        = $job.ServicePrincipalId
-            $spName      = [Uri]::EscapeDataString($job.DisplayName)
+            $dateFrom = (Get-Date).AddDays(-30).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffZ')
+            $dateTo = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffZ')
+            $spId = $job.ServicePrincipalId
+            $spName = [Uri]::EscapeDataString($job.DisplayName)
             $escrowFilter = "(activityDateTime ge $dateFrom and activityDateTime le $dateTo and (provisioningStatusInfo/status eq microsoft.graph.provisioningResult'failure') and (contains(tolower(servicePrincipal/id), '$spId') or contains(tolower(servicePrincipal/displayName), '$spName')))"
-            $escrowUri   = "https://graph.microsoft.com/v1.0/auditLogs/provisioning?`$filter=$escrowFilter&`$top=500&`$orderby=activityDateTime desc"
+            $escrowUri = "https://graph.microsoft.com/v1.0/auditLogs/provisioning?`$filter=$escrowFilter&`$top=500&`$orderby=activityDateTime desc"
             do {
                 $escrowResponse = Invoke-MgGraphRequest -Method GET -Uri $escrowUri
                 foreach ($item in $escrowResponse['value']) {
                     $failedStep = $item['provisioningSteps'] | Where-Object { $_['status'] -eq 'failure' } | Select-Object -First 1
                     $failedStepDetails = if ($failedStep -and $failedStep['details']) {
                         ($failedStep['details'].GetEnumerator() | ForEach-Object { "$($_.Key): $($_.Value)" }) -join ' | '
-                    } else { $null }
+                    }
+                    else { $null }
 
-                    $errorInfo    = $item['provisioningStatusInfo']['errorInformation']
-                    $errorCode    = if ($errorInfo) { $errorInfo['errorCode'] } elseif ($failedStep) { $failedStep['name'] } else { $null }
-                    $reason       = if ($errorInfo) { $errorInfo['reason'] } elseif ($failedStep) { $failedStep['description'] } else { $null }
+                    $errorInfo = $item['provisioningStatusInfo']['errorInformation']
+                    $errorCode = if ($errorInfo) { $errorInfo['errorCode'] } elseif ($failedStep) { $failedStep['name'] } else { $null }
+                    $reason = if ($errorInfo) { $errorInfo['reason'] } elseif ($failedStep) { $failedStep['description'] } else { $null }
 
-                    $srcDetails   = $item['sourceIdentity']['details']
-                    $dn           = if ($srcDetails -is [System.Collections.IDictionary]) {
-                                        $srcDetails['DistinguishedName']
-                                    } elseif ($srcDetails) {
-                                        ($srcDetails | Where-Object { $_['key'] -eq 'DistinguishedName' })['value']
-                                    } else { $null }
+                    $srcDetails = $item['sourceIdentity']['details']
+                    $dn = if ($srcDetails -is [System.Collections.IDictionary]) {
+                        $srcDetails['DistinguishedName']
+                    }
+                    elseif ($srcDetails) {
+                        ($srcDetails | Where-Object { $_['key'] -eq 'DistinguishedName' })['value']
+                    }
+                    else { $null }
 
                     $escrowedObjectsList.Add([PSCustomObject]@{
-                        ActivityDateTime      = $item['activityDateTime']
-                        SourceDisplayName     = $item['sourceIdentity']['displayName']
-                        SourceId              = $item['sourceIdentity']['id']
-                        DistinguishedName     = $dn
-                        TargetDisplayName     = $item['targetIdentity']['displayName']
-                        FailedStep            = if ($failedStep) { $failedStep['name'] } else { $null }
-                        FailedStepType        = if ($failedStep) { $failedStep['provisioningStepType'] } else { $null }
-                        FailedStepDescription = if ($failedStep) { $failedStep['description'] } else { $null }
-                        FailedStepDetails     = $failedStepDetails
-                        ErrorCode             = $errorCode
-                        Reason                = $reason
-                    })
+                            ActivityDateTime      = $item['activityDateTime']
+                            SourceDisplayName     = $item['sourceIdentity']['displayName']
+                            SourceId              = $item['sourceIdentity']['id']
+                            DistinguishedName     = $dn
+                            TargetDisplayName     = $item['targetIdentity']['displayName']
+                            FailedStep            = if ($failedStep) { $failedStep['name'] } else { $null }
+                            FailedStepType        = if ($failedStep) { $failedStep['provisioningStepType'] } else { $null }
+                            FailedStepDescription = if ($failedStep) { $failedStep['description'] } else { $null }
+                            FailedStepDetails     = $failedStepDetails
+                            ErrorCode             = $errorCode
+                            Reason                = $reason
+                        })
                 }
                 $escrowUri = $escrowResponse['@odata.nextLink']
             } while ($escrowUri)
 
             $failedObjectsStats = $escrowedObjectsList |
-                Group-Object FailedStep, ErrorCode |
-                Sort-Object Count -Descending |
-                ForEach-Object {
-                    $parts = $_.Name -split ', ', 2
-                    [PSCustomObject]@{
-                        FailedStep = $parts[0]
-                        ErrorCode  = $parts[1]
-                        Count      = $_.Count
-                    }
+            Group-Object FailedStep, ErrorCode |
+            Sort-Object Count -Descending |
+            ForEach-Object {
+                $parts = $_.Name -split ', ', 2
+                [PSCustomObject]@{
+                    FailedStep = $parts[0]
+                    ErrorCode  = $parts[1]
+                    Count      = $_.Count
                 }
+            }
 
             $latestFailedObjects = $escrowedObjectsList |
-                Group-Object SourceId |
-                ForEach-Object {
-                    $_.Group | Sort-Object ActivityDateTime -Descending | Select-Object -First 1
-                }
+            Group-Object SourceId |
+            ForEach-Object {
+                $_.Group | Sort-Object ActivityDateTime -Descending | Select-Object -First 1
+            }
 
             $job | Add-Member -MemberType NoteProperty -Name FailedObjectsStats -Value $failedObjectsStats
             $job | Add-Member -MemberType NoteProperty -Name LatestFailedObjects -Value $latestFailedObjects
@@ -430,72 +495,72 @@ function Get-MgApplicationSCIM {
         [System.Collections.Generic.List[PSCustomObject]]$attributesArray = @()
 
         if (-not $ExcludeAttributeMappings) {
-        foreach ($objectMapping in $jobSchema.SynchronizationRules.ObjectMappings) {
+            foreach ($objectMapping in $jobSchema.SynchronizationRules.ObjectMappings) {
 
-            foreach ($mapping in $objectMapping) {
-                $res = $null
+                foreach ($mapping in $objectMapping) {
+                    $res = $null
 
-                if($mapping.TargetObjectName -like 'urn:ietf:params:scim:schemas:extension:enterprise:2.0:*') {
-                    Write-Warning "Object type '$($mapping.TargetObjectName)' includes 'urn:ietf:params:scim:schemas:extension:enterprise:2.0:'. It is removed to improve column name readability and allow reuse of the same column for other SCIM types using only user/group instead of urn:ietf:params:scim:schemas:extension:enterprise:2.0:x"
-                    $targetObjectType = $mapping.TargetObjectName -replace 'urn:ietf:params:scim:schemas:extension:enterprise:2.0:', ''
-                }
-                elseif($mapping.TargetObjectName -like 'urn:ietf:params:scim:schemas:core:2.0:*') {
-                    Write-Warning "Object type '$($mapping.TargetObjectName)' includes 'urn:ietf:params:scim:schemas:core:2.0:'. It is removed to improve column name readability and allow reuse of the same column for other SCIM types using only user/group instead of urn:ietf:params:scim:schemas:core:2.0:x"
-                    $targetObjectType = $mapping.TargetObjectName -replace 'urn:ietf:params:scim:schemas:core:2.0:', ''
-                }
-                else {
-                    $targetObjectType = $mapping.TargetObjectName
-                }
-
-                $flowTypes = ($mapping.FlowTypes -join ',')
-                $mappingMeta = "Enabled: $($mapping.Enabled) | FlowTypes: $flowTypes | Name: $($mapping.Name) | Source: $($mapping.SourceObjectName)"
-                $job | Add-Member -MemberType NoteProperty -Name "ObjectMapping-$targetObjectType" -Value $mappingMeta -Force
-
-                if ($flowTypes -ne 'Add,Update,Delete') {
-                    $flowTypeRecommendation = "Object mapping for ``$targetObjectType`` has FlowType ``$flowTypes`` expected ``Add,Update,Delete``, please review to be sure it's intentional"
-                    if (-not [string]::IsNullOrWhiteSpace($job.Recommendation)) {
-                        $job.Recommendation += " | $flowTypeRecommendation"
+                    if ($mapping.TargetObjectName -like 'urn:ietf:params:scim:schemas:extension:enterprise:2.0:*') {
+                        Write-Warning "Object type '$($mapping.TargetObjectName)' includes 'urn:ietf:params:scim:schemas:extension:enterprise:2.0:'. It is removed to improve column name readability and allow reuse of the same column for other SCIM types using only user/group instead of urn:ietf:params:scim:schemas:extension:enterprise:2.0:x"
+                        $targetObjectType = $mapping.TargetObjectName -replace 'urn:ietf:params:scim:schemas:extension:enterprise:2.0:', ''
+                    }
+                    elseif ($mapping.TargetObjectName -like 'urn:ietf:params:scim:schemas:core:2.0:*') {
+                        Write-Warning "Object type '$($mapping.TargetObjectName)' includes 'urn:ietf:params:scim:schemas:core:2.0:'. It is removed to improve column name readability and allow reuse of the same column for other SCIM types using only user/group instead of urn:ietf:params:scim:schemas:core:2.0:x"
+                        $targetObjectType = $mapping.TargetObjectName -replace 'urn:ietf:params:scim:schemas:core:2.0:', ''
                     }
                     else {
-                        $job.Recommendation = $flowTypeRecommendation
+                        $targetObjectType = $mapping.TargetObjectName
                     }
+
+                    $flowTypes = ($mapping.FlowTypes -join ',')
+                    $mappingMeta = "Enabled: $($mapping.Enabled) | FlowTypes: $flowTypes | Name: $($mapping.Name) | Source: $($mapping.SourceObjectName)"
+                    $job | Add-Member -MemberType NoteProperty -Name "ObjectMapping-$targetObjectType" -Value $mappingMeta -Force
+
+                    if ($flowTypes -ne 'Add,Update,Delete') {
+                        $flowTypeRecommendation = "Object mapping for ``$targetObjectType`` has FlowType ``$flowTypes`` expected ``Add,Update,Delete``, please review to be sure it's intentional"
+                        if (-not [string]::IsNullOrWhiteSpace($job.Recommendation)) {
+                            $job.Recommendation += " | $flowTypeRecommendation"
+                        }
+                        else {
+                            $job.Recommendation = $flowTypeRecommendation
+                        }
+                    }
+
+                    foreach ($attribute in $mapping.AttributeMappings) {
+
+                        $object = [PSCustomObject][ordered]@{
+                            Type                    = $targetObjectType
+                            DefaultValue            = $attribute.DefaultValue
+                            ExportMissingReferences = $attribute.ExportMissingReferences
+                            FlowBehavior            = $attribute.FlowBehavior
+                            FlowType                = $attribute.FlowType
+                            MatchingPriority        = $attribute.MatchingPriority
+                            SourceExpression        = $attribute.Source.Expression
+                            SourceAttributeName     = $attribute.Source.AttributeName
+                            TargetAttributeName     = $attribute.TargetAttributeName
+                        }
+
+                        $attributesArray.Add($object)
+
+                        if ($null -ne $res) {
+                            $res = "$res | "
+                        }
+
+                        if ([string]::IsNullOrWhiteSpace($object.SourceAttributeName)) {
+                            $res = "$res$($object.SourceExpression) --> $($object.TargetAttributeName)"
+                        }
+                        else {
+                            $res = "$res$($object.SourceAttributeName) --> $($object.TargetAttributeName)"
+                        }
+                    }
+
+                    if ($objectType -like 'urn:ietf:params:scim:schemas:extension:enterprise:2.0:*') {
+                        Write-Warning "Object type '$objectType' includes 'urn:ietf:params:scim:schemas:extension:enterprise:2.0:'. It is removed to improve column name readability and allow reuse of the same column for other SCIM types using only user/group instead of urn:ietf:params:scim:schemas:extension:enterprise:2.0:x"
+                        $object.Type = $object.Type -replace 'urn:ietf:params:scim:schemas:extension:enterprise:2.0:', ''
+                    }
+                    $job | Add-Member -MemberType NoteProperty -Name "Attributes-$($object.Type)" -Value $res -Force
                 }
-
-                foreach ($attribute in $mapping.AttributeMappings) {
-
-                    $object = [PSCustomObject][ordered]@{
-                        Type                    = $targetObjectType
-                        DefaultValue            = $attribute.DefaultValue
-                        ExportMissingReferences = $attribute.ExportMissingReferences
-                        FlowBehavior            = $attribute.FlowBehavior
-                        FlowType                = $attribute.FlowType
-                        MatchingPriority        = $attribute.MatchingPriority
-                        SourceExpression        = $attribute.Source.Expression
-                        SourceAttributeName     = $attribute.Source.AttributeName
-                        TargetAttributeName     = $attribute.TargetAttributeName
-                    }
-
-                    $attributesArray.Add($object)
-
-                    if ($null -ne $res) {
-                        $res = "$res | "
-                    }
-
-                    if ([string]::IsNullOrWhiteSpace($object.SourceAttributeName)) {
-                        $res = "$res$($object.SourceExpression) --> $($object.TargetAttributeName)"
-                    }
-                    else {
-                        $res = "$res$($object.SourceAttributeName) --> $($object.TargetAttributeName)"
-                    }
-                }
-
-                if($objectType -like 'urn:ietf:params:scim:schemas:extension:enterprise:2.0:*') {
-                    Write-Warning "Object type '$objectType' includes 'urn:ietf:params:scim:schemas:extension:enterprise:2.0:'. It is removed to improve column name readability and allow reuse of the same column for other SCIM types using only user/group instead of urn:ietf:params:scim:schemas:extension:enterprise:2.0:x"
-                    $object.Type = $object.Type -replace 'urn:ietf:params:scim:schemas:extension:enterprise:2.0:', ''
-                }
-                $job | Add-Member -MemberType NoteProperty -Name "Attributes-$($object.Type)" -Value $res -Force
             }
-        }
         } # end if -not ExcludeAttributeMappings
 
         $job = $job | Select-Object * -ExcludeProperty Schedule, Schema
