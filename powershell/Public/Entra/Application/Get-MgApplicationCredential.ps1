@@ -370,24 +370,7 @@ function Get-MgApplicationCredential {
             }
         }
 
-        # No credentials at all: add a fallback row so the app always appears in the output
-        if (-not $mgApp.KeyCredentials -and -not $mgApp.PasswordCredentials) {
-            [PSCustomObject][ordered]@{
-                DisplayName             = $mgApp.DisplayName
-                Recommendation          = $recommendation
-                CredentialType          = '-'
-                AppId                   = $mgApp.AppId
-                EntraUrl                = "https://entra.microsoft.com/#view/Microsoft_AAD_RegisteredApps/ApplicationMenuBlade/~/Credentials/appId/$($mgApp.AppId)"
-                CredentialDescription   = '-'
-                CredentialStartDate     = '-'
-                CredentialExpiryDate    = '-'
-                CredentialValid         = '-'
-                CredentialExpiresInDays = '-'
-                Type                    = '-'
-                Usage                   = '-'
-                Owners                  = $ownerString
-            }
-        }
+        # Apps without any KeyCredentials or PasswordCredentials are intentionally skipped.
     }
 
     if ($useParallel) {
