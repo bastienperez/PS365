@@ -435,7 +435,7 @@ function Get-MgApplicationCredential {
         line-height: 20px;
         background-color: #ffffff;
     }
-    
+
     h2 { 
         padding-top: 0; 
         margin: 0 0 16px 0; 
@@ -566,7 +566,7 @@ function Get-MgApplicationCredential {
             </td>
         </tr>
     </table>
-    
+
     <h2>Credentials requiring attention</h2>
     <table>
         <tr>
@@ -617,7 +617,7 @@ function Get-MgApplicationCredential {
 </body>
 </html>
 "@
-            
+
         try {
             $params = @{
                 Message         = @{
