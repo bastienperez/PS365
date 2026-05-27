@@ -4,74 +4,84 @@ Module Name: PS365
 
 ## SYNOPSIS
 
-\{\{ Fill in the Synopsis \}\}
+Retrieves dynamic groups from Microsoft 365, Exchange Online, and Entra ID with attribute analysis.
 
 ## SYNTAX
 
 ```powershell
-Get-DynamicGroup [[-GroupId] <String>] [-ExchangeOnlineOnly] [-EntraIDOnly] [-ExportToExcel]
- [-ProgressAction <ActionPreference>] [<CommonParameters>]
+Get-DynamicGroup [[-GroupId] <String>] [-ExchangeOnlineOnly] [-EntraIDOnly] [-ExportToExcel] [-IncludeMembers]
+ [-MemberReport] [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
 
-\{\{ Fill in the Description \}\}
+The Get-DynamicGroup function retrieves all dynamic groups from Microsoft 365 environments,
+including Exchange Online Dynamic Distribution Groups and Entra ID Dynamic Security/M365 Groups.
+It analyzes membership rules to extract attributes and provides security warnings for attributes
+in the "Personal-Information" property set that users can modify themselves.
+
+By default, only the member count is returned (MembersCount).
+Use -IncludeMembers to also get
+the concatenated lists of member names and IDs, or -MemberReport to get one row per (group, member).
 
 ## EXAMPLES
 
+### EXAMPLE 1
+
+```powershell
+Get-DynamicGroup
+```
+
+Retrieves all dynamic groups from both Exchange Online and Entra ID (members count only).
+
+### EXAMPLE 2
+
+```powershell
+Get-DynamicGroup -ExchangeOnlineOnly
+```
+
+Retrieves only Exchange Online Dynamic Distribution Groups.
+
+### EXAMPLE 3
+
+```powershell
+Get-DynamicGroup -EntraIDOnly
+```
+
+Retrieves only Entra ID Dynamic Groups.
+
+### EXAMPLE 4
+
+```powershell
+Get-DynamicGroup -IncludeMembers
+```
+
+Retrieves all dynamic groups with MembersName and MembersId populated (pipe-separated).
+
+### EXAMPLE 5
+
+```powershell
+Get-DynamicGroup -MemberReport
+```
+
+Returns one row per (group, member).
+Each row contains the group context and a single member.
+
+### EXAMPLE 6
+
+```powershell
+Get-DynamicGroup -MemberReport -ExportToExcel
+```
+
+Exports both the per-group sheet ("DynamicGroups") and the per-member sheet ("Members") in the
+same Excel workbook.
+
 ## PARAMETERS
-
-### -EntraIDOnly
-
-\{\{ Fill EntraIDOnly Description \}\}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ExchangeOnlineOnly
-
-\{\{ Fill ExchangeOnlineOnly Description \}\}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ExportToExcel
-
-\{\{ Fill ExportToExcel Description \}\}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
 
 ### -GroupId
 
-\{\{ Fill GroupId Description \}\}
+When specified, retrieves dynamic groups by their unique GroupId.
+If not specified, retrieves all dynamic groups (both Exchange Online and Entra ID).
 
 ```yaml
 Type: String
@@ -79,8 +89,100 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 0
+Position: 1
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ExchangeOnlineOnly
+
+When specified, retrieves only Exchange Online Dynamic Distribution Groups.
+Requires an active Exchange Online session (use Connect-ExchangeOnline).
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -EntraIDOnly
+
+When specified, retrieves only Entra ID Dynamic Groups (Security and M365 groups).
+Requires an active Microsoft Graph connection (use Connect-MgGraph).
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ExportToExcel
+
+When specified, exports the result to an Excel file in the user's profile directory instead of
+returning it.
+When combined with -MemberReport, the member rows are written to a second worksheet
+named "Members" in the same workbook.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -IncludeMembers
+
+When specified, populates the MembersName (pipe-separated display names) and MembersId
+(pipe-separated object IDs) properties in addition to MembersCount.
+By default, only MembersCount is populated to avoid slow enumeration on large groups.
+Ignored when -MemberReport is used.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -MemberReport
+
+When specified, the function returns one row per (group, member) pair instead of the per-group
+aggregated objects.
+Useful to export a flat list of members with their parent group.
+Output columns: GroupId, GroupName, GroupType, MembershipRule, MemberId, MemberDisplayName,
+MemberPrincipal, MemberType.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -90,12 +192,40 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
+### System.Collections.Generic.List[Object]
 
 ## NOTES
+OUTPUT PROPERTIES (default / -IncludeMembers mode)
+Returns a collection of custom objects with the following properties:
+- GroupId: Unique identifier of the group
+- Name: Display name of the group
+- Type: Type of dynamic group (Exchange Dynamic Distribution Group, M365 Dynamic Group, Entra ID Dynamic Security Group)
+- MembershipRule: The membership rule or LDAP filter used for dynamic membership
+- MembershipRuleProcessingState: Processing state of the membership rule (Entra ID only)
+- UserAttributes: Pipe-separated list of user attributes referenced in the membership rule
+- GroupAttributes: Pipe-separated list of group attributes referenced in the membership rule (Entra ID only)
+- DeviceAttributes: Pipe-separated list of device attributes referenced in the membership rule (Entra ID only)
+- MemberOf: Pipe-separated list of parent groups
+- MembersCount: Number of current members of the group
+- MembersName: Pipe-separated list of member display names (only with -IncludeMembers)
+- MembersId: Pipe-separated list of member IDs (only with -IncludeMembers)
+- DisplayName, Description, Mail, MailEnabled, MailNickname, SecurityEnabled, GroupTypes,
+  CreatedDateTime, RenewedDateTime, OnPremisesSyncEnabled, SecurityIdentifier, Classification, Visibility
+- Warning: Security warning if any attribute is in the "Personal-Information" property set
+
+OUTPUT PROPERTIES (-MemberReport mode)
+- GroupId, GroupName, GroupType, MembershipRule
+- MemberId, MemberDisplayName, MemberPrincipal, MemberType
+
+Security Considerations:
+This function identifies attributes in the "Personal-Information" property set that users can
+modify themselves, potentially allowing unauthorized group membership.
+Review warnings carefully.
+
+More information on: https://itpro-tips.com/property-set-personal-information-and-active-directory-security-and-governance/
 
 ## RELATED LINKS
+
+[https://ps365.clidsys.com/docs/commands/Get-DynamicGroup](https://ps365.clidsys.com/docs/commands/Get-DynamicGroup)

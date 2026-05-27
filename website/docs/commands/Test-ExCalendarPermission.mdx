@@ -1,0 +1,92 @@
+---
+Module Name: PS365
+---
+
+## SYNOPSIS
+
+Tests whether delegates with calendar folder permissions still exist.
+
+## SYNTAX
+
+```powershell
+Test-ExCalendarPermission [-Mailbox] <String> [[-DelegateStatus] <String>] [-ProgressAction <ActionPreference>]
+ [<CommonParameters>]
+```
+
+## DESCRIPTION
+
+Retrieves the calendar folder permissions for a given mailbox and checks
+whether each delegate (the person the calendar was shared with) is still
+a valid recipient.
+Default and anonymous entries are excluded.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Test-ExCalendarPermission -Mailbox "user@domain.com"
+```
+
+Tests all calendar permissions for the specified mailbox and returns a list of delegates with their existence status.
+
+### EXAMPLE 2
+
+```powershell
+Test-ExCalendarPermission -Mailbox "user@domain.com" -DelegateStatus Missing
+```
+
+Tests calendar permissions for the specified mailbox and returns only delegates that no longer exist as recipients (orphaned permissions).
+
+## PARAMETERS
+
+### -Mailbox
+
+The mailbox to inspect (e.g.
+user@domain.com).
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DelegateStatus
+
+Filters the results based on whether the delegate (the person with whom
+the calendar has been shared, i.e.
+who appears in the calendar folder
+permissions) still exists as a valid recipient in the tenant.
+- All       : returns every delegate, regardless of existence (default).
+- Existing  : returns only delegates that still exist as recipients.
+- Missing   : returns only delegates that no longer exist (orphaned
+              permissions left behind after the account was deleted).
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 2
+Default value: All
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+## NOTES
+
+## RELATED LINKS

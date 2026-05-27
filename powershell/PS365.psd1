@@ -12,7 +12,7 @@
 RootModule = 'PS365.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.1.11'
+ModuleVersion = '0.1.12'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -82,18 +82,18 @@ FunctionsToExport = 'Copy-AzAutomationRunbook', 'Get-MgApplicationExpiringCertAn
                'Get-EntraIDHybridJoinSCP', 'Get-EntraIDRegcmd', 'Get-MgLAPSPassword', 
                'Convert-EntraObjectIDAndSID', 'Get-MgCustomSecurityAttributeInfo', 
                'Get-MgUserPasswordInfo', 'Get-MgRoleReport', 
-               'Set-ExCalendarPermission', 'Find-DistributionGroupMember', 
-               'Get-ExMailboxByDomain', 'Get-ExMailboxForwarding', 
-               'Get-ExMailboxFromAttribute', 'Get-ExMailboxMaxSize', 
-               'Get-ExMailboxOnMicrosoftAddress', 'Get-ExMailboxPermission', 
-               'Get-ExMailboxProtocol', 'Get-ExMailboxRegionalConfiguration', 
-               'Get-ExMailboxStatisticsInfo', 'Get-ExMailboxWorkingHours', 
-               'Get-ExResourceMailbox', 'Test-ExMailboxProxyAddress', 
-               'Set-ExMailboxMaxSize', 'Set-ExMailboxProtocol', 
-               'Set-ExMailboxRegionalConfiguration', 'Get-MessageTraceInfo', 
-               'Get-MobileDeviceInfo', 'New-ExTransportRuleFromJson', 
-               'Get-ExRoleReport', 'Get-PurviewRoleReport', 
-               'Get-IntuneAutoMDMEnrollmentPolicy', 
+               'Set-ExCalendarPermission', 'Test-ExCalendarPermission', 
+               'Find-DistributionGroupMember', 'Get-ExMailboxByDomain', 
+               'Get-ExMailboxForwarding', 'Get-ExMailboxFromAttribute', 
+               'Get-ExMailboxMaxSize', 'Get-ExMailboxOnMicrosoftAddress', 
+               'Get-ExMailboxPermission', 'Get-ExMailboxProtocol', 
+               'Get-ExMailboxRegionalConfiguration', 'Get-ExMailboxStatisticsInfo', 
+               'Get-ExMailboxWorkingHours', 'Get-ExResourceMailbox', 
+               'Test-ExMailboxProxyAddress', 'Set-ExMailboxMaxSize', 
+               'Set-ExMailboxProtocol', 'Set-ExMailboxRegionalConfiguration', 
+               'Get-MessageTraceInfo', 'Get-MobileDeviceInfo', 
+               'New-ExTransportRuleFromJson', 'Get-ExRoleReport', 
+               'Get-PurviewRoleReport', 'Get-IntuneAutoMDMEnrollmentPolicy', 
                'Get-IntuneODJConnectorServiceEventLog', 
                'New-IntuneEnrollmentServicePrincipal', 
                'Set-IntuneAutoMDMEnrollmentPolicy', 'Install-M365Apps', 

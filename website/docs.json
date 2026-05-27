@@ -106,7 +106,8 @@
           {
             "group": "Calendar",
             "pages": [
-              "docs/commands/Set-ExCalendarPermission"
+              "docs/commands/Set-ExCalendarPermission",
+              "docs/commands/Test-ExCalendarPermission"
             ]
           },
           {
