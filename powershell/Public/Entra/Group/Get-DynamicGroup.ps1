@@ -209,8 +209,11 @@ function Get-DynamicGroup {
             }
         }
 
+        $exchangeCounter = 0
+        $exchangeTotal = @($exchangeGroups).Count
         foreach ($group in $exchangeGroups) {
-            Write-Verbose "Processing Exchange group: $($group.Name)"
+            $exchangeCounter++
+            Write-Verbose "[$exchangeCounter/$exchangeTotal] Processing Exchange group: $($group.Name)"
             try {
                 $memberOf = Get-DistributionGroup -Identity $group.Identity | Select-Object -ExpandProperty MemberOfGroup -ErrorAction SilentlyContinue
             }
@@ -303,8 +306,11 @@ function Get-DynamicGroup {
             }
         }
 
+        $entraCounter = 0
+        $entraTotal = @($entraGroups).Count
         foreach ($group in $entraGroups) {
-            Write-Verbose "Processing Entra ID group: $($group.DisplayName)"
+            $entraCounter++
+            Write-Verbose "[$entraCounter/$entraTotal] Processing Entra ID group: $($group.DisplayName)"
             try { 
                 $memberOf = Get-MgGroupMemberOf -GroupId $group.Id -ErrorAction SilentlyContinue
 
