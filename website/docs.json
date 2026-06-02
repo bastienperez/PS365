@@ -182,11 +182,19 @@
         ]
       },
       {
+        "group": "Unified Logs",
+        "pages": [
+          "docs/commands/Search-UnifiedAuditLogCustom"
+        ]
+      },
+      {
         "group": "Private Functions",
         "pages": [
           "docs/commands/ConvertTo-NewTransportRuleCommand",
           "docs/commands/ConvertTo-OrderedHashtable",
-          "docs/commands/Format-TransportRuleValue"
+          "docs/commands/Format-TransportRuleValue",
+          "docs/commands/Get-HTMLTables",
+          "docs/commands/Show-Splash"
         ]
       }
     ]
