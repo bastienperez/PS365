@@ -16,7 +16,8 @@ function Show-Splash {
         [string]$InitialMessage = 'Loading...',
         [string]$Title = 'PS365.Clidsys',
         [string]$Subtitle = '',
-        [string]$Version = ''
+        [string]$Version = '',
+        [string]$LogoPath = ''
     )
 
     Add-Type -AssemblyName PresentationFramework
@@ -37,6 +38,7 @@ function Show-Splash {
     $runspace.SessionStateProxy.SetVariable('titleText', $Title)
     $runspace.SessionStateProxy.SetVariable('subtitleText', $Subtitle)
     $runspace.SessionStateProxy.SetVariable('versionText', $Version)
+    $runspace.SessionStateProxy.SetVariable('logoPath', $LogoPath)
 
     $ps = [powershell]::Create()
     $ps.Runspace = $runspace
@@ -113,42 +115,61 @@ function Show-Splash {
             $status = $window.FindName('StatusText')
             $status.Text = $initialMessage
 
-            try {
-                $sz = 40
-                [double]$cx = $sz / 2.0; [double]$cy = $sz / 2.0
-                [double]$hubR = $sz * 0.16; [double]$spokeR = $sz * 0.10
-                [double]$stroke = [Math]::Max(1.2, $sz * 0.05)
-                $dv = [System.Windows.Media.DrawingVisual]::new()
-                $ctx = $dv.RenderOpen()
-                $whiteBrush = [System.Windows.Media.SolidColorBrush]::new(
-                    [System.Windows.Media.Colors]::White)
-                $pen = [System.Windows.Media.Pen]::new($whiteBrush, $stroke)
-                $spokes = @(
-                    , @([double]($sz * 0.18), [double]($sz * 0.22))
-                    , @([double]($sz * 0.82), [double]($sz * 0.22))
-                    , @([double]($sz * 0.50), [double]($sz * 0.82))
-                )
-                foreach ($p in $spokes) {
-                    $ctx.DrawLine($pen,
-                        [System.Windows.Point]::new($cx, $cy),
-                        [System.Windows.Point]::new($p[0], $p[1]))
+            $logoLoaded = $false
+            if (-not [string]::IsNullOrWhiteSpace($logoPath) -and (Test-Path -LiteralPath $logoPath)) {
+                try {
+                    $bmp = [System.Windows.Media.Imaging.BitmapImage]::new()
+                    $bmp.BeginInit()
+                    $bmp.UriSource = [Uri]$logoPath
+                    $bmp.CacheOption = [System.Windows.Media.Imaging.BitmapCacheOption]::OnLoad
+                    $bmp.EndInit()
+                    $bmp.Freeze()
+                    $window.FindName('LogoImage').Source = $bmp
+                    $logoLoaded = $true
                 }
-                $ctx.DrawEllipse($whiteBrush, $null,
-                    [System.Windows.Point]::new($cx, $cy), $hubR, $hubR)
-                foreach ($p in $spokes) {
-                    $ctx.DrawEllipse($whiteBrush, $null,
-                        [System.Windows.Point]::new($p[0], $p[1]), $spokeR, $spokeR)
+                catch {
+                    Write-Verbose "Splash logo PNG load failed ($logoPath): $($_.Exception.Message)"
                 }
-                $ctx.Close()
-                $rtb = [System.Windows.Media.Imaging.RenderTargetBitmap]::new(
-                    $sz, $sz, 96, 96, [System.Windows.Media.PixelFormats]::Pbgra32)
-                $rtb.Render($dv)
-                $rtb.Freeze()
-                $window.FindName('LogoImage').Source =
-                [System.Windows.Media.Imaging.BitmapFrame]::Create($rtb)
             }
-            catch {
-                Write-Verbose "Splash logo render failed: $($_.Exception.Message)"
+
+            if (-not $logoLoaded) {
+                try {
+                    $sz = 40
+                    [double]$cx = $sz / 2.0; [double]$cy = $sz / 2.0
+                    [double]$hubR = $sz * 0.16; [double]$spokeR = $sz * 0.10
+                    [double]$stroke = [Math]::Max(1.2, $sz * 0.05)
+                    $dv = [System.Windows.Media.DrawingVisual]::new()
+                    $ctx = $dv.RenderOpen()
+                    $whiteBrush = [System.Windows.Media.SolidColorBrush]::new(
+                        [System.Windows.Media.Colors]::White)
+                    $pen = [System.Windows.Media.Pen]::new($whiteBrush, $stroke)
+                    $spokes = @(
+                        , @([double]($sz * 0.18), [double]($sz * 0.22))
+                        , @([double]($sz * 0.82), [double]($sz * 0.22))
+                        , @([double]($sz * 0.50), [double]($sz * 0.82))
+                    )
+                    foreach ($p in $spokes) {
+                        $ctx.DrawLine($pen,
+                            [System.Windows.Point]::new($cx, $cy),
+                            [System.Windows.Point]::new($p[0], $p[1]))
+                    }
+                    $ctx.DrawEllipse($whiteBrush, $null,
+                        [System.Windows.Point]::new($cx, $cy), $hubR, $hubR)
+                    foreach ($p in $spokes) {
+                        $ctx.DrawEllipse($whiteBrush, $null,
+                            [System.Windows.Point]::new($p[0], $p[1]), $spokeR, $spokeR)
+                    }
+                    $ctx.Close()
+                    $rtb = [System.Windows.Media.Imaging.RenderTargetBitmap]::new(
+                        $sz, $sz, 96, 96, [System.Windows.Media.PixelFormats]::Pbgra32)
+                    $rtb.Render($dv)
+                    $rtb.Freeze()
+                    $window.FindName('LogoImage').Source =
+                    [System.Windows.Media.Imaging.BitmapFrame]::Create($rtb)
+                }
+                catch {
+                    Write-Verbose "Splash logo render failed: $($_.Exception.Message)"
+                }
             }
 
             $sync.Window = $window

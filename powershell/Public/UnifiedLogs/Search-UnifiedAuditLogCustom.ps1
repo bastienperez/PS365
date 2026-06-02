@@ -415,11 +415,13 @@ function Invoke-SearchUnifiedAuditLogCustomHelperGUI {
         }
     }
 
+    $splashLogoPath = Join-Path $PSScriptRoot '..\..\Private\Assets\Search-UnifiedAuditLogCustom.png'
     $splash = Show-Splash `
         -Title 'Search-UnifiedAuditLogCustom' `
         -Subtitle 'Audit log search helper' `
         -InitialMessage 'Initializing...' `
-        -Version $moduleVersion
+        -Version $moduleVersion `
+        -LogoPath $splashLogoPath
 
     [System.Collections.Generic.List[PSCustomObject]]$operationChoices = @()
     $operationLookupByDisplay = @{}
@@ -555,6 +557,7 @@ function Invoke-SearchUnifiedAuditLogCustomHelperGUI {
                     <TextBlock Text="ResultSize" FontWeight="SemiBold"/>
                     <TextBox x:Name="ResultSizeBox" Text="5000"/>
                     <CheckBox x:Name="SimpleViewCheckBox" Content="Simple view" Margin="0,10,0,0" VerticalAlignment="Center"/>
+                    <Button x:Name="RetentionInfoButton" Content="How retention works?" Margin="0,10,0,0" HorizontalAlignment="Left" Style="{StaticResource GhostButtonStyle}"/>
                 </StackPanel>
             </Grid>
         </Border>
@@ -645,7 +648,7 @@ function Invoke-SearchUnifiedAuditLogCustomHelperGUI {
     $reader = New-Object System.Xml.XmlNodeReader ([xml]$xaml)
     $window = [Windows.Markup.XamlReader]::Load($reader)
 
-    $iconPath = Join-Path $PSScriptRoot 'Search-UnifiedAuditLogCustom.png'
+    $iconPath = Join-Path $PSScriptRoot '..\..\Private\Assets\Search-UnifiedAuditLogCustom.png'
     if (Test-Path -LiteralPath $iconPath) {
         try {
             $iconBitmap = New-Object System.Windows.Media.Imaging.BitmapImage
@@ -693,6 +696,7 @@ function Invoke-SearchUnifiedAuditLogCustomHelperGUI {
     $copyButton = $window.FindName('CopyButton')
     $runButton = $window.FindName('RunButton')
     $closeButton = $window.FindName('CloseButton')
+    $retentionInfoButton = $window.FindName('RetentionInfoButton')
 
     $startDateBox.Text = (Get-Date).AddDays(-1).Date.ToString('yyyy-MM-dd 00:00')
     $endDateBox.Text = (Get-Date).Date.ToString('yyyy-MM-dd 23:59')
@@ -1072,6 +1076,93 @@ function Invoke-SearchUnifiedAuditLogCustomHelperGUI {
 
     $closeButton.Add_Click({
             $window.Close()
+        })
+
+    $retentionInfoButton.Add_Click({
+            $retentionXaml = @'
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="How audit log retention works"
+        Width="680" Height="500"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        Background="#F3F5F8"
+        FontFamily="Segoe UI">
+    <Window.Resources>
+        <Style TargetType="Button">
+            <Setter Property="Margin" Value="0,6,8,0"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="MinHeight" Value="30"/>
+            <Setter Property="MinWidth" Value="120"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#CBD5E1"/>
+            <Setter Property="Foreground" Value="#0F172A"/>
+            <Setter Property="Background" Value="#F8FAFC"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Background="#FDEFD0" CornerRadius="10" Padding="14" BorderBrush="#F1C97A" BorderThickness="1">
+            <StackPanel>
+                <TextBlock Text="Audit log retention - what Microsoft says vs. what actually works"
+                           FontWeight="SemiBold" FontSize="14" Foreground="#7A3A00" TextWrapping="Wrap"/>
+            </StackPanel>
+        </Border>
+
+        <Border Grid.Row="1" Margin="0,12,0,0" Background="White" CornerRadius="10" Padding="16"
+                BorderBrush="#E2E8F0" BorderThickness="1">
+            <StackPanel>
+                <TextBlock FontWeight="SemiBold" Foreground="#0F172A" Margin="0,0,0,4"
+                           Text="Microsoft's official retention tiers"/>
+                <TextBlock TextWrapping="Wrap" Foreground="#334155"
+                           Text="- 180 days: default retention since October 2023 (no specific license required)."/>
+                <TextBlock TextWrapping="Wrap" Foreground="#334155"
+                           Text="- Up to 1 year: requires Office 365 E5 / Microsoft 365 E5 / Microsoft 365 E7, Microsoft Purview Suite (formerly Microsoft 365 E5 Compliance), or the E5 eDiscovery and Audit add-on."/>
+                <TextBlock TextWrapping="Wrap" Foreground="#334155"
+                           Text="- Up to 10 years: requires the above plus the 10-year audit log retention add-on."/>
+                <TextBlock TextWrapping="Wrap" Foreground="#334155" Margin="0,4,0,0"
+                           Text="Get-AdminAuditLogConfig nonetheless returns AdminAuditLogAgeLimit = 90 days."/>
+
+                <TextBlock FontWeight="SemiBold" Foreground="#0F172A" Margin="0,12,0,4"
+                           Text="In practice: up to 365 days on all tenants"/>
+                <TextBlock TextWrapping="Wrap" Foreground="#334155"
+                           Text="Search-UnifiedAuditLog accepts queries up to 365 days back even on non-E5 tenants, regardless of the values advertised by the documentation and the PowerShell configuration."/>
+
+                <TextBlock Margin="0,12,0,0" TextWrapping="Wrap" Foreground="#64748B" FontStyle="Italic"
+                           Text="Click 'Open article' to read the full write-up with PowerShell examples."/>
+            </StackPanel>
+        </Border>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,14,0,0">
+            <Button x:Name="OpenArticleButton" Content="Open article"/>
+            <Button x:Name="CloseRetentionButton" Content="Close"/>
+        </StackPanel>
+    </Grid>
+</Window>
+'@
+
+            $retentionReader = New-Object System.Xml.XmlNodeReader ([xml]$retentionXaml)
+            $retentionWindow = [Windows.Markup.XamlReader]::Load($retentionReader)
+            $retentionWindow.Owner = $window
+
+            $openArticleButton = $retentionWindow.FindName('OpenArticleButton')
+            $closeRetentionButton = $retentionWindow.FindName('CloseRetentionButton')
+
+            $openArticleButton.Add_Click({
+                    Start-Process 'https://itpro-tips.com/microsoft-365-audit-logs-are-now-retained-for-365-days-for-all-tenants-with-powershell/'
+                    $retentionWindow.Close()
+                })
+
+            $closeRetentionButton.Add_Click({ $retentionWindow.Close() })
+
+            [void]$retentionWindow.ShowDialog()
         })
 
     & $refreshOperationsList
