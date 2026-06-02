@@ -632,8 +632,10 @@ function Invoke-SearchUnifiedAuditLogCustomHelperGUI {
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left">
-                <Button x:Name="CopyButton" Content="Copy" Style="{StaticResource SuccessButtonStyle}"/>
-                <Button x:Name="RunButton" Content="Run now" Style="{StaticResource PrimaryButtonStyle}"/>
+                <Button x:Name="CopyButton" Content="Copy" Style="{StaticResource SuccessButtonStyle}"
+                        ToolTip="Copies the generated command to the clipboard. Rarely needed here - use 'Run now' to execute the query and export the results directly."/>
+                <Button x:Name="RunButton" Content="Run now" Style="{StaticResource PrimaryButtonStyle}"
+                        ToolTip="Runs the query against the Unified Audit Log. A file dialog will open first to choose where to save the results - in this mode, results are always exported to an Excel file."/>
                 <Button x:Name="CloseButton" Content="Close" Style="{StaticResource NeutralButtonStyle}"/>
             </StackPanel>
             <TextBlock x:Name="FooterText" Grid.Column="1" Foreground="#64748B" FontSize="11"
