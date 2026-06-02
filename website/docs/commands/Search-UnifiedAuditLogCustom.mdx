@@ -4,7 +4,7 @@ Module Name: PS365
 
 ## SYNOPSIS
 
-\{\{ Fill in the Synopsis \}\}
+Search-UnifiedAuditLogCustom is an enhanced wrapper around the native Search-UnifiedAuditLog cmdlet, providing additional features such as a user-friendly GUI for constructing search queries, simplified output formatting, and integration with the Microsoft 365 audit operations catalog.
 
 ## SYNTAX
 
@@ -16,15 +16,33 @@ Search-UnifiedAuditLogCustom [[-StartDate] <DateTime>] [[-EndDate] <DateTime>] [
 
 ## DESCRIPTION
 
-\{\{ Fill in the Description \}\}
+This function allows administrators and security professionals to perform more efficient and targeted searches of the Microsoft 365 Unified Audit Log.
+It includes a helper GUI that enables users to easily select operations from the official Microsoft Learn catalog, specify date ranges, user filters, and other parameters without needing to remember complex cmdlet syntax.
+The output can be returned in a simplified format that flattens nested JSON structures for easier analysis and export.
+This is particularly useful for security investigations, compliance audits, and general monitoring of activities across Microsoft 365 services.
 
 ## EXAMPLES
 
+### EXAMPLE 1
+
+```powershell
+Search-UnifiedAuditLogCustom -StartDate (Get-Date).AddDays(-7) -EndDate (Get-Date) -Operations "UserLoggedIn", "FileAccessed" -SimpleView
+```
+
+This example searches the Unified Audit Log for "UserLoggedIn" and "FileAccessed" operations that occurred in the last 7 days, and returns the results in a simplified format.
+
+### EXAMPLE 2
+
+```powershell
+
+```
+
 ## PARAMETERS
 
-### -EndDate
+### -StartDate
 
-\{\{ Fill EndDate Description \}\}
+The start date and time for the audit log search.
+If not specified, defaults to 24 hours ago.
 
 ```yaml
 Type: DateTime
@@ -38,44 +56,13 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -FreeText
+### -EndDate
 
-\{\{ Fill FreeText Description \}\}
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 4
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -HelperGUI
-
-\{\{ Fill HelperGUI Description \}\}
+The end date and time for the audit log search.
+If not specified, defaults to the current date and time.
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Operations
-
-\{\{ Fill Operations Description \}\}
-
-```yaml
-Type: String[]
+Type: DateTime
 Parameter Sets: (All)
 Aliases:
 
@@ -86,57 +73,11 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -ResultSize
+### -Operations
 
-\{\{ Fill ResultSize Description \}\}
-
-```yaml
-Type: Int32
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 5
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -SimpleView
-
-\{\{ Fill SimpleView Description \}\}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases: Simple
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -StartDate
-
-\{\{ Fill StartDate Description \}\}
-
-```yaml
-Type: DateTime
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 0
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -UserIds
-
-\{\{ Fill UserIds Description \}\}
+An array of operation names to filter the search.
+These can be selected from the helper GUI, which loads the catalog of operations from Microsoft Learn.
+Users can also enter raw cmdlet names (e.g., New-TransportRule) to filter by specific operations.
 
 ```yaml
 Type: String[]
@@ -149,17 +90,97 @@ Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
+
+### -UserIds
+
+An array of user identifiers (e.g., email addresses) to filter the search results by specific users.
+
+```yaml
+Type: String[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 4
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -FreeText
+
+A free text string to search for within the audit log records.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 5
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ResultSize
+
+The maximum number of results to return from the search.
+Defaults to 5000.
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 6
+Default value: 5000
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -SimpleView
+
+When specified, the output will be processed to flatten nested JSON structures into a simpler format.
+This is ideal for exporting to CSV or performing quick analysis without dealing with complex nested properties.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases: Simple
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -HelperGUI
+
+When specified, opens a graphical user interface to assist in constructing the search query with user-friendly controls and operation selection.
+The operations list is populated from the Microsoft Learn catalog of audit log activities, allowing users to easily find and select relevant operations for their search.
+Make sure to have access to the Microsoft Learn page for audit log activities to load the operations catalog successfully (https://learn.microsoft.com/en-us/purview/audit-log-activities).
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
 ### CommonParameters
 
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
-
-### System.Object
 
 ## NOTES
 

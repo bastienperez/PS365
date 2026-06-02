@@ -1,14 +1,43 @@
-<# 
-$html = Get-HTMLTables -URL 'https://learn.microsoft.com/en-us/purview/audit-log-activities'
+<#
+.SYNOPSIS
+    Search-UnifiedAuditLogCustom is an enhanced wrapper around the native Search-UnifiedAuditLog cmdlet, providing additional features such as a user-friendly GUI for constructing search queries, simplified output formatting, and integration with the Microsoft 365 audit operations catalog.
 
-$operations = $html.Operation | Sort-Object -Unique
-$strOperations = $operations -join '","'
-$strOperations = '"' + $strOperations + '"'
+    .DESCRIPTION
+    This function allows administrators and security professionals to perform more efficient and targeted searches of the Microsoft 365 Unified Audit Log. It includes a helper GUI that enables users to easily select operations from the official Microsoft Learn catalog, specify date ranges, user filters, and other parameters without needing to remember complex cmdlet syntax.
+    The output can be returned in a simplified format that flattens nested JSON structures for easier analysis and export. This is particularly useful for security investigations, compliance audits, and general monitoring of activities across Microsoft 365 services.
 
+    .PARAMETER StartDate
+    The start date and time for the audit log search. If not specified, defaults to 24 hours ago.
 
-# Source table includes columns such as TableNumber, Audit Category, and Activity.
+    .PARAMETER EndDate
+    The end date and time for the audit log search. If not specified, defaults to the current date and time.
 
-# Required scope: AuditLog.Read.All
+    .PARAMETER Operations
+    An array of operation names to filter the search. These can be selected from the helper GUI, which loads the catalog of operations from Microsoft Learn. Users can also enter raw cmdlet names (e.g., New-TransportRule) to filter by specific operations.
+
+    .PARAMETER UserIds
+    An array of user identifiers (e.g., email addresses) to filter the search results by specific users.
+
+    .PARAMETER FreeText
+    A free text string to search for within the audit log records.
+
+    .PARAMETER ResultSize
+    The maximum number of results to return from the search. Defaults to 5000.
+
+    .PARAMETER SimpleView
+    When specified, the output will be processed to flatten nested JSON structures into a simpler format. This is ideal for exporting to CSV or performing quick analysis without dealing with complex nested properties.
+
+    .PARAMETER HelperGUI
+    When specified, opens a graphical user interface to assist in constructing the search query with user-friendly controls and operation selection.
+    The operations list is populated from the Microsoft Learn catalog of audit log activities, allowing users to easily find and select relevant operations for their search.
+    Make sure to have access to the Microsoft Learn page for audit log activities to load the operations catalog successfully (https://learn.microsoft.com/en-us/purview/audit-log-activities).
+
+    .EXAMPLE
+    Search-UnifiedAuditLogCustom -StartDate (Get-Date).AddDays(-7) -EndDate (Get-Date) -Operations "UserLoggedIn", "FileAccessed" -SimpleView
+
+    This example searches the Unified Audit Log for "UserLoggedIn" and "FileAccessed" operations that occurred in the last 7 days, and returns the results in a simplified format.
+
+    .EXAMPLE
 
 #>
 
@@ -301,22 +330,22 @@ function Search-UnifiedAuditLogCustom {
                     $orderedObject['ParameterString'] = $_.ParameterString
 
                     $_.PSObject.Properties |
-                        Where-Object { $_.Name -like 'Param_*' } |
-                        Sort-Object -Property Name |
-                        ForEach-Object {
-                            $orderedObject[$_.Name] = $_.Value
-                        }
-                }
-
-                $_.PSObject.Properties |
-                    Where-Object {
-                        $_.Name -notin $orderedProperties -and
-                        $_.Name -ne 'ParameterString' -and
-                        $_.Name -notlike 'Param_*'
-                    } |
+                    Where-Object { $_.Name -like 'Param_*' } |
+                    Sort-Object -Property Name |
                     ForEach-Object {
                         $orderedObject[$_.Name] = $_.Value
                     }
+                }
+
+                $_.PSObject.Properties |
+                Where-Object {
+                    $_.Name -notin $orderedProperties -and
+                    $_.Name -ne 'ParameterString' -and
+                    $_.Name -notlike 'Param_*'
+                } |
+                ForEach-Object {
+                    $orderedObject[$_.Name] = $_.Value
+                }
 
                 [PSCustomObject]$orderedObject
             }
@@ -938,7 +967,7 @@ function Invoke-SearchUnifiedAuditLogCustomHelperGUI {
             $exoConnected = $false
             if (Get-Command -Name Get-ConnectionInformation -ErrorAction SilentlyContinue) {
                 $exoConnected = [bool](Get-ConnectionInformation -ErrorAction SilentlyContinue |
-                        Where-Object { $_.State -eq 'Connected' -and $_.TokenStatus -eq 'Active' })
+                    Where-Object { $_.State -eq 'Connected' -and $_.TokenStatus -eq 'Active' })
             }
             if (-not $exoConnected) {
                 [System.Windows.MessageBox]::Show(
