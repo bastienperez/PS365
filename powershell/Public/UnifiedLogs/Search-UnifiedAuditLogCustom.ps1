@@ -567,7 +567,6 @@ function Invoke-SearchUnifiedAuditLogCustomHelperGUI {
                 <TextBlock Text="Presets" FontWeight="SemiBold" Margin="0,0,0,6"/>
                 <StackPanel Orientation="Horizontal">
                     <Button x:Name="LoadSharingEventsButton" Content="Sharing activity (SPO/OneDrive)" Style="{StaticResource PrimaryButtonStyle}"/>
-                    <Button x:Name="LoadEmailAuthOTPButton" Content="Email auth OTP success (raw)" Style="{StaticResource PrimaryButtonStyle}"/>
                 </StackPanel>
             </StackPanel>
         </Border>
@@ -688,7 +687,6 @@ function Invoke-SearchUnifiedAuditLogCustomHelperGUI {
     $resultSizeBox = $window.FindName('ResultSizeBox')
     $simpleViewCheckBox = $window.FindName('SimpleViewCheckBox')
     $loadSharingEventsButton = $window.FindName('LoadSharingEventsButton')
-    $loadEmailAuthOTPButton = $window.FindName('LoadEmailAuthOTPButton')
     $operationsSearchBox = $window.FindName('OperationsSearchBox')
     $addCustomOperationButton = $window.FindName('AddCustomOperationButton')
     $availableOperationsListBox = $window.FindName('AvailableOperationsListBox')
@@ -931,7 +929,9 @@ function Invoke-SearchUnifiedAuditLogCustomHelperGUI {
             $resultSizeBox.Text = '5000'
             $simpleViewCheckBox.IsChecked = $true
 
-            # Sharing operations documented in MS Learn (audit-log-sharing)
+            # Sharing operations documented in MS Learn (audit-log-sharing).
+            # EmailAuthOTPAuthenticationSucceeded is added (as raw/custom) because external sharing
+            # flows often rely on email OTP authentication.
             $sharingOperations = @(
                 'SharingInvitationCreated',
                 'SharingInvitationAccepted',
@@ -940,7 +940,8 @@ function Invoke-SearchUnifiedAuditLogCustomHelperGUI {
                 'SecureLinkCreated',
                 'AddedToSecureLink',
                 'SharingSet',
-                'AddedToGroup'
+                'AddedToGroup',
+                'EmailAuthOTPAuthenticationSucceeded'
             )
 
             $selectedOperationsListBox.Items.Clear()
@@ -962,18 +963,6 @@ function Invoke-SearchUnifiedAuditLogCustomHelperGUI {
                 }
             }
 
-            & $buildCommand
-        })
-
-    $loadEmailAuthOTPButton.Add_Click({
-            # Preset: a single raw operation (not in the Microsoft Learn catalog), useful for tracking
-            # successful OTP authentication events from external e-mail recipients.
-            $op = 'EmailAuthOTPAuthenticationSucceeded'
-            $display = "$op [custom]"
-            $operationLookupByDisplay[$display] = $op
-
-            $selectedOperationsListBox.Items.Clear()
-            $null = $selectedOperationsListBox.Items.Add($display)
             & $buildCommand
         })
 
