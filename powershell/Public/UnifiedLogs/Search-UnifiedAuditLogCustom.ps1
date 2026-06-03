@@ -1046,7 +1046,23 @@ function Invoke-SearchUnifiedAuditLogCustomHelperGUI {
                 $runParams['SimpleView'] = $true
             }
 
-            $defaultFileName = "UnifiedAuditLog_$($startDate.ToString('yyyyMMdd-HHmm'))_to_$($endDate.ToString('yyyyMMdd-HHmm')).xlsx"
+            # Resolve a short tenant name (e.g. 'contoso.onmicrosoft.com' -> 'contoso') for the filename
+            $tenantName = 'tenant'
+            try {
+                $exoConn = Get-ConnectionInformation -ErrorAction Stop |
+                    Where-Object { $_.State -eq 'Connected' -and $_.TokenStatus -eq 'Active' } |
+                    Select-Object -First 1
+                if ($exoConn -and $exoConn.Organization) {
+                    $tenantName = ($exoConn.Organization -split '\.')[0]
+                }
+            }
+            catch {
+                Write-Verbose "Could not resolve tenant name for filename: $($_.Exception.Message)"
+            }
+            $tenantSafe = ($tenantName -replace '[^A-Za-z0-9\-_]', '_')
+            $executionStamp = (Get-Date).ToString('yyyy-MM-dd-HHmm')
+
+            $defaultFileName = "${executionStamp}_UnifiedAuditLog_${tenantSafe}_$($startDate.ToString('yyyyMMdd-HHmm'))_to_$($endDate.ToString('yyyyMMdd-HHmm')).xlsx"
             $saveDialog = New-Object Microsoft.Win32.SaveFileDialog
             $saveDialog.Title = 'Save audit log results as Excel'
             $saveDialog.Filter = 'Excel workbook (*.xlsx)|*.xlsx'
