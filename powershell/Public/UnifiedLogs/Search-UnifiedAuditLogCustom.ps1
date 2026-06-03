@@ -970,18 +970,49 @@ function Invoke-SearchUnifiedAuditLogCustomHelperGUI {
         })
 
     $runButton.Add_Click({
-            $exoConnected = $false
-            if (Get-Command -Name Get-ConnectionInformation -ErrorAction SilentlyContinue) {
-                $exoConnected = [bool](Get-ConnectionInformation -ErrorAction SilentlyContinue |
-                    Where-Object { $_.State -eq 'Connected' -and $_.TokenStatus -eq 'Active' })
+            $testExoConnection = {
+                if (Get-Command -Name Get-ConnectionInformation -ErrorAction SilentlyContinue) {
+                    return [bool](Get-ConnectionInformation -ErrorAction SilentlyContinue |
+                        Where-Object { $_.State -eq 'Connected' -and $_.TokenStatus -eq 'Active' })
+                }
+                return $false
             }
+
+            $exoConnected = & $testExoConnection
             if (-not $exoConnected) {
-                [System.Windows.MessageBox]::Show(
-                    'Not connected to Exchange Online. Run Connect-ExchangeOnline first, then retry.',
+                $answer = [System.Windows.MessageBox]::Show(
+                    "Not connected to Exchange Online.`n`nDo you want to connect now? A sign-in prompt will open.",
                     'Exchange Online connection required',
-                    'OK',
-                    'Error') | Out-Null
-                return
+                    'YesNo',
+                    'Question')
+                if ($answer -ne [System.Windows.MessageBoxResult]::Yes) {
+                    return
+                }
+
+                $window.Cursor = [System.Windows.Input.Cursors]::Wait
+                try {
+                    Connect-ExchangeOnline -ShowBanner:$false -ErrorAction Stop
+                }
+                catch {
+                    [System.Windows.MessageBox]::Show(
+                        "Failed to connect to Exchange Online:`n$($_.Exception.Message)",
+                        'Connection failed',
+                        'OK',
+                        'Error') | Out-Null
+                    $window.Cursor = [System.Windows.Input.Cursors]::Arrow
+                    return
+                }
+                $window.Cursor = [System.Windows.Input.Cursors]::Arrow
+
+                $exoConnected = & $testExoConnection
+                if (-not $exoConnected) {
+                    [System.Windows.MessageBox]::Show(
+                        'Exchange Online connection could not be verified. Please retry.',
+                        'Connection not active',
+                        'OK',
+                        'Error') | Out-Null
+                    return
+                }
             }
 
             $startDate = & $parseDateInput -InputText $startDateBox.Text -Fallback ((Get-Date).AddDays(-1).Date)
