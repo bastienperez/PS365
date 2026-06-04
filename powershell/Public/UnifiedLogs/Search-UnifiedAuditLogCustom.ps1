@@ -470,8 +470,8 @@ function Invoke-SearchUnifiedAuditLogCustomHelperGUI {
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Search-UnifiedAuditLogCustom Helper"
-    Width="1200" Height="860"
-    MinWidth="1200" MinHeight="860"
+    Width="1200" Height="940"
+    MinWidth="1200" MinHeight="940"
         WindowStartupLocation="CenterScreen"
         Background="#F3F5F8"
         FontFamily="Segoe UI">
