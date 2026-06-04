@@ -1,0 +1,4722 @@
+[
+  {
+    "FriendlyName": "Executed AI tool",
+    "Operation": "AIExecuteTool"
+  },
+  {
+    "FriendlyName": "Invoked AI agent",
+    "Operation": "AIInvokeAgent"
+  },
+  {
+    "FriendlyName": "Made AI inference call",
+    "Operation": "AIInferenceCall"
+  },
+  {
+    "FriendlyName": "Added credentials to a service principal",
+    "Operation": "Add service principal credentials"
+  },
+  {
+    "FriendlyName": "Added delegation entry",
+    "Operation": "Add delegation entry"
+  },
+  {
+    "FriendlyName": "Added service principal",
+    "Operation": "Add service principal"
+  },
+  {
+    "FriendlyName": "Removed a service principal from the directory",
+    "Operation": "Remove service principal"
+  },
+  {
+    "FriendlyName": "Removed credentials from a service principal",
+    "Operation": "Remove service principal credentials"
+  },
+  {
+    "FriendlyName": "Removed delegation entry",
+    "Operation": "Remove delegation entry"
+  },
+  {
+    "FriendlyName": "Set delegation entry",
+    "Operation": "Set delegation entry"
+  },
+  {
+    "FriendlyName": "Updated organization privacy settings",
+    "Operation": "UpdatedOrganizationBriefingSettings"
+  },
+  {
+    "FriendlyName": "Updated user privacy settings",
+    "Operation": "UpdatedUserBriefingSettings"
+  },
+  {
+    "FriendlyName": "Policy match",
+    "Operation": "SupervisionRuleMatch"
+  },
+  {
+    "FriendlyName": "Policy update",
+    "Operation": "SupervisionPolicyCreated, SupervisionPolicyUpdated, SupervisionPolicyDeleted"
+  },
+  {
+    "FriendlyName": "Tag applied to messages",
+    "Operation": "SupervisoryReviewTag"
+  },
+  {
+    "FriendlyName": "Roles change",
+    "Operation": "ComplianceManagerRolesChange"
+  },
+  {
+    "FriendlyName": "Tenant automation level change",
+    "Operation": "ComplianceManagerAutomationLevelChange"
+  },
+  {
+    "FriendlyName": "Testing source automation change",
+    "Operation": "ComplianceManagerAutomationChange"
+  },
+  {
+    "FriendlyName": "Accessed item",
+    "Operation": "LabelContentExplorerAccessedItem"
+  },
+  {
+    "FriendlyName": "AccessedAggregates",
+    "Operation": "AccessedAggregates"
+  },
+  {
+    "FriendlyName": "AccessedContentList",
+    "Operation": "AccessedContentList"
+  },
+  {
+    "FriendlyName": "AccessedItemDownload",
+    "Operation": "AccessedItemDownload"
+  },
+  {
+    "FriendlyName": "AccessedItemPreview",
+    "Operation": "AccessedItemPreview"
+  },
+  {
+    "FriendlyName": "AccessedSiteList",
+    "Operation": "AccessedSiteList"
+  },
+  {
+    "FriendlyName": "AccessedUserList",
+    "Operation": "AccessedUserList"
+  },
+  {
+    "FriendlyName": "SearchedContentList",
+    "Operation": "SearchedContentList"
+  },
+  {
+    "FriendlyName": "SearchedSiteList",
+    "Operation": "SearchedSiteList"
+  },
+  {
+    "FriendlyName": "SearchedUserList",
+    "Operation": "SearchedUserList"
+  },
+  {
+    "FriendlyName": "Canceled DSI sample view",
+    "Operation": "DSISampleViewCancelled"
+  },
+  {
+    "FriendlyName": "Canceled DSI statistics view",
+    "Operation": "DSIStatisticsViewCancelled"
+  },
+  {
+    "FriendlyName": "Created DSI Investigation",
+    "Operation": "CreatedDSIInvestigation"
+  },
+  {
+    "FriendlyName": "Deleted Data Security Investigations capacity",
+    "Operation": "DSICapacityDeleted"
+  },
+  {
+    "FriendlyName": "Deleted DSI Investigation",
+    "Operation": "DeletedDSIInvestigation"
+  },
+  {
+    "FriendlyName": "DSI AI feedback provided",
+    "Operation": "DSIAIFeedbackProvided"
+  },
+  {
+    "FriendlyName": "DSI investigation list viewed",
+    "Operation": "DSIInvestigationListViewed"
+  },
+  {
+    "FriendlyName": "DSI search added",
+    "Operation": "DSIPurviewSearchAdded"
+  },
+  {
+    "FriendlyName": "DSI search updated",
+    "Operation": "DSIPurviewSearchUpdated"
+  },
+  {
+    "FriendlyName": "DSIProbeJobResultsViewed",
+    "Operation": "DSIProbeJobResultsViewed"
+  },
+  {
+    "FriendlyName": "Get DSI Investigation",
+    "Operation": "GetDSIInvestigation"
+  },
+  {
+    "FriendlyName": "Get DSI search",
+    "Operation": "GetSearchDSIInvestigation"
+  },
+  {
+    "FriendlyName": "Investigation created from Defender XDR",
+    "Operation": "DSIInvestigationCreatedFromXDR"
+  },
+  {
+    "FriendlyName": "Investigation created from Purview IRM",
+    "Operation": "DSIInvestigationCreatedFromIRM"
+  },
+  {
+    "FriendlyName": "Item added to mitigation",
+    "Operation": "DSIItemAddedToMitigation"
+  },
+  {
+    "FriendlyName": "Item removed from mitigation",
+    "Operation": "DSIItemRemovedFromMitigation"
+  },
+  {
+    "FriendlyName": "Mitigation plan list viewed",
+    "Operation": "DSIMitigationPlanListViewed"
+  },
+  {
+    "FriendlyName": "Started categorization job",
+    "Operation": "DSIInvestigationCategorizationJobSubmitted"
+  },
+  {
+    "FriendlyName": "Started probing job",
+    "Operation": "DSIProbeJobSubmitted"
+  },
+  {
+    "FriendlyName": "Started purge job",
+    "Operation": "DSIPurgeStarted"
+  },
+  {
+    "FriendlyName": "Started vectorization job",
+    "Operation": "DSIInvestigationVectorizationJobSubmitted"
+  },
+  {
+    "FriendlyName": "Submitted DSI search add to evidence set job",
+    "Operation": "DSIPurviewSearchAddToEvidenceSetJobSubmitted"
+  },
+  {
+    "FriendlyName": "Submitted DSI search sample job",
+    "Operation": "DSIPurviewSearchSampleJobSubmitted"
+  },
+  {
+    "FriendlyName": "Submitted DSI search statistics job",
+    "Operation": "DSIPurviewSearchStatisticsJobSubmitted"
+  },
+  {
+    "FriendlyName": "Updated Data Security Investigations capacity",
+    "Operation": "DSICapacityUpdated"
+  },
+  {
+    "FriendlyName": "Updated DSI Investigation",
+    "Operation": "UpdatedDSIInvestigation"
+  },
+  {
+    "FriendlyName": "Updated DSI Investigation members",
+    "Operation": "DSIInvestigationMembersUpdated"
+  },
+  {
+    "FriendlyName": "Updated status on item from mitigation plan",
+    "Operation": "DSIMitigationItemStatusUpdated"
+  },
+  {
+    "FriendlyName": "Uploaded file for DSI search",
+    "Operation": "DSIPurviewSearchUploadFile"
+  },
+  {
+    "FriendlyName": "Vector search started",
+    "Operation": "DSIVectorSearchStarted"
+  },
+  {
+    "FriendlyName": "Viewed data processing errors for a DSI evidence set",
+    "Operation": "DSIInvestigationSettingsUpdated"
+  },
+  {
+    "FriendlyName": "Viewed Data Security Investigations capacity",
+    "Operation": "DSICapacityViewed"
+  },
+  {
+    "FriendlyName": "Viewed default DSI investigation settings",
+    "Operation": "DSIInvestigationSettingsDefaultViewed"
+  },
+  {
+    "FriendlyName": "Viewed DSI evidence set document",
+    "Operation": "DSIEvidenceSetDocumentViewed"
+  },
+  {
+    "FriendlyName": "Viewed DSI investigation settings",
+    "Operation": "DSIInvestigationSettingsViewed"
+  },
+  {
+    "FriendlyName": "Viewed DSI sample results",
+    "Operation": "DSISampleResultsViewed"
+  },
+  {
+    "FriendlyName": "Viewed DSI sample status",
+    "Operation": "DSISampleStatusViewed"
+  },
+  {
+    "FriendlyName": "Viewed DSI statistics results",
+    "Operation": "DSIStatisticsResultsViewed"
+  },
+  {
+    "FriendlyName": "Viewed individual activity",
+    "Operation": "DSISingleActivityViewed"
+  },
+  {
+    "FriendlyName": "Viewed investigation activities list",
+    "Operation": "DSIActivitiesViewed"
+  },
+  {
+    "FriendlyName": "Viewed investigation evidence set",
+    "Operation": "DSIEvidenceSetViewed"
+  },
+  {
+    "FriendlyName": "Viewed item from mitigation plan",
+    "Operation": "DSIItemViewedFromMitigation"
+  },
+  {
+    "FriendlyName": "Agent Ran",
+    "Operation": "AgentRan"
+  },
+  {
+    "FriendlyName": "Agent re-ran",
+    "Operation": "Agent Reran"
+  },
+  {
+    "FriendlyName": "Agent result viewed",
+    "Operation": "AgentResultViewed"
+  },
+  {
+    "FriendlyName": "Agent run cancelled",
+    "Operation": "AgentRunCancelled"
+  },
+  {
+    "FriendlyName": "Agent run deleted",
+    "Operation": "AgentRunDeleted"
+  },
+  {
+    "FriendlyName": "Added a partner to the directory",
+    "Operation": "Add partner to company"
+  },
+  {
+    "FriendlyName": "Added domain to company",
+    "Operation": "Add domain to company"
+  },
+  {
+    "FriendlyName": "Removed a partner from the directory",
+    "Operation": "Remove partner from company"
+  },
+  {
+    "FriendlyName": "Removed domain from company",
+    "Operation": "Remove domain from company"
+  },
+  {
+    "FriendlyName": "Set company information",
+    "Operation": "Set company information"
+  },
+  {
+    "FriendlyName": "Set domain authentication",
+    "Operation": "Set domain authentication"
+  },
+  {
+    "FriendlyName": "Set password policy",
+    "Operation": "Set password policy"
+  },
+  {
+    "FriendlyName": "Turned on Microsoft Entra ID Sync",
+    "Operation": "Set DirSyncEnabled flag"
+  },
+  {
+    "FriendlyName": "Updated domain",
+    "Operation": "Update domain"
+  },
+  {
+    "FriendlyName": "Updated the federation settings for a domain",
+    "Operation": "Set federation settings on domain"
+  },
+  {
+    "FriendlyName": "Verified domain",
+    "Operation": "Verify domain"
+  },
+  {
+    "FriendlyName": "Verified email verified domain",
+    "Operation": "Verify email verified domain"
+  },
+  {
+    "FriendlyName": "Added reviewers",
+    "Operation": "AddReviewer"
+  },
+  {
+    "FriendlyName": "Approved disposal",
+    "Operation": "ApproveDisposal"
+  },
+  {
+    "FriendlyName": "Extended retention period",
+    "Operation": "ExtendRetention"
+  },
+  {
+    "FriendlyName": "Relabeled item",
+    "Operation": "RelabelItem"
+  },
+  {
+    "FriendlyName": "Accepted terms",
+    "Operation": "AcceptedTerms"
+  },
+  {
+    "FriendlyName": "Activated subscription",
+    "Operation": "ActivatedSubscription"
+  },
+  {
+    "FriendlyName": "Added group member",
+    "Operation": "AddedGroupMember"
+  },
+  {
+    "FriendlyName": "Canceled deprovision",
+    "Operation": "CanceledDeprovision"
+  },
+  {
+    "FriendlyName": "Created billing plan",
+    "Operation": "CreatedBillingPlan"
+  },
+  {
+    "FriendlyName": "Created child organization",
+    "Operation": "CreatedChildOrganization"
+  },
+  {
+    "FriendlyName": "Created data export configuration",
+    "Operation": "CreatedDataExportConfig"
+  },
+  {
+    "FriendlyName": "Created EHR connector",
+    "Operation": "CreatedEhrConnector"
+  },
+  {
+    "FriendlyName": "Created EHR instance",
+    "Operation": "CreatedEhrInstance"
+  },
+  {
+    "FriendlyName": "Created EHR user",
+    "Operation": "CreatedEhrUser"
+  },
+  {
+    "FriendlyName": "Created environment",
+    "Operation": "CreatedEnvironment"
+  },
+  {
+    "FriendlyName": "Created extension",
+    "Operation": "CreatedExtension"
+  },
+  {
+    "FriendlyName": "Created group",
+    "Operation": "CreatedGroup"
+  },
+  {
+    "FriendlyName": "Created organization role assignment",
+    "Operation": "CreatedOrganizationRoleAssignment"
+  },
+  {
+    "FriendlyName": "Created role assignment",
+    "Operation": "CreatedRoleAssignment"
+  },
+  {
+    "FriendlyName": "Deleted billing plan",
+    "Operation": "DeletedBillingPlan"
+  },
+  {
+    "FriendlyName": "Deleted data export configuration",
+    "Operation": "DeletedDataExportConfig"
+  },
+  {
+    "FriendlyName": "Deleted EHR instance",
+    "Operation": "DeletedEhrInstance"
+  },
+  {
+    "FriendlyName": "Deleted EHR user",
+    "Operation": "DeletedEhrUser"
+  },
+  {
+    "FriendlyName": "Deleted environment",
+    "Operation": "DeletedEnvironment"
+  },
+  {
+    "FriendlyName": "Deleted group",
+    "Operation": "DeletedGroup"
+  },
+  {
+    "FriendlyName": "Deleted organization role assignment",
+    "Operation": "DeletedOrganizationRoleAssignment"
+  },
+  {
+    "FriendlyName": "Deleted role assignment",
+    "Operation": "DeletedRoleAssignment"
+  },
+  {
+    "FriendlyName": "Deleted setting",
+    "Operation": "DeletedSetting"
+  },
+  {
+    "FriendlyName": "Deprovisioned product",
+    "Operation": "DeprovisionedProduct"
+  },
+  {
+    "FriendlyName": "Listed billing plans",
+    "Operation": "ListedBillingPlans"
+  },
+  {
+    "FriendlyName": "Listed EHR instances",
+    "Operation": "ListedEhrInstances"
+  },
+  {
+    "FriendlyName": "Listed environments",
+    "Operation": "ListedEnvironments"
+  },
+  {
+    "FriendlyName": "Listed extensions",
+    "Operation": "ListedExtensions"
+  },
+  {
+    "FriendlyName": "Listed groups",
+    "Operation": "ListedGroups"
+  },
+  {
+    "FriendlyName": "Listed organizations",
+    "Operation": "ListedOrganizations"
+  },
+  {
+    "FriendlyName": "Listed role assignments",
+    "Operation": "ListedRoleAssignments"
+  },
+  {
+    "FriendlyName": "Listed settings",
+    "Operation": "ListedSettings"
+  },
+  {
+    "FriendlyName": "Provisioned product",
+    "Operation": "ProvisionedProduct"
+  },
+  {
+    "FriendlyName": "Queued deprovision",
+    "Operation": "QueuedDeprovision"
+  },
+  {
+    "FriendlyName": "Removed group member",
+    "Operation": "RemovedGroupMember"
+  },
+  {
+    "FriendlyName": "Updated billing plan",
+    "Operation": "UpdatedBillingPlan"
+  },
+  {
+    "FriendlyName": "Updated data export configuration",
+    "Operation": "UpdatedDataExportConfig"
+  },
+  {
+    "FriendlyName": "Updated EHR connector",
+    "Operation": "UpdatedEhrConnector"
+  },
+  {
+    "FriendlyName": "Updated EHR instance",
+    "Operation": "UpdatedEhrInstance"
+  },
+  {
+    "FriendlyName": "Updated environment",
+    "Operation": "UpdatedEnvironment"
+  },
+  {
+    "FriendlyName": "Updated extension",
+    "Operation": "UpdatedExtension"
+  },
+  {
+    "FriendlyName": "Updated group",
+    "Operation": "UpdatedGroup"
+  },
+  {
+    "FriendlyName": "Updated organization",
+    "Operation": "UpdatedOrganization"
+  },
+  {
+    "FriendlyName": "Updated setting",
+    "Operation": "UpdatedSetting"
+  },
+  {
+    "FriendlyName": "Viewed billing plan",
+    "Operation": "ViewedBillingPlan"
+  },
+  {
+    "FriendlyName": "Viewed data export configuration",
+    "Operation": "ViewedDataExportConfig"
+  },
+  {
+    "FriendlyName": "Viewed EHR connector",
+    "Operation": "ViewedEhrConnector"
+  },
+  {
+    "FriendlyName": "Viewed EHR instance",
+    "Operation": "ViewedEhrInstance"
+  },
+  {
+    "FriendlyName": "Viewed environment",
+    "Operation": "ViewedEnvironment"
+  },
+  {
+    "FriendlyName": "Viewed extension",
+    "Operation": "ViewedExtension"
+  },
+  {
+    "FriendlyName": "Viewed group",
+    "Operation": "ViewedGroup"
+  },
+  {
+    "FriendlyName": "Viewed organization",
+    "Operation": "ViewedOrganization"
+  },
+  {
+    "FriendlyName": "Viewed role assignment",
+    "Operation": "ViewedRoleAssignment"
+  },
+  {
+    "FriendlyName": "Viewed setting",
+    "Operation": "ViewedSetting"
+  },
+  {
+    "FriendlyName": "Added favorite",
+    "Operation": "FavoriteSet"
+  },
+  {
+    "FriendlyName": "Added Purview search",
+    "Operation": "PurviewSearchAdded"
+  },
+  {
+    "FriendlyName": "Added review set",
+    "Operation": "ReviewSetAdded"
+  },
+  {
+    "FriendlyName": "Added saved search for a review set",
+    "Operation": "ReviewSetSavedSearchAdded"
+  },
+  {
+    "FriendlyName": "Added tag template",
+    "Operation": "TagTemplateAdded"
+  },
+  {
+    "FriendlyName": "Cancelled sample view",
+    "Operation": "SampleViewCancelled"
+  },
+  {
+    "FriendlyName": "Cancelled statistics view",
+    "Operation": "StatisticsViewCancelled"
+  },
+  {
+    "FriendlyName": "Changed eDiscovery case",
+    "Operation": "CaseUpdated"
+  },
+  {
+    "FriendlyName": "Changed hold in eDiscovery case",
+    "Operation": "HoldUpdated"
+  },
+  {
+    "FriendlyName": "Closed eDiscovery case",
+    "Operation": "CaseClosed"
+  },
+  {
+    "FriendlyName": "Copied review set",
+    "Operation": "ReviewSetCopied"
+  },
+  {
+    "FriendlyName": "Created eDiscovery case",
+    "Operation": "CaseAdded"
+  },
+  {
+    "FriendlyName": "Created hold in eDiscovery case",
+    "Operation": "HoldCreated"
+  },
+  {
+    "FriendlyName": "Deleted eDiscovery case",
+    "Operation": "CaseRemoved"
+  },
+  {
+    "FriendlyName": "Deleted file for Purview search",
+    "Operation": "PurviewSearchDeleteFile"
+  },
+  {
+    "FriendlyName": "Deleted hold in eDiscovery case",
+    "Operation": "HoldRemoved"
+  },
+  {
+    "FriendlyName": "Deleted Purview search",
+    "Operation": "PurviewSearchDeleted"
+  },
+  {
+    "FriendlyName": "Deleted Purview Search export job",
+    "Operation": "PurviewSearchExportJobDeleted"
+  },
+  {
+    "FriendlyName": "Removed favorite",
+    "Operation": "FavoriteRemoved"
+  },
+  {
+    "FriendlyName": "Removed saved search for a review set",
+    "Operation": "ReviewSetSavedSearchRemoved"
+  },
+  {
+    "FriendlyName": "Removed tag template",
+    "Operation": "TagTemplateRemoved"
+  },
+  {
+    "FriendlyName": "Reopened eDiscovery case",
+    "Operation": "CaseReopened"
+  },
+  {
+    "FriendlyName": "Retried distribution sync for hold",
+    "Operation": "HoldRetryDistributionSync"
+  },
+  {
+    "FriendlyName": "Retrieved actions for all review sets",
+    "Operation": "GetActionsForAllReviewSets"
+  },
+  {
+    "FriendlyName": "Retrieved all action for hold",
+    "Operation": "GetActionsForAllHolds"
+  },
+  {
+    "FriendlyName": "Retrieved all action for search",
+    "Operation": "GetActionsForSearch"
+  },
+  {
+    "FriendlyName": "Retrieved all actions for all exports",
+    "Operation": "GetActionsForAllExports"
+  },
+  {
+    "FriendlyName": "Retrieved all actions for case",
+    "Operation": "GetActionsForCase"
+  },
+  {
+    "FriendlyName": "Retrieved all actions for hold",
+    "Operation": "GetActionsForHold"
+  },
+  {
+    "FriendlyName": "Retrieved all actions for review set",
+    "Operation": "GetActionsForReviewSet"
+  },
+  {
+    "FriendlyName": "Retrieved single action for case",
+    "Operation": "GetSingleActionForCase"
+  },
+  {
+    "FriendlyName": "Retrieved single action for hold",
+    "Operation": "GetSingleActionForHold"
+  },
+  {
+    "FriendlyName": "Retrieved single action for review set",
+    "Operation": "GetSingleActionForReviewSet"
+  },
+  {
+    "FriendlyName": "Retrieved single action for search",
+    "Operation": "GetSingleActionForSearch"
+  },
+  {
+    "FriendlyName": "Submitted new algo job",
+    "Operation": "AlgoJobSubmitted"
+  },
+  {
+    "FriendlyName": "Submitted new burn job",
+    "Operation": "BurnJobSubmitted"
+  },
+  {
+    "FriendlyName": "Submitted purview search add to review set job",
+    "Operation": "PurviewSearchAddToReviewSetJobSubmitted"
+  },
+  {
+    "FriendlyName": "Submitted purview search export job",
+    "Operation": "PurviewSearchExportJobSubmitted"
+  },
+  {
+    "FriendlyName": "Submitted purview search sample job",
+    "Operation": "PurviewSearchSampleJobSubmitted"
+  },
+  {
+    "FriendlyName": "Submitted purview search statistics job",
+    "Operation": "PurviewSearchStatisticsJobSubmitted"
+  },
+  {
+    "FriendlyName": "Submitted review set export job",
+    "Operation": "ReviewSetExportJobSubmitted"
+  },
+  {
+    "FriendlyName": "Tagged documents by ID for a review set",
+    "Operation": "ReviewSetDocumentsTaggedById"
+  },
+  {
+    "FriendlyName": "Tagged documents by query for a review set",
+    "Operation": "ReviewSetDocumentsTaggedByQuery"
+  },
+  {
+    "FriendlyName": "Updated case members",
+    "Operation": "CaseMembersUpdated"
+  },
+  {
+    "FriendlyName": "Updated case settings",
+    "Operation": "CaseSettingsUpdated"
+  },
+  {
+    "FriendlyName": "Updated notes for a review set",
+    "Operation": "ReviewSetNotesUpdated"
+  },
+  {
+    "FriendlyName": "Updated Purview search",
+    "Operation": "PurviewSearchUpdated"
+  },
+  {
+    "FriendlyName": "Updated review set",
+    "Operation": "ReviewSetUpdated"
+  },
+  {
+    "FriendlyName": "Updated review set annotation",
+    "Operation": "ReviewSetAnnotationsUpdated"
+  },
+  {
+    "FriendlyName": "Updated saved search for a review set",
+    "Operation": "ReviewSetSavedSearchUpdated"
+  },
+  {
+    "FriendlyName": "Updated tag template",
+    "Operation": "TagTemplateUpdated"
+  },
+  {
+    "FriendlyName": "Updated tags",
+    "Operation": "TagsUpdated"
+  },
+  {
+    "FriendlyName": "Updated tags for a tag template",
+    "Operation": "TagTemplateTagsUpdated"
+  },
+  {
+    "FriendlyName": "Updated tenant settings",
+    "Operation": "TenantSettingsUpdated"
+  },
+  {
+    "FriendlyName": "Viewed analytics review set attachments report",
+    "Operation": "AlgoGetReviewSetAttachmentsReport"
+  },
+  {
+    "FriendlyName": "Viewed analytics review set documents report",
+    "Operation": "AlgoGetReviewSetDocumentsReport"
+  },
+  {
+    "FriendlyName": "Viewed analytics review set email report",
+    "Operation": "AlgoGetReviewSetEmailsReport"
+  },
+  {
+    "FriendlyName": "Viewed analytics review set report",
+    "Operation": "AlgoGetReviewSetReport"
+  },
+  {
+    "FriendlyName": "Viewed analytics review set report by file type",
+    "Operation": "AlgoGetReviewSetReportByFileType"
+  },
+  {
+    "FriendlyName": "Viewed analytics review set report by source",
+    "Operation": "AlgoGetReviewSetReportBySource"
+  },
+  {
+    "FriendlyName": "Viewed case metadata",
+    "Operation": "CaseMetadataViewed"
+  },
+  {
+    "FriendlyName": "Viewed case settings",
+    "Operation": "CaseSettingsViewed"
+  },
+  {
+    "FriendlyName": "Viewed data processing errors for a review set",
+    "Operation": "ReviewSetDataProcessingErrorViewed"
+  },
+  {
+    "FriendlyName": "Viewed default case settings",
+    "Operation": "CaseSettingsDefaultViewed"
+  },
+  {
+    "FriendlyName": "Viewed eDiscovery case",
+    "Operation": "CaseViewed"
+  },
+  {
+    "FriendlyName": "Viewed eDiscovery case list",
+    "Operation": "CaseListViewed"
+  },
+  {
+    "FriendlyName": "Viewed favorite list",
+    "Operation": "FavoriteListViewed"
+  },
+  {
+    "FriendlyName": "Viewed hold",
+    "Operation": "HoldViewed"
+  },
+  {
+    "FriendlyName": "Viewed hold list",
+    "Operation": "HoldListViewed"
+  },
+  {
+    "FriendlyName": "Viewed hold results",
+    "Operation": "HoldResultsViewed"
+  },
+  {
+    "FriendlyName": "Viewed hold status",
+    "Operation": "HoldStatusViewed"
+  },
+  {
+    "FriendlyName": "Viewed if analytics settings are changed",
+    "Operation": "AlgoIsSettingChanged"
+  },
+  {
+    "FriendlyName": "Viewed load count in case",
+    "Operation": "LoadCountInCaseViewed"
+  },
+  {
+    "FriendlyName": "Viewed load list",
+    "Operation": "LoadListViewed"
+  },
+  {
+    "FriendlyName": "Viewed Purview search",
+    "Operation": "PurviewSearchViewed"
+  },
+  {
+    "FriendlyName": "Viewed Purview search list",
+    "Operation": "PurviewSearchListViewed"
+  },
+  {
+    "FriendlyName": "Viewed query report for a review set",
+    "Operation": "ReviewSetQueryReportViewed"
+  },
+  {
+    "FriendlyName": "Viewed review set document",
+    "Operation": "ReviewSetDocumentViewed"
+  },
+  {
+    "FriendlyName": "Viewed review set list",
+    "Operation": "ReviewSetListViewed"
+  },
+  {
+    "FriendlyName": "Viewed review set summary",
+    "Operation": "ReviewSetSummaryViewed"
+  },
+  {
+    "FriendlyName": "Viewed sample results",
+    "Operation": "SampleResultsViewed"
+  },
+  {
+    "FriendlyName": "Viewed sample status",
+    "Operation": "SampleStatusViewed"
+  },
+  {
+    "FriendlyName": "Viewed saved search list for a review set",
+    "Operation": "ReviewSetSavedSearchListViewed"
+  },
+  {
+    "FriendlyName": "Viewed search count for a review set",
+    "Operation": "ReviewSetSearchCountViewed"
+  },
+  {
+    "FriendlyName": "Viewed search options for a review set",
+    "Operation": "ReviewSetSearchOptionsViewed"
+  },
+  {
+    "FriendlyName": "Viewed search results for a review set",
+    "Operation": "ReviewSetSearchRun"
+  },
+  {
+    "FriendlyName": "Viewed statistics results",
+    "Operation": "StatisticsResultsViewed"
+  },
+  {
+    "FriendlyName": "Viewed statistics status",
+    "Operation": "StatisticsStatusViewed"
+  },
+  {
+    "FriendlyName": "Viewed tag template list",
+    "Operation": "TagTemplateListViewed"
+  },
+  {
+    "FriendlyName": "Viewed tags",
+    "Operation": "TagsViewed"
+  },
+  {
+    "FriendlyName": "Viewed tags for a tag template",
+    "Operation": "TagTemplateTagsViewed"
+  },
+  {
+    "FriendlyName": "Viewed tenant settings",
+    "Operation": "TenantSettingsViewed"
+  },
+  {
+    "FriendlyName": "Cancelled by the requestor",
+    "Operation": "ESignatureRequestCanceled"
+  },
+  {
+    "FriendlyName": "Declined by a signer",
+    "Operation": "ESignatureRequestDeclined"
+  },
+  {
+    "FriendlyName": "Document was downloaded",
+    "Operation": "ESignatureRequestDownloaded"
+  },
+  {
+    "FriendlyName": "Document was viewed",
+    "Operation": "ESignatureDocumentViewed"
+  },
+  {
+    "FriendlyName": "Link to the signed document expired",
+    "Operation": "ESignatureRequestExpired"
+  },
+  {
+    "FriendlyName": "Request was completed",
+    "Operation": "ESignatureRequestCompleted"
+  },
+  {
+    "FriendlyName": "Request was created",
+    "Operation": "ESignatureRequestCreated"
+  },
+  {
+    "FriendlyName": "Request was sent",
+    "Operation": "ESignatureRequestSent"
+  },
+  {
+    "FriendlyName": "Request was signed by a user",
+    "Operation": "ESignatureDocumentSigned"
+  },
+  {
+    "FriendlyName": "Accessed mailbox attachments",
+    "Operation": "AttachmentAccess"
+  },
+  {
+    "FriendlyName": "Accessed Mailbox folder",
+    "Operation": "FolderBind"
+  },
+  {
+    "FriendlyName": "Accessed mailbox items",
+    "Operation": "MailItemsAccessed"
+  },
+  {
+    "FriendlyName": "Accessed message",
+    "Operation": "MessageBind"
+  },
+  {
+    "FriendlyName": "Added delegate mailbox permissions",
+    "Operation": "Add-MailboxPermission"
+  },
+  {
+    "FriendlyName": "Added or removed user with delegate access to calendar folder",
+    "Operation": "UpdateCalendarDelegation"
+  },
+  {
+    "FriendlyName": "Added permissions to folder",
+    "Operation": "AddFolderPermissions"
+  },
+  {
+    "FriendlyName": "Copied messages to another folder",
+    "Operation": "Copy"
+  },
+  {
+    "FriendlyName": "Created mailbox item",
+    "Operation": "Create"
+  },
+  {
+    "FriendlyName": "Created new inbox rule in Outlook web app",
+    "Operation": "New-InboxRule"
+  },
+  {
+    "FriendlyName": "Delete priority cleanup label item",
+    "Operation": "PriorityCleanupDelete"
+  },
+  {
+    "FriendlyName": "Deleted messages from Deleted Items folder",
+    "Operation": "SoftDelete"
+  },
+  {
+    "FriendlyName": "Labeled item as a record",
+    "Operation": "ApplyRecord"
+  },
+  {
+    "FriendlyName": "Labeled message as a record",
+    "Operation": "ApplyRecordLabel"
+  },
+  {
+    "FriendlyName": "Modified folder permission",
+    "Operation": "ModifyFolderPermissions"
+  },
+  {
+    "FriendlyName": "Modified inbox rule from Outlook web app",
+    "Operation": "Set-InboxRule"
+  },
+  {
+    "FriendlyName": "Moved messages to another folder",
+    "Operation": "Move"
+  },
+  {
+    "FriendlyName": "Moved messages to Deleted Items folder",
+    "Operation": "MoveToDeletedItems"
+  },
+  {
+    "FriendlyName": "Perform search query",
+    "Operation": "SharepointSearchQueryInitiated"
+  },
+  {
+    "FriendlyName": "Preserve Mailbox item",
+    "Operation": "PreservedMailItemProactively"
+  },
+  {
+    "FriendlyName": "Priority cleanup label applied",
+    "Operation": "ApplyPriorityCleanup"
+  },
+  {
+    "FriendlyName": "Purged messages from the mailbox",
+    "Operation": "HardDelete"
+  },
+  {
+    "FriendlyName": "Removed delegate mailbox permissions",
+    "Operation": "Remove-MailboxPermission"
+  },
+  {
+    "FriendlyName": "Removed permissions from folder",
+    "Operation": "RemoveFolderPermissions"
+  },
+  {
+    "FriendlyName": "Search items in a mailbox",
+    "Operation": "SearchQueryInitiated"
+  },
+  {
+    "FriendlyName": "Sent message",
+    "Operation": "Send"
+  },
+  {
+    "FriendlyName": "Sent message using Send As permissions",
+    "Operation": "SendAs"
+  },
+  {
+    "FriendlyName": "Sent message using Send On Behalf permissions",
+    "Operation": "SendOnBehalf"
+  },
+  {
+    "FriendlyName": "Update item label",
+    "Operation": "UpdateComplianceTag"
+  },
+  {
+    "FriendlyName": "Updated inbox rules from Outlook client",
+    "Operation": "UpdateInboxRules"
+  },
+  {
+    "FriendlyName": "Updated message",
+    "Operation": "Update"
+  },
+  {
+    "FriendlyName": "User signed in to mailbox",
+    "Operation": "MailboxLogin"
+  },
+  {
+    "FriendlyName": "Automatically bound user credentials to Git",
+    "Operation": "AutoBoundGitCredentials"
+  },
+  {
+    "FriendlyName": "Branch workspace configuration retrieved",
+    "Operation": "BranchWorkspaceConfigurationRetrieved"
+  },
+  {
+    "FriendlyName": "Branch workspace configured",
+    "Operation": "GitBranchWorkspaceConfigured"
+  },
+  {
+    "FriendlyName": "Branched out to a workspace in Git",
+    "Operation": "GitBranchedOut"
+  },
+  {
+    "FriendlyName": "Checked out Git branch",
+    "Operation": "GitCheckedOutBranch"
+  },
+  {
+    "FriendlyName": "Compute Items Sizes",
+    "Operation": "ComputeItemsSize"
+  },
+  {
+    "FriendlyName": "Create the cross tenant auth mapping",
+    "Operation": "CreateCrossTenantAuthMapping"
+  },
+  {
+    "FriendlyName": "Created workspace relation",
+    "Operation": "CreatedWorkspaceRelation"
+  },
+  {
+    "FriendlyName": "Deleted a task flow",
+    "Operation": "DeletedTaskFlow"
+  },
+  {
+    "FriendlyName": "Deleted workspace relation",
+    "Operation": "DeletedWorkspaceRelation"
+  },
+  {
+    "FriendlyName": "Downloaded dataflow refresh logs",
+    "Operation": "DownloadedDataflowRefreshLogs"
+  },
+  {
+    "FriendlyName": "Export item definitions",
+    "Operation": "ExportItemDefinitions"
+  },
+  {
+    "FriendlyName": "Get Items Sizes",
+    "Operation": "GetItemsSize"
+  },
+  {
+    "FriendlyName": "Git connection settings updated",
+    "Operation": "GitConnectionSettingsUpdated"
+  },
+  {
+    "FriendlyName": "Import item definitions",
+    "Operation": "ImportItemDefinitions"
+  },
+  {
+    "FriendlyName": "Imported OneLake lifecycle policy",
+    "Operation": "ImportedLifecyclePolicy"
+  },
+  {
+    "FriendlyName": "Initialized connection to Git",
+    "Operation": "GitConnectionInitialized"
+  },
+  {
+    "FriendlyName": "Item definition exported",
+    "Operation": "ItemDefinitionExported"
+  },
+  {
+    "FriendlyName": "List all of the cross tenant auth mappings",
+    "Operation": "ListCrossTenantAuthMappings"
+  },
+  {
+    "FriendlyName": "Logged in to Git provider",
+    "Operation": "ConfiguredGitProviderCredentials"
+  },
+  {
+    "FriendlyName": "Logged out of Git provider",
+    "Operation": "DeletedGitProviderCredentials"
+  },
+  {
+    "FriendlyName": "Modified OneLake default tier",
+    "Operation": "ModifiedDefaultTier"
+  },
+  {
+    "FriendlyName": "Planning session upgraded",
+    "Operation": "PlanningSessionUpgraded"
+  },
+  {
+    "FriendlyName": "Recover an artifact",
+    "Operation": "ArtifactRecovered"
+  },
+  {
+    "FriendlyName": "Retrieved artifact's Logical Id",
+    "Operation": "ArtifactLogicalIdRetrieved"
+  },
+  {
+    "FriendlyName": "Set Warehouse Hardware Acceleration",
+    "Operation": "SetWarehouseHardwarePlatform"
+  },
+  {
+    "FriendlyName": "Soft delete an artifact",
+    "Operation": "ArtifactSoftDeleted"
+  },
+  {
+    "FriendlyName": "Switched Git branch",
+    "Operation": "GitSwitchedBranch"
+  },
+  {
+    "FriendlyName": "Updated artifact's Logical Id",
+    "Operation": "ArtifactLogicalIdUpdated"
+  },
+  {
+    "FriendlyName": "Updated authorization setting in GraphQL",
+    "Operation": "UpdatedAuthorizationSettingGraphQL"
+  },
+  {
+    "FriendlyName": "Updated git items selection",
+    "Operation": "GitItemsSelectionUpdated"
+  },
+  {
+    "FriendlyName": "Workspace relations retrieved",
+    "Operation": "WorkspaceRelationsRetrieved"
+  },
+  {
+    "FriendlyName": "(none)",
+    "Operation": "FileAccessedExtended"
+  },
+  {
+    "FriendlyName": "(none)",
+    "Operation": "FileModifiedExtended"
+  },
+  {
+    "FriendlyName": "(none)",
+    "Operation": "FilePreviewed"
+  },
+  {
+    "FriendlyName": "(none)",
+    "Operation": "PagePrefetched"
+  },
+  {
+    "FriendlyName": "(none)",
+    "Operation": "PageViewedExtended"
+  },
+  {
+    "FriendlyName": "Accessed file",
+    "Operation": "FileAccessed"
+  },
+  {
+    "FriendlyName": "Changed record status to locked",
+    "Operation": "LockRecord"
+  },
+  {
+    "FriendlyName": "Changed record status to unlocked",
+    "Operation": "UnlockRecord"
+  },
+  {
+    "FriendlyName": "Changed retention label for a file",
+    "Operation": "ComplianceSettingChanged"
+  },
+  {
+    "FriendlyName": "Checked in file",
+    "Operation": "FileCheckedIn"
+  },
+  {
+    "FriendlyName": "Checked out file",
+    "Operation": "FileCheckedOut"
+  },
+  {
+    "FriendlyName": "Copied file",
+    "Operation": "FileCopied"
+  },
+  {
+    "FriendlyName": "Deleted file",
+    "Operation": "FileDeleted"
+  },
+  {
+    "FriendlyName": "Deleted file from recycle bin",
+    "Operation": "FileDeletedFirstStageRecycleBin"
+  },
+  {
+    "FriendlyName": "Deleted file from second-stage recycle bin",
+    "Operation": "FileDeletedSecondStageRecycleBin"
+  },
+  {
+    "FriendlyName": "Deleted file marked as a record",
+    "Operation": "RecordDelete"
+  },
+  {
+    "FriendlyName": "Detected document sensitivity mismatch",
+    "Operation": "DocumentSensitivityMismatchDetected"
+  },
+  {
+    "FriendlyName": "Detected malware in file",
+    "Operation": "FileMalwareDetected"
+  },
+  {
+    "FriendlyName": "Discarded file checkout",
+    "Operation": "FileCheckOutDiscarded"
+  },
+  {
+    "FriendlyName": "Downloaded file",
+    "Operation": "FileDownloaded"
+  },
+  {
+    "FriendlyName": "Modified file",
+    "Operation": "FileModified"
+  },
+  {
+    "FriendlyName": "Moved file",
+    "Operation": "FileMoved"
+  },
+  {
+    "FriendlyName": "Performed search query",
+    "Operation": "SearchQueryPerformed"
+  },
+  {
+    "FriendlyName": "Priority cleanup move file to recycle bin",
+    "Operation": "PriorityCleanupFileRecycled"
+  },
+  {
+    "FriendlyName": "Priority cleanup permanent delete of file",
+    "Operation": "PriorityCleanupFileDeleted"
+  },
+  {
+    "FriendlyName": "Recycled a file",
+    "Operation": "FileRecycled"
+  },
+  {
+    "FriendlyName": "Recycled a folder",
+    "Operation": "FolderRecycled"
+  },
+  {
+    "FriendlyName": "Recycled all minor versions of file",
+    "Operation": "FileVersionsAllMinorsRecycled"
+  },
+  {
+    "FriendlyName": "Recycled all versions of file",
+    "Operation": "FileVersionsAllRecycled"
+  },
+  {
+    "FriendlyName": "Recycled version of file",
+    "Operation": "FileVersionRecycled"
+  },
+  {
+    "FriendlyName": "Renamed file",
+    "Operation": "FileRenamed"
+  },
+  {
+    "FriendlyName": "Restored file",
+    "Operation": "FileRestored"
+  },
+  {
+    "FriendlyName": "Started bulk deleting file versions",
+    "Operation": "FileVersionBulkDeletionStarted"
+  },
+  {
+    "FriendlyName": "Started bulk expiring file versions by using a schedule file",
+    "Operation": "FileVersionBulkExpirationByScheduleStarted"
+  },
+  {
+    "FriendlyName": "Started generating file version expiration report",
+    "Operation": "FileVersionExpirationReportStarted"
+  },
+  {
+    "FriendlyName": "Started tenant apply file version policy",
+    "Operation": "TenantApplyFileVersionPolicyStarted"
+  },
+  {
+    "FriendlyName": "Started updating version settings on all document libraries in the site",
+    "Operation": "DocumentLibraryVersionPolicyBulkUpdateStarted"
+  },
+  {
+    "FriendlyName": "Uploaded file",
+    "Operation": "FileUploaded"
+  },
+  {
+    "FriendlyName": "View signaled by client",
+    "Operation": "ClientViewSignaled"
+  },
+  {
+    "FriendlyName": "Viewed page",
+    "Operation": "PageViewed"
+  },
+  {
+    "FriendlyName": "Copied folder",
+    "Operation": "FolderCopied"
+  },
+  {
+    "FriendlyName": "Created folder",
+    "Operation": "FolderCreated"
+  },
+  {
+    "FriendlyName": "Deleted folder",
+    "Operation": "FolderDeleted"
+  },
+  {
+    "FriendlyName": "Deleted folder from recycle bin",
+    "Operation": "FolderDeletedFirstStageRecycleBin"
+  },
+  {
+    "FriendlyName": "Deleted folder from second-stage recycle bin",
+    "Operation": "FolderDeletedSecondStageRecycleBin"
+  },
+  {
+    "FriendlyName": "Modified folder",
+    "Operation": "FolderModified"
+  },
+  {
+    "FriendlyName": "Moved folder",
+    "Operation": "FolderMoved"
+  },
+  {
+    "FriendlyName": "Renamed folder",
+    "Operation": "FolderRenamed"
+  },
+  {
+    "FriendlyName": "Restored folder",
+    "Operation": "FolderRestored"
+  },
+  {
+    "FriendlyName": "Added form coauthor",
+    "Operation": "AddFormCoauthor"
+  },
+  {
+    "FriendlyName": "Added specific responder",
+    "Operation": "AddSpecificResponder"
+  },
+  {
+    "FriendlyName": "Allowed share form for copy",
+    "Operation": "AllowShareFormForCopy"
+  },
+  {
+    "FriendlyName": "Connected to Excel workbook",
+    "Operation": "ConnectToExcelWorkbook"
+  },
+  {
+    "FriendlyName": "Created a collection",
+    "Operation": "CollectionCreated"
+  },
+  {
+    "FriendlyName": "Created comment",
+    "Operation": "CreateComment"
+  },
+  {
+    "FriendlyName": "Created form",
+    "Operation": "CreateForm"
+  },
+  {
+    "FriendlyName": "Created response",
+    "Operation": "CreateResponse"
+  },
+  {
+    "FriendlyName": "Created summary link",
+    "Operation": "GetSummaryLink"
+  },
+  {
+    "FriendlyName": "Deleted all responses",
+    "Operation": "DeleteAllResponses"
+  },
+  {
+    "FriendlyName": "Deleted collection from the Recycle Bin",
+    "Operation": "CollectionHardDeleted"
+  },
+  {
+    "FriendlyName": "Deleted form",
+    "Operation": "DeleteForm"
+  },
+  {
+    "FriendlyName": "Deleted Response",
+    "Operation": "DeleteResponse"
+  },
+  {
+    "FriendlyName": "Deleted summary link",
+    "Operation": "DeleteSummaryLink"
+  },
+  {
+    "FriendlyName": "Disabled anyone can respond setting",
+    "Operation": "DisallowAnonymousResponse"
+  },
+  {
+    "FriendlyName": "Disabled collaboration",
+    "Operation": "DisableCollaboration"
+  },
+  {
+    "FriendlyName": "Disabled specific people can respond setting",
+    "Operation": "DisableSpecificResponse"
+  },
+  {
+    "FriendlyName": "Disallowed share form for copy",
+    "Operation": "DisallowShareFormForCopy"
+  },
+  {
+    "FriendlyName": "Edited form",
+    "Operation": "EditForm"
+  },
+  {
+    "FriendlyName": "Enabled anyone can respond setting",
+    "Operation": "AllowAnonymousResponse"
+  },
+  {
+    "FriendlyName": "Enabled Office 365 work or school account collaboration",
+    "Operation": "EnableWorkOrSchoolCollaboration"
+  },
+  {
+    "FriendlyName": "Enabled people in my organization collaboration",
+    "Operation": "EnableSameOrgCollaboration"
+  },
+  {
+    "FriendlyName": "Enabled specific people can respond setting",
+    "Operation": "EnableSpecificResponse"
+  },
+  {
+    "FriendlyName": "Enabled specific people collaboration",
+    "Operation": "EnableSpecificCollaboaration"
+  },
+  {
+    "FriendlyName": "Exported form",
+    "Operation": "ExportForm"
+  },
+  {
+    "FriendlyName": "Listed forms",
+    "Operation": "ListForms"
+  },
+  {
+    "FriendlyName": "Moved a form into collection",
+    "Operation": "MovedFormIntoCollection"
+  },
+  {
+    "FriendlyName": "Moved a form out of collection",
+    "Operation": "MovedFormOutofCollection"
+  },
+  {
+    "FriendlyName": "Moved collection to the Recycle Bin",
+    "Operation": "CollectionSoftDeleted"
+  },
+  {
+    "FriendlyName": "Moved form",
+    "Operation": "MoveForm"
+  },
+  {
+    "FriendlyName": "Previewed form",
+    "Operation": "PreviewForm"
+  },
+  {
+    "FriendlyName": "Removed form coauthor",
+    "Operation": "RemoveFormCoauthor"
+  },
+  {
+    "FriendlyName": "Removed specific responder",
+    "Operation": "RemoveSpecificResponder"
+  },
+  {
+    "FriendlyName": "Renamed a collection",
+    "Operation": "CollectionRenamed"
+  },
+  {
+    "FriendlyName": "Sent Forms Pro invitation",
+    "Operation": "ProInvitation"
+  },
+  {
+    "FriendlyName": "Submitted response",
+    "Operation": "SubmitResponse"
+  },
+  {
+    "FriendlyName": "Updated a collection",
+    "Operation": "CollectionUpdated"
+  },
+  {
+    "FriendlyName": "Updated form phishing status",
+    "Operation": "UpdatePhishingStatus"
+  },
+  {
+    "FriendlyName": "Updated form setting",
+    "Operation": "UpdateFormSetting"
+  },
+  {
+    "FriendlyName": "Updated response",
+    "Operation": "UpdateResponse"
+  },
+  {
+    "FriendlyName": "Updated user phishing status",
+    "Operation": "UpdateUserPhishingStatus"
+  },
+  {
+    "FriendlyName": "Updated user setting",
+    "Operation": "UpdateUserSetting"
+  },
+  {
+    "FriendlyName": "Viewed form (design time)",
+    "Operation": "ViewForm"
+  },
+  {
+    "FriendlyName": "Viewed response",
+    "Operation": "ViewResponse"
+  },
+  {
+    "FriendlyName": "Viewed response page",
+    "Operation": "ViewRuntimeForm"
+  },
+  {
+    "FriendlyName": "Viewed responses",
+    "Operation": "ViewResponses"
+  },
+  {
+    "FriendlyName": "Applied information barrier mode to site",
+    "Operation": "SiteIBModeSet"
+  },
+  {
+    "FriendlyName": "Applied segments to site",
+    "Operation": "SiteIBSegmentsSet"
+  },
+  {
+    "FriendlyName": "Changed AppBypassInformationBarrier setting for the tenant",
+    "Operation": "AppBypassInformationBarrier"
+  },
+  {
+    "FriendlyName": "Changed information barrier mode of site",
+    "Operation": "SiteIBModeChanged"
+  },
+  {
+    "FriendlyName": "Changed segments of site",
+    "Operation": "SiteIBSegmentsChanged"
+  },
+  {
+    "FriendlyName": "Disabled information barriers for SharePoint and OneDrive",
+    "Operation": "SPOIBIsDisabled"
+  },
+  {
+    "FriendlyName": "Enabled information barriers for SharePoint and OneDrive",
+    "Operation": "SPOIBIsEnabled"
+  },
+  {
+    "FriendlyName": "Information barriers insights report completed",
+    "Operation": "InformationBarriersInsightsReportCompleted"
+  },
+  {
+    "FriendlyName": "Information barriers insights report OneDrive section queried",
+    "Operation": "InformationBarriersInsightsReportOneDriveSectionQueried"
+  },
+  {
+    "FriendlyName": "Information barriers insights report scheduled",
+    "Operation": "InformationBarriersInsightsReportSchedule"
+  },
+  {
+    "FriendlyName": "Information barriers insights report SharePoint section queried",
+    "Operation": "InformationBarriersInsightsReportSharePointSectionQueried"
+  },
+  {
+    "FriendlyName": "Removed segment from site",
+    "Operation": "SiteIBSegmentsRemoved"
+  },
+  {
+    "FriendlyName": "Blocked Agent",
+    "Operation": "BlockedAgent"
+  },
+  {
+    "FriendlyName": "Deleted Agent",
+    "Operation": "DeletedAgent"
+  },
+  {
+    "FriendlyName": "Deployed Agent",
+    "Operation": "DeployedAgent"
+  },
+  {
+    "FriendlyName": "Removed Agent",
+    "Operation": "RemovedAgent"
+  },
+  {
+    "FriendlyName": "Unblocked Agent",
+    "Operation": "UnblockedAgent"
+  },
+  {
+    "FriendlyName": "Updated Agent",
+    "Operation": "UpdatedAgent"
+  },
+  {
+    "FriendlyName": "Updated Tenant-level Agent Settings",
+    "Operation": "UpdatedTenantSettings"
+  },
+  {
+    "FriendlyName": "Created policy configuration",
+    "Operation": "CreatedPolicyConfig"
+  },
+  {
+    "FriendlyName": "Deleted policy configuration",
+    "Operation": "DeletedPolicyConfig"
+  },
+  {
+    "FriendlyName": "Updated policy configuration",
+    "Operation": "UpdatedPolicyConfig"
+  },
+  {
+    "FriendlyName": "Updated policy configuration priority",
+    "Operation": "UpdatedPolicyConfigPriority"
+  },
+  {
+    "FriendlyName": "Device configuration updated",
+    "Operation": "updateddeviceconfiguration"
+  },
+  {
+    "FriendlyName": "Profile configuration updated",
+    "Operation": "updatedprofileconfiguration"
+  },
+  {
+    "FriendlyName": "Tenant configuration updated",
+    "Operation": "updatedtenantconfiguration"
+  },
+  {
+    "FriendlyName": "Activated a Backup Policy",
+    "Operation": "BackupPolicyActivated"
+  },
+  {
+    "FriendlyName": "Activated Draft Restore Task",
+    "Operation": "RestoreTaskActivated"
+  },
+  {
+    "FriendlyName": "Backup Item Created",
+    "Operation": "BackupItemAdded"
+  },
+  {
+    "FriendlyName": "Backup Item Removed",
+    "Operation": "BackupItemRemoved"
+  },
+  {
+    "FriendlyName": "Browsed Site for Restore",
+    "Operation": "SiteBrowsedForRestore"
+  },
+  {
+    "FriendlyName": "Cancel Offboard Backup Item",
+    "Operation": "CancelOffboardBackupItem"
+  },
+  {
+    "FriendlyName": "Completed Granular Restore for Backup Item",
+    "Operation": "BackupItemGranularRestoreCompleted"
+  },
+  {
+    "FriendlyName": "Completed Granular Restore Session",
+    "Operation": "GranularRestoreSessionCompleted"
+  },
+  {
+    "FriendlyName": "Completed Restore Task",
+    "Operation": "RestoreTaskCompleted"
+  },
+  {
+    "FriendlyName": "Created Draft Restore Task",
+    "Operation": "DraftRestoreTaskCreated"
+  },
+  {
+    "FriendlyName": "Created Granular Browse Session",
+    "Operation": "GranularBrowseSessionCreated"
+  },
+  {
+    "FriendlyName": "Created Granular Restore Session",
+    "Operation": "GranularRestoreSessionCreated"
+  },
+  {
+    "FriendlyName": "Created new Backup policy",
+    "Operation": "NewBackupPolicyCreated"
+  },
+  {
+    "FriendlyName": "Deleted a Backup Policy",
+    "Operation": "BackupPolicyDeleted"
+  },
+  {
+    "FriendlyName": "Deleted Draft Restore Task",
+    "Operation": "DraftRestoreTaskDeleted"
+  },
+  {
+    "FriendlyName": "Edited a Backup Policy",
+    "Operation": "BackupPolicyEdited"
+  },
+  {
+    "FriendlyName": "Edited Draft Restore Task",
+    "Operation": "DraftRestoreTaskEdited"
+  },
+  {
+    "FriendlyName": "Offboard Backup Item",
+    "Operation": "OffboardBackupItem"
+  },
+  {
+    "FriendlyName": "Paused a Backup Policy",
+    "Operation": "BackupPolicyPaused"
+  },
+  {
+    "FriendlyName": "Programmatically got Backup Item",
+    "Operation": "GetBackupItem"
+  },
+  {
+    "FriendlyName": "Programmatically got Details of Backup Policy",
+    "Operation": "ViewBackupPolicyDetails"
+  },
+  {
+    "FriendlyName": "Programmatically got Details of Restore Task",
+    "Operation": "GetRestoreTaskDetails"
+  },
+  {
+    "FriendlyName": "Programmatically got list of all Backup Policies",
+    "Operation": "ListAllBackupPolicies"
+  },
+  {
+    "FriendlyName": "Programmatically got list of Backup Items in Backup Policies",
+    "Operation": "ListAllBackupItemsInPolicies"
+  },
+  {
+    "FriendlyName": "Programmatically got list of Backup Items in Tenant",
+    "Operation": "ListAllBackupItemsInTenant"
+  },
+  {
+    "FriendlyName": "Programmatically got list of Backup Items in Workload",
+    "Operation": "ListAllBackupItemsInWorkload"
+  },
+  {
+    "FriendlyName": "Programmatically got list of Restore Items in Restore Task",
+    "Operation": "GetAllRestoreArtifactsInTask"
+  },
+  {
+    "FriendlyName": "Programmatically got list of Restore Points",
+    "Operation": "ListAllRestorePoints"
+  },
+  {
+    "FriendlyName": "Programmatically got list of Restore Tasks",
+    "Operation": "ListAllRestoreTasks"
+  },
+  {
+    "FriendlyName": "Restore item restoration complete",
+    "Operation": "BackupItemRestoreCompleted"
+  },
+  {
+    "FriendlyName": "Restore item restoration triggered",
+    "Operation": "BackupItemRestoreTriggered"
+  },
+  {
+    "FriendlyName": "Triggered Granular Restore for Backup Item",
+    "Operation": "BackupItemGranularRestoreTriggered"
+  },
+  {
+    "FriendlyName": "Triggered Granular Restore Session",
+    "Operation": "GranularRestoreSessionTriggered"
+  },
+  {
+    "FriendlyName": "Created a new Copilot plugin",
+    "Operation": "CreatePlugin"
+  },
+  {
+    "FriendlyName": "Created a new Copilot promptbook",
+    "Operation": "CreatePromptBook"
+  },
+  {
+    "FriendlyName": "Deleted a Copilot plugin",
+    "Operation": "DeletePlugin"
+  },
+  {
+    "FriendlyName": "Deleted a Copilot promptbook",
+    "Operation": "DeletePromptBook"
+  },
+  {
+    "FriendlyName": "Disabled a Copilot plugin",
+    "Operation": "DisableCopilotPlugin"
+  },
+  {
+    "FriendlyName": "Disabled a Copilot promptbook",
+    "Operation": "DisablePromptBook"
+  },
+  {
+    "FriendlyName": "Enabled a Copilot plugin",
+    "Operation": "EnablePlugin"
+  },
+  {
+    "FriendlyName": "Enabled a Copilot promptbook",
+    "Operation": "EnablePromptBook"
+  },
+  {
+    "FriendlyName": "Exported AI Interactions",
+    "Operation": "AIEnterpriseInteractionsExported"
+  },
+  {
+    "FriendlyName": "Interacted with Copilot",
+    "Operation": "CopilotInteraction"
+  },
+  {
+    "FriendlyName": "Sent change notification for AI interaction creation",
+    "Operation": "AIInteractionCreatedNotification"
+  },
+  {
+    "FriendlyName": "Sent change notification for AI interaction deletion",
+    "Operation": "AIInteractionDeletedNotification"
+  },
+  {
+    "FriendlyName": "Sent change notification for AI interaction update",
+    "Operation": "AIInteractionUpdatedNotification"
+  },
+  {
+    "FriendlyName": "Subscribed to AI interactions",
+    "Operation": "SubscribedToAIInteractions"
+  },
+  {
+    "FriendlyName": "Updated a Copilot plugin setting",
+    "Operation": "UpdatePlugin"
+  },
+  {
+    "FriendlyName": "Updated a Copilot promptbook setting",
+    "Operation": "UpdatePromptBook"
+  },
+  {
+    "FriendlyName": "Updated a Copilot setting",
+    "Operation": "UpdateTenantSettings"
+  },
+  {
+    "FriendlyName": "Created a scheduled prompt",
+    "Operation": "ScheduledPromptCreated"
+  },
+  {
+    "FriendlyName": "Deleted a scheduled prompt",
+    "Operation": "ScheduledPromptDeleted"
+  },
+  {
+    "FriendlyName": "Executed a scheduled prompt",
+    "Operation": "ScheduledPromptExecute"
+  },
+  {
+    "FriendlyName": "Changed data retention",
+    "Operation": "ChangeDataRetention"
+  },
+  {
+    "FriendlyName": "Downloaded offboarding package",
+    "Operation": "DownloadOffboardingPkg"
+  },
+  {
+    "FriendlyName": "Downloaded onboarding package",
+    "Operation": "DownloadOnboardingPkg"
+  },
+  {
+    "FriendlyName": "Set advanced features",
+    "Operation": "SetAdvancedFeatures"
+  },
+  {
+    "FriendlyName": "Added indicator",
+    "Operation": "AddIndicator"
+  },
+  {
+    "FriendlyName": "Deleted indicator",
+    "Operation": "DeleteIndicator"
+  },
+  {
+    "FriendlyName": "Edited indicator",
+    "Operation": "EditIndicator"
+  },
+  {
+    "FriendlyName": "Collected investigation package",
+    "Operation": "CollectInvestigationPackage"
+  },
+  {
+    "FriendlyName": "Collected Logs",
+    "Operation": "LogsCollection"
+  },
+  {
+    "FriendlyName": "Downloaded file",
+    "Operation": "DownloadFile"
+  },
+  {
+    "FriendlyName": "Isolated device",
+    "Operation": "IsolateDevice"
+  },
+  {
+    "FriendlyName": "Offboarded device",
+    "Operation": "DeviceOffBoarding"
+  },
+  {
+    "FriendlyName": "Ran Antivirus scan",
+    "Operation": "RunAntiVirusScan"
+  },
+  {
+    "FriendlyName": "Ran get Live response file link",
+    "Operation": "LiveResponseGetFile"
+  },
+  {
+    "FriendlyName": "Ran Live response API",
+    "Operation": "RunLiveResponseApi"
+  },
+  {
+    "FriendlyName": "Ran Live response session",
+    "Operation": "RunLiveResponseSession"
+  },
+  {
+    "FriendlyName": "Released from isolation",
+    "Operation": "ReleaseFromIsolation"
+  },
+  {
+    "FriendlyName": "Removed app restrictions",
+    "Operation": "RemoveAppRestrictions"
+  },
+  {
+    "FriendlyName": "Restricted app execution",
+    "Operation": "RestrictAppExecution"
+  },
+  {
+    "FriendlyName": "Stopped and quarantined file",
+    "Operation": "StopAndQuarantineFile"
+  },
+  {
+    "FriendlyName": "Added role",
+    "Operation": "AddRole"
+  },
+  {
+    "FriendlyName": "Deleted role",
+    "Operation": "DeleteRole"
+  },
+  {
+    "FriendlyName": "Edited role",
+    "Operation": "EditRole"
+  },
+  {
+    "FriendlyName": "Defender Experts analyst permission created",
+    "Operation": "DefenderExpertsAnalystPermissionCreated"
+  },
+  {
+    "FriendlyName": "Defender Experts analyst permission modified",
+    "Operation": "DefenderExpertsAnalystPermissionModified"
+  },
+  {
+    "FriendlyName": "Added alert notification recipient",
+    "Operation": "AlertNotificationsRecipientAdded"
+  },
+  {
+    "FriendlyName": "Added exclusions configuration",
+    "Operation": "ExclusionConfigurationAdded"
+  },
+  {
+    "FriendlyName": "Added health issues notification recipient",
+    "Operation": "MonitoringAlertNotificationRecipientAdded"
+  },
+  {
+    "FriendlyName": "Added remediation action",
+    "Operation": "RemediationActionAdded"
+  },
+  {
+    "FriendlyName": "Added sensor",
+    "Operation": "SensorCreated"
+  },
+  {
+    "FriendlyName": "Created workspace",
+    "Operation": "WorkspaceCreated"
+  },
+  {
+    "FriendlyName": "Deleted alert notification recipient",
+    "Operation": "AlertNotificationsRecipientDeleted"
+  },
+  {
+    "FriendlyName": "Deleted exclusions configuration",
+    "Operation": "ExclusionConfigurationDeleted"
+  },
+  {
+    "FriendlyName": "Deleted health issues notification recipient",
+    "Operation": "MonitoringAlertNotificationRecipientDeleted"
+  },
+  {
+    "FriendlyName": "Deleted workspace",
+    "Operation": "WorkspaceDeleted"
+  },
+  {
+    "FriendlyName": "Downloaded Domain Controller coverage Excel",
+    "Operation": "DomainControllerCoverageExcelDownloaded"
+  },
+  {
+    "FriendlyName": "Downloaded report",
+    "Operation": "ReportDownloaded"
+  },
+  {
+    "FriendlyName": "Downloaded security alert Excel",
+    "Operation": "AlertExcelDownloaded"
+  },
+  {
+    "FriendlyName": "Regenerated sensor deployment key",
+    "Operation": "SensorDeploymentAccessKeyUpdated"
+  },
+  {
+    "FriendlyName": "Removed sensor",
+    "Operation": "SensorDeleted"
+  },
+  {
+    "FriendlyName": "Retrieved sensor deployment key",
+    "Operation": "SensorDeploymentAccessKeyReceived"
+  },
+  {
+    "FriendlyName": "Updated alert threshold configuration",
+    "Operation": "WorkspaceAlertThresholdLevelUpdated"
+  },
+  {
+    "FriendlyName": "Updated directory services account configuration",
+    "Operation": "DirectoryServicesAccountConfigurationUpdated"
+  },
+  {
+    "FriendlyName": "Updated entity remediation configuration",
+    "Operation": "EntityRemediatorConfigurationUpdated"
+  },
+  {
+    "FriendlyName": "Updated entity tags",
+    "Operation": "TaggingConfigurationUpdated"
+  },
+  {
+    "FriendlyName": "Updated exclusions configuration",
+    "Operation": "ExclusionConfigurationUpdated"
+  },
+  {
+    "FriendlyName": "Updated health issue",
+    "Operation": "MonitoringAlertUpdated"
+  },
+  {
+    "FriendlyName": "Updated remediation action",
+    "Operation": "RemediationActionUpdated"
+  },
+  {
+    "FriendlyName": "Updated remediation action configuration",
+    "Operation": "RemediationActionConfigurationUpdated"
+  },
+  {
+    "FriendlyName": "Updated reporter configuration",
+    "Operation": "ReporterConfigurationUpdated"
+  },
+  {
+    "FriendlyName": "Updated security notification configuration",
+    "Operation": "NotificationConfigurationUpdated"
+  },
+  {
+    "FriendlyName": "Updated sensor configuration",
+    "Operation": "SensorConfigurationUpdated"
+  },
+  {
+    "FriendlyName": "Updated sensors activation mode",
+    "Operation": "SensorActivationMethodConfigurationUpdated"
+  },
+  {
+    "FriendlyName": "Updated syslog forwarding configuration",
+    "Operation": "SyslogServiceConfigurationUpdated"
+  },
+  {
+    "FriendlyName": "Updated Unified RBAC configuration",
+    "Operation": "URbacAuthorizationStatusChanged"
+  },
+  {
+    "FriendlyName": "Updated VPN configuration",
+    "Operation": "VpnConfigurationUpdated"
+  },
+  {
+    "FriendlyName": "SecurityComplianceAlerts",
+    "Operation": "SecurityComplianceAlerts"
+  },
+  {
+    "FriendlyName": "AttackSimAdmin",
+    "Operation": "AttackSimAdmin"
+  },
+  {
+    "FriendlyName": "UserTraining",
+    "Operation": "UserTraining"
+  },
+  {
+    "FriendlyName": "AttackSim",
+    "Operation": "AttackSim"
+  },
+  {
+    "FriendlyName": "AirInvestigation",
+    "Operation": "AirInvestigation"
+  },
+  {
+    "FriendlyName": "Campaign",
+    "Operation": "Campaign"
+  },
+  {
+    "FriendlyName": "ThreatIntelligenceAtpContent",
+    "Operation": "ThreatIntelligenceAtpContent"
+  },
+  {
+    "FriendlyName": "HygieneEvent",
+    "Operation": "HygieneEvent"
+  },
+  {
+    "FriendlyName": "ThreatIntelligence",
+    "Operation": "ThreatIntelligence"
+  },
+  {
+    "FriendlyName": "Quarantine",
+    "Operation": "Quarantine"
+  },
+  {
+    "FriendlyName": "MailSubmission",
+    "Operation": "MailSubmission"
+  },
+  {
+    "FriendlyName": "ThreatIntelligenceUrl",
+    "Operation": "ThreatIntelligenceUrl"
+  },
+  {
+    "FriendlyName": "Changed custom detection rule status",
+    "Operation": "ChangeCustomDetectionRuleStatus"
+  },
+  {
+    "FriendlyName": "Created custom detection rule",
+    "Operation": "CreateCustomDetection"
+  },
+  {
+    "FriendlyName": "Deleted custom detection rule",
+    "Operation": "DeleteCustomDetection"
+  },
+  {
+    "FriendlyName": "Edited custom detection rule",
+    "Operation": "EditCustomDetection"
+  },
+  {
+    "FriendlyName": "Ran custom detection rule",
+    "Operation": "RunCustomDetection"
+  },
+  {
+    "FriendlyName": "Added comment to incident",
+    "Operation": "AddCommentToIncident"
+  },
+  {
+    "FriendlyName": "Added tags to incident",
+    "Operation": "AddTagsToIncident"
+  },
+  {
+    "FriendlyName": "Assigned user to incident",
+    "Operation": "AssignUserToIncident"
+  },
+  {
+    "FriendlyName": "Edit incident classification",
+    "Operation": "EditIncidentClassification"
+  },
+  {
+    "FriendlyName": "Removed tags from incident",
+    "Operation": "RemoveTagsFromIncident"
+  },
+  {
+    "FriendlyName": "Unassigned user to incident",
+    "Operation": "UnAssignUserFromIncident"
+  },
+  {
+    "FriendlyName": "Updated incidents status",
+    "Operation": "UpdateIncidentStatus"
+  },
+  {
+    "FriendlyName": "Created suppression rule",
+    "Operation": "CreateSuppressionRule"
+  },
+  {
+    "FriendlyName": "Deleted suppression rule",
+    "Operation": "DeleteSuppressionRule"
+  },
+  {
+    "FriendlyName": "Disabled suppression rule",
+    "Operation": "DisableSuppressionRule"
+  },
+  {
+    "FriendlyName": "Edited suppression rule",
+    "Operation": "EditSuppressionRule"
+  },
+  {
+    "FriendlyName": "Enabled suppression rule",
+    "Operation": "EnableSuppressionRule"
+  },
+  {
+    "FriendlyName": "Allowed URL Navigation in Microsoft Edge",
+    "Operation": "URLNavigationAllowed"
+  },
+  {
+    "FriendlyName": "Blocked URL Navigation in Microsoft Edge",
+    "Operation": "URLNavigationBlocked"
+  },
+  {
+    "FriendlyName": "Added group",
+    "Operation": "AddGroup"
+  },
+  {
+    "FriendlyName": "Added member to group",
+    "Operation": "AddMemberToGroup"
+  },
+  {
+    "FriendlyName": "Deleted group",
+    "Operation": "Delete group"
+  },
+  {
+    "FriendlyName": "Removed member from group",
+    "Operation": "RemoveMemberFromGroup"
+  },
+  {
+    "FriendlyName": "Updated group",
+    "Operation": "UpdateGroup"
+  },
+  {
+    "FriendlyName": "Compromised sign-in detection",
+    "Operation": "CompromisedSignIn"
+  },
+  {
+    "FriendlyName": "Compromised user detection",
+    "Operation": "CompromisedUser"
+  },
+  {
+    "FriendlyName": "Approved or denied an app",
+    "Operation": "ConsentModificationRequest"
+  },
+  {
+    "FriendlyName": "Extraction ran",
+    "Operation": "DataAccessRequestOperation"
+  },
+  {
+    "FriendlyName": "Created a place",
+    "Operation": "CreatedPlace"
+  },
+  {
+    "FriendlyName": "Deleted a place",
+    "Operation": "DeletedPlace"
+  },
+  {
+    "FriendlyName": "Updated a place",
+    "Operation": "UpdatedPlace"
+  },
+  {
+    "FriendlyName": "Audit search canceled",
+    "Operation": "AuditSearchCancelled"
+  },
+  {
+    "FriendlyName": "Audit search completed",
+    "Operation": "AuditSearchCompleted"
+  },
+  {
+    "FriendlyName": "Audit search created",
+    "Operation": "AuditSearchCreated"
+  },
+  {
+    "FriendlyName": "Audit search deleted",
+    "Operation": "AuditSearchDeleted"
+  },
+  {
+    "FriendlyName": "Audit search export job completed",
+    "Operation": "AuditSearchExportJobCompleted"
+  },
+  {
+    "FriendlyName": "Audit search export job created",
+    "Operation": "AuditSearchExportJobCreated"
+  },
+  {
+    "FriendlyName": "Audit search export results downloaded",
+    "Operation": "AuditSearchExportResultsDownloaded"
+  },
+  {
+    "FriendlyName": "Asset or entity created",
+    "Operation": "EntityCreated"
+  },
+  {
+    "FriendlyName": "Classification added",
+    "Operation": "ClassificationAdded"
+  },
+  {
+    "FriendlyName": "Classification definition created",
+    "Operation": "ClassificationDefinitionCreated"
+  },
+  {
+    "FriendlyName": "Classification definition deleted",
+    "Operation": "ClassificationDefinitionDeleted"
+  },
+  {
+    "FriendlyName": "Classification definition updated",
+    "Operation": "ClassificationDefinitionUpdated"
+  },
+  {
+    "FriendlyName": "Classification deleted",
+    "Operation": "ClassificationDeleted"
+  },
+  {
+    "FriendlyName": "Classification updated",
+    "Operation": "ClassificationUpdated"
+  },
+  {
+    "FriendlyName": "Entity deleted",
+    "Operation": "EntityDeleted"
+  },
+  {
+    "FriendlyName": "Entity updated",
+    "Operation": "EntityUpdated"
+  },
+  {
+    "FriendlyName": "Glossary term assigned",
+    "Operation": "GlossaryTermAssigned"
+  },
+  {
+    "FriendlyName": "Glossary term created",
+    "Operation": "GlossaryTermCreated"
+  },
+  {
+    "FriendlyName": "Glossary term deleted",
+    "Operation": "GlossaryTermDeleted"
+  },
+  {
+    "FriendlyName": "Glossary term disassociated",
+    "Operation": "GlossaryTermDisassociated"
+  },
+  {
+    "FriendlyName": "Glossary term updated",
+    "Operation": "GlossaryTermUpdated"
+  },
+  {
+    "FriendlyName": "Sensitivity label changed",
+    "Operation": "SensitivityLabelChanged"
+  },
+  {
+    "FriendlyName": "Classified file as part of an on-demand classification scan",
+    "Operation": "DataScanClassification"
+  },
+  {
+    "FriendlyName": "Classified file on device as part of an on-demand classification scan",
+    "Operation": "SensitiveInfoDiscovered"
+  },
+  {
+    "FriendlyName": "Declassified file as part of an on-demand classification scan",
+    "Operation": "DataScanDeClassification"
+  },
+  {
+    "FriendlyName": "Created a new Security Copilot agent",
+    "Operation": "CreateCopilotAgent"
+  },
+  {
+    "FriendlyName": "Created a new Security Copilot agent trigger",
+    "Operation": "CreateCopilotforSecurityAgentTrigger"
+  },
+  {
+    "FriendlyName": "Deleted a Security Copilot agent",
+    "Operation": "DeleteCopilotAgent"
+  },
+  {
+    "FriendlyName": "Deleted a Security Copilot agent trigger",
+    "Operation": "DeleteCopilotForSecurityAgentTrigger"
+  },
+  {
+    "FriendlyName": "Updated a Security Copilot agent setting",
+    "Operation": "UpdateCopilotAgent"
+  },
+  {
+    "FriendlyName": "Updated a Security Copilot agent trigger",
+    "Operation": "UpdateCopilotforSecurityAgentTrigger"
+  },
+  {
+    "FriendlyName": "Completed AI tool run",
+    "Operation": "SentinelAIToolRunCompleted"
+  },
+  {
+    "FriendlyName": "Created AI tool",
+    "Operation": "SentinelAIToolCreated"
+  },
+  {
+    "FriendlyName": "Started AI tool run",
+    "Operation": "SentinelAIToolRunStarted"
+  },
+  {
+    "FriendlyName": "Completed a job run adhoc",
+    "Operation": "JobRunAdhocCompleted"
+  },
+  {
+    "FriendlyName": "Completed a job run scheduled",
+    "Operation": "JobRunScheduledCompleted"
+  },
+  {
+    "FriendlyName": "Created job",
+    "Operation": "JobCreated"
+  },
+  {
+    "FriendlyName": "Deleted a custom table",
+    "Operation": "CustomTableDelete"
+  },
+  {
+    "FriendlyName": "Deleted job",
+    "Operation": "JobDeleted"
+  },
+  {
+    "FriendlyName": "Disabled job",
+    "Operation": "JobDisabled"
+  },
+  {
+    "FriendlyName": "Enabled job",
+    "Operation": "JobEnabled"
+  },
+  {
+    "FriendlyName": "Ran a job adhoc",
+    "Operation": "JobRunAdhoc"
+  },
+  {
+    "FriendlyName": "Ran a job on schedule",
+    "Operation": "JobRunScheduled"
+  },
+  {
+    "FriendlyName": "Read from table",
+    "Operation": "TableRead"
+  },
+  {
+    "FriendlyName": "Stopped a job run",
+    "Operation": "JobRunStopped"
+  },
+  {
+    "FriendlyName": "Updated job",
+    "Operation": "JobUpdated"
+  },
+  {
+    "FriendlyName": "Wrote to a custom table",
+    "Operation": "CustomTableWrite"
+  },
+  {
+    "FriendlyName": "Completed KQL query",
+    "Operation": "KQLQueryCompleted"
+  },
+  {
+    "FriendlyName": "Started session",
+    "Operation": "SessionStarted"
+  },
+  {
+    "FriendlyName": "Stopped session",
+    "Operation": "SessionStopped"
+  },
+  {
+    "FriendlyName": "Changed subscription of Sentinel lake",
+    "Operation": "SentinelLakeSubscriptionChanged"
+  },
+  {
+    "FriendlyName": "Onboarded data for Sentinel lake",
+    "Operation": "SentinelLakeDefaultDataOnboarded"
+  },
+  {
+    "FriendlyName": "Set up Sentinel lake",
+    "Operation": "SentinelLakeSetup"
+  },
+  {
+    "FriendlyName": "Created a graph scenario",
+    "Operation": "GraphScenarioCreated"
+  },
+  {
+    "FriendlyName": "Deleted a graph scenario",
+    "Operation": "GraphScenarioDeleted"
+  },
+  {
+    "FriendlyName": "Ran a graph query",
+    "Operation": "GraphQueryRun"
+  },
+  {
+    "FriendlyName": "Accepted sharing link on folder",
+    "Operation": "AcceptedSharingLinkOnFolder"
+  },
+  {
+    "FriendlyName": "Attachment created",
+    "Operation": "AttachmentCreated"
+  },
+  {
+    "FriendlyName": "Attachment deleted",
+    "Operation": "AttachmentDeleted"
+  },
+  {
+    "FriendlyName": "Attachment updated",
+    "Operation": "AttachmentUpdated"
+  },
+  {
+    "FriendlyName": "Folder sharing link shared",
+    "Operation": "FolderSharingLinkShared"
+  },
+  {
+    "FriendlyName": "Linked entity created",
+    "Operation": "LinkedEntityCreated"
+  },
+  {
+    "FriendlyName": "Linked entity deleted",
+    "Operation": "LinkedEntityDeleted"
+  },
+  {
+    "FriendlyName": "Linked entity updated",
+    "Operation": "LinkedEntityUpdated"
+  },
+  {
+    "FriendlyName": "SubTask created",
+    "Operation": "SubTaskCreated"
+  },
+  {
+    "FriendlyName": "SubTask deleted",
+    "Operation": "SubTaskDeleted"
+  },
+  {
+    "FriendlyName": "SubTask updated",
+    "Operation": "SubTaskUpdated"
+  },
+  {
+    "FriendlyName": "Task created",
+    "Operation": "TaskCreated"
+  },
+  {
+    "FriendlyName": "Task deleted",
+    "Operation": "TaskDeleted"
+  },
+  {
+    "FriendlyName": "Task read",
+    "Operation": "TaskRead"
+  },
+  {
+    "FriendlyName": "Task updated",
+    "Operation": "TaskUpdated"
+  },
+  {
+    "FriendlyName": "TaskList created",
+    "Operation": "TaskListCreated"
+  },
+  {
+    "FriendlyName": "TaskList read",
+    "Operation": "TaskListRead"
+  },
+  {
+    "FriendlyName": "TaskList updated",
+    "Operation": "TaskListUpdated"
+  },
+  {
+    "FriendlyName": "User invited",
+    "Operation": "UserInvited"
+  },
+  {
+    "FriendlyName": "Updated organization MyAnalytics settings",
+    "Operation": "UpdatedOrganizationMyAnalyticsSettings"
+  },
+  {
+    "FriendlyName": "Updated user MyAnalytics settings",
+    "Operation": "UpdatedUserMyAnalyticsSettings"
+  },
+  {
+    "FriendlyName": "Added a member to a roster",
+    "Operation": "RosterMemberAdded"
+  },
+  {
+    "FriendlyName": "Added a reaction to a chat message",
+    "Operation": "ChatMessageReactionAdded"
+  },
+  {
+    "FriendlyName": "Assigned a task",
+    "Operation": "TaskAssigned"
+  },
+  {
+    "FriendlyName": "Completed a task",
+    "Operation": "TaskCompleted"
+  },
+  {
+    "FriendlyName": "Copied a plan",
+    "Operation": "PlanCopied"
+  },
+  {
+    "FriendlyName": "Created a chat message",
+    "Operation": "ChatMessageCreated"
+  },
+  {
+    "FriendlyName": "Created a goal",
+    "Operation": "GoalCreated"
+  },
+  {
+    "FriendlyName": "Created a plan",
+    "Operation": "PlanCreated"
+  },
+  {
+    "FriendlyName": "Created a roster",
+    "Operation": "RosterCreated"
+  },
+  {
+    "FriendlyName": "Deleted a chat message",
+    "Operation": "ChatMessageDeleted"
+  },
+  {
+    "FriendlyName": "Deleted a goal",
+    "Operation": "GoalDeleted"
+  },
+  {
+    "FriendlyName": "Deleted a plan",
+    "Operation": "PlanDeleted"
+  },
+  {
+    "FriendlyName": "Deleted a roster",
+    "Operation": "RosterDeleted"
+  },
+  {
+    "FriendlyName": "Modified a chat message",
+    "Operation": "ChatMessageModified"
+  },
+  {
+    "FriendlyName": "Modified a goal",
+    "Operation": "GoalModified"
+  },
+  {
+    "FriendlyName": "Modified a plan",
+    "Operation": "PlanModified"
+  },
+  {
+    "FriendlyName": "Modified a task",
+    "Operation": "TaskModified"
+  },
+  {
+    "FriendlyName": "Read a goal",
+    "Operation": "GoalRead"
+  },
+  {
+    "FriendlyName": "Read a list of chat messages",
+    "Operation": "ChatMessageListRead"
+  },
+  {
+    "FriendlyName": "Read a list of goals",
+    "Operation": "GoalListRead"
+  },
+  {
+    "FriendlyName": "Read a list of plans",
+    "Operation": "PlanListRead"
+  },
+  {
+    "FriendlyName": "Read a plan",
+    "Operation": "PlanRead"
+  },
+  {
+    "FriendlyName": "Removed a member to a roster",
+    "Operation": "RosterMemberDeleted"
+  },
+  {
+    "FriendlyName": "Removed a reaction to a chat message",
+    "Operation": "ChatMessageReactionRemoved"
+  },
+  {
+    "FriendlyName": "Updated a roster's sensitivity label",
+    "Operation": "RosterSensitivityLabelUpdated"
+  },
+  {
+    "FriendlyName": "Created project",
+    "Operation": "ProjectCreated"
+  },
+  {
+    "FriendlyName": "Created roadmap",
+    "Operation": "RoadmapCreated"
+  },
+  {
+    "FriendlyName": "Created roadmap item",
+    "Operation": "RoadmapItemCreated"
+  },
+  {
+    "FriendlyName": "Deleted project",
+    "Operation": "ProjectDeleted"
+  },
+  {
+    "FriendlyName": "Deleted roadmap",
+    "Operation": "RoadmapDeleted"
+  },
+  {
+    "FriendlyName": "Deleted roadmap item",
+    "Operation": "RoadmapItemDeleted"
+  },
+  {
+    "FriendlyName": "Project accessed",
+    "Operation": "ProjectAccessed"
+  },
+  {
+    "FriendlyName": "Project home accessed",
+    "Operation": "ProjectListAccessed"
+  },
+  {
+    "FriendlyName": "Roadmap accessed",
+    "Operation": "RoadmapAccessed"
+  },
+  {
+    "FriendlyName": "Roadmap item accessed",
+    "Operation": "RoadmapItemAccessed"
+  },
+  {
+    "FriendlyName": "Task accessed",
+    "Operation": "TaskAccessed"
+  },
+  {
+    "FriendlyName": "Updated project",
+    "Operation": "ProjectUpdated"
+  },
+  {
+    "FriendlyName": "Updated project settings",
+    "Operation": "ProjectForTheWebProjectSettings"
+  },
+  {
+    "FriendlyName": "Updated roadmap",
+    "Operation": "RoadmapUpdated"
+  },
+  {
+    "FriendlyName": "Updated roadmap item",
+    "Operation": "RoadmapItemUpdated"
+  },
+  {
+    "FriendlyName": "Updated roadmap settings",
+    "Operation": "ProjectForTheWebRoadmaptSettings"
+  },
+  {
+    "FriendlyName": "Deleted quarantine message",
+    "Operation": "QuarantineDeleteMessage"
+  },
+  {
+    "FriendlyName": "Denied quarantine message release request",
+    "Operation": "QuarantineReleaseRequestDeny"
+  },
+  {
+    "FriendlyName": "Exported quarantine message",
+    "Operation": "QuarantineExport"
+  },
+  {
+    "FriendlyName": "Previewed quarantine message",
+    "Operation": "QuarantinePreview"
+  },
+  {
+    "FriendlyName": "Release request quarantine message",
+    "Operation": "QuarantineReleaseRequest"
+  },
+  {
+    "FriendlyName": "Released quarantine message",
+    "Operation": "QuarantineRelease"
+  },
+  {
+    "FriendlyName": "Viewed quarantine message's header",
+    "Operation": "QuarantineViewHeader"
+  },
+  {
+    "FriendlyName": "Updated usage report privacy settings",
+    "Operation": "UpdateUsageReportsPrivacySetting"
+  },
+  {
+    "FriendlyName": "Changed adaptive scope membership",
+    "Operation": "ApplicableAdaptiveScopeChange"
+  },
+  {
+    "FriendlyName": "Configured settings for a retention policy",
+    "Operation": "NewRetentionComplianceRule"
+  },
+  {
+    "FriendlyName": "Created adaptive scope",
+    "Operation": "NewAdaptiveScope"
+  },
+  {
+    "FriendlyName": "Created retention label",
+    "Operation": "NewComplianceTag"
+  },
+  {
+    "FriendlyName": "Created retention policy",
+    "Operation": "NewRetentionCompliancePolicy"
+  },
+  {
+    "FriendlyName": "Deleted adaptive scope",
+    "Operation": "RemoveAdaptiveScope"
+  },
+  {
+    "FriendlyName": "Deleted retention label",
+    "Operation": "RemoveComplianceTag"
+  },
+  {
+    "FriendlyName": "Deleted retention policy",
+    "Operation": "RemoveRetentionCompliancePolicy"
+  },
+  {
+    "FriendlyName": "Deleted settings from a retention policy",
+    "Operation": "RemoveRetentionComplianceRule"
+  },
+  {
+    "FriendlyName": "Enabled regulatory record option for retention labels",
+    "Operation": "SetRestrictiveRetentionUI"
+  },
+  {
+    "FriendlyName": "Priority cleanup label applied on file",
+    "Operation": "PriorityCleanupTagApplied"
+  },
+  {
+    "FriendlyName": "Retained email item proactively",
+    "Operation": "ExchangeDataProactivelyPreserved"
+  },
+  {
+    "FriendlyName": "Retained file proactively",
+    "Operation": "SharePointDataProactivelyPreserved"
+  },
+  {
+    "FriendlyName": "Updated adaptive scope",
+    "Operation": "SetAdaptiveScope"
+  },
+  {
+    "FriendlyName": "Updated retention label",
+    "Operation": "SetComplianceTag"
+  },
+  {
+    "FriendlyName": "Updated retention policy",
+    "Operation": "SetRetentionCompliancePolicy"
+  },
+  {
+    "FriendlyName": "Updated settings for a retention policy",
+    "Operation": "SetRetentionComplianceRule"
+  },
+  {
+    "FriendlyName": "Add member to Role",
+    "Operation": "Add member to role"
+  },
+  {
+    "FriendlyName": "Removed a user from a directory role",
+    "Operation": "Remove member from role"
+  },
+  {
+    "FriendlyName": "Set company contact information",
+    "Operation": "Set company contact information"
+  },
+  {
+    "FriendlyName": "Created new sensitive information type",
+    "Operation": "CreateRulePackage /  EditRulePackage*"
+  },
+  {
+    "FriendlyName": "Deleted a sensitive information type",
+    "Operation": "EditRulePackage / RemoveRulePackage"
+  },
+  {
+    "FriendlyName": "Edited a sensitive information type",
+    "Operation": "EditRulePackage"
+  },
+  {
+    "FriendlyName": "Applied sensitivity label to file",
+    "Operation": "FileSensitivityLabelApplied  SensitivityLabelApplied"
+  },
+  {
+    "FriendlyName": "Applied sensitivity label to site",
+    "Operation": "SiteSensitivityLabelApplied"
+  },
+  {
+    "FriendlyName": "Changed sensitivity label applied to file",
+    "Operation": "FileSensitivityLabelChangedSensitivityLabelUpdated"
+  },
+  {
+    "FriendlyName": "Changed sensitivity label on a site",
+    "Operation": "SiteSensitivityLabelChanged"
+  },
+  {
+    "FriendlyName": "Failed to apply file sensitivity label",
+    "Operation": "FileSensitivityLabelAppliedFailed"
+  },
+  {
+    "FriendlyName": "Failed to change file sensitivity label",
+    "Operation": "FileSensitivityLabelChangedFailed"
+  },
+  {
+    "FriendlyName": "Failed to remove file sensitivity label",
+    "Operation": "FileSensitivityLabelRemovedFailed"
+  },
+  {
+    "FriendlyName": "Removed sensitivity label from file",
+    "Operation": "FileSensitivityLabelRemoved  SensitivityLabelRemoved"
+  },
+  {
+    "FriendlyName": "Removed sensitivity label from site",
+    "Operation": "SiteSensitivityLabelRemoved"
+  },
+  {
+    "FriendlyName": "Created list",
+    "Operation": "ListCreated"
+  },
+  {
+    "FriendlyName": "Created list column",
+    "Operation": "ListColumnCreated"
+  },
+  {
+    "FriendlyName": "Created list content type",
+    "Operation": "ListContentTypeCreated"
+  },
+  {
+    "FriendlyName": "Created list item",
+    "Operation": "ListItemCreated"
+  },
+  {
+    "FriendlyName": "Created site column",
+    "Operation": "SiteColumnCreated"
+  },
+  {
+    "FriendlyName": "Created site content type",
+    "Operation": "Site ContentType Created"
+  },
+  {
+    "FriendlyName": "Deleted list",
+    "Operation": "ListDeleted"
+  },
+  {
+    "FriendlyName": "Deleted list column",
+    "Operation": "List Column Deleted"
+  },
+  {
+    "FriendlyName": "Deleted list content type",
+    "Operation": "ListContentTypeDeleted"
+  },
+  {
+    "FriendlyName": "Deleted list item",
+    "Operation": "List Item Deleted"
+  },
+  {
+    "FriendlyName": "Deleted site column",
+    "Operation": "SiteColumnDeleted"
+  },
+  {
+    "FriendlyName": "Deleted site content type",
+    "Operation": "SiteContentTypeDeleted"
+  },
+  {
+    "FriendlyName": "Recycled list item",
+    "Operation": "ListItemRecycled"
+  },
+  {
+    "FriendlyName": "Restored list",
+    "Operation": "ListRestored"
+  },
+  {
+    "FriendlyName": "Restored list item",
+    "Operation": "ListItemRestored"
+  },
+  {
+    "FriendlyName": "Updated list",
+    "Operation": "ListUpdated"
+  },
+  {
+    "FriendlyName": "Updated list column",
+    "Operation": "ListColumnUpdated"
+  },
+  {
+    "FriendlyName": "Updated list content type",
+    "Operation": "ListContentTypeUpdated"
+  },
+  {
+    "FriendlyName": "Updated list item",
+    "Operation": "ListItemUpdated"
+  },
+  {
+    "FriendlyName": "Updated list view",
+    "Operation": "ListViewUpdated"
+  },
+  {
+    "FriendlyName": "Updated site column",
+    "Operation": "SiteColumnUpdated"
+  },
+  {
+    "FriendlyName": "Updated site content type",
+    "Operation": "SiteContentTypeUpdated"
+  },
+  {
+    "FriendlyName": "Created container type",
+    "Operation": "ContainerTypeCreated"
+  },
+  {
+    "FriendlyName": "Deleted container type",
+    "Operation": "ContainerTypeDeleted"
+  },
+  {
+    "FriendlyName": "Updated container type",
+    "Operation": "ContainerTypeUpdated"
+  },
+  {
+    "FriendlyName": "Updated container type owners",
+    "Operation": "ContainerTypeOwnersUpdated"
+  },
+  {
+    "FriendlyName": "Accepted access request",
+    "Operation": "AccessRequestAccepted"
+  },
+  {
+    "FriendlyName": "Accepted sharing invitation",
+    "Operation": "SharingInvitationAccepted"
+  },
+  {
+    "FriendlyName": "Added permission level to site collection",
+    "Operation": "PermissionLevelAdded"
+  },
+  {
+    "FriendlyName": "Blocked sharing invitation",
+    "Operation": "SharingInvitationBlocked"
+  },
+  {
+    "FriendlyName": "Created a company shareable link",
+    "Operation": "CompanyLinkCreated"
+  },
+  {
+    "FriendlyName": "Created access request",
+    "Operation": "AccessRequestCreated"
+  },
+  {
+    "FriendlyName": "Created an anonymous link",
+    "Operation": "AnonymousLinkCreated"
+  },
+  {
+    "FriendlyName": "Created secure link",
+    "Operation": "SecureLinkCreated"
+  },
+  {
+    "FriendlyName": "Created sharing invitation",
+    "Operation": "SharingInvitationCreated"
+  },
+  {
+    "FriendlyName": "Deleted secure link",
+    "Operation": "SecureLinkDeleted"
+  },
+  {
+    "FriendlyName": "Denied access request",
+    "Operation": "AccessRequestDenied"
+  },
+  {
+    "FriendlyName": "Removed a company shareable link",
+    "Operation": "CompanyLinkRemoved"
+  },
+  {
+    "FriendlyName": "Removed an anonymous link",
+    "Operation": "AnonymousLinkRemoved"
+  },
+  {
+    "FriendlyName": "Shared file, folder, or site",
+    "Operation": "SharingSet"
+  },
+  {
+    "FriendlyName": "Unshared file, folder, or site",
+    "Operation": "SharingRevoked"
+  },
+  {
+    "FriendlyName": "Updated access request",
+    "Operation": "AccessRequestUpdated"
+  },
+  {
+    "FriendlyName": "Updated an anonymous link",
+    "Operation": "AnonymousLinkUpdated"
+  },
+  {
+    "FriendlyName": "Updated sharing invitation",
+    "Operation": "SharingInvitationUpdated"
+  },
+  {
+    "FriendlyName": "Used a company shareable link",
+    "Operation": "CompanyLinkUsed"
+  },
+  {
+    "FriendlyName": "Used an anonymous link",
+    "Operation": "AnonymousLinkUsed"
+  },
+  {
+    "FriendlyName": "Used secure link",
+    "Operation": "SecureLinkUsed"
+  },
+  {
+    "FriendlyName": "User added to secure link",
+    "Operation": "AddedToSecureLink"
+  },
+  {
+    "FriendlyName": "User removed from secure link",
+    "Operation": "RemovedFromSecureLink"
+  },
+  {
+    "FriendlyName": "Withdrew sharing invitation",
+    "Operation": "SharingInvitationRevoked"
+  },
+  {
+    "FriendlyName": "Added allowed data location",
+    "Operation": "AllowedDataLocationAdded"
+  },
+  {
+    "FriendlyName": "Added exempt user agent",
+    "Operation": "ExemptUserAgentSet"
+  },
+  {
+    "FriendlyName": "Added geo location admin",
+    "Operation": "GeoAdminAdded"
+  },
+  {
+    "FriendlyName": "Allowed user to create groups",
+    "Operation": "AllowGroupCreationSet"
+  },
+  {
+    "FriendlyName": "Apply theme to a web",
+    "Operation": "WebThemeApplied"
+  },
+  {
+    "FriendlyName": "Canceled site geo move",
+    "Operation": "SiteGeoMoveCancelled"
+  },
+  {
+    "FriendlyName": "Changed a sharing policy",
+    "Operation": "SharingPolicyChanged"
+  },
+  {
+    "FriendlyName": "Changed device access policy",
+    "Operation": "DeviceAccessPolicyChanged"
+  },
+  {
+    "FriendlyName": "Changed exempt user agents",
+    "Operation": "CustomizeExemptUsers"
+  },
+  {
+    "FriendlyName": "Changed network access policy",
+    "Operation": "NetworkAccessPolicyChanged"
+  },
+  {
+    "FriendlyName": "Completed migration job",
+    "Operation": "MigrationJobCompleted"
+  },
+  {
+    "FriendlyName": "Completed site geo move",
+    "Operation": "SiteGeoMoveCompleted"
+  },
+  {
+    "FriendlyName": "Create tenant-wide theme",
+    "Operation": "TenantWideThemeCreated"
+  },
+  {
+    "FriendlyName": "Created Sent To connection",
+    "Operation": "SendToConnectionAdded"
+  },
+  {
+    "FriendlyName": "Created site collection",
+    "Operation": "SiteCollectionCreated"
+  },
+  {
+    "FriendlyName": "Delete tenant-wide theme",
+    "Operation": "TenantWideThemeDeleted"
+  },
+  {
+    "FriendlyName": "Deleted orphaned hub site",
+    "Operation": "HubSiteOrphanHubDeleted"
+  },
+  {
+    "FriendlyName": "Deleted Sent To connection",
+    "Operation": "SendToConnectionRemoved"
+  },
+  {
+    "FriendlyName": "Deleted site",
+    "Operation": "SiteDeleted"
+  },
+  {
+    "FriendlyName": "Enabled document preview",
+    "Operation": "PreviewModeEnabledSet"
+  },
+  {
+    "FriendlyName": "Enabled legacy workflow",
+    "Operation": "LegacyWorkflowEnabledSet"
+  },
+  {
+    "FriendlyName": "Enabled Office on Demand",
+    "Operation": "OfficeOnDemandSet"
+  },
+  {
+    "FriendlyName": "Enabled result source for People Searches",
+    "Operation": "PeopleResultsScopeSet"
+  },
+  {
+    "FriendlyName": "Enabled RSS feeds",
+    "Operation": "NewsFeedEnabledSet"
+  },
+  {
+    "FriendlyName": "Joined site to hub site",
+    "Operation": "HubSiteJoined"
+  },
+  {
+    "FriendlyName": "Modified site collection quota",
+    "Operation": "SiteCollectionQuotaModified"
+  },
+  {
+    "FriendlyName": "Permanently delete site",
+    "Operation": "SitePermanentlyDeleted"
+  },
+  {
+    "FriendlyName": "Registered hub site",
+    "Operation": "HubSiteRegistered"
+  },
+  {
+    "FriendlyName": "Removed allowed data location",
+    "Operation": "AllowedDataLocationDeleted"
+  },
+  {
+    "FriendlyName": "Removed geo location admin",
+    "Operation": "GeoAdminDeleted"
+  },
+  {
+    "FriendlyName": "Renamed site",
+    "Operation": "SiteRenamed"
+  },
+  {
+    "FriendlyName": "Restore Site",
+    "Operation": "SiteRestored"
+  },
+  {
+    "FriendlyName": "Scheduled site geo move",
+    "Operation": "SiteGeoMoveScheduled"
+  },
+  {
+    "FriendlyName": "Set host site",
+    "Operation": "HostSiteSet"
+  },
+  {
+    "FriendlyName": "Set storage quota for geo location",
+    "Operation": "GeoQuotaAllocated"
+  },
+  {
+    "FriendlyName": "Unjoined site from hub site",
+    "Operation": "HubSiteUnjoined"
+  },
+  {
+    "FriendlyName": "Unregistered hub site",
+    "Operation": "HubSiteUnregistered"
+  },
+  {
+    "FriendlyName": "Update DisableSiteBranding config",
+    "Operation": "UpdateDisableSiteBranding"
+  },
+  {
+    "FriendlyName": "Update tenant-wide theme",
+    "Operation": "TenantWideThemeUpdated"
+  },
+  {
+    "FriendlyName": "Added site collection admin",
+    "Operation": "SiteCollectionAdminAdded"
+  },
+  {
+    "FriendlyName": "Added user or group to SharePoint group",
+    "Operation": "AddedToGroup"
+  },
+  {
+    "FriendlyName": "Broke permission level inheritance",
+    "Operation": "PermissionLevelsInheritanceBroken"
+  },
+  {
+    "FriendlyName": "Broke sharing inheritance",
+    "Operation": "SharingInheritanceBroken"
+  },
+  {
+    "FriendlyName": "Created group",
+    "Operation": "GroupAdded"
+  },
+  {
+    "FriendlyName": "Deleted group",
+    "Operation": "GroupRemoved"
+  },
+  {
+    "FriendlyName": "Modified 'Members Can Share' setting",
+    "Operation": "WebMembersCanShareModified"
+  },
+  {
+    "FriendlyName": "Modified access request setting",
+    "Operation": "WebRequestAccessModified"
+  },
+  {
+    "FriendlyName": "Modified permission level on a site collection",
+    "Operation": "PermissionLevelModified"
+  },
+  {
+    "FriendlyName": "Modified site permissions",
+    "Operation": "SitePermissionsModified"
+  },
+  {
+    "FriendlyName": "Removed permission level from site collection",
+    "Operation": "PermissionLevelRemoved"
+  },
+  {
+    "FriendlyName": "Removed site collection admin",
+    "Operation": "SiteCollectionAdminRemoved"
+  },
+  {
+    "FriendlyName": "Removed user or group from SharePoint group",
+    "Operation": "RemovedFromGroup"
+  },
+  {
+    "FriendlyName": "Requested site admin permissions",
+    "Operation": "SiteAdminChangeRequest"
+  },
+  {
+    "FriendlyName": "Restored sharing inheritance",
+    "Operation": "SharingInheritanceReset"
+  },
+  {
+    "FriendlyName": "Updated group",
+    "Operation": "GroupUpdated"
+  },
+  {
+    "FriendlyName": "Allowed computer to sync files",
+    "Operation": "ManagedSyncClientAllowed"
+  },
+  {
+    "FriendlyName": "Blocked computer from syncing files",
+    "Operation": "UnmanagedSyncClientBlocked"
+  },
+  {
+    "FriendlyName": "Downloaded file changes to computer",
+    "Operation": "FileSyncDownloadedPartial"
+  },
+  {
+    "FriendlyName": "Downloaded files to computer",
+    "Operation": "FileSyncDownloadedFull"
+  },
+  {
+    "FriendlyName": "Uploaded file changes to document library",
+    "Operation": "FileSyncUploadedPartial"
+  },
+  {
+    "FriendlyName": "Uploaded files to document library",
+    "Operation": "FileSyncUploadedFull"
+  },
+  {
+    "FriendlyName": "Data Share Created",
+    "Operation": "DataShareCreated"
+  },
+  {
+    "FriendlyName": "Data Share Deleted",
+    "Operation": "DataShareDeleted"
+  },
+  {
+    "FriendlyName": "Download Copy Of Lake Data",
+    "Operation": "DownloadCopyOfLakeData"
+  },
+  {
+    "FriendlyName": "Generate Copy Of Lake Data",
+    "Operation": "GenerateCopyOfLakeData"
+  },
+  {
+    "FriendlyName": "Accept message",
+    "Operation": "UserAccepted"
+  },
+  {
+    "FriendlyName": "Added bot to team",
+    "Operation": "BotAddedToTeam"
+  },
+  {
+    "FriendlyName": "Added channel",
+    "Operation": "ChannelAdded"
+  },
+  {
+    "FriendlyName": "Added connector",
+    "Operation": "ConnectorAdded"
+  },
+  {
+    "FriendlyName": "Added details about Teams meeting 9",
+    "Operation": "MeetingDetail"
+  },
+  {
+    "FriendlyName": "Added information about call participants 10, 11, 12",
+    "Operation": "CallParticipantDetail"
+  },
+  {
+    "FriendlyName": "Added information about meeting participants 9, 12",
+    "Operation": "MeetingParticipantDetail"
+  },
+  {
+    "FriendlyName": "Added members 6, 8",
+    "Operation": "MemberAdded"
+  },
+  {
+    "FriendlyName": "Added tab",
+    "Operation": "TabAdded"
+  },
+  {
+    "FriendlyName": "Applied sensitivity label",
+    "Operation": "SensitivityLabelApplied"
+  },
+  {
+    "FriendlyName": "Approved request",
+    "Operation": "ApprovedRequest"
+  },
+  {
+    "FriendlyName": "Block user",
+    "Operation": "UserBlocked"
+  },
+  {
+    "FriendlyName": "Canceled approval request",
+    "Operation": "CanceledApprovalRequest"
+  },
+  {
+    "FriendlyName": "Cancelled approval asynchronously",
+    "Operation": "CancelledApprovalAsync"
+  },
+  {
+    "FriendlyName": "Changed channel setting",
+    "Operation": "ChannelSettingChanged"
+  },
+  {
+    "FriendlyName": "Changed organization setting",
+    "Operation": "TeamsTenantSettingChanged"
+  },
+  {
+    "FriendlyName": "Changed role of members in team",
+    "Operation": "MemberRoleChanged"
+  },
+  {
+    "FriendlyName": "Changed team setting",
+    "Operation": "TeamSettingChanged"
+  },
+  {
+    "FriendlyName": "Create org scoped template instance",
+    "Operation": "CreateOrgScopedTemplateInstance"
+  },
+  {
+    "FriendlyName": "Create team scoped template instance",
+    "Operation": "CreateTeamScopedTemplateInstance"
+  },
+  {
+    "FriendlyName": "Create update request",
+    "Operation": "CreateUpdateRequest"
+  },
+  {
+    "FriendlyName": "Created a chat 1, 6",
+    "Operation": "ChatCreated"
+  },
+  {
+    "FriendlyName": "Created approval",
+    "Operation": "CreatedApproval"
+  },
+  {
+    "FriendlyName": "Created approval asynchronously",
+    "Operation": "CreatedApprovalAsync"
+  },
+  {
+    "FriendlyName": "Created export job",
+    "Operation": "CreatedExportJob"
+  },
+  {
+    "FriendlyName": "Created provisioning",
+    "Operation": "CreatedProvisioning"
+  },
+  {
+    "FriendlyName": "Created team",
+    "Operation": "TeamCreated"
+  },
+  {
+    "FriendlyName": "Delete update request",
+    "Operation": "DeleteUpdateRequest"
+  },
+  {
+    "FriendlyName": "Deleted a message 2",
+    "Operation": "MessageDeleted"
+  },
+  {
+    "FriendlyName": "Deleted all organization apps",
+    "Operation": "DeletedAllOrganizationApps"
+  },
+  {
+    "FriendlyName": "Deleted app",
+    "Operation": "AppDeletedFromCatalog"
+  },
+  {
+    "FriendlyName": "Deleted channel",
+    "Operation": "ChannelDeleted"
+  },
+  {
+    "FriendlyName": "Deleted team",
+    "Operation": "TeamDeleted"
+  },
+  {
+    "FriendlyName": "Detected impersonation attempt",
+    "Operation": "TeamsImpersonationDetected"
+  },
+  {
+    "FriendlyName": "Detected security risk in call",
+    "Operation": "SecurityRiskInCallDetected"
+  },
+  {
+    "FriendlyName": "Downloaded file",
+    "Operation": "DownloadedFile"
+  },
+  {
+    "FriendlyName": "Edit org scoped template instance",
+    "Operation": "EditOrgScopedTemplateInstance"
+  },
+  {
+    "FriendlyName": "Edit team scoped template instance",
+    "Operation": "EditTeamScopedTemplateInstance"
+  },
+  {
+    "FriendlyName": "Edit update request",
+    "Operation": "EditUpdateRequest"
+  },
+  {
+    "FriendlyName": "Edited a message",
+    "Operation": "GraphMessageUpdated"
+  },
+  {
+    "FriendlyName": "Edited a message with a URL link in Teams",
+    "Operation": "MessageEditedHasLink"
+  },
+  {
+    "FriendlyName": "Edited approval request",
+    "Operation": "EditedApprovalRequest"
+  },
+  {
+    "FriendlyName": "Exported messages 1,  2",
+    "Operation": "MessagesExported"
+  },
+  {
+    "FriendlyName": "Exported recordings 1",
+    "Operation": "RecordingsExported"
+  },
+  {
+    "FriendlyName": "Exported transcripts 1",
+    "Operation": "TranscriptsExported"
+  },
+  {
+    "FriendlyName": "Failed to validate invitation to shared channel 3",
+    "Operation": "FailedValidation"
+  },
+  {
+    "FriendlyName": "Fetched all hosted content of a message1",
+    "Operation": "MessageHostedContentsListed"
+  },
+  {
+    "FriendlyName": "Fetched chat 1",
+    "Operation": "ChatRetrieved"
+  },
+  {
+    "FriendlyName": "Get org scoped template instance",
+    "Operation": "GetOrgScopedTemplateInstance"
+  },
+  {
+    "FriendlyName": "Get team scoped template instance",
+    "Operation": "GetTeamScopedTemplateInstance"
+  },
+  {
+    "FriendlyName": "Got async operation",
+    "Operation": "GotAsyncOperation"
+  },
+  {
+    "FriendlyName": "Installed app",
+    "Operation": "AppInstalled"
+  },
+  {
+    "FriendlyName": "Obtain list of meeting recordings 13",
+    "Operation": "GraphMeetingRecordingsListed"
+  },
+  {
+    "FriendlyName": "Obtain list of meeting transcripts 13",
+    "Operation": "GraphMeetingTranscriptsListed"
+  },
+  {
+    "FriendlyName": "Obtain meeting transcript content 13",
+    "Operation": "GraphMeetingTranscriptContentRead"
+  },
+  {
+    "FriendlyName": "Obtain meeting transcript instance 13",
+    "Operation": "GraphMeetingTranscriptRead"
+  },
+  {
+    "FriendlyName": "Obtained meeting recording content 13",
+    "Operation": "GraphMeetingRecordingContentRead"
+  },
+  {
+    "FriendlyName": "Obtained meeting recording instance 13",
+    "Operation": "GraphMeetingRecordingRead"
+  },
+  {
+    "FriendlyName": "Performed action on card",
+    "Operation": "PerformedCardAction"
+  },
+  {
+    "FriendlyName": "Populate AI-generated notes in chat",
+    "Operation": "AINotesUpdate"
+  },
+  {
+    "FriendlyName": "Populate AI-generated notes in live meetings",
+    "Operation": "LiveNotesUpdate"
+  },
+  {
+    "FriendlyName": "Posted new message 3,  4,  6, 8",
+    "Operation": "MessageSent"
+  },
+  {
+    "FriendlyName": "Published app",
+    "Operation": "AppPublishedToCatalog"
+  },
+  {
+    "FriendlyName": "Read a message 1",
+    "Operation": "MessageRead"
+  },
+  {
+    "FriendlyName": "Read hosted content of a message 1",
+    "Operation": "MessageHostedContentRead"
+  },
+  {
+    "FriendlyName": "Reassigned approval request",
+    "Operation": "ReassignedApprovalRequest"
+  },
+  {
+    "FriendlyName": "Received Read Receipt on a message",
+    "Operation": "MessageReadReceiptReceived"
+  },
+  {
+    "FriendlyName": "Rejected approval request",
+    "Operation": "RejectedApprovalRequest"
+  },
+  {
+    "FriendlyName": "Removed bot from team",
+    "Operation": "BotRemovedFromTeam"
+  },
+  {
+    "FriendlyName": "Removed connector",
+    "Operation": "ConnectorRemoved"
+  },
+  {
+    "FriendlyName": "Removed members 6, 8",
+    "Operation": "MemberRemoved"
+  },
+  {
+    "FriendlyName": "Removed sensitivity label",
+    "Operation": "SensitivityLabelRemoved"
+  },
+  {
+    "FriendlyName": "Removed sharing of team channel 3",
+    "Operation": "TerminatedSharing"
+  },
+  {
+    "FriendlyName": "Removed tab",
+    "Operation": "TabRemoved"
+  },
+  {
+    "FriendlyName": "Responded to approval",
+    "Operation": "RespondedToApproval"
+  },
+  {
+    "FriendlyName": "Responded to invitation for shared channel 3",
+    "Operation": "InviteeResponded"
+  },
+  {
+    "FriendlyName": "Responded to invitee response to shared channel 3",
+    "Operation": "ChannelOwnerResponded"
+  },
+  {
+    "FriendlyName": "Responded with custom response",
+    "Operation": "RespondedWithCustomResponse"
+  },
+  {
+    "FriendlyName": "Restored sharing of team channel 3",
+    "Operation": "SharingRestored"
+  },
+  {
+    "FriendlyName": "Retrieved messages 1",
+    "Operation": "MessagesListed"
+  },
+  {
+    "FriendlyName": "Sensitive content shared",
+    "Operation": "SensitiveContentShared"
+  },
+  {
+    "FriendlyName": "Sent a message with a URL link in Teams",
+    "Operation": "MessageCreatedHasLink"
+  },
+  {
+    "FriendlyName": "Sent change notification for message creation 1",
+    "Operation": "MessageCreatedNotification"
+  },
+  {
+    "FriendlyName": "Sent change notification for message deletion 1",
+    "Operation": "MessageDeletedNotification"
+  },
+  {
+    "FriendlyName": "Sent change notification for message update 1",
+    "Operation": "MessageUpdatedNotification"
+  },
+  {
+    "FriendlyName": "Sent invitation for shared channel 3",
+    "Operation": "InviteSent"
+  },
+  {
+    "FriendlyName": "Submit update",
+    "Operation": "SubmitUpdate"
+  },
+  {
+    "FriendlyName": "Subscribed to message change notifications 1",
+    "Operation": "SubscribedToMessages"
+  },
+  {
+    "FriendlyName": "Teams Admin Action",
+    "Operation": "TeamsAdminAction"
+  },
+  {
+    "FriendlyName": "Thread creation probed",
+    "Operation": "CreateThreadProbe"
+  },
+  {
+    "FriendlyName": "Unblock User",
+    "Operation": "UserUnblocked"
+  },
+  {
+    "FriendlyName": "Undeleted a message",
+    "Operation": "GraphMessageUndeleted"
+  },
+  {
+    "FriendlyName": "Uninstalled app",
+    "Operation": "AppUninstalled"
+  },
+  {
+    "FriendlyName": "Updated a chat 1",
+    "Operation": "ChatUpdated"
+  },
+  {
+    "FriendlyName": "Updated a message 1",
+    "Operation": "MessageUpdated"
+  },
+  {
+    "FriendlyName": "Updated app",
+    "Operation": "AppUpdatedInCatalog"
+  },
+  {
+    "FriendlyName": "Updated approval request asynchronously",
+    "Operation": "UpdatedApprovalRequestAsync"
+  },
+  {
+    "FriendlyName": "Updated connector",
+    "Operation": "ConnectorUpdated"
+  },
+  {
+    "FriendlyName": "Updated tab",
+    "Operation": "TabUpdated"
+  },
+  {
+    "FriendlyName": "Upgraded app",
+    "Operation": "AppUpgraded"
+  },
+  {
+    "FriendlyName": "User signed in to Teams",
+    "Operation": "TeamsSessionStarted"
+  },
+  {
+    "FriendlyName": "View approval request",
+    "Operation": "ViewApprovalRequest"
+  },
+  {
+    "FriendlyName": "View update",
+    "Operation": "ViewUpdate"
+  },
+  {
+    "FriendlyName": "Viewed approval request",
+    "Operation": "ViewedApprovalRequest"
+  },
+  {
+    "FriendlyName": "Viewed approval with additional field",
+    "Operation": "ViewedApprovalWithAdditionalField"
+  },
+  {
+    "FriendlyName": "Viewed approval with group request",
+    "Operation": "ViewedApprovalWithGroupRequest"
+  },
+  {
+    "FriendlyName": "Granted access permission",
+    "Operation": "PermissionGranted"
+  },
+  {
+    "FriendlyName": "Read data from storage",
+    "Operation": "DataRead"
+  },
+  {
+    "FriendlyName": "Revoked access permission",
+    "Operation": "PermissionRevoked"
+  },
+  {
+    "FriendlyName": "Wrote data to storage",
+    "Operation": "DataWrite"
+  },
+  {
+    "FriendlyName": "Accepted off shift message",
+    "Operation": "OffShiftDialogAccepted"
+  },
+  {
+    "FriendlyName": "Added open shift",
+    "Operation": "OpenShiftAdded"
+  },
+  {
+    "FriendlyName": "Added scheduling group",
+    "Operation": "ScheduleGroupAdded"
+  },
+  {
+    "FriendlyName": "Added shift",
+    "Operation": "ShiftAdded"
+  },
+  {
+    "FriendlyName": "Added shift request",
+    "Operation": "RequestAdded"
+  },
+  {
+    "FriendlyName": "Added Time clock entry",
+    "Operation": "TimeClockEntryAdded"
+  },
+  {
+    "FriendlyName": "Added time off",
+    "Operation": "TimeOffAdded"
+  },
+  {
+    "FriendlyName": "Added workforce integration",
+    "Operation": "WorkforceIntegrationAdded"
+  },
+  {
+    "FriendlyName": "Canceled shift request",
+    "Operation": "RequestCancelled"
+  },
+  {
+    "FriendlyName": "Changed schedule setting",
+    "Operation": "ScheduleSettingChanged"
+  },
+  {
+    "FriendlyName": "Clocked in using Time clock",
+    "Operation": "ClockedIn"
+  },
+  {
+    "FriendlyName": "Clocked out using Time clock",
+    "Operation": "ClockedOut"
+  },
+  {
+    "FriendlyName": "Deleted open shift",
+    "Operation": "OpenShiftDeleted"
+  },
+  {
+    "FriendlyName": "Deleted scheduling group",
+    "Operation": "ScheduleGroupDeleted"
+  },
+  {
+    "FriendlyName": "Deleted shift",
+    "Operation": "ShiftDeleted"
+  },
+  {
+    "FriendlyName": "Deleted Time clock entry",
+    "Operation": "TimeClockEntryDeleted"
+  },
+  {
+    "FriendlyName": "Deleted time off",
+    "Operation": "TimeOffDeleted"
+  },
+  {
+    "FriendlyName": "Edited open shift",
+    "Operation": "OpenShiftEdited"
+  },
+  {
+    "FriendlyName": "Edited scheduling group",
+    "Operation": "ScheduleGroupEdited"
+  },
+  {
+    "FriendlyName": "Edited shift",
+    "Operation": "ShiftEdited"
+  },
+  {
+    "FriendlyName": "Edited Time clock entry",
+    "Operation": "TimeClockEntryEdited"
+  },
+  {
+    "FriendlyName": "Edited time off",
+    "Operation": "TimeOffEdited"
+  },
+  {
+    "FriendlyName": "Ended break using Time clock",
+    "Operation": "BreakEnded"
+  },
+  {
+    "FriendlyName": "Responded to shift request",
+    "Operation": "RequestRespondedTo"
+  },
+  {
+    "FriendlyName": "Shared schedule",
+    "Operation": "ScheduleShared"
+  },
+  {
+    "FriendlyName": "Started break using Time clock",
+    "Operation": "BreakStarted"
+  },
+  {
+    "FriendlyName": "Withdrew schedule",
+    "Operation": "ScheduleWithdrawn"
+  },
+  {
+    "FriendlyName": "Reported call in Teams",
+    "Operation": "CallReported"
+  },
+  {
+    "FriendlyName": "Reported message in Teams",
+    "Operation": "MessageReported"
+  },
+  {
+    "FriendlyName": "Reported user in Teams",
+    "Operation": "UserReported"
+  },
+  {
+    "FriendlyName": "Created Purview Data Classification model",
+    "Operation": "ModelCreate"
+  },
+  {
+    "FriendlyName": "Deleted Purview Data Classification model",
+    "Operation": "ModelUpdate"
+  },
+  {
+    "FriendlyName": "Published Purview Data Classification model",
+    "Operation": "ModelPublish"
+  },
+  {
+    "FriendlyName": "Updated Purview Data Classification model",
+    "Operation": "ModelDelete"
+  },
+  {
+    "FriendlyName": "Added group access to printer share",
+    "Operation": "ShareAccessControlGroupAdded"
+  },
+  {
+    "FriendlyName": "Added member to pull-print printer",
+    "Operation": "PullPrintPrinterMemberAdded"
+  },
+  {
+    "FriendlyName": "Added user access to printer share",
+    "Operation": "ShareAccessControlUserAdded"
+  },
+  {
+    "FriendlyName": "Created printer share",
+    "Operation": "ShareCreated"
+  },
+  {
+    "FriendlyName": "Created pull-print printer",
+    "Operation": "PullPrintPrinterCreated"
+  },
+  {
+    "FriendlyName": "Deleted printer share",
+    "Operation": "ShareDeleted"
+  },
+  {
+    "FriendlyName": "Deleted pull-print printer",
+    "Operation": "PullPrintPrinterDeleted"
+  },
+  {
+    "FriendlyName": "Disabled allow-all access for printer share",
+    "Operation": "ShareAccessControlAllowAllDisabled"
+  },
+  {
+    "FriendlyName": "Disabled include-all-printers",
+    "Operation": "PullPrintPrinterIncludeAllPrintersDisabled"
+  },
+  {
+    "FriendlyName": "Enabled allow-all access for printer share",
+    "Operation": "ShareAccessControlAllowAllEnabled"
+  },
+  {
+    "FriendlyName": "Enabled include-all-printers",
+    "Operation": "PullPrintPrinterIncludeAllPrintersEnabled"
+  },
+  {
+    "FriendlyName": "Modified printer settings",
+    "Operation": "PrinterSettingsModified"
+  },
+  {
+    "FriendlyName": "Modified printer share settings",
+    "Operation": "ShareSettingsModified"
+  },
+  {
+    "FriendlyName": "Modified pull-print printer settings",
+    "Operation": "PullPrintPrinterSettingsModified"
+  },
+  {
+    "FriendlyName": "Modified tenant print settings",
+    "Operation": "TenantPrintSettingsModified"
+  },
+  {
+    "FriendlyName": "Registered connector",
+    "Operation": "ConnectorRegistered"
+  },
+  {
+    "FriendlyName": "Registered printer",
+    "Operation": "PrinterRegistered"
+  },
+  {
+    "FriendlyName": "Removed group access from printer share",
+    "Operation": "ShareAccessControlGroupRemoved"
+  },
+  {
+    "FriendlyName": "Removed member from pull-print printer",
+    "Operation": "PullPrintPrinterMemberRemoved"
+  },
+  {
+    "FriendlyName": "Removed user access from printer share",
+    "Operation": "ShareAccessControlUserRemoved"
+  },
+  {
+    "FriendlyName": "Swapped printer",
+    "Operation": "PrinterSwapped"
+  },
+  {
+    "FriendlyName": "Unregistered connector",
+    "Operation": "ConnectorUnregistered"
+  },
+  {
+    "FriendlyName": "Unregistered printer",
+    "Operation": "PrinterUnregistered"
+  },
+  {
+    "FriendlyName": "Aborted print job",
+    "Operation": "PrintJobAborted"
+  },
+  {
+    "FriendlyName": "Acknowledged print job",
+    "Operation": "PrintJobAcknowledged"
+  },
+  {
+    "FriendlyName": "Canceled print job",
+    "Operation": "PrintJobCanceled"
+  },
+  {
+    "FriendlyName": "Completed print job",
+    "Operation": "PrintJobCompleted"
+  },
+  {
+    "FriendlyName": "Fetched print job document",
+    "Operation": "PrintJobDocumentFetched"
+  },
+  {
+    "FriendlyName": "Submitted print job",
+    "Operation": "PrintJobCreated"
+  },
+  {
+    "FriendlyName": "Uploaded print job document",
+    "Operation": "PrintJobDocumentUploaded"
+  },
+  {
+    "FriendlyName": "Added user",
+    "Operation": "Add user"
+  },
+  {
+    "FriendlyName": "Changed user license",
+    "Operation": "Change user license"
+  },
+  {
+    "FriendlyName": "Changed user password",
+    "Operation": "Change user password"
+  },
+  {
+    "FriendlyName": "Deleted user",
+    "Operation": "Delete user"
+  },
+  {
+    "FriendlyName": "Reset user password",
+    "Operation": "Reset user password"
+  },
+  {
+    "FriendlyName": "Set license properties",
+    "Operation": "Set license properties"
+  },
+  {
+    "FriendlyName": "Set property that forces user to change password",
+    "Operation": "Set force change user password"
+  },
+  {
+    "FriendlyName": "Updated user",
+    "Operation": "Update user"
+  },
+  {
+    "FriendlyName": "Added corporate communicator",
+    "Operation": "AddUserRole"
+  },
+  {
+    "FriendlyName": "Changed custom usage policy",
+    "Operation": "UsagePolicyUpdated"
+  },
+  {
+    "FriendlyName": "Changed data retention policy",
+    "Operation": "SoftDeleteSettingsUpdated"
+  },
+  {
+    "FriendlyName": "Changed network configuration",
+    "Operation": "NetworkConfigurationUpdated"
+  },
+  {
+    "FriendlyName": "Changed network profile settings",
+    "Operation": "ProcessProfileFields"
+  },
+  {
+    "FriendlyName": "Changed private content mode",
+    "Operation": "SupervisorAdminToggled"
+  },
+  {
+    "FriendlyName": "Changed security configuration",
+    "Operation": "NetworkSecurityConfigurationUpdated"
+  },
+  {
+    "FriendlyName": "Conversation closed",
+    "Operation": "CloseConversation"
+  },
+  {
+    "FriendlyName": "Conversation opened",
+    "Operation": "OpenConversation"
+  },
+  {
+    "FriendlyName": "Create a segment",
+    "Operation": "SegmentCreated"
+  },
+  {
+    "FriendlyName": "Created file",
+    "Operation": "FileCreated"
+  },
+  {
+    "FriendlyName": "Created group",
+    "Operation": "GroupCreation"
+  },
+  {
+    "FriendlyName": "Created message",
+    "Operation": "MessageCreation"
+  },
+  {
+    "FriendlyName": "Delete a segment",
+    "Operation": "SegmentDeleted"
+  },
+  {
+    "FriendlyName": "Deleted group",
+    "Operation": "GroupDeletion"
+  },
+  {
+    "FriendlyName": "Download segmentation admin reports",
+    "Operation": "SegmentationReportDownloaded"
+  },
+  {
+    "FriendlyName": "Event content exported",
+    "Operation": "EventContentExported"
+  },
+  {
+    "FriendlyName": "Event moderation enabled",
+    "Operation": "EventModerationEnabled"
+  },
+  {
+    "FriendlyName": "Exported data",
+    "Operation": "DataExport"
+  },
+  {
+    "FriendlyName": "Failed to access file",
+    "Operation": "FileAccessFailure"
+  },
+  {
+    "FriendlyName": "Failed to access group",
+    "Operation": "GroupAccessFailure"
+  },
+  {
+    "FriendlyName": "Failed to access thread",
+    "Operation": "ThreadAccessFailure"
+  },
+  {
+    "FriendlyName": "Generate segmentation admin reports",
+    "Operation": "SegmentationReportGenerated"
+  },
+  {
+    "FriendlyName": "Reacted to message",
+    "Operation": "MarkedMessageChanged"
+  },
+  {
+    "FriendlyName": "Remove curated topic*",
+    "Operation": "RemoveCuratedTopic"
+  },
+  {
+    "FriendlyName": "Removed Corporate Communicator",
+    "Operation": "RemoveUserRole"
+  },
+  {
+    "FriendlyName": "Shared file",
+    "Operation": "FileShared"
+  },
+  {
+    "FriendlyName": "Suspended network user",
+    "Operation": "NetworkUserSuspended"
+  },
+  {
+    "FriendlyName": "Suspended user",
+    "Operation": "UserSuspension"
+  },
+  {
+    "FriendlyName": "Tenant Usage Policy Acceptance",
+    "Operation": "UsagePolicyAcceptance"
+  },
+  {
+    "FriendlyName": "Thread Muted",
+    "Operation": "AdminThreadMuted"
+  },
+  {
+    "FriendlyName": "Thread Unmuted",
+    "Operation": "AdminThreadUnmuted"
+  },
+  {
+    "FriendlyName": "Updated file description",
+    "Operation": "FileUpdateDescription"
+  },
+  {
+    "FriendlyName": "Updated file name",
+    "Operation": "FileUpdateName"
+  },
+  {
+    "FriendlyName": "Updated role assignment for Network Admin",
+    "Operation": "NetworkAdminUpdated"
+  },
+  {
+    "FriendlyName": "Updated role assignment for Verified Admin",
+    "Operation": "NetworkVerifiedAdminUpdated"
+  },
+  {
+    "FriendlyName": "Viewed file",
+    "Operation": "FileVisited"
+  },
+  {
+    "FriendlyName": "Viewed thread",
+    "Operation": "ThreadViewed"
+  },
+  {
+    "FriendlyName": "Added Company Admin",
+    "Operation": "AddCompanyAdmin"
+  },
+  {
+    "FriendlyName": "Added Support User",
+    "Operation": "AddSupportUser"
+  },
+  {
+    "FriendlyName": "Assigned User Role",
+    "Operation": "AssignRole"
+  },
+  {
+    "FriendlyName": "Changed Client Details",
+    "Operation": "ClientDetailsChanged"
+  },
+  {
+    "FriendlyName": "Company Admin Logged In",
+    "Operation": "AdminLogin"
+  },
+  {
+    "FriendlyName": "Company Admin Logged Out",
+    "Operation": "AdminLogout"
+  },
+  {
+    "FriendlyName": "Created User Role",
+    "Operation": "RoleCreated"
+  },
+  {
+    "FriendlyName": "Deleted Support Access",
+    "Operation": "GlintSupportAccessDeleted"
+  },
+  {
+    "FriendlyName": "Deleted System",
+    "Operation": "GlintSystemDeleted"
+  },
+  {
+    "FriendlyName": "Deleted User",
+    "Operation": "GlintUserDeleted"
+  },
+  {
+    "FriendlyName": "Disabled Advanced Configuration Access",
+    "Operation": "UserAdvConfigDisabled"
+  },
+  {
+    "FriendlyName": "Enabled Advanced Configuration Access",
+    "Operation": "UserAdvConfigEnabled"
+  },
+  {
+    "FriendlyName": "Executed Data Apps Job",
+    "Operation": "GlintDataAppsJobRun"
+  },
+  {
+    "FriendlyName": "Exported agentic campaign policy violations",
+    "Operation": "VivaGlintAgenticPolicyViolationsExported"
+  },
+  {
+    "FriendlyName": "Exported agentic campaign topic analysis",
+    "Operation": "VivaGlintAgenticTopicAnalysisExported"
+  },
+  {
+    "FriendlyName": "Exported all agentic campaign data",
+    "Operation": "VivaGlintAgenticAllDataExported"
+  },
+  {
+    "FriendlyName": "Exported Glint 360 Feedback",
+    "Operation": "GlintFeedbackProgramExport"
+  },
+  {
+    "FriendlyName": "Exported Glint Distribution Lists",
+    "Operation": "GlintUserGroupExport"
+  },
+  {
+    "FriendlyName": "Exported Glint People",
+    "Operation": "GlintUserExport"
+  },
+  {
+    "FriendlyName": "Exported Glint Pulse Program Response Rate",
+    "Operation": "GlintPulseProgramRespondentRateExport"
+  },
+  {
+    "FriendlyName": "Exported Glint Question Library",
+    "Operation": "GlintQuestionExport"
+  },
+  {
+    "FriendlyName": "Exported Glint Survey Program",
+    "Operation": "GlintPulseProgramExport"
+  },
+  {
+    "FriendlyName": "Exported Glint User Role",
+    "Operation": "GlintRoleExport"
+  },
+  {
+    "FriendlyName": "Exported Raw Survey Data",
+    "Operation": "RawSurveyReponseExport"
+  },
+  {
+    "FriendlyName": "Exported User Data",
+    "Operation": "UserDataExport"
+  },
+  {
+    "FriendlyName": "Imported Glint 360 Feedback",
+    "Operation": "GlintFeedbackProgramImport"
+  },
+  {
+    "FriendlyName": "Imported Glint SFTP",
+    "Operation": "GlintRubiconImport"
+  },
+  {
+    "FriendlyName": "Imported Glint User Data",
+    "Operation": "GlintUserImport"
+  },
+  {
+    "FriendlyName": "Imported Glint User Role",
+    "Operation": "GlintRoleImport"
+  },
+  {
+    "FriendlyName": "Removed Company Admin",
+    "Operation": "RemoveCompanyAdmin"
+  },
+  {
+    "FriendlyName": "Reopened Survey",
+    "Operation": "SurveyReopen"
+  },
+  {
+    "FriendlyName": "Set Data DSR Control",
+    "Operation": "DataDsrControlSet"
+  },
+  {
+    "FriendlyName": "Set Discarding Employee IDs",
+    "Operation": "DiscardingEmployeeIdsSet"
+  },
+  {
+    "FriendlyName": "Unassigned User Role",
+    "Operation": "UnassignRole"
+  },
+  {
+    "FriendlyName": "Viewed As",
+    "Operation": "ViewAs"
+  },
+  {
+    "FriendlyName": "Dashboard created",
+    "Operation": "Dashboard created"
+  },
+  {
+    "FriendlyName": "Dashboard deleted",
+    "Operation": "Dashboard deleted"
+  },
+  {
+    "FriendlyName": "Dashboard updated",
+    "Operation": "Dashboard updated"
+  },
+  {
+    "FriendlyName": "Data exported",
+    "Operation": "Data exported"
+  },
+  {
+    "FriendlyName": "Goals policy updated",
+    "Operation": "Goals policy updated"
+  },
+  {
+    "FriendlyName": "OKR or Project created",
+    "Operation": "OKR or Project created"
+  },
+  {
+    "FriendlyName": "OKR or Project deleted",
+    "Operation": "OKR or Project deleted"
+  },
+  {
+    "FriendlyName": "OKR or Project updated",
+    "Operation": "OKR or Project updated"
+  },
+  {
+    "FriendlyName": "Organization created",
+    "Operation": "Organization created"
+  },
+  {
+    "FriendlyName": "Organization integrations updated",
+    "Operation": "Organization integrations updated"
+  },
+  {
+    "FriendlyName": "Organization settings updated",
+    "Operation": "Organization settings updated"
+  },
+  {
+    "FriendlyName": "Team added",
+    "Operation": "Team added"
+  },
+  {
+    "FriendlyName": "Team deleted",
+    "Operation": "Team deleted"
+  },
+  {
+    "FriendlyName": "Team updated",
+    "Operation": "Team updated"
+  },
+  {
+    "FriendlyName": "User added",
+    "Operation": "User added"
+  },
+  {
+    "FriendlyName": "User deactivated",
+    "Operation": "User deactivated"
+  },
+  {
+    "FriendlyName": "User deleted",
+    "Operation": "User deleted"
+  },
+  {
+    "FriendlyName": "User logged in",
+    "Operation": "User logged in"
+  },
+  {
+    "FriendlyName": "Accessed OData link",
+    "Operation": "AccessedOdataLink"
+  },
+  {
+    "FriendlyName": "Added delegate access",
+    "Operation": "AddDelegates"
+  },
+  {
+    "FriendlyName": "Canceled query",
+    "Operation": "CanceledQuery"
+  },
+  {
+    "FriendlyName": "Created meeting exclusion",
+    "Operation": "MeetingExclusionCreated"
+  },
+  {
+    "FriendlyName": "Deleted result",
+    "Operation": "DeletedResult"
+  },
+  {
+    "FriendlyName": "Downloaded report",
+    "Operation": "DownloadedReport"
+  },
+  {
+    "FriendlyName": "Executed query",
+    "Operation": "ExecutedQuery"
+  },
+  {
+    "FriendlyName": "Modified CXO Settings",
+    "Operation": "ModifiedCXOSettings"
+  },
+  {
+    "FriendlyName": "Modified Exclusion List Using Entra Group",
+    "Operation": "ModifiedExclusionListUsingEntraGroup"
+  },
+  {
+    "FriendlyName": "Modified Minimum Group Size",
+    "Operation": "ModifiedMinimumGroupSize"
+  },
+  {
+    "FriendlyName": "Removed delegate access",
+    "Operation": "RemoveDelegates"
+  },
+  {
+    "FriendlyName": "Updated data access setting",
+    "Operation": "UpdatedDataAccessSetting"
+  },
+  {
+    "FriendlyName": "Uploaded organization data",
+    "Operation": "UploadedOrgData"
+  },
+  {
+    "FriendlyName": "User logged in*",
+    "Operation": "UserLoggedIn"
+  },
+  {
+    "FriendlyName": "Viewed Explore",
+    "Operation": "ViewedExplore"
+  },
+  {
+    "FriendlyName": "Admin deleted a user's data",
+    "Operation": "PulseDeleteUserData"
+  },
+  {
+    "FriendlyName": "Admin updated tenant's settings",
+    "Operation": "PulseTenantSettingsUpdate"
+  },
+  {
+    "FriendlyName": "Confidential conversation started",
+    "Operation": "PulseConfidentialConversationStarted"
+  },
+  {
+    "FriendlyName": "Conversation message deleted",
+    "Operation": "PulseConfidentialConversationMessageDeleted"
+  },
+  {
+    "FriendlyName": "Conversation response added",
+    "Operation": "PulseConfidentialConversationResponded"
+  },
+  {
+    "FriendlyName": "User canceled a Pulse survey",
+    "Operation": "PulseCancel"
+  },
+  {
+    "FriendlyName": "User created a Pulse draft",
+    "Operation": "PulseCreateDraft"
+  },
+  {
+    "FriendlyName": "User created a Pulse survey",
+    "Operation": "PulseCreate"
+  },
+  {
+    "FriendlyName": "User deleted a Pulse draft",
+    "Operation": "PulseDeleteDraft"
+  },
+  {
+    "FriendlyName": "User deleted a question for Library",
+    "Operation": "PulseQuestionDeleted"
+  },
+  {
+    "FriendlyName": "User extended their pulse survey deadline",
+    "Operation": "PulseExtendDeadline"
+  },
+  {
+    "FriendlyName": "User invited additional users to Pulse survey",
+    "Operation": "PulseInvite"
+  },
+  {
+    "FriendlyName": "User request a pulse data export",
+    "Operation": "PulseDataExport"
+  },
+  {
+    "FriendlyName": "User shared a pulse report",
+    "Operation": "PulseShareResults"
+  },
+  {
+    "FriendlyName": "User submitted response to a pulse survey",
+    "Operation": "PulseSubmit"
+  },
+  {
+    "FriendlyName": "Backfill CMD Agent",
+    "Operation": "AddDevicesToBackfill Operation"
+  },
+  {
+    "FriendlyName": "Bulk reinstall CMD Agent",
+    "Operation": "TriggerClientAgentCheckBulkAction Operation"
+  },
+  {
+    "FriendlyName": "Check PowerShell Execution Policy",
+    "Operation": "Check PowerShell Execution Policy"
+  },
+  {
+    "FriendlyName": "Create LogCollection Request",
+    "Operation": "Create LogCollection Request"
+  },
+  {
+    "FriendlyName": "Create new work items (Scheduler)",
+    "Operation": "Create new work items (Scheduler)"
+  },
+  {
+    "FriendlyName": "Create Remote Action Operation in ActionModeratorService",
+    "Operation": "Create Remote Action Operation in ActionModeratorService"
+  },
+  {
+    "FriendlyName": "Create VmExtension Request",
+    "Operation": "Create VmExtention Request"
+  },
+  {
+    "FriendlyName": "Execute AppHealthPlugin",
+    "Operation": "Execute AppHealthPlugin"
+  },
+  {
+    "FriendlyName": "Install RD agent",
+    "Operation": "Install RD agent"
+  },
+  {
+    "FriendlyName": "OCE Run Commands on VM",
+    "Operation": "OCE Run Commands on VM"
+  },
+  {
+    "FriendlyName": "Post Remote Action Operation",
+    "Operation": "Post Remote Action Operation"
+  },
+  {
+    "FriendlyName": "Reinstall CMD Agent",
+    "Operation": "AddDevicesToReinstall Operation"
+  },
+  {
+    "FriendlyName": "Run hybrid AADJ extension",
+    "Operation": "Run hybrid AADJ extension"
+  },
+  {
+    "FriendlyName": "Trigger CMD Agent Canary check",
+    "Operation": "Trigger CMD Agent Canary check"
+  },
+  {
+    "FriendlyName": "Trigger device remediation",
+    "Operation": "Trigger device remediation"
+  },
+  {
+    "FriendlyName": "Trigger generic action",
+    "Operation": "Trigger generic action"
+  },
+  {
+    "FriendlyName": "Trigger generic action by SaaF",
+    "Operation": "Trigger generic action by SaaF"
+  },
+  {
+    "FriendlyName": "Trigger generic action with options",
+    "Operation": "Trigger generic action with options"
+  },
+  {
+    "FriendlyName": "Trigger orchestrator",
+    "Operation": "Trigger orchestrator"
+  },
+  {
+    "FriendlyName": "Upload folder to blob",
+    "Operation": "Upload folder to blob"
+  }
+]

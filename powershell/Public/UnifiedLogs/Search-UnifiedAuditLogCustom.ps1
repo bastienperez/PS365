@@ -426,44 +426,24 @@ function Invoke-SearchUnifiedAuditLogCustomHelperGUI {
     [System.Collections.Generic.List[PSCustomObject]]$operationChoices = @()
     $operationLookupByDisplay = @{}
 
-    try {
-        $splash.Update('Loading audit operations catalog from Microsoft Learn...')
-        $tableRows = Get-HTMLTables -URL 'https://learn.microsoft.com/en-us/purview/audit-log-activities'
-        if ($tableRows) {
-            $rowsWithOperation = $tableRows | Where-Object { -not [string]::IsNullOrWhiteSpace($_.Operation) }
-            foreach ($row in $rowsWithOperation) {
-                $operationName = [string]$row.Operation
-                $operationName = $operationName.Trim().TrimEnd('.')
-                if ([string]::IsNullOrWhiteSpace($operationName)) {
-                    continue
-                }
-
-                $friendlyName = $null
-                if ($row.PSObject.Properties.Match('Friendly name').Count -gt 0) {
-                    $friendlyName = $row.'Friendly name'
-                }
-                elseif ($row.PSObject.Properties.Match('FriendlyName').Count -gt 0) {
-                    $friendlyName = $row.FriendlyName
-                }
-
-                if ([string]::IsNullOrWhiteSpace($friendlyName)) {
-                    $friendlyName = $operationName
-                }
-
-                $friendlyName = ([string]$friendlyName).Trim().TrimEnd('.')
-
-                $exists = $operationChoices | Where-Object { $_.Operation -eq $operationName }
-                if (-not $exists) {
-                    $operationChoices.Add([PSCustomObject]@{
-                            FriendlyName = $friendlyName
-                            Operation    = $operationName
-                        })
-                }
-            }
+    # Operations catalog is loaded from Microsoft Learn with a local cache and an offline fallback
+    # (fresh cache > live refresh > stale cache > bundled seed). See Get-UnifiedAuditLogOperationCatalog.
+    if ($splash) { $splash.Update('Loading audit operations catalog...') }
+    $catalog = Get-UnifiedAuditLogOperationCatalog
+    if ($catalog -and $catalog.Operations) {
+        foreach ($entry in $catalog.Operations) {
+            $operationChoices.Add($entry)
         }
     }
-    catch {
-        Write-Verbose "Failed to load operation catalog from Purview page: $($_.Exception.Message)"
+
+    if ($splash) {
+        $catalogSource = if ($catalog) { $catalog.Source } else { 'None' }
+        switch ($catalogSource) {
+            'Live' { $splash.Update("Loaded $($operationChoices.Count) operations from Microsoft Learn") }
+            'Cache' { $splash.Update("Microsoft Learn unavailable or cached - loaded $($operationChoices.Count) operations from local cache") }
+            'Seed' { $splash.Update("Microsoft Learn unavailable - loaded $($operationChoices.Count) operations from bundled list") }
+            default { $splash.Update('Could not load operations catalog (you can still type raw cmdlets)') }
+        }
     }
 
     $xaml = @'
