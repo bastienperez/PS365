@@ -582,6 +582,9 @@ function Invoke-SearchUnifiedAuditLogCustomHelperGUI {
                     <TextBox x:Name="OperationsSearchBox" Grid.Column="0" ToolTip="Type to filter the list below, OR type a raw cmdlet (e.g. New-TransportRule) and press Enter / click 'Add as raw'"/>
                     <Button x:Name="AddCustomOperationButton" Grid.Column="1" Content="Add as raw" Margin="6,4,0,0" Style="{StaticResource PrimaryButtonStyle}"/>
                 </Grid>
+
+                <TextBlock Text="User IDs (comma or semicolon-separated, e.g. alice@contoso.com;bob@contoso.com)" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,12,0,0"/>
+                <TextBox x:Name="UserIdsBox" Margin="0,6,0,0" ToolTip="Optional. Filter the search by one or more user principal names. Leave empty to search all users."/>
             </StackPanel>
         </Border>
 
@@ -688,6 +691,7 @@ function Invoke-SearchUnifiedAuditLogCustomHelperGUI {
     $simpleViewCheckBox = $window.FindName('SimpleViewCheckBox')
     $loadSharingEventsButton = $window.FindName('LoadSharingEventsButton')
     $operationsSearchBox = $window.FindName('OperationsSearchBox')
+    $userIdsBox = $window.FindName('UserIdsBox')
     $addCustomOperationButton = $window.FindName('AddCustomOperationButton')
     $availableOperationsListBox = $window.FindName('AvailableOperationsListBox')
     $selectedOperationsListBox = $window.FindName('SelectedOperationsListBox')
@@ -773,6 +777,15 @@ function Invoke-SearchUnifiedAuditLogCustomHelperGUI {
             $command += " -Operations @($operationsString)"
         }
 
+        $userIds = @()
+        if (-not [string]::IsNullOrWhiteSpace($userIdsBox.Text)) {
+            $userIds = $userIdsBox.Text -split '[,;]' | ForEach-Object { $_.Trim() } | Where-Object { $_ }
+        }
+        if ($userIds.Count -gt 0) {
+            $userIdsString = '"' + ($userIds -join '","') + '"'
+            $command += " -UserIds @($userIdsString)"
+        }
+
         if ($simpleViewCheckBox.IsChecked -eq $true) {
             $command += ' -SimpleView'
         }
@@ -784,6 +797,8 @@ function Invoke-SearchUnifiedAuditLogCustomHelperGUI {
             & $refreshOperationsList
             & $buildCommand
         })
+
+    $userIdsBox.Add_TextChanged({ & $buildCommand })
 
     $availableOperationsListBox.Add_MouseDoubleClick({
             if ($availableOperationsListBox.SelectedItem -and -not $selectedOperationsListBox.Items.Contains($availableOperationsListBox.SelectedItem)) {
@@ -1040,6 +1055,14 @@ function Invoke-SearchUnifiedAuditLogCustomHelperGUI {
 
             if ($selectedOperations.Count -gt 0) {
                 $runParams['Operations'] = $selectedOperations
+            }
+
+            $userIdsForRun = @()
+            if (-not [string]::IsNullOrWhiteSpace($userIdsBox.Text)) {
+                $userIdsForRun = $userIdsBox.Text -split '[,;]' | ForEach-Object { $_.Trim() } | Where-Object { $_ }
+            }
+            if ($userIdsForRun.Count -gt 0) {
+                $runParams['UserIds'] = $userIdsForRun
             }
 
             if ($simpleViewCheckBox.IsChecked -eq $true) {
