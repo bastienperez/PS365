@@ -9,7 +9,8 @@ Reports on Exchange RBAC roles and their effective membership, including groups 
 ## SYNTAX
 
 ```powershell
-Get-ExRoleReport [-OnPrem] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+Get-ExRoleReport [[-Identity] <String>] [[-PrincipalID] <String>] [[-PrincipalDisplayName] <String>] [-OnPrem]
+ [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -37,12 +38,36 @@ Retrieves the Exchange RBAC role report for Exchange Online, including recursive
 ### EXAMPLE 2
 
 ```powershell
+Get-ExRoleReport -Identity 'Organization Management'
+```
+
+Returns only the membership of the 'Organization Management' role group.
+
+### EXAMPLE 3
+
+```powershell
+Get-ExRoleReport -PrincipalID 'alice@contoso.com'
+```
+
+Returns every role assignment held by alice@contoso.com (direct or via group membership).
+
+### EXAMPLE 4
+
+```powershell
+Get-ExRoleReport -PrincipalDisplayName 'Alice Doe'
+```
+
+Returns every role assignment held by the user whose DisplayName is 'Alice Doe'.
+
+### EXAMPLE 5
+
+```powershell
 Get-ExRoleReport | Where-Object { $_.DirectMember -eq $false } | Format-Table Role, MemberName, MemberViaGroup
 ```
 
 Lists all users/objects resolved through group membership, showing which group is a direct member of the role.
 
-### EXAMPLE 3
+### EXAMPLE 6
 
 ```powershell
 Get-ExRoleReport | Export-Csv -NoTypeInformation "$(Get-Date -Format yyyyMMdd)_adminRoles.csv" -Encoding UTF8
@@ -51,6 +76,56 @@ Get-ExRoleReport | Export-Csv -NoTypeInformation "$(Get-Date -Format yyyyMMdd)_a
 Exports the full report (including group-expanded members) to a CSV file.
 
 ## PARAMETERS
+
+### -Identity
+
+Filter the report on a specific role (matches the Role column, exact case-insensitive).
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PrincipalID
+
+Filter the report on a specific principal.
+Matches MemberName (alias), MemberPrimarySMTPAddres (UPN/SMTP),
+or MemberObjectID (ExternalDirectoryObjectId / GUID).
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 2
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PrincipalDisplayName
+
+Filter the report on a specific MemberDisplayName (exact, case-insensitive).
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 3
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
 
 ### -OnPrem
 

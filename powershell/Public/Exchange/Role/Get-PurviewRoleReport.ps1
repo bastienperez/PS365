@@ -12,6 +12,16 @@
     name of the group that is a direct member of the role. Circular group references are
     detected and skipped automatically.
 
+    .PARAMETER Identity
+    Filter the report on a specific role (matches the Role column, exact case-insensitive).
+
+    .PARAMETER PrincipalID
+    Filter the report on a specific principal. Matches MemberName (alias), MemberPrimarySMTPAddres (UPN/SMTP),
+    or MemberObjectID (ExternalDirectoryObjectId / GUID).
+
+    .PARAMETER PrincipalDisplayName
+    Filter the report on a specific MemberDisplayName (exact, case-insensitive).
+
     .PARAMETER ShowGraph
     Reserved for future use. When specified, displays a graphical representation of the role membership.
 
@@ -24,6 +34,21 @@
     Get-PurviewRoleReport
 
     Retrieves the Purview RBAC role report, including recursive group expansion.
+
+    .EXAMPLE
+    Get-PurviewRoleReport -Identity 'Compliance Administrator'
+
+    Returns only the membership of the 'Compliance Administrator' role group.
+
+    .EXAMPLE
+    Get-PurviewRoleReport -PrincipalID 'alice@contoso.com'
+
+    Returns every Purview role assignment held by alice@contoso.com (direct or via group membership).
+
+    .EXAMPLE
+    Get-PurviewRoleReport -PrincipalDisplayName 'Alice Doe'
+
+    Returns every Purview role assignment held by the user whose DisplayName is 'Alice Doe'.
 
     .EXAMPLE
     Get-PurviewRoleReport | Where-Object { $_.DirectMember -eq $false } | Format-Table Role, MemberName, MemberViaGroup
@@ -44,6 +69,15 @@
 function Get-PurviewRoleReport {
     [CmdletBinding()]
     param (
+        [Parameter(Mandatory = $false)]
+        [string]$Identity,
+
+        [Parameter(Mandatory = $false)]
+        [string]$PrincipalID,
+
+        [Parameter(Mandatory = $false)]
+        [string]$PrincipalDisplayName,
+
         [switch]$ShowGraph
     )
 
@@ -127,11 +161,18 @@ function Get-PurviewRoleReport {
     }
 
     try {
-        # -ShowPartnerLinked : 
-        # This ShowPartnerLinked switch specifies whether to return built-in role groups that are of type PartnerRoleGroup. You don't need to specify a value with this switch.
-        # This type of role group is used in the cloud-based service to allow partner service providers to manage their customer organizations.
-        # These types of role groups can't be edited and are not shown by default.
-        $purviewRoles = Get-RoleGroup -ShowPartnerLinked -ErrorAction Stop
+        # When -Identity is provided, narrow Get-RoleGroup to that role only - avoids enumerating
+        # every role group and recursively expanding their members for nothing.
+        if ($Identity) {
+            $purviewRoles = Get-RoleGroup -Identity $Identity -ErrorAction Stop
+        }
+        else {
+            # -ShowPartnerLinked :
+            # This ShowPartnerLinked switch specifies whether to return built-in role groups that are of type PartnerRoleGroup. You don't need to specify a value with this switch.
+            # This type of role group is used in the cloud-based service to allow partner service providers to manage their customer organizations.
+            # These types of role groups can't be edited and are not shown by default.
+            $purviewRoles = Get-RoleGroup -ShowPartnerLinked -ErrorAction Stop
+        }
     }
     catch {
         Write-Warning 'You are not connected to the Purview service. Please connect using Connect-IPPSSession.'
@@ -215,6 +256,22 @@ function Get-PurviewRoleReport {
         }
         catch {
             Write-Warning $_.Exception.Message
+        }
+    }
+
+    # Apply principal filters on the final result set.
+    # Note: -Identity is already enforced server-side via Get-RoleGroup -Identity above.
+    # -PrincipalID / -PrincipalDisplayName cannot be pushed down because Exchange has no
+    # 'which roles contain this principal?' query, so we filter after the recursive expansion.
+    if ($PrincipalID -or $PrincipalDisplayName) {
+        $purviewRolesMembership = $purviewRolesMembership | Where-Object {
+            (-not $PrincipalID          -or $_.MemberName -eq $PrincipalID -or $_.MemberPrimarySMTPAddres -eq $PrincipalID -or $_.MemberObjectID -eq $PrincipalID) -and
+            (-not $PrincipalDisplayName -or $_.MemberDisplayName -eq $PrincipalDisplayName)
+        }
+
+        if (-not $purviewRolesMembership) {
+            Write-Warning 'No role assignment found matching the specified filter(s).'
+            return
         }
     }
 

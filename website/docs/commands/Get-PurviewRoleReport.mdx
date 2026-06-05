@@ -9,7 +9,8 @@ Reports on Purview RBAC roles and their effective membership, including groups e
 ## SYNTAX
 
 ```powershell
-Get-PurviewRoleReport [-ShowGraph] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+Get-PurviewRoleReport [[-Identity] <String>] [[-PrincipalID] <String>] [[-PrincipalDisplayName] <String>]
+ [-ShowGraph] [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -37,12 +38,36 @@ Retrieves the Purview RBAC role report, including recursive group expansion.
 ### EXAMPLE 2
 
 ```powershell
+Get-PurviewRoleReport -Identity 'Compliance Administrator'
+```
+
+Returns only the membership of the 'Compliance Administrator' role group.
+
+### EXAMPLE 3
+
+```powershell
+Get-PurviewRoleReport -PrincipalID 'alice@contoso.com'
+```
+
+Returns every Purview role assignment held by alice@contoso.com (direct or via group membership).
+
+### EXAMPLE 4
+
+```powershell
+Get-PurviewRoleReport -PrincipalDisplayName 'Alice Doe'
+```
+
+Returns every Purview role assignment held by the user whose DisplayName is 'Alice Doe'.
+
+### EXAMPLE 5
+
+```powershell
 Get-PurviewRoleReport | Where-Object { $_.DirectMember -eq $false } | Format-Table Role, MemberName, MemberViaGroup
 ```
 
 Lists all users/objects resolved through group membership, showing which group is a direct member of the role.
 
-### EXAMPLE 3
+### EXAMPLE 6
 
 ```powershell
 Get-PurviewRoleReport | Export-Csv -NoTypeInformation "$(Get-Date -Format yyyyMMdd)_purviewRoles.csv" -Encoding UTF8
@@ -51,6 +76,56 @@ Get-PurviewRoleReport | Export-Csv -NoTypeInformation "$(Get-Date -Format yyyyMM
 Exports the full report (including group-expanded members) to a CSV file.
 
 ## PARAMETERS
+
+### -Identity
+
+Filter the report on a specific role (matches the Role column, exact case-insensitive).
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PrincipalID
+
+Filter the report on a specific principal.
+Matches MemberName (alias), MemberPrimarySMTPAddres (UPN/SMTP),
+or MemberObjectID (ExternalDirectoryObjectId / GUID).
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 2
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PrincipalDisplayName
+
+Filter the report on a specific MemberDisplayName (exact, case-insensitive).
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 3
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
 
 ### -ShowGraph
 

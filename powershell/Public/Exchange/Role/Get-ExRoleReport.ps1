@@ -12,6 +12,16 @@
     name of the group that is a direct member of the role. Circular group references are
     detected and skipped automatically.
 
+    .PARAMETER Identity
+    Filter the report on a specific role (matches the Role column, exact case-insensitive).
+
+    .PARAMETER PrincipalID
+    Filter the report on a specific principal. Matches MemberName (alias), MemberPrimarySMTPAddres (UPN/SMTP),
+    or MemberObjectID (ExternalDirectoryObjectId / GUID).
+
+    .PARAMETER PrincipalDisplayName
+    Filter the report on a specific MemberDisplayName (exact, case-insensitive).
+
     .PARAMETER OnPrem
     When specified, queries an on-premises Exchange server instead of Exchange Online.
     Group expansion is also performed for on-premises role groups.
@@ -25,6 +35,21 @@
     Get-ExRoleReport
 
     Retrieves the Exchange RBAC role report for Exchange Online, including recursive group expansion.
+
+    .EXAMPLE
+    Get-ExRoleReport -Identity 'Organization Management'
+
+    Returns only the membership of the 'Organization Management' role group.
+
+    .EXAMPLE
+    Get-ExRoleReport -PrincipalID 'alice@contoso.com'
+
+    Returns every role assignment held by alice@contoso.com (direct or via group membership).
+
+    .EXAMPLE
+    Get-ExRoleReport -PrincipalDisplayName 'Alice Doe'
+
+    Returns every role assignment held by the user whose DisplayName is 'Alice Doe'.
 
     .EXAMPLE
     Get-ExRoleReport | Where-Object { $_.DirectMember -eq $false } | Format-Table Role, MemberName, MemberViaGroup
@@ -46,6 +71,15 @@
 function Get-ExRoleReport {
     [CmdletBinding()]
     param (
+        [Parameter(Mandatory = $false)]
+        [string]$Identity,
+
+        [Parameter(Mandatory = $false)]
+        [string]$PrincipalID,
+
+        [Parameter(Mandatory = $false)]
+        [string]$PrincipalDisplayName,
+
         [switch]$OnPrem
     )
 
@@ -133,7 +167,12 @@ function Get-ExRoleReport {
     }
 
     try {
-        if ($OnPrem) {
+        # When -Identity is provided, narrow Get-RoleGroup to that role only - avoids enumerating
+        # every role group and recursively expanding their members for nothing.
+        if ($Identity) {
+            $exchangeRoles = Get-RoleGroup -Identity $Identity -ErrorAction Stop
+        }
+        elseif ($OnPrem) {
             $exchangeRoles = Get-RoleGroup -ErrorAction Stop
         }
         else {
@@ -220,6 +259,22 @@ function Get-ExRoleReport {
         }
         catch {
             Write-Warning $_.Exception.Message
+        }
+    }
+
+    # Apply principal filters on the final result set.
+    # Note: -Identity is already enforced server-side via Get-RoleGroup -Identity above.
+    # -PrincipalID / -PrincipalDisplayName cannot be pushed down because Exchange has no
+    # 'which roles contain this principal?' query, so we filter after the recursive expansion.
+    if ($PrincipalID -or $PrincipalDisplayName) {
+        $exchangeRolesMembership = $exchangeRolesMembership | Where-Object {
+            (-not $PrincipalID          -or $_.MemberName -eq $PrincipalID -or $_.MemberPrimarySMTPAddres -eq $PrincipalID -or $_.MemberObjectID -eq $PrincipalID) -and
+            (-not $PrincipalDisplayName -or $_.MemberDisplayName -eq $PrincipalDisplayName)
+        }
+
+        if (-not $exchangeRolesMembership) {
+            Write-Warning 'No role assignment found matching the specified filter(s).'
+            return
         }
     }
 
