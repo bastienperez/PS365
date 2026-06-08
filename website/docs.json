@@ -194,6 +194,7 @@
           "docs/commands/ConvertTo-OrderedHashtable",
           "docs/commands/Format-TransportRuleValue",
           "docs/commands/Get-HTMLTables",
+          "docs/commands/Get-UnifiedAuditLogOperationCatalog",
           "docs/commands/Show-Splash"
         ]
       }

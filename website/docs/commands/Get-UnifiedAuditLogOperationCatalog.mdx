@@ -1,0 +1,103 @@
+---
+Module Name: PS365
+---
+
+## SYNOPSIS
+
+Returns the catalog of Unified Audit Log operations used by the Search-UnifiedAuditLogCustom helper GUI.
+
+## SYNTAX
+
+```powershell
+Get-UnifiedAuditLogOperationCatalog [[-Url] <String>] [[-MaxCacheAgeDays] <Int32>] [-ForceRefresh]
+ [-ProgressAction <ActionPreference>] [<CommonParameters>]
+```
+
+## DESCRIPTION
+
+Loads the list of audit log operations (Operation + friendly name) from the Microsoft Learn
+audit-log-activities page, with a resilient caching strategy:
+
+1.
+If a local cache exists and is younger than MaxCacheAgeDays, it is used directly (no network call).
+2.
+Otherwise the page is fetched from Microsoft Learn and the parsed list is written to the cache.
+3.
+If the page is unreachable, the (possibly stale) local cache is used as a fallback.
+4.
+If no cache exists, the bundled seed shipped with the module is used as a last resort.
+
+The cache lives in the per-user local application data folder (LOCALAPPDATA on Windows,
+~/Library/Application Support on macOS, ~/.local/share on Linux) under a PS365 subfolder, so it
+is writable per-user and works with PowerShell 7 on any platform.
+The seed lives in
+Private\Assets and ships with the module, so the helper still works fully offline on first run.
+
+## EXAMPLES
+
+## PARAMETERS
+
+### -Url
+
+The Microsoft Learn page to parse.
+Defaults to the audit-log-activities catalog.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 1
+Default value: Https://learn.microsoft.com/en-us/purview/audit-log-activities
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -MaxCacheAgeDays
+
+Maximum age (in days) of the local cache before a refresh from Microsoft Learn is attempted.
+Default is 1.
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 2
+Default value: 1
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ForceRefresh
+
+Ignore the cache freshness check and always attempt to refresh from Microsoft Learn first.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+### PSCustomObject with:
+
+### - Operations : a List[PSCustomObject] of \{ FriendlyName, Operation \}
+### - Source     : 'Live', 'Cache', 'Seed' or 'None'
+## NOTES
+
+## RELATED LINKS

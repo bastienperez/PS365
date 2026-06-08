@@ -11,7 +11,7 @@ Search-UnifiedAuditLogCustom is an enhanced wrapper around the native Search-Uni
 ```powershell
 Search-UnifiedAuditLogCustom [[-StartDate] <DateTime>] [[-EndDate] <DateTime>] [[-Operations] <String[]>]
  [[-UserIds] <String[]>] [[-FreeText] <String>] [[-ResultSize] <Int32>] [-SimpleView] [-HelperGUI]
- [-ProgressAction <ActionPreference>] [<CommonParameters>]
+ [[-ChunkDays] <Int32>] [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -171,6 +171,27 @@ Aliases:
 Required: False
 Position: Named
 Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ChunkDays
+
+Size (in days) of each sub-window used to split the StartDate/EndDate range.
+Defaults to 7.
+The function loops over the full range one chunk at a time and uses session pagination inside each chunk,
+which avoids the server-side 'Search duration too long' error encountered on very wide windows.
+Lower this value (e.g.
+1 or 3) if a chunk itself returns the 'too long' error.
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 7
+Default value: 7
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

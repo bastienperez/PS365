@@ -32,6 +32,12 @@
     The operations list is populated from the Microsoft Learn catalog of audit log activities, allowing users to easily find and select relevant operations for their search.
     Make sure to have access to the Microsoft Learn page for audit log activities to load the operations catalog successfully (https://learn.microsoft.com/en-us/purview/audit-log-activities).
 
+    .PARAMETER ChunkDays
+    Size (in days) of each sub-window used to split the StartDate/EndDate range. Defaults to 7.
+    The function loops over the full range one chunk at a time and uses session pagination inside each chunk,
+    which avoids the server-side 'Search duration too long' error encountered on very wide windows.
+    Lower this value (e.g. 1 or 3) if a chunk itself returns the 'too long' error.
+
     .EXAMPLE
     Search-UnifiedAuditLogCustom -StartDate (Get-Date).AddDays(-7) -EndDate (Get-Date) -Operations "UserLoggedIn", "FileAccessed" -SimpleView
 
@@ -67,7 +73,11 @@ function Search-UnifiedAuditLogCustom {
         [switch]$SimpleView,
 
         [Parameter(Mandatory = $false)]
-        [switch]$HelperGUI
+        [switch]$HelperGUI,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateRange(1, 90)]
+        [int]$ChunkDays = 7
     )
 
     # function from HAWK module
@@ -385,7 +395,57 @@ function Search-UnifiedAuditLogCustom {
         $searchParams['FreeText'] = $FreeText
     }
 
-    [array]$auditLogs = Search-UnifiedAuditLog @searchParams
+    # Chunk the date range to avoid the server-side 'Search duration too long' error on wide windows.
+    # Within each chunk we use session pagination (-SessionId + -SessionCommand ReturnLargeSet) so we can
+    # gather more than 5000 records per sub-window. The global -ResultSize is enforced as the overall cap.
+    [System.Collections.Generic.List[object]]$auditLogs = @()
+    $chunkSpan = New-TimeSpan -Days $ChunkDays
+    $cursor    = $StartDate
+    $chunkIdx  = 0
+
+    while ($cursor -lt $EndDate -and $auditLogs.Count -lt $ResultSize) {
+        $chunkIdx++
+        $chunkEnd = $cursor + $chunkSpan
+        if ($chunkEnd -gt $EndDate) { $chunkEnd = $EndDate }
+
+        Write-Verbose "Chunk $chunkIdx : $($cursor.ToString('yyyy-MM-dd HH:mm')) -> $($chunkEnd.ToString('yyyy-MM-dd HH:mm'))"
+
+        $chunkParams = @{}
+        foreach ($key in $searchParams.Keys) { $chunkParams[$key] = $searchParams[$key] }
+        $chunkParams['StartDate'] = $cursor
+        $chunkParams['EndDate']   = $chunkEnd
+        # Per-call page size is capped server-side at 5000.
+        $chunkParams['ResultSize'] = 5000
+
+        $sessionId = [Guid]::NewGuid().ToString()
+        $pageIndex = 0
+        do {
+            $pageIndex++
+            try {
+                $page = Search-UnifiedAuditLog @chunkParams -SessionId $sessionId -SessionCommand ReturnLargeSet -ErrorAction Stop
+            }
+            catch {
+                Write-Warning "Search-UnifiedAuditLog failed on chunk $chunkIdx page $pageIndex ($($cursor.ToString('yyyy-MM-dd HH:mm')) -> $($chunkEnd.ToString('yyyy-MM-dd HH:mm'))): $($_.Exception.Message). Try a smaller -ChunkDays value (current: $ChunkDays)."
+                $page = $null
+            }
+
+            if ($page) {
+                foreach ($entry in $page) {
+                    if ($auditLogs.Count -ge $ResultSize) { break }
+                    $auditLogs.Add($entry)
+                }
+                Write-Verbose "Chunk $chunkIdx page $pageIndex : +$($page.Count) records (total $($auditLogs.Count)/$ResultSize)"
+            }
+        } while ($page -and $page.Count -gt 0 -and $auditLogs.Count -lt $ResultSize)
+
+        # Advance the cursor by one second past chunkEnd to avoid re-fetching the boundary record.
+        $cursor = $chunkEnd.AddSeconds(1)
+    }
+
+    if ($auditLogs.Count -eq 0) {
+        Write-Warning 'Search-UnifiedAuditLog returned no records for the specified filters and time window.'
+        return
+    }
 
     if ($SimpleView) {
         return $auditLogs | Get-SimpleUnifiedAuditLog
@@ -450,181 +510,548 @@ function Invoke-SearchUnifiedAuditLogCustomHelperGUI {
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Search-UnifiedAuditLogCustom Helper"
-    Width="1200" Height="940"
-    MinWidth="1200" MinHeight="940"
+        Width="1200"
+        MinWidth="1100" MinHeight="400" MaxHeight="900"
+        SizeToContent="Height"
         WindowStartupLocation="CenterScreen"
-        Background="#F3F5F8"
-        FontFamily="Segoe UI">
+        Background="#FAFAFA"
+        FontFamily="Segoe UI"
+        TextOptions.TextFormattingMode="Display">
     <Window.Resources>
+        <SolidColorBrush x:Key="AccentBrush" Color="#0F6CBD"/>
+        <SolidColorBrush x:Key="AccentHoverBrush" Color="#115EA3"/>
+        <SolidColorBrush x:Key="SurfaceBrush" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="StrokeBrush" Color="#E1E1E1"/>
+        <SolidColorBrush x:Key="StrokeStrongBrush" Color="#C7C7C7"/>
+        <SolidColorBrush x:Key="TextPrimaryBrush" Color="#242424"/>
+        <SolidColorBrush x:Key="TextSecondaryBrush" Color="#616161"/>
+        <SolidColorBrush x:Key="TextHintBrush" Color="#8A8A8A"/>
+        <SolidColorBrush x:Key="ChromeBrush" Color="#F5F5F5"/>
+        <SolidColorBrush x:Key="ChromeHoverBrush" Color="#EBEBEB"/>
+
+        <Style x:Key="SectionTitleStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
+        </Style>
+        <Style x:Key="FieldLabelStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+            <Setter Property="Margin" Value="0,0,0,2"/>
+        </Style>
+        <Style x:Key="HelperTextStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Foreground" Value="{StaticResource TextHintBrush}"/>
+            <Setter Property="Margin" Value="0,2,0,0"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+
+        <Style x:Key="CardStyle" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource StrokeBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="10"/>
+        </Style>
+
         <Style TargetType="TextBox">
-            <Setter Property="Margin" Value="0,4,0,0"/>
-            <Setter Property="Padding" Value="8,6"/>
-            <Setter Property="BorderBrush" Value="#CBD5E1"/>
+            <Setter Property="Padding" Value="6,3"/>
+            <Setter Property="BorderBrush" Value="{StaticResource StrokeStrongBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Background" Value="White"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="MinHeight" Value="24"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
-        <Style TargetType="Button">
-            <Setter Property="Margin" Value="0,6,6,0"/>
-            <Setter Property="Padding" Value="10,5"/>
-            <Setter Property="MinHeight" Value="30"/>
-            <Setter Property="MinWidth" Value="76"/>
+        <Style x:Key="CompactInputStyle" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+            <Setter Property="Height" Value="24"/>
+        </Style>
+        <Style TargetType="CheckBox">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        <SolidColorBrush x:Key="AccentSoftBrush" Color="#EAF2FB"/>
+
+        <Style TargetType="Calendar">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="{StaticResource StrokeBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="BorderBrush" Value="#CBD5E1"/>
-            <Setter Property="Foreground" Value="#0F172A"/>
-            <Setter Property="Background" Value="#F8FAFC"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        </Style>
+
+        <Style TargetType="CalendarDayButton">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="MinWidth" Value="28"/>
+            <Setter Property="MinHeight" Value="28"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Margin" Value="1"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CalendarDayButton">
+                        <Border x:Name="bg" Background="{TemplateBinding Background}" CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bg" Property="Background" Value="{StaticResource AccentSoftBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsToday" Value="True">
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="bg" Property="Background" Value="{StaticResource AccentBrush}"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                            <Trigger Property="IsInactive" Value="True">
+                                <Setter Property="Foreground" Value="{StaticResource TextHintBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsBlackedOut" Value="True">
+                                <Setter Property="Opacity" Value="0.35"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="CalendarButton">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="MinWidth" Value="56"/>
+            <Setter Property="MinHeight" Value="36"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Margin" Value="2"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CalendarButton">
+                        <Border x:Name="bg" Background="{TemplateBinding Background}" CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bg" Property="Background" Value="{StaticResource AccentSoftBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="bg" Property="Background" Value="{StaticResource AccentBrush}"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                            <Trigger Property="HasSelectedDays" Value="True">
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                            </Trigger>
+                            <Trigger Property="IsInactive" Value="True">
+                                <Setter Property="Foreground" Value="{StaticResource TextHintBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="CalendarItem">
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CalendarItem">
+                        <ControlTemplate.Resources>
+                            <DataTemplate x:Key="{x:Static CalendarItem.DayTitleTemplateResourceKey}">
+                                <TextBlock Text="{Binding}" FontSize="11" FontWeight="SemiBold"
+                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,4"/>
+                            </DataTemplate>
+                        </ControlTemplate.Resources>
+                        <Border Background="White" Padding="8" CornerRadius="4">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+
+                                <Grid Grid.Row="0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Button x:Name="PART_PreviousButton" Grid.Column="0"
+                                            Width="28" Height="28" Style="{StaticResource CalendarToggleStyle}"
+                                            Focusable="False">
+                                        <Path Width="8" Height="10" Stretch="Uniform"
+                                              Fill="{StaticResource TextSecondaryBrush}"
+                                              Data="M 7,0 L 0,5 L 7,10 Z"/>
+                                    </Button>
+                                    <Button x:Name="PART_HeaderButton" Grid.Column="1"
+                                            Style="{StaticResource CalendarToggleStyle}"
+                                            HorizontalContentAlignment="Center"
+                                            FontWeight="SemiBold" FontSize="12"
+                                            Foreground="{StaticResource TextPrimaryBrush}"
+                                            Focusable="False"/>
+                                    <Button x:Name="PART_NextButton" Grid.Column="2"
+                                            Width="28" Height="28" Style="{StaticResource CalendarToggleStyle}"
+                                            Focusable="False">
+                                        <Path Width="8" Height="10" Stretch="Uniform"
+                                              Fill="{StaticResource TextSecondaryBrush}"
+                                              Data="M 0,0 L 7,5 L 0,10 Z"/>
+                                    </Button>
+                                </Grid>
+
+                                <Grid Grid.Row="1" Margin="0,6,0,0">
+                                    <Grid x:Name="PART_MonthView" Visibility="Visible"/>
+                                    <Grid x:Name="PART_YearView" Visibility="Hidden"/>
+                                </Grid>
+                            </Grid>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="DatePickerTextBox">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="6,0"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DatePickerTextBox">
+                        <Grid>
+                            <ScrollViewer x:Name="PART_ContentHost" VerticalAlignment="Center" Focusable="False"/>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="CalendarToggleStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="MinWidth" Value="0"/>
+            <Setter Property="MinHeight" Value="0"/>
+            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bg" Background="{TemplateBinding Background}" CornerRadius="2" Padding="0">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bg" Property="Background" Value="#EAF2FB"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="DatePicker">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="MinHeight" Value="26"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="{StaticResource StrokeStrongBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DatePicker">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="2"
+                                SnapsToDevicePixels="True">
+                            <Grid x:Name="PART_Root">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="26"/>
+                                </Grid.ColumnDefinitions>
+                                <DatePickerTextBox x:Name="PART_TextBox" Grid.Column="0"
+                                                   Foreground="{TemplateBinding Foreground}"
+                                                   VerticalAlignment="Center"/>
+                                <Button x:Name="PART_Button" Grid.Column="1" Width="26"
+                                        Style="{StaticResource CalendarToggleStyle}"
+                                        Focusable="False">
+                                    <Path Width="13" Height="13" Stretch="Uniform"
+                                          Stroke="{StaticResource TextSecondaryBrush}" StrokeThickness="1.1"
+                                          Fill="Transparent" SnapsToDevicePixels="True"
+                                          Data="M0,3 L14,3 M3,0 L3,5 M11,0 L11,5 M0,7 L14,7 M0,3 L0,14 L14,14 L14,3 Z"/>
+                                </Button>
+                                <Popup x:Name="PART_Popup"
+                                       PlacementTarget="{Binding ElementName=PART_Button}"
+                                       Placement="Bottom" StaysOpen="False"/>
+                                <Grid x:Name="PART_DisabledVisual" Background="#80FFFFFF" Visibility="Collapsed"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="PART_DisabledVisual" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style TargetType="ListBox">
+            <Setter Property="BorderBrush" Value="{StaticResource StrokeBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="0"/>
+        </Style>
+
+        <Style TargetType="Button">
+            <Setter Property="Padding" Value="10,4"/>
+            <Setter Property="MinHeight" Value="26"/>
+            <Setter Property="MinWidth" Value="72"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{StaticResource StrokeStrongBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="Background" Value="{StaticResource ChromeBrush}"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="FontWeight" Value="Normal"/>
-        </Style>
-        <Style x:Key="GhostButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
-            <Setter Property="Foreground" Value="#0F172A"/>
-            <Setter Property="Background" Value="#F8FAFC"/>
-        </Style>
-        <Style x:Key="SuccessButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
-            <Setter Property="Background" Value="#F8FAFC"/>
-            <Setter Property="Foreground" Value="#0F172A"/>
-        </Style>
-        <Style x:Key="NeutralButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
-            <Setter Property="Background" Value="#F8FAFC"/>
-            <Setter Property="Foreground" Value="#0F172A"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Margin" Value="0,0,8,0"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{StaticResource ChromeHoverBrush}"/>
+                </Trigger>
+            </Style.Triggers>
         </Style>
         <Style x:Key="PrimaryButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
-            <Setter Property="Background" Value="#F8FAFC"/>
-            <Setter Property="BorderBrush" Value="#CBD5E1"/>
-            <Setter Property="Foreground" Value="#0F172A"/>
-            <Setter Property="FontWeight" Value="Normal"/>
+            <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{StaticResource AccentHoverBrush}"/>
+                    <Setter Property="BorderBrush" Value="{StaticResource AccentHoverBrush}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="NeutralButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}"/>
+        <Style x:Key="SuccessButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}"/>
+        <Style x:Key="GhostButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
+            <Setter Property="MinWidth" Value="0"/>
+            <Setter Property="Padding" Value="6,3"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#EAF2FB"/>
+                </Trigger>
+            </Style.Triggers>
         </Style>
     </Window.Resources>
 
-    <Grid Margin="20">
+    <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <Border Grid.Row="0" Background="White" CornerRadius="10" Padding="16" BorderBrush="#E2E8F0" BorderThickness="1">
+        <Border Grid.Row="0" Background="White" BorderBrush="{StaticResource StrokeBrush}" BorderThickness="0,0,0,1" Padding="20,8">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="180"/>
-                </Grid.ColumnDefinitions>
-
-                <StackPanel Grid.Column="0" Margin="0,0,12,0">
-                    <TextBlock Text="StartDate" FontWeight="SemiBold"/>
-                    <DatePicker x:Name="StartDatePicker" Margin="0,4,0,0"/>
-                    <TextBox x:Name="StartDateBox" ToolTip="Format: yyyy-MM-dd HH:mm"/>
-                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                        <Button x:Name="StartYesterdayButton" Content="Yesterday 00:00" Style="{StaticResource GhostButtonStyle}"/>
-                        <Button x:Name="StartNowButton" Content="Now" Style="{StaticResource GhostButtonStyle}"/>
-                    </StackPanel>
-                </StackPanel>
-
-                <StackPanel Grid.Column="1" Margin="0,0,12,0">
-                    <TextBlock Text="EndDate" FontWeight="SemiBold"/>
-                    <DatePicker x:Name="EndDatePicker" Margin="0,4,0,0"/>
-                    <TextBox x:Name="EndDateBox" ToolTip="Format: yyyy-MM-dd HH:mm"/>
-                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                        <Button x:Name="EndTodayButton" Content="Today 23:59" Style="{StaticResource GhostButtonStyle}"/>
-                        <Button x:Name="EndNowButton" Content="Now" Style="{StaticResource GhostButtonStyle}"/>
-                    </StackPanel>
-                </StackPanel>
-
-                <StackPanel Grid.Column="2">
-                    <TextBlock Text="ResultSize" FontWeight="SemiBold"/>
-                    <TextBox x:Name="ResultSizeBox" Text="5000"/>
-                    <CheckBox x:Name="SimpleViewCheckBox" Content="Simple view" Margin="0,10,0,0" VerticalAlignment="Center"/>
-                    <Button x:Name="RetentionInfoButton" Content="How retention works?" Margin="0,10,0,0" HorizontalAlignment="Left" Style="{StaticResource GhostButtonStyle}"/>
-                </StackPanel>
-            </Grid>
-        </Border>
-
-        <Border Grid.Row="1" Margin="0,10,0,0" Background="White" CornerRadius="10" Padding="12" BorderBrush="#E2E8F0" BorderThickness="1">
-            <StackPanel>
-                <TextBlock Text="Presets" FontWeight="SemiBold" Margin="0,0,0,6"/>
-                <StackPanel Orientation="Horizontal">
-                    <Button x:Name="LoadSharingEventsButton" Content="Sharing activity (SPO/OneDrive)" Style="{StaticResource PrimaryButtonStyle}"/>
-                </StackPanel>
-            </StackPanel>
-        </Border>
-
-        <Border Grid.Row="2" Margin="0,14,0,0" Background="White" CornerRadius="10" Padding="16" BorderBrush="#E2E8F0" BorderThickness="1">
-            <StackPanel>
-                <TextBlock Text="Operations (search friendly name OR type raw cmdlets like New-TransportRule, comma/semicolon-separated)" FontWeight="SemiBold" TextWrapping="Wrap"/>
-                <Grid Margin="0,6,0,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBox x:Name="OperationsSearchBox" Grid.Column="0" ToolTip="Type to filter the list below, OR type a raw cmdlet (e.g. New-TransportRule) and press Enter / click 'Add as raw'"/>
-                    <Button x:Name="AddCustomOperationButton" Grid.Column="1" Content="Add as raw" Margin="6,4,0,0" Style="{StaticResource PrimaryButtonStyle}"/>
-                </Grid>
-
-                <TextBlock Text="User IDs (comma or semicolon-separated, e.g. alice@contoso.com;bob@contoso.com)" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,12,0,0"/>
-                <TextBox x:Name="UserIdsBox" Margin="0,6,0,0" ToolTip="Optional. Filter the search by one or more user principal names. Leave empty to search all users."/>
-            </StackPanel>
-        </Border>
-
-        <Border Grid.Row="3" Margin="0,10,0,0" Background="White" CornerRadius="10" Padding="12" BorderBrush="#E2E8F0" BorderThickness="1">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1.3*"/>
                     <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="1.3*"/>
                 </Grid.ColumnDefinitions>
-
                 <StackPanel Grid.Column="0">
-                    <TextBlock Text="Available operations" FontWeight="SemiBold" Margin="0,0,0,6"/>
-                    <ListBox x:Name="AvailableOperationsListBox" Height="190" SelectionMode="Extended" BorderThickness="1" BorderBrush="#CBD5E1"
-                             ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                             ScrollViewer.CanContentScroll="True"
-                             VirtualizingStackPanel.IsVirtualizing="True"
-                             VirtualizingStackPanel.VirtualizationMode="Recycling"/>
+                    <TextBlock Text="Unified Audit Log search" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}"/>
+                    <TextBlock Text="Build, preview and run a Microsoft 365 Unified Audit Log query, then export the results to Excel."
+                               FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,1,0,0"/>
                 </StackPanel>
-
-                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="12,0">
-                    <Button x:Name="AddOperationButton" Content="+ Add" Width="72" Style="{StaticResource PrimaryButtonStyle}"/>
-                    <Button x:Name="RemoveOperationButton" Content="- Remove" Width="72" Style="{StaticResource NeutralButtonStyle}"/>
-                    <Button x:Name="ClearOperationsButton" Content="Clear" Width="72" Style="{StaticResource GhostButtonStyle}"/>
-                </StackPanel>
-
-                <StackPanel Grid.Column="2">
-                    <TextBlock Text="Selected operations" FontWeight="SemiBold" Margin="0,0,0,6"/>
-                    <ListBox x:Name="SelectedOperationsListBox" Height="190" SelectionMode="Extended" BorderThickness="1" BorderBrush="#CBD5E1"
-                             ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                             ScrollViewer.CanContentScroll="True"
-                             VirtualizingStackPanel.IsVirtualizing="True"
-                             VirtualizingStackPanel.VirtualizationMode="Recycling"/>
-                </StackPanel>
+                <TextBlock x:Name="HeaderVersionText" Grid.Column="1" VerticalAlignment="Center"
+                           FontSize="11" Foreground="{StaticResource TextHintBrush}"/>
             </Grid>
         </Border>
 
-        <Border Grid.Row="4" Margin="0,10,0,0" Background="White" CornerRadius="10" Padding="16" BorderBrush="#E2E8F0" BorderThickness="1">
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="20,12,20,12">
             <StackPanel>
-                <TextBlock Text="Generated command" FontWeight="SemiBold"/>
-                <TextBox x:Name="CommandBox" Margin="0,6,0,0" Height="120" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" IsReadOnly="True" AcceptsReturn="True"/>
-            </StackPanel>
-        </Border>
 
-        <Grid Grid.Row="5" Margin="0,14,0,0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-            <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left">
-                <Button x:Name="CopyButton" Content="Copy" Style="{StaticResource SuccessButtonStyle}"
-                        ToolTip="Copies the generated command to the clipboard. Rarely needed here - use 'Run now' to execute the query and export the results directly."/>
-                <Button x:Name="RunButton" Content="Run now" Style="{StaticResource PrimaryButtonStyle}"
-                        ToolTip="Runs the query against the Unified Audit Log. A file dialog will open first to choose where to save the results - in this mode, results are always exported to an Excel file."/>
-                <Button x:Name="CloseButton" Content="Close" Style="{StaticResource NeutralButtonStyle}"/>
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="Time range" Style="{StaticResource SectionTitleStyle}"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="220"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                <TextBlock Text="Start date" Style="{StaticResource FieldLabelStyle}"/>
+                                <DatePicker x:Name="StartDatePicker"/>
+                                <TextBox x:Name="StartDateBox" Margin="0,6,0,0" Style="{StaticResource CompactInputStyle}" ToolTip="Format: yyyy-MM-dd HH:mm"/>
+                                <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                                    <Button x:Name="StartYesterdayButton" Content="Yesterday 00:00" Style="{StaticResource GhostButtonStyle}"/>
+                                    <Button x:Name="StartNowButton" Content="Now" Style="{StaticResource GhostButtonStyle}"/>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" Margin="0,0,16,0">
+                                <TextBlock Text="End date" Style="{StaticResource FieldLabelStyle}"/>
+                                <DatePicker x:Name="EndDatePicker"/>
+                                <TextBox x:Name="EndDateBox" Margin="0,6,0,0" Style="{StaticResource CompactInputStyle}" ToolTip="Format: yyyy-MM-dd HH:mm"/>
+                                <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                                    <Button x:Name="EndTodayButton" Content="Today 23:59" Style="{StaticResource GhostButtonStyle}"/>
+                                    <Button x:Name="EndNowButton" Content="Now" Style="{StaticResource GhostButtonStyle}"/>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="Result size (max)" Style="{StaticResource FieldLabelStyle}"/>
+                                <TextBox x:Name="ResultSizeBox" Text="5000" Style="{StaticResource CompactInputStyle}"/>
+                                <CheckBox x:Name="SimpleViewCheckBox" Content="Flatten records (Simple view)" Margin="0,10,0,0" IsChecked="True"/>
+                                <Button x:Name="RetentionInfoButton" Content="How does retention work?" Margin="-6,8,0,0" HorizontalAlignment="Left" Style="{StaticResource GhostButtonStyle}"/>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource CardStyle}" Margin="0,6,0,0">
+                    <StackPanel>
+                        <TextBlock Text="Presets" Style="{StaticResource SectionTitleStyle}"/>
+                        <StackPanel Orientation="Horizontal">
+                            <Button x:Name="LoadSharingEventsButton" Content="Sharing activity (SPO/OneDrive)"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource CardStyle}" Margin="0,6,0,0">
+                    <StackPanel>
+                        <TextBlock Text="Filters" Style="{StaticResource SectionTitleStyle}"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                <TextBlock Text="Operations" Style="{StaticResource FieldLabelStyle}"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox x:Name="OperationsSearchBox" Grid.Column="0" Style="{StaticResource CompactInputStyle}"
+                                             ToolTip="Type to filter the list below, OR type a raw cmdlet (e.g. New-TransportRule) and press Enter / click 'Add as raw'"/>
+                                    <Button x:Name="AddCustomOperationButton" Grid.Column="1" Content="Add as raw" Margin="8,0,0,0"/>
+                                </Grid>
+                                <TextBlock Style="{StaticResource HelperTextStyle}"
+                                           Text="Search a friendly name OR type raw cmdlets (comma/semicolon-separated)."/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="User IDs" Style="{StaticResource FieldLabelStyle}"/>
+                                <TextBox x:Name="UserIdsBox" Style="{StaticResource CompactInputStyle}"
+                                         ToolTip="Optional. Filter the search by one or more user principal names. Leave empty to search all users."/>
+                                <TextBlock Style="{StaticResource HelperTextStyle}"
+                                           Text="Comma or semicolon-separated. Example: alice@contoso.com;bob@contoso.com"/>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource CardStyle}" Margin="0,6,0,0">
+                    <StackPanel>
+                        <TextBlock Text="Selected operations" Style="{StaticResource SectionTitleStyle}"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="Available" Style="{StaticResource FieldLabelStyle}"/>
+                                <ListBox x:Name="AvailableOperationsListBox" Height="140" SelectionMode="Extended"
+                                         ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                                         ScrollViewer.CanContentScroll="True"
+                                         VirtualizingStackPanel.IsVirtualizing="True"
+                                         VirtualizingStackPanel.VirtualizationMode="Recycling"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="14,0">
+                                <Button x:Name="AddOperationButton" Content="Add &#x2192;" Width="92" Margin="0,0,0,8"/>
+                                <Button x:Name="RemoveOperationButton" Content="&#x2190; Remove" Width="92" Margin="0,0,0,8"/>
+                                <Button x:Name="ClearOperationsButton" Content="Clear" Width="92" Style="{StaticResource GhostButtonStyle}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="Selected" Style="{StaticResource FieldLabelStyle}"/>
+                                <ListBox x:Name="SelectedOperationsListBox" Height="140" SelectionMode="Extended"
+                                         ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                                         ScrollViewer.CanContentScroll="True"
+                                         VirtualizingStackPanel.IsVirtualizing="True"
+                                         VirtualizingStackPanel.VirtualizationMode="Recycling"/>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource CardStyle}" Margin="0,6,0,0">
+                    <StackPanel>
+                        <TextBlock Text="Generated command" Style="{StaticResource SectionTitleStyle}"/>
+                        <TextBox x:Name="CommandBox" MinHeight="56" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
+                                 IsReadOnly="True" AcceptsReturn="True" FontFamily="Consolas" FontSize="12"
+                                 Background="#F9F9F9"/>
+                    </StackPanel>
+                </Border>
             </StackPanel>
-            <TextBlock x:Name="FooterText" Grid.Column="1" Foreground="#64748B" FontSize="11"
-                       VerticalAlignment="Center" HorizontalAlignment="Right"
-                       Text="by Clidsys - Bastien Perez"/>
-        </Grid>
+        </ScrollViewer>
+
+        <Border Grid.Row="2" Background="White" BorderBrush="{StaticResource StrokeBrush}" BorderThickness="0,1,0,0" Padding="20,10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock x:Name="FooterText" Grid.Column="0" VerticalAlignment="Center"
+                           Foreground="{StaticResource TextHintBrush}" FontSize="11">
+                    <Run Text="by "/>
+                    <Hyperlink x:Name="ClidsysLink" NavigateUri="https://clidsys.com"
+                               Foreground="{StaticResource AccentBrush}" TextDecorations="None">
+                        <Run Text="Clidsys"/>
+                    </Hyperlink>
+                    <Run Text=" - "/>
+                    <Hyperlink x:Name="BastienLink" NavigateUri="https://www.linkedin.com/in/perez-bastien/"
+                               Foreground="{StaticResource AccentBrush}" TextDecorations="None">
+                        <Run Text="Bastien Perez"/>
+                    </Hyperlink>
+                </TextBlock>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button x:Name="CopyButton" Content="Copy command" Style="{StaticResource SuccessButtonStyle}"
+                            ToolTip="Copies the generated command to the clipboard. Rarely needed here - use 'Run now' to execute the query and export the results directly."/>
+                    <Button x:Name="CloseButton" Content="Close" Style="{StaticResource NeutralButtonStyle}"/>
+                    <Button x:Name="RunButton" Content="Run now" Style="{StaticResource PrimaryButtonStyle}" Margin="8,0,0,0"
+                            ToolTip="Runs the query against the Unified Audit Log. A file dialog will open first to choose where to save the results - in this mode, results are always exported to an Excel file."/>
+                </StackPanel>
+            </Grid>
+        </Border>
     </Grid>
 </Window>
 '@
@@ -649,14 +1076,27 @@ function Invoke-SearchUnifiedAuditLogCustomHelperGUI {
         }
     }
 
-    $footerText = $window.FindName('FooterText')
-    if ($footerText) {
-        $footerText.Text = if ($moduleVersion) {
-            "by Clidsys - Bastien Perez  $moduleVersion"
-        }
-        else {
-            'by Clidsys - Bastien Perez'
-        }
+    $clidsysLink = $window.FindName('ClidsysLink')
+    if ($clidsysLink) {
+        $clidsysLink.Add_RequestNavigate({
+                param($source, $e)
+                Start-Process $e.Uri.AbsoluteUri
+                $e.Handled = $true
+            })
+    }
+
+    $bastienLink = $window.FindName('BastienLink')
+    if ($bastienLink) {
+        $bastienLink.Add_RequestNavigate({
+                param($source, $e)
+                Start-Process $e.Uri.AbsoluteUri
+                $e.Handled = $true
+            })
+    }
+
+    $headerVersionText = $window.FindName('HeaderVersionText')
+    if ($headerVersionText -and $moduleVersion) {
+        $headerVersionText.Text = "PS365 $moduleVersion"
     }
 
     $startDateBox = $window.FindName('StartDateBox')
@@ -1063,9 +1503,9 @@ function Invoke-SearchUnifiedAuditLogCustomHelperGUI {
                 Write-Verbose "Could not resolve tenant name for filename: $($_.Exception.Message)"
             }
             $tenantSafe = ($tenantName -replace '[^A-Za-z0-9\-_]', '_')
-            $executionStamp = (Get-Date).ToString('yyyy-MM-dd-HHmm')
+            $executionStamp = (Get-Date).ToString('yyyy-MM-dd-HHmmss')
 
-            $defaultFileName = "${executionStamp}_UnifiedAuditLog_${tenantSafe}_$($startDate.ToString('yyyyMMdd-HHmm'))_to_$($endDate.ToString('yyyyMMdd-HHmm')).xlsx"
+            $defaultFileName = "${executionStamp}_UnifiedAuditLog_${tenantSafe}_$($startDate.ToString('yyyyMMdd-HHmmss'))_to_$($endDate.ToString('yyyyMMdd-HHmmss')).xlsx"
             $saveDialog = New-Object Microsoft.Win32.SaveFileDialog
             $saveDialog.Title = 'Save audit log results as Excel'
             $saveDialog.Filter = 'Excel workbook (*.xlsx)|*.xlsx'
@@ -1171,7 +1611,7 @@ function Invoke-SearchUnifiedAuditLogCustomHelperGUI {
             </StackPanel>
         </Border>
 
-        <Border Grid.Row="1" Margin="0,12,0,0" Background="White" CornerRadius="10" Padding="16"
+        <Border Grid.Row="1" Margin="0,6,0,0" Background="White" CornerRadius="10" Padding="16"
                 BorderBrush="#E2E8F0" BorderThickness="1">
             <StackPanel>
                 <TextBlock FontWeight="SemiBold" Foreground="#0F172A" Margin="0,0,0,4"
@@ -1190,7 +1630,7 @@ function Invoke-SearchUnifiedAuditLogCustomHelperGUI {
                 <TextBlock TextWrapping="Wrap" Foreground="#334155"
                            Text="Search-UnifiedAuditLog accepts queries up to 365 days back even on non-E5 tenants, regardless of the values advertised by the documentation and the PowerShell configuration."/>
 
-                <TextBlock Margin="0,12,0,0" TextWrapping="Wrap" Foreground="#64748B" FontStyle="Italic"
+                <TextBlock Margin="0,6,0,0" TextWrapping="Wrap" Foreground="#64748B" FontStyle="Italic"
                            Text="Click 'Open article' to read the full write-up with PowerShell examples."/>
             </StackPanel>
         </Border>
