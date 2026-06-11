@@ -109,7 +109,7 @@ function Get-NestedGroup {
 
         try {
             $membersUri = "https://graph.microsoft.com/v1.0/groups/$($group.id)/members?`$select=id,displayName&`$top=999"
-            $memberResponse = Invoke-MgGraphRequest -Method GET -Uri $membersUri
+            $memberResponse = Invoke-MgGraphRequestWithRetry -Method GET -Uri $membersUri
 
             do {
                 foreach ($member in $memberResponse.value) {
@@ -148,7 +148,7 @@ function Get-NestedGroup {
 
                 $nextLink = $memberResponse.'@odata.nextLink'
                 if ($nextLink) {
-                    $memberResponse = Invoke-MgGraphRequest -Method GET -Uri $nextLink
+                    $memberResponse = Invoke-MgGraphRequestWithRetry -Method GET -Uri $nextLink
                 }
             } while ($nextLink)
         }

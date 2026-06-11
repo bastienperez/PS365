@@ -94,6 +94,8 @@ function Get-ExMailboxForwarding {
 	# inboxForwardList is use to contains the mailbox with inbox rules with forward. We need to use it as temporary storage to check if the mailbox has already a forward set by forwardingAddress or forwardingSMTPAddress
 	[System.Collections.Generic.List[PSCustomObject]]$inboxForwardList = @()
 
+	Assert-PS365ExchangeOnlineConnection
+
 	Write-Host -ForegroundColor cyan 'Get Accepted Domain in Exchange Online to identify internal/external forward'
 	$internalDomains = (Get-AcceptedDomain).DomainName
 	

@@ -221,8 +221,16 @@ function Get-MgAuditLogSigninInfo {
         Add-Type -AssemblyName System.Drawing
 
         # Resolve initial values (date + time)
-        $initStart = if ($StartDate -is [DateTime]) { $StartDate } elseif ($StartDate) { [datetime]::ParseExact($StartDate, 'yyyy-MM-dd', $null) } else { (Get-Date).Date.AddDays(-7) }
-        $initEnd = if ($EndDate -is [DateTime]) { $EndDate } elseif ($EndDate) { [datetime]::ParseExact($EndDate, 'yyyy-MM-dd', $null).AddDays(1).AddSeconds(-1) } else { (Get-Date) }
+        # Parse with InvariantCulture so 'yyyy-MM-dd' is interpreted the same way
+        # regardless of the host's regional settings, and surface a clear error.
+        $invariantCulture = [cultureinfo]::InvariantCulture
+        try {
+            $initStart = if ($StartDate -is [DateTime]) { $StartDate } elseif ($StartDate) { [datetime]::ParseExact($StartDate, 'yyyy-MM-dd', $invariantCulture) } else { (Get-Date).Date.AddDays(-7) }
+            $initEnd = if ($EndDate -is [DateTime]) { $EndDate } elseif ($EndDate) { [datetime]::ParseExact($EndDate, 'yyyy-MM-dd', $invariantCulture).AddDays(1).AddSeconds(-1) } else { (Get-Date) }
+        }
+        catch {
+            Write-Error "StartDate/EndDate must be a [DateTime] or a 'yyyy-MM-dd' string. $($_.Exception.Message)" -ErrorAction Stop
+        }
 
         $colorAccent = [System.Drawing.Color]::FromArgb(222, 118, 29)   # PS365 orange #de761d
         $colorBg = [System.Drawing.Color]::FromArgb(245, 245, 248) # near-white
