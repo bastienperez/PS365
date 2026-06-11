@@ -67,18 +67,30 @@ function Install-M365Apps {
 		$configFileFullPath = (Get-Item $ConfigFilePath).FullName
 	}
 	
+	$setupExePath = "$odtFolder\setup.exe"
+	if (-not (Test-Path $setupExePath)) {
+		Write-Warning "setup.exe was not found in $odtFolder. Run Invoke-M365AppsDownload first."
+		return 1
+	}
+
+	# Verify setup.exe is validly signed by Microsoft before executing it.
+	$setupSignature = Get-AuthenticodeSignature -FilePath $setupExePath
+	if ($setupSignature.Status -ne 'Valid' -or $setupSignature.SignerCertificate.Subject -notmatch 'O=Microsoft Corporation') {
+		Write-Warning "Authenticode verification failed for setup.exe (Status: $($setupSignature.Status)). Aborting to avoid running an untrusted binary."
+		return 1
+	}
+
 	try {
-		Write-Host -ForegroundColor cyan 'Installing Microsoft 365 Apps...' -NoNewline
-		Write-Verbose "Executing . $odtFolder\setup.exe /configure $configFileFullPath"
-		. "$odtFolder\setup.exe" /configure "$configFileFullPath"
+		Write-Host -ForegroundColor cyan 'Installing Microsoft 365 Apps...'
+		Write-Verbose "Executing $setupExePath /configure $configFileFullPath"
+		# Start-Process with an argument array avoids quoting/injection issues.
+		$process = Start-Process -FilePath $setupExePath -ArgumentList '/configure', $configFileFullPath -Wait -PassThru -ErrorAction Stop
 
-		#$process = Start-Process -FilePath "$ODTFolderFullPath\setup.exe" -ArgumentList "/Configure '$ConfigFileFullPath'" -Wait -PassThru -ErrorAction Stop
-
-		if ($LASTEXITCODE -eq 0) {
+		if ($process.ExitCode -eq 0) {
 			Write-Host -ForegroundColor Green 'Office setup started without error.'
 		}
 		else {
-			Write-Warning "Installer failed with exit code $LASTEXITCODE."
+			Write-Warning "Installer failed with exit code $($process.ExitCode)."
 		}
 	}
 	catch {
