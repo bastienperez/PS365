@@ -61,7 +61,7 @@
     This command retrieves BitLocker keys with device information and exports to Excel.
     
     .EXAMPLE
-    Get-MgBitlockerKeyInfo -IncludeDeviceInfo -IncludeDeviceOwner -ShowKeysInPlainText -ExportToExcel
+    Get-MgBitlockerKeyInfo -IncludeDeviceInfo -IncludeDeviceOwner -ShowKeyInPlainText -ExportToExcel
 
     This command generates a comprehensive report with BitLocker keys visible in plain text and exports to Excel.
     WARNING: Use with extreme caution as this exposes sensitive recovery keys!
@@ -77,7 +77,7 @@
     This command retrieves BitLocker keys using managed identity authentication and exports to Excel. Suitable for Azure Automation runbooks.
 
     .EXAMPLE
-    Get-MgBitlockerKeyInfo -DeviceName "LAPTOP-ABC123" -IncludeDeviceInfo -ShowKeysInPlainText
+    Get-MgBitlockerKeyInfo -DeviceName "LAPTOP-ABC123" -IncludeDeviceInfo -ShowKeyInPlainText
 
     This command retrieves BitLocker keys for a specific device by name, includes device information, and displays keys in plain text.
 
@@ -145,6 +145,10 @@ function Get-MgBitlockerKeyInfo {
     # Validate that only one device filter is specified
     if ($PSBoundParameters.ContainsKey('DeviceName') -and $PSBoundParameters.ContainsKey('DeviceID')) {
         Write-Error 'Cannot specify both DeviceName and DeviceID parameters. Please use only one.' -ErrorAction Stop
+    }
+
+    if ($ShowKeyInPlainText.IsPresent) {
+        Write-Warning 'BitLocker recovery keys will be returned IN PLAIN TEXT in the output objects (and any -ExportToExcel file). Handle and store them securely, and delete the export when no longer needed.'
     }
 
     function Get-DriveTypeName {
@@ -362,7 +366,7 @@ function Get-MgBitlockerKeyInfo {
         foreach ($device in $devices) {
             try {
                 Write-Verbose "Retrieving BitLocker keys for device: $($device.DisplayName) (ID: $($device.DeviceId))..."
-                $deviceKeys = Get-MgInformationProtectionBitlockerRecoveryKey -Filter "deviceId eq '$($device.DeviceId)'" -ErrorAction Stop -Verbose:$false
+                $deviceKeys = Get-MgInformationProtectionBitlockerRecoveryKey -Filter "deviceId eq '$(ConvertTo-ODataEscapedString -Value $device.DeviceId)'" -ErrorAction Stop -Verbose:$false
                 
                 if ($deviceKeys -and $deviceKeys.Count -gt 0) {
                     foreach ($key in $deviceKeys) {

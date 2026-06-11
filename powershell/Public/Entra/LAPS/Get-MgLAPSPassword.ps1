@@ -125,6 +125,10 @@ function Get-MgLAPSPassword {
 
     $fetchPasswords = $ShowPassword.IsPresent -or $BackupToKeyVault.IsPresent
 
+    if ($ShowPassword.IsPresent) {
+        Write-Warning 'LAPS passwords will be returned IN PLAIN TEXT in the output objects (and any -ExportToExcel file). Handle and store them securely, and delete the export when no longer needed.'
+    }
+
     if ($IncludeHistory.IsPresent -and -not $fetchPasswords) {
         Write-Warning '-IncludeHistory has no effect without -ShowPassword or -BackupToKeyVault.'
     }
@@ -208,7 +212,7 @@ function Get-MgLAPSPassword {
 
     if ($PSBoundParameters.ContainsKey('DeviceName')) {
         Write-Verbose "Resolving device name '$DeviceName' to Entra ID object ID..."
-        $mgDevice = Get-MgDevice -Filter "displayName eq '$DeviceName'" -ErrorAction Stop | Select-Object -First 1
+        $mgDevice = Get-MgDevice -Filter "displayName eq '$(ConvertTo-ODataEscapedString -Value $DeviceName)'" -ErrorAction Stop | Select-Object -First 1
         if (-not $mgDevice) {
             Write-Warning "No device found with display name '$DeviceName'"
             return

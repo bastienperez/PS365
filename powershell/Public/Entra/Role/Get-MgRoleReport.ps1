@@ -508,7 +508,7 @@ function Get-MgRoleReport {
                     # This is because the sign-in data comes from a different source that requires a GUID to retrieve the account's sign-in activity. 
                     # Therefore, we must provide the account's object identifier for the command to function correctly.
                     # To overcome this issue, we use the -Filter parameter to search for the user by their UserPrincipalName.
-                    $mgUser = Get-MgUser -Filter "UserPrincipalName eq '$($member.Principal)'" -Property AccountEnabled, SignInActivity, onPremisesSyncEnabled
+                    $mgUser = Get-MgUser -Filter "UserPrincipalName eq '$(ConvertTo-ODataEscapedString -Value $member.Principal)'" -Property AccountEnabled, SignInActivity, onPremisesSyncEnabled
                     $accountEnabled = $mgUser.AccountEnabled
                     $lastSignInDateTime = $mgUser.signInActivity.LastSignInDateTime
                     $lastNonInteractiveSignInDateTime = $mgUser.signInActivity.LastNonInteractiveSignInDateTime
@@ -528,7 +528,7 @@ function Get-MgRoleReport {
                 }
 
                 'servicePrincipal' {
-                    $lastSignInActivity = (Get-MgBetaReportServicePrincipalSignInActivity -Filter "appId eq '$($member.Principal)'").LastSignInActivity
+                    $lastSignInActivity = (Get-MgBetaReportServicePrincipalSignInActivity -Filter "appId eq '$(ConvertTo-ODataEscapedString -Value $member.Principal)'").LastSignInActivity
                     $accountEnabled = 'Not applicable'
                     $lastSignInDateTime = $lastSignInActivity.LastSignInDateTime
                     $lastNonInteractiveSignInDateTime = $lastSignInActivity.LastNonInteractiveSignInDateTime

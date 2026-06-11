@@ -242,7 +242,7 @@ function Get-MgUserPasswordInfo {
             # If we use Get-MgUser -UserId <upn> -Property <properties>, we get the error "Get-MgUser_Get: Get By Key only supports UserId and the key has to be a valid Guid".
             # It seems to be a problem with one of the propertys we are requesting.
             # So we use a filter instead.										 
-            $mgUser = Get-MgUser -Filter "userPrincipalName eq '$upn'" -Property $userParams
+            $mgUser = Get-MgUser -Filter "userPrincipalName eq '$(ConvertTo-ODataEscapedString -Value $upn)'" -Property $userParams
 
             $mgUsersList.Add($mgUser)
         }
@@ -250,7 +250,7 @@ function Get-MgUserPasswordInfo {
     elseif ($FilterByDomain) {
         Write-Host -ForegroundColor Cyan "Retrieving password information for users in domain: $FilterByDomain (excluding guest users #EXT#@$FilterByDomain)"
 
-        $mgUsersList = Get-MgUser -Filter "endswith(userPrincipalName,'$FilterByDomain') and not endswith(userPrincipalName,'#EXT#@$FilterByDomain')" -All -ConsistencyLevel eventual
+        $mgUsersList = Get-MgUser -Filter "endswith(userPrincipalName,'$(ConvertTo-ODataEscapedString -Value $FilterByDomain)') and not endswith(userPrincipalName,'#EXT#@$(ConvertTo-ODataEscapedString -Value $FilterByDomain)')" -All -ConsistencyLevel eventual
 
     }
     else {

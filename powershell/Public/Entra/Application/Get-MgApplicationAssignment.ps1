@@ -123,7 +123,7 @@ function Get-MgApplicationAssignment {
             $servicePrincipals = @()
             foreach ($appId in $ApplicationId) {
                 try {
-                    $sp = Get-MgServicePrincipal -Filter "AppId eq '$appId'" -Property $spProperty -ErrorAction Stop
+                    $sp = Get-MgServicePrincipal -Filter "AppId eq '$(ConvertTo-ODataEscapedString -Value $appId)'" -Property $spProperty -ErrorAction Stop
                     if ($sp) {
                         $servicePrincipals += $sp
                     }

@@ -75,22 +75,14 @@ function Get-MessageTraceInfo {
     }
     #>
 
-    if ($RecipientAddress -and $SenderAddress) {
-        $messageTraceParams = @{
-            RecipientAddress = $RecipientAddress
-            SenderAddress    = $SenderAddress
-            #Status           = 'Delivered'
-        }
+    # Always initialize so later $messageTraceParams.Add(...) calls work even when
+    # neither RecipientAddress nor SenderAddress was supplied.
+    $messageTraceParams = @{}
+    if ($RecipientAddress) {
+        $messageTraceParams['RecipientAddress'] = $RecipientAddress
     }
-    elseif ($RecipientAddress -and -not $SenderAddress) {
-        $messageTraceParams = @{
-            RecipientAddress = $RecipientAddress
-        }
-    }
-    elseif ($SenderAddress -and -not $RecipientAddress) {
-        $messageTraceParams = @{
-            SenderAddress = $SenderAddress
-        }
+    if ($SenderAddress) {
+        $messageTraceParams['SenderAddress'] = $SenderAddress
     }
 
     # convert to UTC because Exchange Online used UTC time
@@ -146,13 +138,10 @@ function Get-MessageTraceInfo {
             # Event: -Event RECEIVE, SEND, FAIL, DELIVER, EXPAND, TRANSFER, DEFER, DROP
             # event list: https://learn.microsoft.com/en-us/exchange/mail-flow/transport-logs/message-tracking?view=exchserver-2019#event-types-in-the-message-tracking-log
             
-            if ($message.Count -eq 1) {
-                $traceDetail = Get-MessageTraceDetailV2 -MessageId $message.MessageId -MessageTraceId $message.MessageTraceId -RecipientAddress $message.RecipientAddress
-            }
-            else {
-                # we found the last event only, don't know if it's the best way to do it
-                $traceDetail = ($message | Get-MessageTraceDetailV2 | Where-Object { $_.Event -ne 'Journal' })[-1]
-            }
+            # $message is always a single object inside this foreach, so the old
+            # "$message.Count -eq 1" test was always true and the Journal filter
+            # below never ran. Apply it directly and take the last matching event.
+            $traceDetail = ($message | Get-MessageTraceDetailV2 | Where-Object { $_.Event -ne 'Journal' })[-1]
         }
 
         # redirect has no messagetracedetails in event receive
