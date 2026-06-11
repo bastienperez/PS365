@@ -9,7 +9,8 @@ Retrieves all empty groups (zero members) in Microsoft Entra ID.
 ## SYNTAX
 
 ```powershell
-Get-EmptyGroup [-ExportToExcel] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+Get-EmptyGroup [-ExportToExcel] [[-ExportPath] <String>] [-ProgressAction <ActionPreference>]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -60,6 +61,22 @@ Aliases:
 Required: False
 Position: Named
 Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ExportPath
+
+Optional output directory for the Excel export (defaults to the user profile).
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 1
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

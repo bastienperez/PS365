@@ -36,6 +36,7 @@
 #>
 
 function Set-MgEnterpriseAppStatus {
+    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High')]
     param (
         [Parameter(Mandatory = $true, ParameterSetName = 'ByApplicationID', Position = 0)]
         [string]$ApplicationID,
@@ -52,11 +53,11 @@ function Set-MgEnterpriseAppStatus {
     )
 
     if ($PSCmdlet.ParameterSetName -eq 'ByApplicationID') {
-        $uri = "/v1.0/servicePrincipals?`$filter=appId eq '$ApplicationID'"
+        $uri = "/v1.0/servicePrincipals?`$filter=appId eq '$(ConvertTo-ODataEscapedString -Value $ApplicationID)'"
         $identifier = "ApplicationID: $ApplicationID"
     }
     else {
-        $uri = "/v1.0/servicePrincipals?`$filter=displayName eq '$DisplayName'"
+        $uri = "/v1.0/servicePrincipals?`$filter=displayName eq '$(ConvertTo-ODataEscapedString -Value $DisplayName)'"
         $identifier = "DisplayName: $DisplayName"
     }
 
@@ -107,12 +108,16 @@ function Set-MgEnterpriseAppStatus {
     }
 
     if ($GenerateCmdlets) {
-        $commands = @()
-        $bodyJson = ConvertTo-Json -InputObject $body -Compress
+        [System.Collections.Generic.List[string]]$commands = @()
+        $bodyJson = ConvertTo-Json -InputObject $body -Depth 10 -Compress
         $command = "Invoke-MgGraphRequest -Uri `"$statusUri`" -Method PATCH -Body '$bodyJson'"
-        $commands += $command
+        $commands.Add($command)
 
         return $commands
+    }
+
+    if (-not $PSCmdlet.ShouldProcess($servicePrincipal.displayName, "Set accountEnabled to $targetStatus")) {
+        return
     }
 
     try {

@@ -87,6 +87,7 @@ function Get-MgApplicationAssignment {
         [String[]]$ApplicationId,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'ByObjectId')]
+        [Alias('Identity')]
         [string]$ObjectID,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'ByDisplayName')]
@@ -104,6 +105,9 @@ function Get-MgApplicationAssignment {
         [Parameter(Mandatory = $false)]
         [switch]$ExportToExcel,
 
+        [Parameter(Mandatory = $false, HelpMessage = 'Optional output directory for the Excel export (defaults to the user profile).')]
+        [string]$ExportPath,
+
         [Parameter(Mandatory = $false)]
         [switch]$DisableParallel,
 
@@ -120,16 +124,24 @@ function Get-MgApplicationAssignment {
     # Get all service principals (enterprise applications)
     switch ($PSCmdlet.ParameterSetName) {
         'ByApplicationId' {
+            # Resolve all AppIds in a single filtered query (was N+1: one
+            # Get-MgServicePrincipal call per AppId).
             $servicePrincipals = @()
-            foreach ($appId in $ApplicationId) {
+            if ($ApplicationId.Count -gt 0) {
+                $filterParts = $ApplicationId | ForEach-Object { "AppId eq '$(ConvertTo-ODataEscapedString -Value $_)'" }
+                $filter = $filterParts -join ' or '
                 try {
-                    $sp = Get-MgServicePrincipal -Filter "AppId eq '$appId'" -Property $spProperty -ErrorAction Stop
-                    if ($sp) {
-                        $servicePrincipals += $sp
-                    }
+                    $servicePrincipals = @(Get-MgServicePrincipal -Filter $filter -Property $spProperty -All -ErrorAction Stop)
                 }
                 catch {
-                    Write-Warning "Could not find application with ID: $appId"
+                    Write-Warning "Could not retrieve service principals: $($_.Exception.Message)"
+                }
+
+                $foundAppIds = $servicePrincipals.AppId
+                foreach ($appId in $ApplicationId) {
+                    if ($appId -notin $foundAppIds) {
+                        Write-Warning "Could not find application with ID: $appId"
+                    }
                 }
             }
         }
@@ -447,7 +459,7 @@ function Get-MgApplicationAssignment {
     
     if ($ExportToExcel.IsPresent) {
         $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
-        $excelFilePath = "$($env:userprofile)\$now-MgApplicationAssignment.xlsx"
+        $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-MgApplicationAssignment.xlsx"
         Write-Host -ForegroundColor Cyan "Exporting application assignments to Excel file: $excelFilePath"
         $applicationAssignmentsArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'EntraApplicationAssignments'
         Write-Host -ForegroundColor Green 'Export completed successfully!'

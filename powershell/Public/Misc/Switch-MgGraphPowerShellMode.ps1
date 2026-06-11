@@ -58,47 +58,9 @@ function Switch-MgGraphPowerShellMode {
         [switch]$GetCurrent
     )
 
-    # EnableWAMForMSGraph = $true means WAM is enabled
-    # DisableWAMForMSGraph = $false means Browser is enabled
-
-    # Get current WAM setting
-    $wamEnabled = (Get-MgGraphOption).EnableWAMForMSGraph
-
-    if ($GetCurrent) {
-        # Display current mode
-        if ($wamEnabled) {
-            Write-Host 'Current authentication mode: WAM (Web Account Manager)' -ForegroundColor Cyan
-        }
-        else {
-            Write-Host 'Current authentication mode: Browser' -ForegroundColor Cyan
-        }
-        return
-    }
-    
-    if ($Mode) {
-        # Switch to specified mode
-        if ($Mode -eq 'Browser') {
-            Write-Verbose 'Disabling Web Account Manager (WAM)...'
-            Set-MgGraphOption -EnableLoginByWAM $false
-            Write-Host ' Microsoft Graph PowerShell authentication switched to browser mode.' -ForegroundColor Green
-        }
-        else {
-            Write-Verbose 'Enabling Web Account Manager (WAM)...'
-            Set-MgGraphOption -EnableLoginByWAM $true
-            Write-Host 'Microsoft Graph PowerShell authentication switched to WAM mode.' -ForegroundColor Green
-        }
-    }
-    else {
-        # Toggle mode
-        if ($wamEnabled) {
-            Write-Verbose 'Disabling Web Account Manager (WAM)...'
-            Set-MgGraphOption -EnableLoginByWAM $false
-            Write-Host 'Microsoft Graph PowerShell authentication switched to browser mode.' -ForegroundColor Green
-        }
-        else {
-            Write-Verbose 'Enabling Web Account Manager (WAM)...'
-            Set-MgGraphOption -EnableLoginByWAM $true
-            Write-Host 'Microsoft Graph PowerShell authentication switched to WAM mode.' -ForegroundColor Green
-        }
-    }
+    # EnableWAMForMSGraph = $true means WAM is enabled, $false means Browser.
+    Switch-PS365WamAuthMode -Label 'Microsoft Graph PowerShell' `
+        -GetState { [bool]((Get-MgGraphOption).EnableWAMForMSGraph) } `
+        -SetState { param($enabled) Set-MgGraphOption -EnableLoginByWAM $enabled } `
+        -Mode $Mode -GetCurrent:$GetCurrent
 }

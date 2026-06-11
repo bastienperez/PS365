@@ -121,6 +121,7 @@ function Restart-MgSynchronizationJob {
     [CmdletBinding(DefaultParameterSetName = 'ByDisplayName', SupportsShouldProcess = $true)]
     param(
         [Parameter(Mandatory = $true, ParameterSetName = 'ByObjectId')]
+        [Alias('Identity')]
         [string]$ObjectID,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'ByDisplayName')]

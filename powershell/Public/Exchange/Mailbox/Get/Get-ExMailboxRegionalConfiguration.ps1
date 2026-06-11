@@ -34,6 +34,7 @@
 
     .EXAMPLE
     Get-ExMailboxRegionalConfiguration -ExportToExcel
+
     Exports results to an Excel file.
 
     .LINK
@@ -49,7 +50,10 @@ function Get-ExMailboxRegionalConfiguration {
         [string]$ByDomain,
 
         [Parameter(Mandatory = $false)]
-        [switch]$ExportToExcel
+        [switch]$ExportToExcel,
+
+        [Parameter(Mandatory = $false, HelpMessage = 'Optional output directory for the Excel export (defaults to the user profile).')]
+        [string]$ExportPath
     )
 
     [System.Collections.Generic.List[PSCustomObject]]$exoMbxRegionalConfigArray = @()
@@ -102,7 +106,7 @@ function Get-ExMailboxRegionalConfiguration {
 
     if ($ExportToExcel.IsPresent) {
         $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
-        $excelFilePath = "$($env:userprofile)\$now-ExMailboxRegionalConfiguration.xlsx"
+        $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-ExMailboxRegionalConfiguration.xlsx"
         Write-Host -ForegroundColor Cyan "Exporting to Excel file: $excelFilePath"
         $exoMbxRegionalConfigArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'ExMailboxRegionalConfiguration'
         Write-Host -ForegroundColor Green 'Export completed successfully!'

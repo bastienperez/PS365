@@ -110,12 +110,14 @@ function Search-UnifiedAuditLogCustom {
 
     .EXAMPLE
         $auditLogs = Search-UnifiedAuditLog -StartDate $startDate -EndDate $endDate -RecordType ExchangeAdmin
+
         $auditLogs | Get-SimpleUnifiedAuditLog | Export-Csv -Path "AuditLogs.csv" -NoTypeInformation
 
         Processes Exchange admin audit logs and exports them to CSV with all nested properties flattened.
 
     .EXAMPLE
         $userChanges = Search-UnifiedAuditLog -UserIds user@domain.com -Operations "Add-*"
+
         $userChanges | Get-SimpleUnifiedAuditLog -PreserveTypes |
             Where-Object { $_.ResultStatus -eq $true } |
             Select-Object CreationTime, Operation, FullCommand
@@ -153,158 +155,6 @@ function Search-UnifiedAuditLogCustom {
 
         begin {
             [System.Collections.Generic.List[PSCustomObject]]$resultsArray = @()
-
-            function ConvertTo-FlatObject {
-                param (
-                    [Parameter(Mandatory = $true)]
-                    [PSObject]$InputObject,
-
-                    [Parameter(Mandatory = $false)]
-                    [string]$Prefix = '',
-
-                    [Parameter(Mandatory = $false)]
-                    [switch]$PreserveTypes
-                )
-
-                $flatProperties = @{}
-
-                foreach ($property in $InputObject.PSObject.Properties) {
-                    $key = if ($Prefix) { "${Prefix}_$($property.Name)" } else { $property.Name }
-
-                    if ($property.Name -eq 'Parameters' -and $property.Value -is [Array]) {
-                        $parameterStrings = foreach ($parameter in $property.Value) {
-                            "$($parameter.Name)=$($parameter.Value)"
-                        }
-                        $flatProperties['ParameterString'] = $parameterStrings -join ' | '
-
-                        foreach ($parameter in $property.Value) {
-                            $parameterKey = "Param_$($parameter.Name)"
-                            $flatProperties[$parameterKey] = $parameter.Value
-                        }
-
-                        if ($InputObject.Operation) {
-                            $parameterStrings = foreach ($parameter in $property.Value) {
-                                $parameterValue = switch -Regex ($parameter.Value) {
-                                    '\s' { "'$($parameter.Value)'" }
-                                    '^True$|^False$' { "`$$($parameter.Value.ToLower())" }
-                                    ';' { "'$($parameter.Value)'" }
-                                    default { $parameter.Value }
-                                }
-                                "-$($parameter.Name) $parameterValue"
-                            }
-                            $flatProperties['FullCommand'] = "$($InputObject.Operation) $($parameterStrings -join ' ')"
-                        }
-
-                        continue
-                    }
-
-                    switch ($property.Value) {
-                        { $_ -is [System.Collections.IDictionary] } {
-                            $nestedProperties = ConvertTo-FlatObject -InputObject $_ -Prefix $key -PreserveTypes:$PreserveTypes
-                            foreach ($nestedKey in $nestedProperties.Keys) {
-                                $uniqueKey = if ($flatProperties.ContainsKey($nestedKey)) {
-                                    $counter = 1
-                                    while ($flatProperties.ContainsKey("${nestedKey}_$counter")) {
-                                        $counter++
-                                    }
-                                    "${nestedKey}_$counter"
-                                }
-                                else {
-                                    $nestedKey
-                                }
-                                $flatProperties[$uniqueKey] = $nestedProperties[$nestedKey]
-                            }
-                        }
-                        { $_ -is [System.Collections.IList] -and $property.Name -ne 'Parameters' } {
-                            if ($_.Count -gt 0) {
-                                if ($_[0] -is [PSObject]) {
-                                    # If every item has a recipient-like shape (Address/EmailAddress/SmtpAddress
-                                    # +/- Name), collapse the array into a single readable pipe-joined string
-                                    # instead of exploding it into Recipients_0_Address, Recipients_0_Name, ...
-                                    $addressProp = $null
-                                    foreach ($candidate in @('Address', 'EmailAddress', 'SmtpAddress')) {
-                                        if ($_[0].PSObject.Properties.Name -contains $candidate) {
-                                            $addressProp = $candidate
-                                            break
-                                        }
-                                    }
-                                    $everyItemHasAddress = $false
-                                    if ($addressProp) {
-                                        $everyItemHasAddress = -not ($_ | Where-Object { -not ($_.PSObject.Properties.Name -contains $addressProp) } | Select-Object -First 1)
-                                    }
-
-                                    if ($everyItemHasAddress) {
-                                        $joined = ($_ | ForEach-Object {
-                                                $addr = $_.$addressProp
-                                                $name = if ($_.PSObject.Properties.Name -contains 'Name') { $_.Name } else { $null }
-                                                if ($name -and ($name -ne $addr)) { "$name <$addr>" } else { $addr }
-                                            }) -join '|'
-                                        $flatProperties[$key] = $joined
-                                    }
-                                    else {
-                                        for ($i = 0; $i -lt $_.Count; $i++) {
-                                            $nestedProperties = ConvertTo-FlatObject -InputObject $_[$i] -Prefix "${key}_${i}" -PreserveTypes:$PreserveTypes
-                                            foreach ($nestedKey in $nestedProperties.Keys) {
-                                                $uniqueKey = if ($flatProperties.ContainsKey($nestedKey)) {
-                                                    $counter = 1
-                                                    while ($flatProperties.ContainsKey("${nestedKey}_$counter")) {
-                                                        $counter++
-                                                    }
-                                                    "${nestedKey}_$counter"
-                                                }
-                                                else {
-                                                    $nestedKey
-                                                }
-                                                $flatProperties[$uniqueKey] = $nestedProperties[$nestedKey]
-                                            }
-                                        }
-                                    }
-                                }
-                                else {
-                                    $flatProperties[$key] = $_ -join '|'
-                                }
-                            }
-                            else {
-                                $flatProperties[$key] = [string]::Empty
-                            }
-                        }
-                        { $_ -is [PSObject] } {
-                            $nestedProperties = ConvertTo-FlatObject -InputObject $_ -Prefix $key -PreserveTypes:$PreserveTypes
-                            foreach ($nestedKey in $nestedProperties.Keys) {
-                                $uniqueKey = if ($flatProperties.ContainsKey($nestedKey)) {
-                                    $counter = 1
-                                    while ($flatProperties.ContainsKey("${nestedKey}_$counter")) {
-                                        $counter++
-                                    }
-                                    "${nestedKey}_$counter"
-                                }
-                                else {
-                                    $nestedKey
-                                }
-                                $flatProperties[$uniqueKey] = $nestedProperties[$nestedKey]
-                            }
-                        }
-                        default {
-                            if ($PreserveTypes) {
-                                $flatProperties[$key] = $_
-                            }
-                            else {
-                                $flatProperties[$key] = switch ($_) {
-                                    { $_ -is [datetime] } { $_ }
-                                    { $_ -is [bool] } { $_ }
-                                    { $_ -is [int] } { $_ }
-                                    { $_ -is [long] } { $_ }
-                                    { $_ -is [decimal] } { $_ }
-                                    { $_ -is [double] } { $_ }
-                                    default { [string]$_ }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                return $flatProperties
-            }
         }
 
         process {
@@ -440,11 +290,15 @@ function Search-UnifiedAuditLogCustom {
     $chunkSpan = New-TimeSpan -Days $ChunkDays
     $cursor    = $StartDate
     $chunkIdx  = 0
+    $totalSeconds = [math]::Max(1, ($EndDate - $StartDate).TotalSeconds)
 
     while ($cursor -lt $EndDate -and $auditLogs.Count -lt $ResultSize) {
         $chunkIdx++
         $chunkEnd = $cursor + $chunkSpan
         if ($chunkEnd -gt $EndDate) { $chunkEnd = $EndDate }
+
+        $percent = [math]::Min(100, [math]::Max(0, [int]((($cursor - $StartDate).TotalSeconds / $totalSeconds) * 100)))
+        Write-Progress -Activity 'Searching Unified Audit Log' -Status "Window $($cursor.ToString('yyyy-MM-dd')) -> $($chunkEnd.ToString('yyyy-MM-dd')) | $($auditLogs.Count)/$ResultSize records" -PercentComplete $percent
 
         Write-Verbose "Chunk $chunkIdx : $($cursor.ToString('yyyy-MM-dd HH:mm')) -> $($chunkEnd.ToString('yyyy-MM-dd HH:mm'))"
 
@@ -479,6 +333,8 @@ function Search-UnifiedAuditLogCustom {
         # Advance the cursor by one second past chunkEnd to avoid re-fetching the boundary record.
         $cursor = $chunkEnd.AddSeconds(1)
     }
+
+    Write-Progress -Activity 'Searching Unified Audit Log' -Completed
 
     if ($auditLogs.Count -eq 0) {
         Write-Warning 'Search-UnifiedAuditLog returned no records for the specified filters and time window.'
@@ -1222,10 +1078,10 @@ function Invoke-SearchUnifiedAuditLogCustomHelperGUI {
         [void][int]::TryParse($resultSizeBox.Text, [ref]$sizeValue)
         if ($sizeValue -lt 1) { $sizeValue = 1 }
 
-        $selectedOperations = @()
+        [System.Collections.Generic.List[string]]$selectedOperations = @()
         foreach ($selectedDisplay in $selectedOperationsListBox.Items) {
             if ($operationLookupByDisplay.ContainsKey([string]$selectedDisplay)) {
-                $selectedOperations += $operationLookupByDisplay[[string]$selectedDisplay]
+                $selectedOperations.Add($operationLookupByDisplay[[string]$selectedDisplay])
             }
         }
 
@@ -1470,11 +1326,11 @@ function Invoke-SearchUnifiedAuditLogCustomHelperGUI {
                     Connect-ExchangeOnline -ShowBanner:$false -ErrorAction Stop
                 }
                 catch {
-                    [System.Windows.MessageBox]::Show(
+                    $null = [System.Windows.MessageBox]::Show(
                         "Failed to connect to Exchange Online:`n$($_.Exception.Message)",
                         'Connection failed',
                         'OK',
-                        'Error') | Out-Null
+                        'Error')
                     $window.Cursor = [System.Windows.Input.Cursors]::Arrow
                     return
                 }
@@ -1482,11 +1338,11 @@ function Invoke-SearchUnifiedAuditLogCustomHelperGUI {
 
                 $exoConnected = & $testExoConnection
                 if (-not $exoConnected) {
-                    [System.Windows.MessageBox]::Show(
+                    $null = [System.Windows.MessageBox]::Show(
                         'Exchange Online connection could not be verified. Please retry.',
                         'Connection not active',
                         'OK',
-                        'Error') | Out-Null
+                        'Error')
                     return
                 }
             }
@@ -1498,10 +1354,10 @@ function Invoke-SearchUnifiedAuditLogCustomHelperGUI {
             [void][int]::TryParse($resultSizeBox.Text, [ref]$sizeValue)
             if ($sizeValue -lt 1) { $sizeValue = 1 }
 
-            $selectedOperations = @()
+            [System.Collections.Generic.List[string]]$selectedOperations = @()
             foreach ($selectedDisplay in $selectedOperationsListBox.Items) {
                 if ($operationLookupByDisplay.ContainsKey([string]$selectedDisplay)) {
-                    $selectedOperations += $operationLookupByDisplay[[string]$selectedDisplay]
+                    $selectedOperations.Add($operationLookupByDisplay[[string]$selectedDisplay])
                 }
             }
 
@@ -1559,7 +1415,7 @@ function Invoke-SearchUnifiedAuditLogCustomHelperGUI {
                 $results = Search-UnifiedAuditLogCustom @runParams
 
                 if (-not $results -or @($results).Count -eq 0) {
-                    [System.Windows.MessageBox]::Show('No audit log entries returned for the selected filters.', 'No results', 'OK', 'Warning') | Out-Null
+                    $null = [System.Windows.MessageBox]::Show('No audit log entries returned for the selected filters.', 'No results', 'OK', 'Warning')
                     return
                 }
 
@@ -1578,7 +1434,7 @@ function Invoke-SearchUnifiedAuditLogCustomHelperGUI {
                 $duplicatesRemoved = $rawCount - $finalCount
 
                 if (-not (Get-Module -ListAvailable -Name ImportExcel)) {
-                    [System.Windows.MessageBox]::Show('ImportExcel module is not installed. Run: Install-Module ImportExcel', 'Missing module', 'OK', 'Error') | Out-Null
+                    $null = [System.Windows.MessageBox]::Show('ImportExcel module is not installed. Run: Install-Module ImportExcel', 'Missing module', 'OK', 'Error')
                     return
                 }
 
@@ -1600,7 +1456,7 @@ function Invoke-SearchUnifiedAuditLogCustomHelperGUI {
                 }
             }
             catch {
-                [System.Windows.MessageBox]::Show("Error during export:`n$($_.Exception.Message)", 'Error', 'OK', 'Error') | Out-Null
+                $null = [System.Windows.MessageBox]::Show("Error during export:`n$($_.Exception.Message)", 'Error', 'OK', 'Error')
             }
             finally {
                 $window.Cursor = [System.Windows.Input.Cursors]::Arrow

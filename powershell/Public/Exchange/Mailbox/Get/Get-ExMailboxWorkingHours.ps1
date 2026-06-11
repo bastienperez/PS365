@@ -39,6 +39,7 @@
 
     .EXAMPLE
     Get-ExMailboxWorkingHours -ExportToExcel
+
     Exports results to an Excel file.
 
     .LINK
@@ -54,7 +55,10 @@ function Get-ExMailboxWorkingHours {
         [string]$ByDomain,
 
         [Parameter(Mandatory = $false)]
-        [switch]$ExportToExcel
+        [switch]$ExportToExcel,
+
+        [Parameter(Mandatory = $false, HelpMessage = 'Optional output directory for the Excel export (defaults to the user profile).')]
+        [string]$ExportPath
     )
 
     [System.Collections.Generic.List[PSCustomObject]]$exoMbxWorkingHoursArray = @()
@@ -102,7 +106,7 @@ function Get-ExMailboxWorkingHours {
 
     if ($ExportToExcel.IsPresent) {
         $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
-        $excelFilePath = "$($env:userprofile)\$now-ExMailboxWorkingHours.xlsx"
+        $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-ExMailboxWorkingHours.xlsx"
         Write-Host -ForegroundColor Cyan "Exporting to Excel file: $excelFilePath"
         $exoMbxWorkingHoursArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'ExMailboxWorkingHours'
         Write-Host -ForegroundColor Green 'Export completed successfully!'

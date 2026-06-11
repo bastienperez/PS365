@@ -9,7 +9,7 @@ Get Exchange Mailbox Max Send and Receive Size limits.
 ## SYNTAX
 
 ```powershell
-Get-ExMailboxMaxSize [[-Identity] <String>] [-ByDomain <String>] [-ExportToExcel]
+Get-ExMailboxMaxSize [[-Identity] <String>] [-ByDomain <String>] [-ExportToExcel] [-ExportPath <String>]
  [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
@@ -47,8 +47,9 @@ Retrieves the max send and receive size limits for the specified mailbox.
 
 ```powershell
 Get-ExMailboxMaxSize -ExportToExcel
-Exports results to an Excel file.
 ```
+
+Exports results to an Excel file.
 
 ## PARAMETERS
 
@@ -97,6 +98,22 @@ Aliases:
 Required: False
 Position: Named
 Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ExportPath
+
+Optional output directory for the Excel export (defaults to the user profile).
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

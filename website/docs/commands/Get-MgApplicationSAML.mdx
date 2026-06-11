@@ -11,7 +11,7 @@ Retrieves all Entra ID applications configured for SAML SSO.
 ### All (Default)
 
 ```powershell
-Get-MgApplicationSAML [-ForceNewToken] [-ExportToExcel] [-RunFromAzureAutomation]
+Get-MgApplicationSAML [-ForceNewToken] [-ExportToExcel] [-ExportPath <String>] [-RunFromAzureAutomation]
  [-ExpirationThresholdDays <Int32>] [-NotificationRecipient <String>] [-NotificationSender <String>]
  [-IncludeSignInStats] [-DisableParallel] [-ThrottleLimit <Int32>] [-ProgressAction <ActionPreference>]
  [<CommonParameters>]
@@ -20,19 +20,19 @@ Get-MgApplicationSAML [-ForceNewToken] [-ExportToExcel] [-RunFromAzureAutomation
 ### ByObjectId
 
 ```powershell
-Get-MgApplicationSAML [-ObjectID <String>] [-ForceNewToken] [-ExportToExcel] [-RunFromAzureAutomation]
- [-ExpirationThresholdDays <Int32>] [-NotificationRecipient <String>] [-NotificationSender <String>]
- [-IncludeSignInStats] [-DisableParallel] [-ThrottleLimit <Int32>] [-ProgressAction <ActionPreference>]
- [<CommonParameters>]
+Get-MgApplicationSAML [-ObjectID <String>] [-ForceNewToken] [-ExportToExcel] [-ExportPath <String>]
+ [-RunFromAzureAutomation] [-ExpirationThresholdDays <Int32>] [-NotificationRecipient <String>]
+ [-NotificationSender <String>] [-IncludeSignInStats] [-DisableParallel] [-ThrottleLimit <Int32>]
+ [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ### ByDisplayName
 
 ```powershell
-Get-MgApplicationSAML [-DisplayName <String>] [-ForceNewToken] [-ExportToExcel] [-RunFromAzureAutomation]
- [-ExpirationThresholdDays <Int32>] [-NotificationRecipient <String>] [-NotificationSender <String>]
- [-IncludeSignInStats] [-DisableParallel] [-ThrottleLimit <Int32>] [-ProgressAction <ActionPreference>]
- [<CommonParameters>]
+Get-MgApplicationSAML [-DisplayName <String>] [-ForceNewToken] [-ExportToExcel] [-ExportPath <String>]
+ [-RunFromAzureAutomation] [-ExpirationThresholdDays <Int32>] [-NotificationRecipient <String>]
+ [-NotificationSender <String>] [-IncludeSignInStats] [-DisableParallel] [-ThrottleLimit <Int32>]
+ [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -146,7 +146,7 @@ Gets all SAML applications using managed identity and sends email notification f
 ```yaml
 Type: String
 Parameter Sets: ByObjectId
-Aliases:
+Aliases: Identity
 
 Required: False
 Position: Named
@@ -201,6 +201,22 @@ Aliases:
 Required: False
 Position: Named
 Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ExportPath
+
+Optional output directory for the Excel export (defaults to the user profile).
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

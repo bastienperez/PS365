@@ -56,13 +56,17 @@ function Get-MgGroupOwnerInfo {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $false)]
+        [Alias('Identity')]
         [string]$GroupId,
 
         [Parameter(Mandatory = $false)]
         [string]$DisplayName,
 
         [Parameter(Mandatory = $false)]
-        [switch]$ExportToExcel
+        [switch]$ExportToExcel,
+
+        [Parameter(Mandatory = $false, HelpMessage = 'Optional output directory for the Excel export (defaults to the user profile).')]
+        [string]$ExportPath
     )
 
 
@@ -90,7 +94,7 @@ function Get-MgGroupOwnerInfo {
         $filter = ''
 
         if ($DisplayName) {
-            $filter = "&`$filter=displayName eq '$DisplayName'"
+            $filter = "&`$filter=displayName eq '$(ConvertTo-ODataEscapedString -Value $DisplayName)'"
         }
 
         $uri = "https://graph.microsoft.com/v1.0/groups?`$select=$selectFields&`$top=999&`$count=true$filter"
@@ -173,7 +177,7 @@ function Get-MgGroupOwnerInfo {
     # Export to Excel if requested
     if ($ExportToExcel.IsPresent) {
         $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
-        $excelFilePath = "$($env:userprofile)\$now-MgGroupOwnerInfo_Report.xlsx"
+        $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-MgGroupOwnerInfo_Report.xlsx"
         Write-Host -ForegroundColor Cyan "Exporting to Excel file: $excelFilePath"
         $results | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'Entra-GroupOwners'
     }

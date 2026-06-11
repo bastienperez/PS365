@@ -34,10 +34,11 @@ Returns the SCP object with keywords containing AzureADName and azureADId when A
 
 ```powershell
 $result = Get-EntraIDHybridJoinSCP
-if (-not $result.ADAccessible) {
-    Write-Warning "Cannot access Active Directory: $($result.ErrorMessage)"
-}
 ```
+
+if (-not $result.ADAccessible) \{
+    Write-Warning "Cannot access Active Directory: $($result.ErrorMessage)"
+\}
 
 Tests if Active Directory is accessible and handles the error case.
 

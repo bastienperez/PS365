@@ -36,6 +36,7 @@
 #>
 
 function Set-MgRegisteredAppStatus {
+    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High')]
     param (
         [Parameter(Mandatory = $true, ParameterSetName = 'ByApplicationID', Position = 0)]
         [string]$ApplicationID,
@@ -52,11 +53,11 @@ function Set-MgRegisteredAppStatus {
     )
 
     if ($PSCmdlet.ParameterSetName -eq 'ByApplicationID') {
-        $uri = "/beta/applications?`$filter=id eq '$ApplicationID'"
+        $uri = "/beta/applications?`$filter=id eq '$(ConvertTo-ODataEscapedString -Value $ApplicationID)'"
         $identifier = "ApplicationID: $ApplicationID"
     }
     else {
-        $uri = "/beta/applications?`$filter=displayName eq '$DisplayName'"
+        $uri = "/beta/applications?`$filter=displayName eq '$(ConvertTo-ODataEscapedString -Value $DisplayName)'"
         $identifier = "DisplayName: $DisplayName"
     }
 
@@ -110,12 +111,15 @@ function Set-MgRegisteredAppStatus {
     }
 
     if ($GenerateCmdlets) {
-        $commands = @()
-        $bodyJson = ConvertTo-Json -InputObject $body -Compress
+        [System.Collections.Generic.List[string]]$commands = @()
+        $bodyJson = ConvertTo-Json -InputObject $body -Depth 10 -Compress
         $command = "Invoke-MgGraphRequest -Uri `"$statusUri`" -Method PATCH -Body '$bodyJson'"
-        $commands += $command
+        $commands.Add($command)
 
         return $commands
+    }
+    elseif (-not $PSCmdlet.ShouldProcess($app.displayName, "Set application status to $targetStatusText")) {
+        return
     }
     else {
         try {

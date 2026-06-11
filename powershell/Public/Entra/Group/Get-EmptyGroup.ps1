@@ -52,7 +52,10 @@ function Get-EmptyGroup {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $false)]
-        [switch]$ExportToExcel
+        [switch]$ExportToExcel,
+
+        [Parameter(Mandatory = $false, HelpMessage = 'Optional output directory for the Excel export (defaults to the user profile).')]
+        [string]$ExportPath
     )
 
     Write-Verbose 'Fetching all groups...'
@@ -126,7 +129,7 @@ function Get-EmptyGroup {
     if ($ExportToExcel.IsPresent) {
         Write-Verbose 'Preparing Excel export...'
         $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
-        $excelFilePath = "$($env:USERPROFILE)\$now-EmptyGroups.xlsx"
+        $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-EmptyGroups.xlsx"
         Write-Verbose "Excel file path: $excelFilePath"
         Write-Host -ForegroundColor Cyan "Exporting empty groups to Excel file: $excelFilePath"
         $emptyGroups | Sort-Object DisplayName | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'EmptyGroups'

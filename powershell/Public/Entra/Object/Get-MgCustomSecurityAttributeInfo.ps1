@@ -77,7 +77,10 @@ function Get-MgCustomSecurityAttributeInfo {
         [switch]$ForceNewToken,
 
         [Parameter(Mandatory = $false)]
-        [switch]$ExportToExcel
+        [switch]$ExportToExcel,
+
+        [Parameter(Mandatory = $false, HelpMessage = 'Optional output directory for the Excel export (defaults to the user profile).')]
+        [string]$ExportPath
     )
 
     # Import required modules
@@ -264,7 +267,7 @@ function Get-MgCustomSecurityAttributeInfo {
 
     if ($ExportToExcel.IsPresent) {
         $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
-        $excelFilePath = "$($env:userprofile)\$now-MgCustomSecurityAttributeInfo.xlsx"
+        $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-MgCustomSecurityAttributeInfo.xlsx"
         Write-Host -ForegroundColor Cyan "Exporting custom security attribute report to Excel file: $excelFilePath"
 
         # One worksheet per entity type, plus a consolidated 'All' sheet

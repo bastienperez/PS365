@@ -69,12 +69,28 @@ function Invoke-M365AppsDownload {
 
 	$regex = 'https:\/\/download\.microsoft\.com\/download\/[a-z0-9\-\/]+\/officedeploymenttool_[0-9\-]+\.exe'
 	$downloadLink = [regex]::Match($response, $regex).Value
-    
+
+	if ([string]::IsNullOrWhiteSpace($downloadLink)) {
+		Write-Warning 'Could not locate the Office Deployment Tool download link on the Microsoft download page. The page layout may have changed.'
+		return
+	}
+
+	$odtExePath = "$odtFolder\officedeploymenttool.exe"
 	Write-Host -ForegroundColor Cyan "Downloading the Office Deployment Tool from $downloadLink"
-	Invoke-WebRequest -Uri $downloadLink -OutFile "$odtFolder\officedeploymenttool.exe" -UseBasicParsing
+	Invoke-WebRequest -Uri $downloadLink -OutFile $odtExePath -UseBasicParsing
+
+	# Verify the downloaded executable is validly Authenticode-signed by Microsoft
+	# before running it (it is fetched from a regex-scraped link).
+	$signature = Get-AuthenticodeSignature -FilePath $odtExePath
+	$signerSubject = $signature.SignerCertificate.Subject
+	if ($signature.Status -ne 'Valid' -or $signerSubject -notmatch 'O=Microsoft Corporation') {
+		Write-Warning "Authenticode verification failed for the Office Deployment Tool (Status: $($signature.Status); Signer: $signerSubject). Aborting to avoid running an untrusted binary."
+		return
+	}
+	Write-Host -ForegroundColor Green 'Office Deployment Tool signature verified (Microsoft Corporation).'
 
 	Write-Host -ForegroundColor Cyan "Extracting the Office Deployment Tool to $odtFolder"
-	. $odtFolder\officedeploymenttool.exe /extract:$odtFolder /quiet
+	. $odtExePath /extract:$odtFolder /quiet
 
 	# pause in case of UAC prompt, otherwise setup.exe may not be available yet
 	Start-Sleep -Seconds 30

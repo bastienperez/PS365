@@ -49,6 +49,7 @@
 
     .EXAMPLE
     Get-MgApplicationCredential
+
     Retrieves all Microsoft Entra ID applications and their credentials.
 
     .EXAMPLE
@@ -108,6 +109,7 @@ function Get-MgApplicationCredential {
     [CmdletBinding(DefaultParameterSetName = 'All')]
     param (
         [Parameter(Mandatory = $false, ParameterSetName = 'ByObjectId')]
+        [Alias('Identity')]
         [string]$ObjectID,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'ByDisplayName')]
@@ -115,6 +117,9 @@ function Get-MgApplicationCredential {
 
         [Parameter(Mandatory = $false)]
         [switch]$ExportToExcel,
+
+        [Parameter(Mandatory = $false, HelpMessage = 'Optional output directory for the Excel export (defaults to the user profile).')]
+        [string]$ExportPath,
 
         [Parameter(Mandatory = $false)]
         [switch]$ForceNewToken,
@@ -647,7 +652,7 @@ function Get-MgApplicationCredential {
 
     if ($ExportToExcel.IsPresent) {
         $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
-        $excelFilePath = "$($env:userprofile)\$now-MgApplicationCredential.xlsx"
+        $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-MgApplicationCredential.xlsx"
         Write-Host -ForegroundColor Cyan "Exporting application credentials to Excel file: $excelFilePath"
         $credentialsArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'EntraApplicationCredentials'
         Write-Host -ForegroundColor Green 'Export completed successfully!'

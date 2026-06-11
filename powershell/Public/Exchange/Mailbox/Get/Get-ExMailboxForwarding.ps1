@@ -31,6 +31,7 @@
 
 	.EXAMPLE
 	Get-ExMailboxForwarding -ExportToExcel
+
 	Exports results to an Excel file.
 
 	.LINK
@@ -58,6 +59,9 @@ function Get-ExMailboxForwarding {
 
 		[Parameter(Mandatory = $false)]
 		[switch]$ExportToExcel,
+
+		[Parameter(Mandatory = $false, HelpMessage = 'Optional output directory for the Excel export (defaults to the user profile).')]
+		[string]$ExportPath,
 
 		[Parameter(Mandatory = $false)]
 		[switch]$ExchangeOnPremise
@@ -93,6 +97,8 @@ function Get-ExMailboxForwarding {
 	[System.Collections.Generic.List[PSCustomObject]]$forwardList = @()
 	# inboxForwardList is use to contains the mailbox with inbox rules with forward. We need to use it as temporary storage to check if the mailbox has already a forward set by forwardingAddress or forwardingSMTPAddress
 	[System.Collections.Generic.List[PSCustomObject]]$inboxForwardList = @()
+
+	Assert-PS365ExchangeOnlineConnection
 
 	Write-Host -ForegroundColor cyan 'Get Accepted Domain in Exchange Online to identify internal/external forward'
 	$internalDomains = (Get-AcceptedDomain).DomainName
@@ -572,7 +578,7 @@ function Get-ExMailboxForwarding {
 
 	if ($ExportToExcel.IsPresent) {
 		$now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
-		$excelFilePath = "$($env:userprofile)\$now-ExMailboxForwarding.xlsx"
+		$excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-ExMailboxForwarding.xlsx"
 		Write-Host -ForegroundColor Cyan "Exporting to Excel file: $excelFilePath"
 		$forwardList | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'ExMailboxForwarding'
 		Write-Host -ForegroundColor Green 'Export completed successfully!'

@@ -59,6 +59,7 @@ function Get-MgRegisteredApp {
         [string]$ApplicationID,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'ByObjectId')]
+        [Alias('Identity')]
         [string]$ObjectID,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'ByDisplayName')]
@@ -70,7 +71,7 @@ function Get-MgRegisteredApp {
     # Determine how to search for the Application(s): by ApplicationID (AppId), by ObjectID (GUID), by DisplayName, or all
     if ($ApplicationID) {
         # Get specific application by AppId
-        $uri = "/beta/applications?`$filter=appId eq '$ApplicationID'&`$select=uniqueName,id,createdByAppId,displayName,signInAudience,disabledByMicrosoftStatus,isDisabled,appId"
+        $uri = "/beta/applications?`$filter=appId eq '$(ConvertTo-ODataEscapedString -Value $ApplicationID)'&`$select=uniqueName,id,createdByAppId,displayName,signInAudience,disabledByMicrosoftStatus,isDisabled,appId"
         $result = Invoke-MgGraphRequest -Uri $uri -Method GET
         $apps = if ($result.Value) { $result.Value } else { @() }
     }

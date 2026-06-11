@@ -26,6 +26,7 @@
 	
 	.EXAMPLE
 	Set-ExMailboxMaxSize -Identity "user@example.com" -MaxReceiveSize 150MB -MaxSendSize 150MB
+
 	Sets the maximum mailbox size for the specified mailbox.
 	
 	.EXAMPLE
@@ -104,7 +105,7 @@ function Set-ExMailboxMaxSize {
 		return 1
 	}
 
-	$commands = @()
+	[System.Collections.Generic.List[string]]$commands = @()
 	$totalCount = @($Mailboxes).Count
 	$currentCount = 0
 
@@ -119,7 +120,7 @@ function Set-ExMailboxMaxSize {
 		$cmdParamstring = '-MaxReceiveSize 150MB -MaxSendSize 150MB -ErrorAction Stop'
 		$fullCommand = "$cmdletString $($cmdParams.Identity) $cmdParamstring"
 		if ($GenerateCmdlets) {
-			$Commands += $fullCommand
+			$Commands.Add($fullCommand)
 		}
 
 		if (-not $GenerateCmdlets -and $PSCmdlet.ShouldProcess($mbx.PrimarySmtpAddress, 'Set regional configuration')) {
