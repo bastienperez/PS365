@@ -1432,11 +1432,11 @@ function Invoke-SearchUnifiedAuditLogCustomHelperGUI {
                     Connect-ExchangeOnline -ShowBanner:$false -ErrorAction Stop
                 }
                 catch {
-                    [System.Windows.MessageBox]::Show(
+                    $null = [System.Windows.MessageBox]::Show(
                         "Failed to connect to Exchange Online:`n$($_.Exception.Message)",
                         'Connection failed',
                         'OK',
-                        'Error') | Out-Null
+                        'Error')
                     $window.Cursor = [System.Windows.Input.Cursors]::Arrow
                     return
                 }
@@ -1444,11 +1444,11 @@ function Invoke-SearchUnifiedAuditLogCustomHelperGUI {
 
                 $exoConnected = & $testExoConnection
                 if (-not $exoConnected) {
-                    [System.Windows.MessageBox]::Show(
+                    $null = [System.Windows.MessageBox]::Show(
                         'Exchange Online connection could not be verified. Please retry.',
                         'Connection not active',
                         'OK',
-                        'Error') | Out-Null
+                        'Error')
                     return
                 }
             }
@@ -1521,7 +1521,7 @@ function Invoke-SearchUnifiedAuditLogCustomHelperGUI {
                 $results = Search-UnifiedAuditLogCustom @runParams
 
                 if (-not $results -or @($results).Count -eq 0) {
-                    [System.Windows.MessageBox]::Show('No audit log entries returned for the selected filters.', 'No results', 'OK', 'Warning') | Out-Null
+                    $null = [System.Windows.MessageBox]::Show('No audit log entries returned for the selected filters.', 'No results', 'OK', 'Warning')
                     return
                 }
 
@@ -1540,7 +1540,7 @@ function Invoke-SearchUnifiedAuditLogCustomHelperGUI {
                 $duplicatesRemoved = $rawCount - $finalCount
 
                 if (-not (Get-Module -ListAvailable -Name ImportExcel)) {
-                    [System.Windows.MessageBox]::Show('ImportExcel module is not installed. Run: Install-Module ImportExcel', 'Missing module', 'OK', 'Error') | Out-Null
+                    $null = [System.Windows.MessageBox]::Show('ImportExcel module is not installed. Run: Install-Module ImportExcel', 'Missing module', 'OK', 'Error')
                     return
                 }
 
@@ -1562,7 +1562,7 @@ function Invoke-SearchUnifiedAuditLogCustomHelperGUI {
                 }
             }
             catch {
-                [System.Windows.MessageBox]::Show("Error during export:`n$($_.Exception.Message)", 'Error', 'OK', 'Error') | Out-Null
+                $null = [System.Windows.MessageBox]::Show("Error during export:`n$($_.Exception.Message)", 'Error', 'OK', 'Error')
             }
             finally {
                 $window.Cursor = [System.Windows.Input.Cursors]::Arrow

@@ -90,7 +90,7 @@ function Get-MgGroupOwnerInfo {
         $filter = ''
 
         if ($DisplayName) {
-            $filter = "&`$filter=displayName eq '$DisplayName'"
+            $filter = "&`$filter=displayName eq '$(ConvertTo-ODataEscapedString -Value $DisplayName)'"
         }
 
         $uri = "https://graph.microsoft.com/v1.0/groups?`$select=$selectFields&`$top=999&`$count=true$filter"

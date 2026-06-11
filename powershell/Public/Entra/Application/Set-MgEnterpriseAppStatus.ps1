@@ -53,11 +53,11 @@ function Set-MgEnterpriseAppStatus {
     )
 
     if ($PSCmdlet.ParameterSetName -eq 'ByApplicationID') {
-        $uri = "/v1.0/servicePrincipals?`$filter=appId eq '$ApplicationID'"
+        $uri = "/v1.0/servicePrincipals?`$filter=appId eq '$(ConvertTo-ODataEscapedString -Value $ApplicationID)'"
         $identifier = "ApplicationID: $ApplicationID"
     }
     else {
-        $uri = "/v1.0/servicePrincipals?`$filter=displayName eq '$DisplayName'"
+        $uri = "/v1.0/servicePrincipals?`$filter=displayName eq '$(ConvertTo-ODataEscapedString -Value $DisplayName)'"
         $identifier = "DisplayName: $DisplayName"
     }
 
@@ -109,7 +109,7 @@ function Set-MgEnterpriseAppStatus {
 
     if ($GenerateCmdlets) {
         $commands = @()
-        $bodyJson = ConvertTo-Json -InputObject $body -Compress
+        $bodyJson = ConvertTo-Json -InputObject $body -Depth 10 -Compress
         $command = "Invoke-MgGraphRequest -Uri `"$statusUri`" -Method PATCH -Body '$bodyJson'"
         $commands += $command
 

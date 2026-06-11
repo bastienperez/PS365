@@ -30,7 +30,7 @@ function New-IntuneEnrollmentServicePrincipal {
 
     if (-not $intuneEnrollmentAppExists) {
         Write-Host -ForegroundColor Magenta 'Creating Microsoft Intune Enrollment'
-        $body = @{ appId = 'd4ebce55-015a-49b5-a083-c84d1797ae8c' } | ConvertTo-Json
+        $body = @{ appId = 'd4ebce55-015a-49b5-a083-c84d1797ae8c' } | ConvertTo-Json -Depth 10
         $null = Invoke-MgGraphRequest -Method POST -Uri 'https://graph.microsoft.com/v1.0/servicePrincipals' -Body $body -ContentType 'application/json'
         Write-Host -ForegroundColor Green 'Microsoft Intune Enrollment created'
     }
