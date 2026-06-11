@@ -31,7 +31,7 @@
     https://ps365.clidsys.com/docs/commands/Set-IntuneAutoMDMEnrollmentPolicy
 #>
 function Set-IntuneAutoMDMEnrollmentPolicy {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param (
         [Parameter(Mandatory = $true)]
         [ValidateSet('Enabled', 'Disabled')]
@@ -66,7 +66,11 @@ function Set-IntuneAutoMDMEnrollmentPolicy {
 
         Write-Verbose "Updating MDM policy from $currentState to $State"
         Write-Verbose "PATCH body: $body"
-        
+
+        if (-not $PSCmdlet.ShouldProcess('Auto MDM enrollment policy', "Change state from $currentState to $State")) {
+            return
+        }
+
         $result = Invoke-MgGraphRequest -Method PATCH -Uri "https://graph.microsoft.com/beta/policies/mobileDeviceManagementPolicies/$policyId" -Body $body -ContentType 'application/json'
         
         Write-Host "MDM policy updated successfully - Changed from $currentState to $State" -ForegroundColor Green

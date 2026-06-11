@@ -43,6 +43,7 @@
 #>
 
 function Set-ExCalendarPermission {
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param (
         [Parameter(Mandatory = $true, Position = 0)]
         [string]$Identity,
@@ -71,5 +72,9 @@ function Set-ExCalendarPermission {
         return 1
     }
     
+    if (-not $PSCmdlet.ShouldProcess($calFolder, "Add calendar permission '$AccessRights' for '$DelegateUser'")) {
+        return
+    }
+
     Add-MailboxFolderPermission -Identity $calFolder -User $DelegateUser -AccessRights $AccessRights
 }

@@ -36,6 +36,7 @@
 #>
 
 function Set-MgEnterpriseAppStatus {
+    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High')]
     param (
         [Parameter(Mandatory = $true, ParameterSetName = 'ByApplicationID', Position = 0)]
         [string]$ApplicationID,
@@ -113,6 +114,10 @@ function Set-MgEnterpriseAppStatus {
         $commands += $command
 
         return $commands
+    }
+
+    if (-not $PSCmdlet.ShouldProcess($servicePrincipal.displayName, "Set accountEnabled to $targetStatus")) {
+        return
     }
 
     try {

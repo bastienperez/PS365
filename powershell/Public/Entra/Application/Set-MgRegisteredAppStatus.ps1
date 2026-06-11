@@ -36,6 +36,7 @@
 #>
 
 function Set-MgRegisteredAppStatus {
+    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High')]
     param (
         [Parameter(Mandatory = $true, ParameterSetName = 'ByApplicationID', Position = 0)]
         [string]$ApplicationID,
@@ -116,6 +117,9 @@ function Set-MgRegisteredAppStatus {
         $commands += $command
 
         return $commands
+    }
+    elseif (-not $PSCmdlet.ShouldProcess($app.displayName, "Set application status to $targetStatusText")) {
+        return
     }
     else {
         try {
