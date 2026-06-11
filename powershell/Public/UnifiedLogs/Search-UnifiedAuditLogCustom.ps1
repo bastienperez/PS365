@@ -155,7 +155,6 @@ function Search-UnifiedAuditLogCustom {
 
         begin {
             [System.Collections.Generic.List[PSCustomObject]]$resultsArray = @()
-
         }
 
         process {
@@ -193,14 +192,27 @@ function Search-UnifiedAuditLogCustom {
                 'Operation',
                 'ResultStatus',
                 'ClientIP',
+                'ClientIPAddress',
                 'UserId',
+                'MailboxOwnerUPN',
+                # Send / mail item properties (only present on Exchange RecordType=2 entries)
+                'Item_Subject',
+                'Item_Recipients',
+                'Item_RecipientsCount',
+                'Item_SizeInBytes',
+                'Item_ParentFolder_Path',
+                'Item_InternetMessageId',
+                'SaveToSentItems',
+                # Identifiers / context
                 'Id',
                 'OrganizationId',
                 'UserType',
                 'UserKey',
                 'ObjectId',
                 'Scope',
-                'AppAccessContext'
+                'AppAccessContext',
+                'ClientInfoString',
+                'ActorInfoString'
             )
 
             $orderedResults = $resultsArray | ForEach-Object {

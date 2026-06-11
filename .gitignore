@@ -25,3 +25,6 @@ yarn-error.log*
 !.dev.vars.example
 .env*
 !.env.example
+.claude/settings.local.json
+/.claude/worktrees
+.claude/settings.local.json

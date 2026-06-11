@@ -72,20 +72,45 @@ function ConvertTo-FlatObject {
             { $_ -is [System.Collections.IList] -and $property.Name -ne 'Parameters' } {
                 if ($_.Count -gt 0) {
                     if ($_[0] -is [PSObject]) {
-                        for ($i = 0; $i -lt $_.Count; $i++) {
-                            $nestedProperties = ConvertTo-FlatObject -InputObject $_[$i] -Prefix "${key}_${i}" -PreserveTypes:$PreserveTypes
-                            foreach ($nestedKey in $nestedProperties.Keys) {
-                                $uniqueKey = if ($flatProperties.ContainsKey($nestedKey)) {
-                                    $counter = 1
-                                    while ($flatProperties.ContainsKey("${nestedKey}_$counter")) {
-                                        $counter++
+                        # If every item has a recipient-like shape (Address/EmailAddress/SmtpAddress
+                        # +/- Name), collapse the array into a single readable pipe-joined string
+                        # instead of exploding it into Recipients_0_Address, Recipients_0_Name, ...
+                        $addressProp = $null
+                        foreach ($candidate in @('Address', 'EmailAddress', 'SmtpAddress')) {
+                            if ($_[0].PSObject.Properties.Name -contains $candidate) {
+                                $addressProp = $candidate
+                                break
+                            }
+                        }
+                        $everyItemHasAddress = $false
+                        if ($addressProp) {
+                            $everyItemHasAddress = -not ($_ | Where-Object { -not ($_.PSObject.Properties.Name -contains $addressProp) } | Select-Object -First 1)
+                        }
+
+                        if ($everyItemHasAddress) {
+                            $joined = ($_ | ForEach-Object {
+                                    $addr = $_.$addressProp
+                                    $name = if ($_.PSObject.Properties.Name -contains 'Name') { $_.Name } else { $null }
+                                    if ($name -and ($name -ne $addr)) { "$name <$addr>" } else { $addr }
+                                }) -join '|'
+                            $flatProperties[$key] = $joined
+                        }
+                        else {
+                            for ($i = 0; $i -lt $_.Count; $i++) {
+                                $nestedProperties = ConvertTo-FlatObject -InputObject $_[$i] -Prefix "${key}_${i}" -PreserveTypes:$PreserveTypes
+                                foreach ($nestedKey in $nestedProperties.Keys) {
+                                    $uniqueKey = if ($flatProperties.ContainsKey($nestedKey)) {
+                                        $counter = 1
+                                        while ($flatProperties.ContainsKey("${nestedKey}_$counter")) {
+                                            $counter++
+                                        }
+                                        "${nestedKey}_$counter"
                                     }
-                                    "${nestedKey}_$counter"
+                                    else {
+                                        $nestedKey
+                                    }
+                                    $flatProperties[$uniqueKey] = $nestedProperties[$nestedKey]
                                 }
-                                else {
-                                    $nestedKey
-                                }
-                                $flatProperties[$uniqueKey] = $nestedProperties[$nestedKey]
                             }
                         }
                     }

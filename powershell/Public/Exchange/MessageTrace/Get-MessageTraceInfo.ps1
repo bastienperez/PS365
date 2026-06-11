@@ -147,53 +147,84 @@ function Get-MessageTraceInfo {
         # redirect has no messagetracedetails in event receive
         if ($null -ne $traceDetail) {
 
-            $hashTable = @{}
+            # Get-MessageTraceDetailV2 + Where-Object can return multiple rows. Casting an array to
+            # [XML] fails with "This document already has a 'DocumentElement' node", so we iterate
+            # one row at a time and emit one object per detail record.
+            foreach ($detail in @($traceDetail)) {
+                $hashTable = @{}
 
-            try {
-                $XMLDoc = [XML]$traceDetail.Data
-            }
-            catch {
-                Write-Host $_.Exception.Message
-            }
+                $XMLDoc = $null
+                try {
+                    $XMLDoc = [XML]$detail.Data
+                }
+                catch {
+                    Write-Verbose "Could not parse trace detail Data as XML: $($_.Exception.Message)"
+                }
 
-            try {
-                $MEPNodes = $XMLDoc.GetElementsByTagName('MEP')
-            }
-            catch {
-                Write-Host $_.Exception.Message
-            }
+                $MEPNodes = $null
+                if ($XMLDoc) {
+                    try {
+                        $MEPNodes = $XMLDoc.GetElementsByTagName('MEP')
+                    }
+                    catch {
+                        Write-Verbose "Could not get MEP nodes: $($_.Exception.Message)"
+                    }
+                }
 
-            for ($nodeval = 0; $nodeval -lt $MEPNodes.Count; $nodeval++) {
-                $key = $MEPNodes[$nodeval].Attributes[0].Value.ToString()
-                $value = $MEPNodes[$nodeval].Attributes[1].Value.ToString()
+                if ($MEPNodes) {
+                    for ($nodeval = 0; $nodeval -lt $MEPNodes.Count; $nodeval++) {
+                        $key = $MEPNodes[$nodeval].Attributes[0].Value.ToString()
+                        $value = $MEPNodes[$nodeval].Attributes[1].Value.ToString()
+                        # Use [hashtable] indexer assignment instead of .Add() to tolerate duplicate keys.
+                        $hashTable[$key] = $value
+                    }
+                }
 
-                $hashTable.Add($key, $value)
+                # Helper: extract a CustomData S:<Key>=<Value> fragment regardless of ordering.
+                $customData = $hashTable['customdata']
+                $extractFromCustomData = {
+                    param([string]$Key)
+                    if ([string]::IsNullOrWhiteSpace($customData)) { return $null }
+                    $match = $customData -split ";'" -split ';' | Where-Object { $_ -match "^S:$Key=" } | Select-Object -First 1
+                    if ($match) { return ($match -replace "^S:$Key=", '').Trim() }
+                    return $null
+                }
+
+                # Mail client / user-agent best-effort extraction. The exact field that carries the
+                # client name varies by event (SUBMIT, RECEIVE, DELIVER) and source (SMTP, OWA, mobile),
+                # so we surface every known candidate so the user can pick whichever is populated.
+                $userAgent         = & $extractFromCustomData 'UserAgent'
+                $messageSourceName = & $extractFromCustomData 'MessageSourceName'
+                $clientName        = & $extractFromCustomData 'ClientName'
+
+                $object = [PSCustomObject] [ordered]@{
+                    SenderAddress        = $message.SenderAddress
+                    RecipientAddress     = $message.RecipientAddress
+                    ReturnPath           = $hashTable['ReturnPath']
+                    Subject              = $message.Subject
+                    Detail               = $detail.Detail
+                    Status               = $message.Status
+                    'Received(UTC)'      = $message.Received
+                    FromIP               = $message.FromIP
+                    ToIP                 = $message.ToIP
+                    ClientIP             = $hashTable['ClientIP']
+                    UserAgent            = $userAgent
+                    MessageSourceName    = $messageSourceName
+                    ClientName           = $clientName
+                    DeliveryPriority     = $hashTable['DeliveryPriority']
+                    # CustomData is parsed below
+                    #CustomData          = $hashTable['CustomData']
+                    InboundConnectorData = (& $extractFromCustomData 'InboundConnectorData') -replace '^Name=', ''
+                    ConnectorType        = ($customData -split ";'" -split ';' -match 'ConnectorType' -split 'ConnectorType=')[1]
+                    TLSVersion           = & $extractFromCustomData 'tlsversion'
+                    TLSCipher            = & $extractFromCustomData 'tlscipher'
+                    OriginOrg            = & $extractFromCustomData 'Oorg'
+                    MessageID            = $detail.MessageId
+                    MessageTraceID       = $detail.MessageTraceId
+                }
+
+                $messagesInfo.Add($object)
             }
-
-            $object = [PSCustomObject] [ordered]@{
-                SenderAddress        = $message.SenderAddress
-                RecipientAddress     = $message.RecipientAddress
-                ReturnPath           = $hashTable['ReturnPath']
-                Subject              = $message.Subject
-                Detail               = $traceDetail.detail
-                Status               = $message.Status
-                'Received(UTC)'      = $message.Received
-                FromIP               = $message.FromIP
-                ToIP                 = $message.ToIP
-                ClientIP             = $hashTable['ClientIP']
-                DeliveryPriority     = $hashTable['DeliveryPriority']
-                # CustomData is parsed below
-                #CustomData          = $hashTable['CustomData']
-                InboundConnectorData = ($hashtable['customdata'] -split ";'" -split ';' -match 'S:InboundConnectorData' -split 'S:InboundConnectorData=Name=')[1]
-                ConnectorType        = ($hashtable['customdata'] -split ";'" -split ';' -match 'ConnectorType' -split 'ConnectorType=')[1]
-                TLSVersion           = ($hashtable['customdata'] -split ";'" -split ';' -match 'S:tlsversion' -split 'S:tlsversion=')[1]
-                TLSCipher            = ($hashtable['customdata'] -split ";'" -split ';' -match 'S:tlscipher' -split 'S:tlscipher=')[1]
-                OriginOrg            = ($hashtable['customdata'] -split ";'" -split ';' -match 'S:Oorg' -split 'S:Oorg=')[1]
-                MessageID            = $traceDetail.MessageId
-                MessageTraceID       = $traceDetail.MessageTraceId
-            }
-
-            $messagesInfo.Add($object)
         }
     }
 
