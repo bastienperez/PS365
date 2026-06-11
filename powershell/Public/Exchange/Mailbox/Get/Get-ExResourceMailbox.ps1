@@ -39,6 +39,7 @@
 
     .EXAMPLE
     Get-ExResourceMailbox -ExportToExcel
+
     Exports results to an Excel file.
 
     .LINK

@@ -26,6 +26,7 @@
 	
 	.EXAMPLE
 	Set-ExMailboxMaxSize -Identity "user@example.com" -MaxReceiveSize 150MB -MaxSendSize 150MB
+
 	Sets the maximum mailbox size for the specified mailbox.
 	
 	.EXAMPLE

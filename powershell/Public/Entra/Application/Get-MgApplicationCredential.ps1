@@ -49,6 +49,7 @@
 
     .EXAMPLE
     Get-MgApplicationCredential
+
     Retrieves all Microsoft Entra ID applications and their credentials.
 
     .EXAMPLE

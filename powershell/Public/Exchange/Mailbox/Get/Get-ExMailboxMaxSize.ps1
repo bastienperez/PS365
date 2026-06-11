@@ -31,6 +31,7 @@
 
     .EXAMPLE
     Get-ExMailboxMaxSize -ExportToExcel
+
     Exports results to an Excel file.
 
     .LINK

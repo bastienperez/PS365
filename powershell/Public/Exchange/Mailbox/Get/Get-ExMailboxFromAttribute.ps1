@@ -28,6 +28,7 @@
 
     .EXAMPLE
     Get-ExMailboxFromAttribute -Attribute "CustomAttribute" -ExportToExcel
+
     Exports results to an Excel file.
 
     .LINK

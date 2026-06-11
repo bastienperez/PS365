@@ -30,6 +30,7 @@
 
 	.EXAMPLE
 	Connect-ExchangeOnline
+
 	New-ExTransportRuleFromJson -Path "C:\eop-rules\Block-Outbound-OnMicrosoft.json"
 
 	Creates a single transport rule from the specified JSON file.

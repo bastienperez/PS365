@@ -15,6 +15,7 @@
 
     .EXAMPLE
     $result = Get-EntraIDHybridJoinSCP
+
     if (-not $result.ADAccessible) {
         Write-Warning "Cannot access Active Directory: $($result.ErrorMessage)"
     }

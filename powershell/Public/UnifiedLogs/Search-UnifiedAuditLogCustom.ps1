@@ -110,12 +110,14 @@ function Search-UnifiedAuditLogCustom {
 
     .EXAMPLE
         $auditLogs = Search-UnifiedAuditLog -StartDate $startDate -EndDate $endDate -RecordType ExchangeAdmin
+
         $auditLogs | Get-SimpleUnifiedAuditLog | Export-Csv -Path "AuditLogs.csv" -NoTypeInformation
 
         Processes Exchange admin audit logs and exports them to CSV with all nested properties flattened.
 
     .EXAMPLE
         $userChanges = Search-UnifiedAuditLog -UserIds user@domain.com -Operations "Add-*"
+
         $userChanges | Get-SimpleUnifiedAuditLog -PreserveTypes |
             Where-Object { $_.ResultStatus -eq $true } |
             Select-Object CreationTime, Operation, FullCommand
