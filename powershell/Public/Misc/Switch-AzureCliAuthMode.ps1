@@ -61,44 +61,8 @@ function Switch-AzureCliAuthMode {
         [switch]$GetCurrent
     )
 
-    # Get current WAM setting
-    $wamEnabled = az config get core.enable_broker_on_windows --query value -o tsv 2>$null
-    
-    if ($GetCurrent) {
-        # Display current mode
-        if ($wamEnabled -eq 'true') {
-            Write-Host 'Current authentication mode: WAM (Web Account Manager)' -ForegroundColor Cyan
-        }
-        else {
-            Write-Host 'Current authentication mode: Browser' -ForegroundColor Cyan
-        }
-        return
-    }
-    
-    if ($Mode) {
-        # Switch to specified mode
-        if ($Mode -eq 'Browser') {
-            Write-Verbose 'Disabling Web Account Manager (WAM)...'
-            az config set core.enable_broker_on_windows=false
-            Write-Host 'Azure CLI authentication switched to browser mode.' -ForegroundColor Green
-        }
-        else {
-            Write-Verbose 'Enabling Web Account Manager (WAM)...'
-            az config set core.enable_broker_on_windows=true
-            Write-Host 'Azure CLI authentication switched to WAM mode.' -ForegroundColor Green
-        }
-    }
-    else {
-        # Toggle mode
-        if ($wamEnabled -eq 'true') {
-            Write-Verbose 'Disabling Web Account Manager (WAM)...'
-            az config set core.enable_broker_on_windows=false
-            Write-Host 'Azure CLI authentication switched to browser mode.' -ForegroundColor Green
-        }
-        else {
-            Write-Verbose 'Enabling Web Account Manager (WAM)...'
-            az config set core.enable_broker_on_windows=true
-            Write-Host 'Azure CLI authentication switched to WAM mode.' -ForegroundColor Green
-        }
-    }
+    Switch-PS365WamAuthMode -Label 'Azure CLI' `
+        -GetState { (az config get core.enable_broker_on_windows --query value -o tsv 2>$null) -eq 'true' } `
+        -SetState { param($enabled) az config set "core.enable_broker_on_windows=$($enabled.ToString().ToLower())" } `
+        -Mode $Mode -GetCurrent:$GetCurrent
 }
