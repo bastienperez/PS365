@@ -58,6 +58,9 @@ function Get-NestedGroup {
         [Parameter(Mandatory = $false)]
         [switch]$ExportToExcel,
 
+        [Parameter(Mandatory = $false, HelpMessage = 'Optional output directory for the Excel export (defaults to the user profile).')]
+        [string]$ExportPath,
+
         [Parameter(Mandatory = $false)]
         [switch]$ExportToHtml
     )
@@ -172,7 +175,7 @@ function Get-NestedGroup {
     if ($ExportToExcel.IsPresent) {
         Write-Verbose 'Preparing Excel export...'
         $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
-        $excelFilePath = "$($env:USERPROFILE)\$now-NestedGroups.xlsx"
+        $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-NestedGroups.xlsx"
         Write-Verbose "Excel file path: $excelFilePath"
         Write-Host -ForegroundColor Cyan "Exporting nested groups to Excel file: $excelFilePath"
         $dependencies | Sort-Object ParentGroup, MemberGroup | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'NestedGroups'
@@ -181,7 +184,7 @@ function Get-NestedGroup {
     elseif ($ExportToHtml.IsPresent) {
         Write-Verbose 'Preparing HTML graph export...'
         $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
-        $htmlFilePath = "$($env:USERPROFILE)\$now-NestedGroups.html"
+        $htmlFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-NestedGroups.html"
         $generatedDate = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
         $relCount = $dependencies.Count
 

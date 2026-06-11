@@ -33,7 +33,10 @@ function Get-EntraIDHybridJoinComputerInfo {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $false)]
-        [switch]$ExportToExcel
+        [switch]$ExportToExcel,
+
+        [Parameter(Mandatory = $false, HelpMessage = 'Optional output directory for the Excel export (defaults to the user profile).')]
+        [string]$ExportPath
     )
     
     # Initialize results collection
@@ -295,7 +298,7 @@ function Get-EntraIDHybridJoinComputerInfo {
 
         Write-Verbose 'Preparing Excel export...'
         $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
-        $excelFilePath = "$($env:userprofile)\$now-EntraIDHybridJoinInfo.xlsx"
+        $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-EntraIDHybridJoinInfo.xlsx"
         Write-Verbose "Excel file path: $excelFilePath"
 
         $workbook = @{}

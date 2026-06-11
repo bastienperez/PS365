@@ -139,6 +139,9 @@ function Get-MgApplicationSAML {
         [Parameter(Mandatory = $false)]
         [switch]$ExportToExcel,
 
+        [Parameter(Mandatory = $false, HelpMessage = 'Optional output directory for the Excel export (defaults to the user profile).')]
+        [string]$ExportPath,
+
         [Parameter(Mandatory = $false)]
         [switch]$RunFromAzureAutomation,
 
@@ -771,7 +774,7 @@ function Get-MgApplicationSAML {
 
     if ($ExportToExcel.IsPresent) {
         $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
-        $excelFilePath = "$($env:userprofile)\$now-MgApplicationSAML.xlsx"
+        $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-MgApplicationSAML.xlsx"
         Write-Host -ForegroundColor Cyan "Exporting SAML applications to Excel file: $excelFilePath"
         $samlApplicationsArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'EntraSAMLApplications'
         Write-Host -ForegroundColor Green 'Export completed successfully!'

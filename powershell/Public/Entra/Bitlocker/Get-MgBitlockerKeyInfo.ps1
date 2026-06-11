@@ -119,6 +119,9 @@ function Get-MgBitlockerKeyInfo {
         
         [Parameter(HelpMessage = 'Export results to Excel file in user profile directory')]
         [switch]$ExportToExcel,
+
+        [Parameter(Mandatory = $false, HelpMessage = 'Optional output directory for the Excel export (defaults to the user profile).')]
+        [string]$ExportPath,
         
         [Parameter(HelpMessage = 'Show BitLocker recovery keys in plain text (/!\ SECURITY RISK: Use with caution!)')]
         [switch]$ShowKeyInPlainText,
@@ -572,7 +575,7 @@ function Get-MgBitlockerKeyInfo {
     if ($PSBoundParameters['ExportToExcel']) {
         try {
             $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
-            $excelFilePath = "$($env:userprofile)\${now}_BitLockerKeys_Report.xlsx"
+            $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\${now}_BitLockerKeys_Report.xlsx"
             Write-Host -ForegroundColor Cyan "Exporting BitLocker keys report to Excel file: $excelFilePath"
             
             if ($PSBoundParameters['IncludeDeviceInfo']) {

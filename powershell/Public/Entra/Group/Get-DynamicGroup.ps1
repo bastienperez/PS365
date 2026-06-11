@@ -123,6 +123,9 @@ function Get-DynamicGroup {
         [Parameter(Mandatory = $false)]
         [switch]$ExportToExcel,
 
+        [Parameter(Mandatory = $false, HelpMessage = 'Optional output directory for the Excel export (defaults to the user profile).')]
+        [string]$ExportPath,
+
         [Parameter(Mandatory = $false)]
         [switch]$IncludeMembers,
 
@@ -506,7 +509,7 @@ function Get-DynamicGroup {
     if ($ExportToExcel.IsPresent) {
         Write-Verbose 'Preparing Excel export...'
         $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
-        $excelFilePath = "$($env:userprofile)\$now-DynamicGroups.xlsx"
+        $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-DynamicGroups.xlsx"
         Write-Verbose "Excel file path: $excelFilePath"
         Write-Host -ForegroundColor Cyan "Exporting dynamic groups to Excel file: $excelFilePath"
 

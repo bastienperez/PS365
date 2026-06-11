@@ -49,7 +49,10 @@ function Get-ExMailboxFromAttribute {
         [string[]]$CheckAttributes,
 
         [Parameter(Mandatory = $false)]
-        [switch]$ExportToExcel
+        [switch]$ExportToExcel,
+
+        [Parameter(Mandatory = $false, HelpMessage = 'Optional output directory for the Excel export (defaults to the user profile).')]
+        [string]$ExportPath
     )
 
     [System.Collections.Generic.List[PSCustomObject]] $mailboxesFound = @()
@@ -85,7 +88,7 @@ function Get-ExMailboxFromAttribute {
 
     if ($ExportToExcel.IsPresent) {
         $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
-        $excelFilePath = "$($env:userprofile)\$now-ExMailboxFromAttribute.xlsx"
+        $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-ExMailboxFromAttribute.xlsx"
         Write-Host -ForegroundColor Cyan "Exporting to Excel file: $excelFilePath"
         $mailboxesFound | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'ExMailboxFromAttribute'
         Write-Host -ForegroundColor Green 'Export completed successfully!'

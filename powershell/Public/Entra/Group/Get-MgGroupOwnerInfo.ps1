@@ -62,7 +62,10 @@ function Get-MgGroupOwnerInfo {
         [string]$DisplayName,
 
         [Parameter(Mandatory = $false)]
-        [switch]$ExportToExcel
+        [switch]$ExportToExcel,
+
+        [Parameter(Mandatory = $false, HelpMessage = 'Optional output directory for the Excel export (defaults to the user profile).')]
+        [string]$ExportPath
     )
 
 
@@ -173,7 +176,7 @@ function Get-MgGroupOwnerInfo {
     # Export to Excel if requested
     if ($ExportToExcel.IsPresent) {
         $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
-        $excelFilePath = "$($env:userprofile)\$now-MgGroupOwnerInfo_Report.xlsx"
+        $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-MgGroupOwnerInfo_Report.xlsx"
         Write-Host -ForegroundColor Cyan "Exporting to Excel file: $excelFilePath"
         $results | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'Entra-GroupOwners'
     }

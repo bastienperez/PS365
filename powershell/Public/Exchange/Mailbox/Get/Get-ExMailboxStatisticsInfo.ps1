@@ -54,7 +54,10 @@ function Get-ExMailboxStatisticsInfo {
 		[switch]$IncludeFolderDetails,
 
 		[Parameter(Mandatory = $false)]
-		[switch]$ExportToExcel
+		[switch]$ExportToExcel,
+
+		[Parameter(Mandatory = $false, HelpMessage = 'Optional output directory for the Excel export (defaults to the user profile).')]
+		[string]$ExportPath
 	)
 
 	begin {
@@ -153,7 +156,7 @@ function Get-ExMailboxStatisticsInfo {
 
 		if ($ExportToExcel.IsPresent) {
 			$now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
-			$excelFilePath = "$($env:userprofile)\$now-ExMailboxStatisticsInfo.xlsx"
+			$excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-ExMailboxStatisticsInfo.xlsx"
 			Write-Host -ForegroundColor Cyan "Exporting to Excel file: $excelFilePath"
 			$resultsArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'ExMailboxStatisticsInfo'
 			Write-Host -ForegroundColor Green 'Export completed successfully!'

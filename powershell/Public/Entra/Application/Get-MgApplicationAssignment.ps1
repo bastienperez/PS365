@@ -104,6 +104,9 @@ function Get-MgApplicationAssignment {
         [Parameter(Mandatory = $false)]
         [switch]$ExportToExcel,
 
+        [Parameter(Mandatory = $false, HelpMessage = 'Optional output directory for the Excel export (defaults to the user profile).')]
+        [string]$ExportPath,
+
         [Parameter(Mandatory = $false)]
         [switch]$DisableParallel,
 
@@ -455,7 +458,7 @@ function Get-MgApplicationAssignment {
     
     if ($ExportToExcel.IsPresent) {
         $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
-        $excelFilePath = "$($env:userprofile)\$now-MgApplicationAssignment.xlsx"
+        $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-MgApplicationAssignment.xlsx"
         Write-Host -ForegroundColor Cyan "Exporting application assignments to Excel file: $excelFilePath"
         $applicationAssignmentsArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'EntraApplicationAssignments'
         Write-Host -ForegroundColor Green 'Export completed successfully!'

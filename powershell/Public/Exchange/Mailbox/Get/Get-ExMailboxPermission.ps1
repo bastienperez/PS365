@@ -61,7 +61,10 @@ function Get-ExMailboxPermission {
         [string]$UserPermission,
 
         [Parameter(Mandatory = $false)]
-        [switch]$ExportToExcel
+        [switch]$ExportToExcel,
+
+        [Parameter(Mandatory = $false, HelpMessage = 'Optional output directory for the Excel export (defaults to the user profile).')]
+        [string]$ExportPath
     )
 
     [System.Collections.Generic.List[PSCustomObject]] $allPermissions = @()
@@ -199,7 +202,7 @@ function Get-ExMailboxPermission {
         if ($ExportToExcel.IsPresent) {
             $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
             $filenameSuffix = if ($UserPermission) { "User-$($UserPermission -replace '[<>:"/\\|?*]', '_')" } elseif ($ByDomain) { "Domain-$($ByDomain -replace '[<>:"/\\|?*]', '_')" } elseif ($Identity) { $Identity -replace '[<>:"/\\|?*]', '_' } else { 'AllMailboxes' }
-            $excelFilePath = "$($env:userprofile)\$now-ExMailboxPermissions-$filenameSuffix.xlsx"
+            $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-ExMailboxPermissions-$filenameSuffix.xlsx"
             Write-Host -ForegroundColor Cyan "Exporting mailbox permissions to Excel file: $excelFilePath"
             $allPermissions | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'ExchangeMailboxPermissions'
             Write-Host -ForegroundColor Green 'Export completed successfully!'
