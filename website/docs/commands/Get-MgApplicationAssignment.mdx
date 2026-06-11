@@ -12,30 +12,32 @@ Retrieves all Entra ID applications and their assignment types.
 
 ```powershell
 Get-MgApplicationAssignment [-AllApplications] [-AssignmentNotEnforced] [-AssignmentEmpty] [-ExportToExcel]
- [-DisableParallel] [-ThrottleLimit <Int32>] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+ [-ExportPath <String>] [-DisableParallel] [-ThrottleLimit <Int32>] [-ProgressAction <ActionPreference>]
+ [<CommonParameters>]
 ```
 
 ### ByApplicationId
 
 ```powershell
 Get-MgApplicationAssignment [[-ApplicationId] <String[]>] [-AssignmentNotEnforced] [-AssignmentEmpty]
- [-ExportToExcel] [-DisableParallel] [-ThrottleLimit <Int32>] [-ProgressAction <ActionPreference>]
- [<CommonParameters>]
+ [-ExportToExcel] [-ExportPath <String>] [-DisableParallel] [-ThrottleLimit <Int32>]
+ [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ### ByObjectId
 
 ```powershell
 Get-MgApplicationAssignment [-ObjectID <String>] [-AssignmentNotEnforced] [-AssignmentEmpty] [-ExportToExcel]
- [-DisableParallel] [-ThrottleLimit <Int32>] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+ [-ExportPath <String>] [-DisableParallel] [-ThrottleLimit <Int32>] [-ProgressAction <ActionPreference>]
+ [<CommonParameters>]
 ```
 
 ### ByDisplayName
 
 ```powershell
 Get-MgApplicationAssignment [-DisplayName <String>] [-AssignmentNotEnforced] [-AssignmentEmpty]
- [-ExportToExcel] [-DisableParallel] [-ThrottleLimit <Int32>] [-ProgressAction <ActionPreference>]
- [<CommonParameters>]
+ [-ExportToExcel] [-ExportPath <String>] [-DisableParallel] [-ThrottleLimit <Int32>]
+ [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -131,7 +133,7 @@ Cannot be combined with -ApplicationId or -DisplayName.
 ```yaml
 Type: String
 Parameter Sets: ByObjectId
-Aliases:
+Aliases: Identity
 
 Required: False
 Position: Named
@@ -220,6 +222,22 @@ Aliases:
 Required: False
 Position: Named
 Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ExportPath
+
+Optional output directory for the Excel export (defaults to the user profile).
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

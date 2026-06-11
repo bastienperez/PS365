@@ -10,7 +10,8 @@ Get mailbox forwarding configuration
 
 ```powershell
 Get-ExMailboxForwarding [[-Identity] <String[]>] [-ForwardingAndForwardingSMTPOnly] [-InboxRulesOnly]
- [-ExportToExcel] [-ExchangeOnPremise] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+ [-ExportToExcel] [-ExportPath <String>] [-ExchangeOnPremise] [-ProgressAction <ActionPreference>]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -55,8 +56,9 @@ Returns only mailboxes with inbox rules that forward emails.
 
 ```powershell
 Get-ExMailboxForwarding -ExportToExcel
-Exports results to an Excel file.
 ```
+
+Exports results to an Excel file.
 
 ## PARAMETERS
 
@@ -120,6 +122,22 @@ Aliases:
 Required: False
 Position: Named
 Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ExportPath
+
+Optional output directory for the Excel export (defaults to the user profile).
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

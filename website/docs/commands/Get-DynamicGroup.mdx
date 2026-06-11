@@ -9,8 +9,9 @@ Retrieves dynamic groups from Microsoft 365, Exchange Online, and Entra ID with 
 ## SYNTAX
 
 ```powershell
-Get-DynamicGroup [[-GroupId] <String>] [-ExchangeOnlineOnly] [-EntraIDOnly] [-ExportToExcel] [-IncludeMembers]
- [-MemberReport] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+Get-DynamicGroup [[-GroupId] <String>] [-ExchangeOnlineOnly] [-EntraIDOnly] [-ExportToExcel]
+ [-ExportPath <String>] [-IncludeMembers] [-MemberReport] [-ProgressAction <ActionPreference>]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -144,6 +145,22 @@ Aliases:
 Required: False
 Position: Named
 Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ExportPath
+
+Optional output directory for the Excel export (defaults to the user profile).
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

@@ -1,0 +1,60 @@
+---
+Module Name: PS365
+---
+
+## SYNOPSIS
+
+Escapes a value for safe use inside an OData filter string literal.
+
+## SYNTAX
+
+```powershell
+ConvertTo-ODataEscapedString [-Value] <String> [-ProgressAction <ActionPreference>] [<CommonParameters>]
+```
+
+## DESCRIPTION
+
+Doubles single quotes per the OData specification so that a value containing
+an apostrophe cannot break out of a '...' literal in a Graph -Filter
+expression (which would break the query or, worse, alter the filter).
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+$escaped = ConvertTo-ODataEscapedString -Value $DeviceName
+Get-MgDevice -Filter "displayName eq '$escaped'"
+```
+
+## PARAMETERS
+
+### -Value
+
+The raw string value to escape.
+Empty strings are allowed.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+### System.String
+
+## NOTES
+
+## RELATED LINKS
