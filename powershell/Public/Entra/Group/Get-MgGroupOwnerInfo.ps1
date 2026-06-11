@@ -56,6 +56,7 @@ function Get-MgGroupOwnerInfo {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $false)]
+        [Alias('Identity')]
         [string]$GroupId,
 
         [Parameter(Mandatory = $false)]

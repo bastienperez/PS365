@@ -59,6 +59,7 @@ function Get-MgRegisteredApp {
         [string]$ApplicationID,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'ByObjectId')]
+        [Alias('Identity')]
         [string]$ObjectID,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'ByDisplayName')]

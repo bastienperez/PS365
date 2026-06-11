@@ -109,6 +109,7 @@ function Get-MgApplicationCredential {
     [CmdletBinding(DefaultParameterSetName = 'All')]
     param (
         [Parameter(Mandatory = $false, ParameterSetName = 'ByObjectId')]
+        [Alias('Identity')]
         [string]$ObjectID,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'ByDisplayName')]

@@ -87,6 +87,7 @@ function Get-MgApplicationAssignment {
         [String[]]$ApplicationId,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'ByObjectId')]
+        [Alias('Identity')]
         [string]$ObjectID,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'ByDisplayName')]

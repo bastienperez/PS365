@@ -95,6 +95,7 @@ function Get-MgUserPasswordInfo {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $false, Position = 0)]
+        [Alias('Identity')]
         [string[]]$UserPrincipalName,
 
         [Parameter(Mandatory = $false)]

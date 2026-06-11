@@ -278,11 +278,15 @@ function Search-UnifiedAuditLogCustom {
     $chunkSpan = New-TimeSpan -Days $ChunkDays
     $cursor    = $StartDate
     $chunkIdx  = 0
+    $totalSeconds = [math]::Max(1, ($EndDate - $StartDate).TotalSeconds)
 
     while ($cursor -lt $EndDate -and $auditLogs.Count -lt $ResultSize) {
         $chunkIdx++
         $chunkEnd = $cursor + $chunkSpan
         if ($chunkEnd -gt $EndDate) { $chunkEnd = $EndDate }
+
+        $percent = [math]::Min(100, [math]::Max(0, [int]((($cursor - $StartDate).TotalSeconds / $totalSeconds) * 100)))
+        Write-Progress -Activity 'Searching Unified Audit Log' -Status "Window $($cursor.ToString('yyyy-MM-dd')) -> $($chunkEnd.ToString('yyyy-MM-dd')) | $($auditLogs.Count)/$ResultSize records" -PercentComplete $percent
 
         Write-Verbose "Chunk $chunkIdx : $($cursor.ToString('yyyy-MM-dd HH:mm')) -> $($chunkEnd.ToString('yyyy-MM-dd HH:mm'))"
 
@@ -317,6 +321,8 @@ function Search-UnifiedAuditLogCustom {
         # Advance the cursor by one second past chunkEnd to avoid re-fetching the boundary record.
         $cursor = $chunkEnd.AddSeconds(1)
     }
+
+    Write-Progress -Activity 'Searching Unified Audit Log' -Completed
 
     if ($auditLogs.Count -eq 0) {
         Write-Warning 'Search-UnifiedAuditLog returned no records for the specified filters and time window.'
