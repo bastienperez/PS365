@@ -120,16 +120,24 @@ function Get-MgApplicationAssignment {
     # Get all service principals (enterprise applications)
     switch ($PSCmdlet.ParameterSetName) {
         'ByApplicationId' {
+            # Resolve all AppIds in a single filtered query (was N+1: one
+            # Get-MgServicePrincipal call per AppId).
             $servicePrincipals = @()
-            foreach ($appId in $ApplicationId) {
+            if ($ApplicationId.Count -gt 0) {
+                $filterParts = $ApplicationId | ForEach-Object { "AppId eq '$(ConvertTo-ODataEscapedString -Value $_)'" }
+                $filter = $filterParts -join ' or '
                 try {
-                    $sp = Get-MgServicePrincipal -Filter "AppId eq '$(ConvertTo-ODataEscapedString -Value $appId)'" -Property $spProperty -ErrorAction Stop
-                    if ($sp) {
-                        $servicePrincipals += $sp
-                    }
+                    $servicePrincipals = @(Get-MgServicePrincipal -Filter $filter -Property $spProperty -All -ErrorAction Stop)
                 }
                 catch {
-                    Write-Warning "Could not find application with ID: $appId"
+                    Write-Warning "Could not retrieve service principals: $($_.Exception.Message)"
+                }
+
+                $foundAppIds = $servicePrincipals.AppId
+                foreach ($appId in $ApplicationId) {
+                    if ($appId -notin $foundAppIds) {
+                        Write-Warning "Could not find application with ID: $appId"
+                    }
                 }
             }
         }

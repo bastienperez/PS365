@@ -1184,10 +1184,10 @@ function Invoke-SearchUnifiedAuditLogCustomHelperGUI {
         [void][int]::TryParse($resultSizeBox.Text, [ref]$sizeValue)
         if ($sizeValue -lt 1) { $sizeValue = 1 }
 
-        $selectedOperations = @()
+        [System.Collections.Generic.List[string]]$selectedOperations = @()
         foreach ($selectedDisplay in $selectedOperationsListBox.Items) {
             if ($operationLookupByDisplay.ContainsKey([string]$selectedDisplay)) {
-                $selectedOperations += $operationLookupByDisplay[[string]$selectedDisplay]
+                $selectedOperations.Add($operationLookupByDisplay[[string]$selectedDisplay])
             }
         }
 
@@ -1460,10 +1460,10 @@ function Invoke-SearchUnifiedAuditLogCustomHelperGUI {
             [void][int]::TryParse($resultSizeBox.Text, [ref]$sizeValue)
             if ($sizeValue -lt 1) { $sizeValue = 1 }
 
-            $selectedOperations = @()
+            [System.Collections.Generic.List[string]]$selectedOperations = @()
             foreach ($selectedDisplay in $selectedOperationsListBox.Items) {
                 if ($operationLookupByDisplay.ContainsKey([string]$selectedDisplay)) {
-                    $selectedOperations += $operationLookupByDisplay[[string]$selectedDisplay]
+                    $selectedOperations.Add($operationLookupByDisplay[[string]$selectedDisplay])
                 }
             }
 

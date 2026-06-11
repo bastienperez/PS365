@@ -253,7 +253,7 @@ function Set-ExMailboxProtocol {
         return 1
     }
 
-    $commands = @()
+    [System.Collections.Generic.List[string]]$commands = @()
     $totalCount = @($Mailboxes).Count
     $currentCount = 0
 
@@ -293,7 +293,7 @@ function Set-ExMailboxProtocol {
                     "-$($_.Key) $value"
                 }) -join ' '
         
-            $commands += $command
+            $commands.Add($command)
         }
         else {
             if ($PSCmdlet.ShouldProcess($casMailbox.PrimarySmtpAddress, 'Set EXO Mailbox Protocols')) {
