@@ -59,6 +59,7 @@ PS365/
 1. Create a `.ps1` file under the appropriate `Public/<Service>/` subfolder.
 2. Add the function name to `FunctionsToExport` in `PS365.psd1`.
 3. Bump `ModuleVersion` in `PS365.psd1`.
+4. If the function calls Microsoft Graph, add the mandatory permission check (see "Graph Permission Check Pattern" below).
 
 The loader (`PS365.psm1`) automatically dot-sources every `.ps1` file — no registration needed.
 
@@ -209,6 +210,36 @@ if (-not $isConnected) {
     $null = Connect-MgGraph -Scopes $permissionsNeeded -NoWelcome
 }
 ```
+
+## Graph Permission Check Pattern (MANDATORY)
+
+Every function (new or modified) that calls Microsoft Graph (`Get-Mg*`, `New-Mg*`, `Set-Mg*`, `Update-Mg*`, `Remove-Mg*`, `Invoke-MgGraphRequest`) MUST verify the token scopes with the private helper `Test-MgGraphPermission` before its first Graph call. The check is blocking: on failure it writes an actionable warning (with the exact `Connect-MgGraph -Scopes` command) and the function returns. No bypass switch - do NOT add a `-NoPermissionCheck` / `-SkipPermissionCheck` parameter.
+
+```powershell
+$requiredScopes = @('Group.Read.All')   # scopes actually needed by the Graph calls below
+if (-not (Test-MgGraphPermission -RequiredScopes $requiredScopes -CallerName $MyInvocation.MyCommand.Name)) {
+    return
+}
+```
+
+Rules:
+- Place the check after early parameter validation and before the first Graph call. In `begin/process/end` functions, put it in `begin`.
+- If the function already builds a scopes variable for `Connect-MgGraph` (e.g. `$permissionsNeeded`), reuse it and place the check AFTER the variable is fully built (including conditional `+=` additions). Do not maintain two scope lists.
+- If the function has a `-RunFromAzureAutomation` switch, skip the check in that mode (Managed Identity uses fixed app-registration scopes, and `Private/` helpers are unavailable when the script is deployed standalone in a runbook):
+
+```powershell
+if (-not $RunFromAzureAutomation.IsPresent) {
+    if (-not (Test-MgGraphPermission -RequiredScopes $requiredScopes -CallerName $MyInvocation.MyCommand.Name)) {
+        return
+    }
+}
+```
+
+- Request least-privilege scopes: prefer `ReadBasic` over `Read` over `ReadWrite` when the actual Graph calls allow it, computing the scope dynamically from parameters when relevant (see `Get-MgBitlockerKeyInfo` / `Get-MgLAPSPassword`).
+- `Test-MgGraphPermission` already accepts a stronger granted scope for a weaker requirement (`ReadBasic` < `Read` < `ReadWrite`): list only the minimal scopes, never add the stronger variants "just in case".
+- When the Graph endpoint accepts several unrelated permissions (as listed in the Microsoft Graph docs), declare them as alternatives in a single entry separated by `|`: any one of them satisfies the requirement (e.g. `@('Policy.Read.All|Policy.ReadWrite.MobilityManagement')`).
+- If some code paths perform no Graph call at all (e.g. an Exchange Online only mode), skip the check for those paths.
+- Wrapper functions that only orchestrate other PS365 functions do not need their own check: the inner functions perform it.
 
 ## Error Handling Patterns
 

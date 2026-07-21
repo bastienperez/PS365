@@ -116,6 +116,11 @@ function Get-MgApplicationAssignment {
         [int]$ThrottleLimit = 5
     )
 
+    $requiredScopes = @('Application.Read.All', 'User.Read.All', 'Group.Read.All')
+    if (-not (Test-MgGraphPermission -RequiredScopes $requiredScopes -CallerName $MyInvocation.MyCommand.Name)) {
+        return
+    }
+
     # Run in parallel by default on PowerShell 7+ (ForEach-Object -Parallel); always sequential on PowerShell 5.1.
     $useParallel = ($PSVersionTable.PSVersion.Major -ge 7) -and -not $DisableParallel
 

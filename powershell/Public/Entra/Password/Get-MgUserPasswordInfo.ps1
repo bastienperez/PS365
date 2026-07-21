@@ -58,7 +58,7 @@
     .NOTES
     Ensure you have the necessary permissions and modules installed to run this script, such as the Microsoft Graph PowerShell module.
     The script assumes that the necessary authentication to Microsoft Graph has already been handled with the Connect-MgGraph function.
-    Connect-MgGraph -Scopes 'User.Read.All', 'Domain.Read.All', 'OnPremDirectorySynchronization.Read.All'
+    Connect-MgGraph -Scopes 'User.Read.All', 'Domain.Read.All', 'OnPremDirectorySynchronization.Read.All', 'AuditLog.Read.All'
 
     Password policies for *cloud-only* users:
     IF `PasswordPolicies` is 'DisablePasswordExpiration':
@@ -186,9 +186,16 @@ function Get-MgUserPasswordInfo {
         return $domainPasswordPolicies
     }
 
+    # AuditLog.Read.All is required because SignInActivity is part of the requested user properties
+    $requiredScopes = @('User.Read.All', 'Domain.Read.All', 'OnPremDirectorySynchronization.Read.All', 'AuditLog.Read.All')
+
     if (-not (Get-MgContext)) {
         Write-Host -ForegroundColor Cyan 'Connecting to Microsoft Graph'
-        Connect-MgGraph -Scopes 'User.Read.All', 'Domain.Read.All', 'OnPremDirectorySynchronization.Read.All' -NoWelcome
+        Connect-MgGraph -Scopes $requiredScopes -NoWelcome
+    }
+
+    if (-not (Test-MgGraphPermission -RequiredScopes $requiredScopes -CallerName $MyInvocation.MyCommand.Name)) {
+        return
     }
 
     # Get tenant-level password policy for synced users

@@ -183,8 +183,15 @@ function Get-MgBitlockerKeyInfo {
     }
 
     # Determine the required scopes, based on the parameters passed to the script
+    # BitLockerKey.ReadBasic.All is enough for metadata; BitLockerKey.Read.All is only needed when the key is read in plain text
     # Device.Read.All is always required since Get-MgDevice is always called
-    $requiredScopes = [System.Collections.Generic.List[string]]@('BitLockerKey.Read.All', 'Device.Read.All')
+    $bitlockerScope = if ($PSBoundParameters['ShowKeyInPlainText'] -or $PSBoundParameters['BackupToKeyVault']) {
+        'BitLockerKey.Read.All'
+    }
+    else {
+        'BitLockerKey.ReadBasic.All'
+    }
+    $requiredScopes = [System.Collections.Generic.List[string]]@($bitlockerScope, 'Device.Read.All')
     if ($PSBoundParameters['IncludeDeviceOwner']) { $requiredScopes.Add('User.ReadBasic.All') }
 
     Write-Verbose 'Importing required PowerShell modules...'
@@ -220,23 +227,14 @@ function Get-MgBitlockerKeyInfo {
         }
     }
 
-    # Verify we have all required permissions
-    Write-Verbose 'Verifying Microsoft Graph permissions...'
-    try {
-        $currentScopes = (Get-MgContext).Scopes
-        $missingScopes = $requiredScopes | Where-Object { $_ -notin $currentScopes }
-        
-        if ($missingScopes) {
-            $missingScopesString = $missingScopes -join ', '
-            Write-Error "Missing required Microsoft Graph permissions: $missingScopesString. Please rerun the script and consent to the missing scopes." -ErrorAction Stop
+    # Skip scope check in Azure Automation: Managed Identity uses fixed app-registration scopes,
+    # and Test-MgGraphPermission lives in Private/ which isn't available when the script is deployed standalone in a runbook.
+    if (-not $RunFromAzureAutomation.IsPresent) {
+        if (-not (Test-MgGraphPermission -RequiredScopes $requiredScopes -CallerName $MyInvocation.MyCommand.Name)) {
+            return
         }
-        
-        Write-Verbose 'All required permissions are available'
     }
-    catch {
-        Write-Error "Failed to verify permissions: $($_.Exception.Message)" -ErrorAction Stop
-    }
-    
+
     # Setup Azure Key Vault connection if backup is requested
     if ($PSBoundParameters['KeyVaultName']) {
         Write-Verbose 'Setting up Azure Key Vault connection for BitLocker keys backup...'

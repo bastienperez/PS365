@@ -209,16 +209,30 @@ function Get-MgApplicationSCIM {
         }
     }
 
+    $permissionsNeeded = [System.Collections.Generic.List[string]]@('Application.Read.All', 'Synchronization.Read.All')
+    if ($RunFromAzureAutomation.IsPresent) {
+        $permissionsNeeded.Add('Mail.Send')
+    }
+    if ($IncludeFailedObjects.IsPresent) {
+        $permissionsNeeded.Add('AuditLog.Read.All')
+    }
+
     if (-not (Get-MgContext -ErrorAction SilentlyContinue)) {
         if ($RunFromAzureAutomation.IsPresent) {
             Write-Verbose 'Connecting to Microsoft Graph using Managed Identity'
             $null = Connect-MgGraph -Identity -NoWelcome
         }
         else {
-            $scopes = @('Directory.Read.All')
-            if ($IncludeFailedObjects) { $scopes += 'AuditLog.Read.All' }
-            Write-Verbose "Connecting to Microsoft Graph. Scopes: $($scopes -join ',')"
-            $null = Connect-MgGraph -Scopes $scopes -NoWelcome
+            Write-Verbose "Connecting to Microsoft Graph. Scopes: $($permissionsNeeded -join ',')"
+            $null = Connect-MgGraph -Scopes $permissionsNeeded -NoWelcome
+        }
+    }
+
+    # Skip scope check in Azure Automation: Managed Identity uses fixed app-registration scopes,
+    # and Test-MgGraphPermission lives in Private/ which isn't available when the script is deployed standalone in a runbook.
+    if (-not $RunFromAzureAutomation.IsPresent) {
+        if (-not (Test-MgGraphPermission -RequiredScopes $permissionsNeeded -CallerName $MyInvocation.MyCommand.Name)) {
+            return
         }
     }
 

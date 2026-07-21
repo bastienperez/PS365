@@ -69,6 +69,11 @@ function Get-MgGroupOwnerInfo {
         [string]$ExportPath
     )
 
+    # User.Read.All is required to read the owner properties (displayName, userPrincipalName, mail)
+    $requiredScopes = @('Group.Read.All', 'User.Read.All')
+    if (-not (Test-MgGraphPermission -RequiredScopes $requiredScopes -CallerName $MyInvocation.MyCommand.Name)) {
+        return
+    }
 
     [System.Collections.Generic.List[PSCustomObject]]$results = @()
     $headers = @{ ConsistencyLevel = 'eventual' }

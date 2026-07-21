@@ -26,6 +26,11 @@
 
 function New-IntuneEnrollmentServicePrincipal {
 
+    $requiredScopes = @('Application.ReadWrite.All')
+    if (-not (Test-MgGraphPermission -RequiredScopes $requiredScopes -CallerName $MyInvocation.MyCommand.Name)) {
+        return
+    }
+
     $intuneEnrollmentAppExists = [bool](Invoke-MgGraphRequest -Method GET -Uri $intuneEnrollmentAppUri -ContentType 'PSObject' -OutputType PSObject).value.Count -gt 0
 
     if (-not $intuneEnrollmentAppExists) {

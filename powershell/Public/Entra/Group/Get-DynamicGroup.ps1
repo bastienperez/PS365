@@ -133,6 +133,14 @@ function Get-DynamicGroup {
         [switch]$MemberReport
     )
 
+    # The Exchange Online only mode performs no Graph call, so no Graph scope is needed
+    if (-not $ExchangeOnlineOnly.IsPresent) {
+        $requiredScopes = @('Group.Read.All')
+        if (-not (Test-MgGraphPermission -RequiredScopes $requiredScopes -CallerName $MyInvocation.MyCommand.Name)) {
+            return
+        }
+    }
+
     if ($MemberReport.IsPresent) {
         Write-Verbose 'MemberReport mode: returning one row per (group, member). MembersCount/MembersName/MembersId columns are not produced.'
         [System.Collections.Generic.List[Object]]$memberReportArray = @()

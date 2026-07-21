@@ -95,6 +95,11 @@ function Find-M365Email {
         }
     }
 
+    $requiredScopes = @('User.Read.All')
+    if (-not (Test-MgGraphPermission -RequiredScopes $requiredScopes -CallerName $MyInvocation.MyCommand.Name)) {
+        return
+    }
+
     try {
         #Connect-MgGraph -Scopes 'User.Read.All' -NoWelcome
     }

@@ -66,6 +66,14 @@ function Compare-UserAttribute {
         [String]$Return
     )
 
+    # Microsoft Graph is only used when the source is EntraID
+    if ($Source -eq 'EntraID') {
+        $requiredScopes = @('User.Read.All')
+        if (-not (Test-MgGraphPermission -RequiredScopes $requiredScopes -CallerName $MyInvocation.MyCommand.Name)) {
+            return
+        }
+    }
+
     switch ($Source) {
         'AD' {
             if ($ByDomain) {

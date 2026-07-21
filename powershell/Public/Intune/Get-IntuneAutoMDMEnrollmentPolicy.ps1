@@ -39,6 +39,13 @@ function Get-IntuneAutoMDMEnrollmentPolicy {
         [switch]$AsObject
     )
 
+    # Policy.ReadWrite.MobilityManagement also grants read access to this endpoint
+    # (used when called internally by Set-IntuneAutoMDMEnrollmentPolicy)
+    $requiredScopes = @('Policy.Read.All|Policy.ReadWrite.MobilityManagement')
+    if (-not (Test-MgGraphPermission -RequiredScopes $requiredScopes -CallerName $MyInvocation.MyCommand.Name)) {
+        return
+    }
+
     try {
         $policyId = '0000000a-0000-0000-c000-000000000000'
         

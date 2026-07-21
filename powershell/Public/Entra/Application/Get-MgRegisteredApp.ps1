@@ -66,6 +66,11 @@ function Get-MgRegisteredApp {
         [string]$DisplayName
     )
 
+    $requiredScopes = @('Application.Read.All')
+    if (-not (Test-MgGraphPermission -RequiredScopes $requiredScopes -CallerName $MyInvocation.MyCommand.Name)) {
+        return
+    }
+
     [System.Collections.Generic.List[PSCustomObject]]$registeredAppsArray = @()
 
     # Determine how to search for the Application(s): by ApplicationID (AppId), by ObjectID (GUID), by DisplayName, or all

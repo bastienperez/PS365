@@ -58,6 +58,11 @@ function Get-EmptyGroup {
         [string]$ExportPath
     )
 
+    $requiredScopes = @('Group.Read.All')
+    if (-not (Test-MgGraphPermission -RequiredScopes $requiredScopes -CallerName $MyInvocation.MyCommand.Name)) {
+        return
+    }
+
     Write-Verbose 'Fetching all groups...'
 
     # Fetch all groups with pagination
