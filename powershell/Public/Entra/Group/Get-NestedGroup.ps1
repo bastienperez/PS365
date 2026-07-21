@@ -65,6 +65,11 @@ function Get-NestedGroup {
         [switch]$ExportToHtml
     )
 
+    $requiredScopes = @('Group.Read.All')
+    if (-not (Test-MgGraphPermission -RequiredScopes $requiredScopes -CallerName $MyInvocation.MyCommand.Name)) {
+        return
+    }
+
     # Ensure we have an active Graph session
     try {
         $null = Invoke-MgGraphRequest -Method GET -Uri 'https://graph.microsoft.com/v1.0/organization' -ErrorAction Stop

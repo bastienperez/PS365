@@ -133,7 +133,10 @@ function Get-MgLAPSPassword {
         Write-Warning '-IncludeHistory has no effect without -ShowPassword or -BackupToKeyVault.'
     }
 
-    $requiredScopes = @('DeviceLocalCredential.Read.All', 'Device.Read.All')
+    # Determine the required scopes, based on the parameters passed to the script
+    # DeviceLocalCredential.ReadBasic.All is enough for metadata; DeviceLocalCredential.Read.All is only needed when passwords are retrieved
+    $deviceLocalCredentialScope = if ($fetchPasswords) { 'DeviceLocalCredential.Read.All' } else { 'DeviceLocalCredential.ReadBasic.All' }
+    $requiredScopes = @($deviceLocalCredentialScope, 'Device.Read.All')
 
     # Version check for Azure Automation before connecting
     if ($RunFromAzureAutomation.IsPresent) {
@@ -156,6 +159,14 @@ function Get-MgLAPSPassword {
         else {
             Write-Verbose "Connecting to Microsoft Graph. Scopes: $($requiredScopes -join ',')"
             $null = Connect-MgGraph -Scopes $requiredScopes -NoWelcome
+        }
+    }
+
+    # Skip scope check in Azure Automation: Managed Identity uses fixed app-registration scopes,
+    # and Test-MgGraphPermission lives in Private/ which isn't available when the script is deployed standalone in a runbook.
+    if (-not $RunFromAzureAutomation.IsPresent) {
+        if (-not (Test-MgGraphPermission -RequiredScopes $requiredScopes -CallerName $MyInvocation.MyCommand.Name)) {
+            return
         }
     }
 

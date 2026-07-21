@@ -248,21 +248,18 @@ function Get-MgRoleReport {
         $isConnected = $false
     }
     
-    $scopes = (Get-MgContext).Scopes
-
     # Audit.Log.Read.All for sign-in activity
     # RoleManagement.Read.All for role assignment (PIM eligible and permanent)
     # Directory.Read.All for user and group and service principal information
     $permissionsNeeded = 'Directory.Read.All', 'RoleManagement.Read.All', 'AuditLog.Read.All'
-    foreach ($permission in $permissionsNeeded) {
-        if ($scopes -notcontains $permission) {
-            Write-Verbose "You need to have the $permission permission in the current token, disconnect to force getting a new token with the right permissions"
-        }
-    }
 
     if (-not $isConnected) {
         Write-Verbose "Connecting to Microsoft Graph. Scopes: $permissionsNeeded"
         $null = Connect-MgGraph -Scopes $permissionsNeeded -NoWelcome
+    }
+
+    if (-not (Test-MgGraphPermission -RequiredScopes $permissionsNeeded -CallerName $MyInvocation.MyCommand.Name)) {
+        return
     }
 
     Write-Verbose 'Collecting  roles with assignments...'

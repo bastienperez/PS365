@@ -26,6 +26,11 @@
 
 function New-IntuneEnrollmentServicePrincipal {
 
+    $requiredScopes = @('Application.ReadWrite.All')
+    if (-not (Test-MgGraphPermission -RequiredScopes $requiredScopes -CallerName $MyInvocation.MyCommand.Name)) {
+        return
+    }
+
     $intuneEnrollmentAppUri = "https://graph.microsoft.com/v1.0/servicePrincipals?`$filter=appId eq 'd4ebce55-015a-49b5-a083-c84d1797ae8c'"
     $intuneEnrollmentApp = Invoke-MgGraphRequest -Method GET -Uri $intuneEnrollmentAppUri -OutputType PSObject
     $intuneEnrollmentAppExists = $intuneEnrollmentApp.value.Count -gt 0

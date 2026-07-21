@@ -38,6 +38,11 @@ function Set-IntuneAutoMDMEnrollmentPolicy {
         [string]$State
     )
 
+    $requiredScopes = @('Policy.ReadWrite.MobilityManagement')
+    if (-not (Test-MgGraphPermission -RequiredScopes $requiredScopes -CallerName $MyInvocation.MyCommand.Name)) {
+        return
+    }
+
     try {
         # Convert State to the correct boolean value for the API
         # Enabled means isMdmEnrollmentDuringRegistrationDisabled = false

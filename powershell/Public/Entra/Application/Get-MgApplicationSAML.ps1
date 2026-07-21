@@ -218,20 +218,12 @@ function Get-MgApplicationSAML {
         $isConnected = $false
     }
 
-    $scopes = (Get-MgContext).Scopes
-
     $permissionsNeeded = @('Application.Read.All')
     if ($RunFromAzureAutomation.IsPresent) {
         $permissionsNeeded += 'Mail.Send'
     }
     if ($IncludeSignInStats.IsPresent) {
         $permissionsNeeded += 'AuditLog.Read.All'
-    }
-
-    $permissionMissing = $permissionsNeeded | Where-Object { $_ -notin $scopes }
-
-    if ($permissionMissing) {
-        Write-Verbose "You need to have the $($permissionsNeeded -join ',') permission in the current token, disconnect to force getting a new token with the right permissions"
     }
 
     # Version check for Azure Automation before connecting
@@ -254,6 +246,14 @@ function Get-MgApplicationSAML {
         else {
             Write-Verbose "Connecting to Microsoft Graph. Scopes: $($permissionsNeeded -join ',')"
             $null = Connect-MgGraph -Scopes $permissionsNeeded -NoWelcome
+        }
+    }
+
+    # Skip scope check in Azure Automation: Managed Identity uses fixed app-registration scopes,
+    # and Test-MgGraphPermission lives in Private/ which isn't available when the script is deployed standalone in a runbook.
+    if (-not $RunFromAzureAutomation.IsPresent) {
+        if (-not (Test-MgGraphPermission -RequiredScopes $permissionsNeeded -CallerName $MyInvocation.MyCommand.Name)) {
+            return
         }
     }
 

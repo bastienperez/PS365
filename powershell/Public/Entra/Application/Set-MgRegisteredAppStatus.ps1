@@ -52,6 +52,11 @@ function Set-MgRegisteredAppStatus {
         [switch]$GenerateCmdlets
     )
 
+    $requiredScopes = @('Application.ReadWrite.All')
+    if (-not (Test-MgGraphPermission -RequiredScopes $requiredScopes -CallerName $MyInvocation.MyCommand.Name)) {
+        return
+    }
+
     if ($PSCmdlet.ParameterSetName -eq 'ByApplicationID') {
         $uri = "/beta/applications?`$filter=id eq '$(ConvertTo-ODataEscapedString -Value $ApplicationID)'"
         $identifier = "ApplicationID: $ApplicationID"

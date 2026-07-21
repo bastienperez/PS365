@@ -221,12 +221,22 @@ function Get-MgAuditLogSigninInfo {
     }
 
 
+    [System.Collections.Generic.List[string]]$requiredScopes = @('AuditLog.Read.All')
+    if ($LastLogonOnly.IsPresent) {
+        # Get-MgUser -Property SignInActivity also requires User.Read.All
+        $requiredScopes.Add('User.Read.All')
+    }
+
     if ($ForceNewToken) {
         Disconnect-MgGraph
-        $null = Connect-MgGraph -Scopes AuditLog.Read.All
+        $null = Connect-MgGraph -Scopes $requiredScopes
     }
     else {
-        $null = Connect-MgGraph -Scopes AuditLog.Read.All
+        $null = Connect-MgGraph -Scopes $requiredScopes
+    }
+
+    if (-not (Test-MgGraphPermission -RequiredScopes $requiredScopes -CallerName $MyInvocation.MyCommand.Name)) {
+        return
     }
 
     try {
