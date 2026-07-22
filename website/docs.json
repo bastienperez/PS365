@@ -186,24 +186,6 @@
         "pages": [
           "docs/commands/Search-UnifiedAuditLogCustom"
         ]
-      },
-      {
-        "group": "Private Functions",
-        "pages": [
-          "docs/commands/Assert-PS365ExchangeOnlineConnection",
-          "docs/commands/ConvertTo-FlatObject",
-          "docs/commands/ConvertTo-NewTransportRuleCommand",
-          "docs/commands/ConvertTo-ODataEscapedString",
-          "docs/commands/ConvertTo-OrderedHashtable",
-          "docs/commands/Format-TransportRuleValue",
-          "docs/commands/Get-HTMLTables",
-          "docs/commands/Get-UnifiedAuditLogOperationCatalog",
-          "docs/commands/Invoke-MgAuditLogSigninInfoGUI",
-          "docs/commands/Invoke-MgGraphRequestWithRetry",
-          "docs/commands/Show-Splash",
-          "docs/commands/Switch-PS365WamAuthMode",
-          "docs/commands/Test-MgGraphPermission"
-        ]
       }
     ]
   },
