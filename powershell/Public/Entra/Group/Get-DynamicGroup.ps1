@@ -197,36 +197,17 @@ function Get-DynamicGroup {
     # msDS-cloudExtensionAttribute15       xx
     # msDS-ExternalDirectoryObjectId       externalDirectoryObjectId
     
-    $propertySetsAttribute = @(
-        'assistant'
-        'country'
-        'faxNumber'
-        'homePhone'
-        'homePostalAddress'
-        'notes'
-        'ipPhone'
-        'city'
-        'mobile'
-        'MobilePhone'
-        'otherFaxNumbers'
-        'otherHomePhones'
-        'otherIpPhones'
-        'otherMobiles'
-        'otherPagers'
-        'otherPhones'
-        'pager'
-        'personalTitle'
-        'officeLocation'
-        'streetAddress'
-        'postalCode'
-        'postOfficeBox'
-        'state'
-        'streetAddress'
-        'streetAddress'
-        'telephoneNumber'
-        'thumbnailPhoto'
-        'userCertificate'
-    )
+    # HashSet for O(1) -contains checks in the warning loop below
+    $propertySetsAttribute = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+    foreach ($attr in @(
+            'assistant', 'country', 'faxNumber', 'homePhone', 'homePostalAddress', 'notes',
+            'ipPhone', 'city', 'mobile', 'MobilePhone', 'otherFaxNumbers', 'otherHomePhones',
+            'otherIpPhones', 'otherMobiles', 'otherPagers', 'otherPhones', 'pager',
+            'personalTitle', 'officeLocation', 'streetAddress', 'postalCode', 'postOfficeBox',
+            'state', 'telephoneNumber', 'thumbnailPhoto', 'userCertificate'
+        )) {
+        [void]$propertySetsAttribute.Add($attr)
+    }
 
     # Initialize an array list for better performance
     [System.Collections.Generic.List[Object]]$dynGroupArray = @()
@@ -507,9 +488,11 @@ function Get-DynamicGroup {
     Write-Verbose "Analyzing security attributes for $($dynGroupArray.Count) groups..."
     foreach ($group in $dynGroupArray) {
         $group | Add-Member -MemberType NoteProperty -Name Warning -Value $null
-        foreach ($attribute in $group.UserAttributes.Split('|')) {
-            if ($propertySetsAttribute -contains $attribute) {
-                $group.Warning = "'$attribute' is in the `Personal-Information` property set, the user can modify it and add himself to the group. See https://itpro-tips.com/property-set-personal-information-and-active-directory-security-and-governance/"
+        if ([string]::IsNullOrWhiteSpace($group.UserAttributes)) { continue }
+        foreach ($rawAttribute in $group.UserAttributes.Split('|')) {
+            $attribute = $rawAttribute.Trim()
+            if ($propertySetsAttribute.Contains($attribute)) {
+                $group.Warning = "'$attribute' is in the 'Personal-Information' property set, the user can modify it and add himself to the group. See https://itpro-tips.com/property-set-personal-information-and-active-directory-security-and-governance/"
             }
         }
     }

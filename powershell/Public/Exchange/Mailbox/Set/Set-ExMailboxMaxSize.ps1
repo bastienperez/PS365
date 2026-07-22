@@ -120,7 +120,7 @@ function Set-ExMailboxMaxSize {
 		$cmdParamstring = '-MaxReceiveSize 150MB -MaxSendSize 150MB -ErrorAction Stop'
 		$fullCommand = "$cmdletString $($cmdParams.Identity) $cmdParamstring"
 		if ($GenerateCmdlets) {
-			$Commands.Add($fullCommand)
+			$commands.Add($fullCommand)
 		}
 
 		if (-not $GenerateCmdlets -and $PSCmdlet.ShouldProcess($mbx.PrimarySmtpAddress, 'Set regional configuration')) {
@@ -135,8 +135,8 @@ function Set-ExMailboxMaxSize {
 		}
 	}
 	
-	if ($GenerateCmdlets -and $Commands.Count -gt 0) {
-		$Commands | Out-File -FilePath $OutputFile -Encoding UTF8
+	if ($GenerateCmdlets -and $commands.Count -gt 0) {
+		$commands | Out-File -FilePath $OutputFile -Encoding UTF8
 		Write-Host "Commands generated in file: $OutputFile" -ForegroundColor Cyan
 	}
 }

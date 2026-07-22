@@ -137,7 +137,7 @@ function Get-MgRoleReport {
     )
 
     [System.Collections.Generic.List[PSObject]]$rolesMembersArray = @()
-    [System.Collections.Generic.List[Object]]$objectsCacheArray = @()
+    $objectsCache = @{}
     [System.Collections.Generic.List[Object]]$mgRolesArrayAssignment = @()
     $scopeTypeCache = @{}
 
@@ -280,18 +280,22 @@ function Get-MgRoleReport {
         Write-Warning $($_.Exception.Message)
     }
 
+    # Build an assignment-id -> roleDefinition hashtable once so the loop below is O(N)
+    # instead of O(N^2) scans with Where-Object.
+    $roleDefByAssignmentId = @{}
+    foreach ($r in $mgRolesDefinition) {
+        $roleDefByAssignmentId[$r.id] = $r.roleDefinition
+    }
+
     # In *Assignment, we don't have the role definition, so we need to get it and add it to the object
     foreach ($assignment in $mgRolesArrayAssignment) {
-        # Add the role definition to the object
-        Add-Member -InputObject $assignment -MemberType NoteProperty -Name RoleDefinitionExtended -Value ($mgRolesDefinition | Where-Object { $_.id -eq $assignment.id }).roleDefinition 
-        # Add-Member -InputObject $assignment -MemberType NoteProperty -Name RoleDefinitionExtended -Value ($mgRolesDefinition | Where-Object { $_.id -eq $assignment.id }).roleDefinition.description 
-    } 
-    
+        Add-Member -InputObject $assignment -MemberType NoteProperty -Name RoleDefinitionExtended -Value $roleDefByAssignmentId[$assignment.id]
+    }
 
     if (-not $ExcludePIMEligibleAssignments) {
         Write-Verbose 'Collecting PIM eligible role assignments...'
         try {
-            (Get-MgRoleManagementDirectoryRoleEligibilitySchedule -All -ExpandProperty * -ErrorAction Stop | Select-Object id, principalId, directoryScopeId, roleDefinitionId, status, principal, @{Name = 'RoleDefinitionExtended'; Expression = { $_.roleDefinition } }) | ForEach-Object {
+            (Get-MgRoleManagementDirectoryRoleEligibilitySchedule -All -ExpandProperty 'principal', 'roleDefinition' -ErrorAction Stop | Select-Object id, principalId, directoryScopeId, roleDefinitionId, status, principal, @{Name = 'RoleDefinitionExtended'; Expression = { $_.roleDefinition } }) | ForEach-Object {
                 $mgRolesArrayAssignment.Add($_)
             }
             #$mgRoles += (Invoke-MgGraphRequest -Method GET -Uri 'https://graph.microsoft.com/v1.0/roleManagement/directory/roleEligibilitySchedule' -OutputType PSObject).Value
@@ -306,7 +310,7 @@ function Get-MgRoleReport {
             '#microsoft.graph.user' { $assignment.principal.AdditionalProperties.userPrincipalName; break }
             '#microsoft.graph.servicePrincipal' { $assignment.principal.AdditionalProperties.appId; break }
             '#microsoft.graph.group' { $assignment.principalid; break }
-            'default' { '-' }
+            default { '-' }
         }
 
         $directoryScopeId = $assignment.directoryScopeId
@@ -448,7 +452,7 @@ function Get-MgRoleReport {
         RoleType              = 'Not applicable'
         RoleTemplate          = 'Not applicable'
         DirectMember          = 'Not applicable'
-        Recommendations       = 'Please check this URL to identify if you have partner with admin roles https: / / admin.microsoft.com / AdminPortal / Home#/partners. More information on https://practical365.com/identifying-potential-unwanted-access-by-your-msp-csp-reseller/'
+        Recommendations       = 'Please check this URL to identify if you have partner with admin roles https://admin.microsoft.com/AdminPortal/Home#/partners. More information on https://practical365.com/identifying-potential-unwanted-access-by-your-msp-csp-reseller/'
     }
     
     $rolesMembersArray.Add($object)
@@ -489,11 +493,12 @@ function Get-MgRoleReport {
         $accountEnabled = $null
         $onPremisesSyncEnabled = $null
         
-        if ($objectsCacheArray.Principal -contains $member.Principal) {
-            $accountEnabled = ($objectsCacheArray | Where-Object { $_.Principal -eq $member.Principal }).AccountEnabled
-            $lastSignInDateTime = ($objectsCacheArray | Where-Object { $_.Principal -eq $member.Principal }).LastSignInDateTime
-            $lastNonInteractiveSignInDateTime = ($objectsCacheArray | Where-Object { $_.Principal -eq $member.Principal }).LastNonInteractiveSignInDateTime
-            $onPremisesSyncEnabled = ($objectsCacheArray | Where-Object { $_.Principal -eq $member.Principal }).onPremisesSyncEnabled
+        if ($objectsCache.ContainsKey($member.Principal)) {
+            $cached = $objectsCache[$member.Principal]
+            $accountEnabled = $cached.AccountEnabled
+            $lastSignInDateTime = $cached.LastSignInDateTime
+            $lastNonInteractiveSignInDateTime = $cached.LastNonInteractiveSignInDateTime
+            $onPremisesSyncEnabled = $cached.OnPremisesSyncEnabled
         }
         else {
             $lastSignInActivity = $null
@@ -563,8 +568,9 @@ function Get-MgRoleReport {
         }
 
         # only add if not already in the cache
-        if (-not $objectsCacheArray.Principal -contains $member.Principal) {
-            $objectsCacheArray.Add($member)
+        # only add if not already in the cache
+        if (-not $objectsCache.ContainsKey($member.Principal)) {
+            $objectsCache[$member.Principal] = $member
         }
     }
     

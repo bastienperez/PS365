@@ -307,7 +307,7 @@ function Set-ExMailboxRegionalConfiguration {
 		$FullCommand = "$cmdletString $cmdParamstring"
 
 		if ($GenerateCmdlets) {
-			$Commands.Add($FullCommand)
+			$commands.Add($FullCommand)
 		}
 
 		if (-not $GenerateCmdlets -and $PSCmdlet.ShouldProcess($mbx.PrimarySmtpAddress, 'Set regional configuration')) {
@@ -322,8 +322,8 @@ function Set-ExMailboxRegionalConfiguration {
 		}
 	}
 
-	if ($GenerateCmdlets -and $Commands.Count -gt 0) {
-		$Commands | Out-File -FilePath $OutputFile -Encoding UTF8
+	if ($GenerateCmdlets -and $commands.Count -gt 0) {
+		$commands | Out-File -FilePath $OutputFile -Encoding UTF8
 		Write-Host "Commands generated in file: $OutputFile" -ForegroundColor Cyan
 	}
 }
