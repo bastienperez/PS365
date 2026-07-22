@@ -1,10 +1,10 @@
 <#
     .SYNOPSIS
-    Get-MgRoleReport.ps1 - Reports on Microsoft Entra ID (Azure AD) roles
+    Reports on Microsoft Entra ID (Azure AD) roles
+    
 
     .DESCRIPTION 
-    By default, the report contains only the roles with members.
-    To get all the role, included empty roles, add -IncludeEmptyRoles $true
+    Reports all the Microsoft Entra ID (Azure AD) roles with their members, including PIM eligible assignments and last sign-in activity.
 
     .OUTPUTS
     The report is output to an array contained all the audit logs found.
