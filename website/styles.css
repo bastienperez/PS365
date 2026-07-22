@@ -1,6 +1,7 @@
-#sidebar a,
-.sidebar-title {
+/* Clean wrapping of long CamelCase names in the sidebar */
+#sidebar li[id^="/docs/commands/"] span,
+#navigation-items li[id^="/docs/commands/"] span {
   overflow-wrap: anywhere;
-  word-break: break-word;
-  hyphens: auto;
+  word-break: normal;
+  hyphens: none;
 }
