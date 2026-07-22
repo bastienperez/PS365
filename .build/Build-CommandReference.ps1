@@ -49,6 +49,18 @@ foreach ($file in $cmdMarkdownFiles) {
     $contentText = $contentText -replace '(?s)\n*### -ProgressAction.*?Accept wildcard characters: False\s*```\s*\n*', "`n"
     $content = $contentText -split "`n"
 
+    # Inject sidebarTitle with the real command name (keeps the hyphen, e.g. Get-IntuneAutoMDMEnrollmentPolicy)
+    $commandName = [System.IO.Path]::GetFileNameWithoutExtension($file.Name)
+    $contentText = $content -join "`n"
+    if ($contentText -match '(?m)^sidebarTitle:') {
+        $contentText = $contentText -replace '(?m)^sidebarTitle:.*$', "sidebarTitle: `"$commandName`""
+    }
+    else {
+        # Insert right after the opening frontmatter delimiter
+        $contentText = $contentText -replace '(?s)^(---\r?\n)', "`$1sidebarTitle: `"$commandName`"`n"
+    }
+    $content = $contentText -split "`n"
+
     Set-Content $file $content
 }
 

@@ -12,7 +12,7 @@
 RootModule = 'PS365.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.2.13'
+ModuleVersion = '0.2.14'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
