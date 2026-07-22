@@ -201,7 +201,8 @@
           "docs/commands/Invoke-MgAuditLogSigninInfoGUI",
           "docs/commands/Invoke-MgGraphRequestWithRetry",
           "docs/commands/Show-Splash",
-          "docs/commands/Switch-PS365WamAuthMode"
+          "docs/commands/Switch-PS365WamAuthMode",
+          "docs/commands/Test-MgGraphPermission"
         ]
       }
     ]
