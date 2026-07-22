@@ -74,7 +74,7 @@
             ]
           },
           {
-            "group": "L A P S",
+            "group": "LAPS",
             "pages": [
               "docs/commands/Get-MgLAPSPassword"
             ]
@@ -175,7 +175,7 @@
         ]
       },
       {
-        "group": "M S Commerce",
+        "group": "MS Commerce",
         "pages": [
           "docs/commands/Disable-MSSelfServicePurchase",
           "docs/commands/Enable-MSSelfServicePurchase"

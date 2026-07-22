@@ -49,16 +49,26 @@ foreach ($file in $cmdMarkdownFiles) {
     $contentText = $contentText -replace '(?s)\n*### -ProgressAction.*?Accept wildcard characters: False\s*```\s*\n*', "`n"
     $content = $contentText -split "`n"
 
-    # Inject sidebarTitle with the real command name (keeps the hyphen, e.g. Get-IntuneAutoMDMEnrollmentPolicy)
+    # Inject title + sidebarTitle with the real command name (keeps the hyphen, e.g. Get-IntuneAutoMDMEnrollmentPolicy)
     $commandName = [System.IO.Path]::GetFileNameWithoutExtension($file.Name)
     $contentText = $content -join "`n"
+
+    # title (used as the page H1 in Mintlify)
+    if ($contentText -match '(?m)^title:') {
+        $contentText = $contentText -replace '(?m)^title:.*$', "title: `"$commandName`""
+    }
+    else {
+        $contentText = $contentText -replace '(?s)^(---\r?\n)', "`$1title: `"$commandName`"`n"
+    }
+
+    # sidebarTitle (keeps the hyphen in the navigation)
     if ($contentText -match '(?m)^sidebarTitle:') {
         $contentText = $contentText -replace '(?m)^sidebarTitle:.*$', "sidebarTitle: `"$commandName`""
     }
     else {
-        # Insert right after the opening frontmatter delimiter
         $contentText = $contentText -replace '(?s)^(---\r?\n)', "`$1sidebarTitle: `"$commandName`"`n"
     }
+
     $content = $contentText -split "`n"
 
     Set-Content $file $content
@@ -71,13 +81,13 @@ $docsJson = Get-Content $docsJsonPath -Raw | ConvertFrom-Json
 # Function to convert folder names to display names dynamically
 function ConvertTo-DisplayName {
     param([string]$FolderName)
-    
-    # Split on capital letters and join with spaces
-    $result = $FolderName -creplace '(?<!^)([A-Z])', ' $1'
-    
-    # Handle numbers followed by letters (like M365)
-    $result = $result -replace '(\d+)([A-Z])', '$1 $2'
-    
+
+    # Insert space only between a lowercase/digit and an uppercase letter (real CamelCase boundary)
+    $result = $FolderName -creplace '(?<=[a-z0-9])(?=[A-Z])', ' '
+
+    # Insert space between an acronym and a following Word (e.g. "MSCommerce" -> "MS Commerce")
+    $result = $result -creplace '(?<=[A-Z])(?=[A-Z][a-z])', ' '
+
     return $result.Trim()
 }
 

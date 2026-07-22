@@ -1,7 +1,7 @@
 ---
-title: "Copy-AzAutomationRunbook"
 sidebarTitle: "Copy-AzAutomationRunbook"
-Module Name: "PS365"
+title: "Copy-AzAutomationRunbook"
+Module Name: PS365
 ---
 
 ## SYNOPSIS
@@ -17,7 +17,8 @@ Copy-AzAutomationRunbook [-SourceAutomationAccount] <String> [-DestinationAutoma
 
 ## DESCRIPTION
 
-This function exports all runbooks from a source Azure Automation account and imports them into a destination Azure Automation account within the same resource group.
+This function exports all runbooks from a source Azure Automation account and imports them
+into a destination Azure Automation account within the same resource group.
 
 ## EXAMPLES
 
@@ -89,7 +90,10 @@ Accept wildcard characters: False
 
 ### -TempFolder
 
-(Optional) The temporary folder path used to store exported runbooks. Defaults to a timestamped folder in the system temp directory. Note: Only auto-generated folders are deleted at the end. If you provide an existing folder, its contents are NOT cleaned up.
+(Optional) The temporary folder path used to store exported runbooks.
+Defaults to a timestamped folder in the system temp directory.
+Note: Only auto-generated folders are deleted at the end.
+If you provide an existing folder, its contents are NOT cleaned up.
 
 ```yaml
 Type: String
@@ -102,10 +106,9 @@ Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
-
 ### CommonParameters
 
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about\_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
