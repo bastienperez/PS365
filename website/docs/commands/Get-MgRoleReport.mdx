@@ -6,7 +6,7 @@ Module Name: PS365
 
 ## SYNOPSIS
 
-Get-MgRoleReport.ps1 - Reports on Microsoft Entra ID (Azure AD) roles
+Reports on Microsoft Entra ID (Azure AD) roles
 
 ## SYNTAX
 
@@ -18,8 +18,7 @@ Get-MgRoleReport [[-Identity] <String>] [[-PrincipalID] <String>] [[-PrincipalDi
 
 ## DESCRIPTION
 
-By default, the report contains only the roles with members.
-To get all the role, included empty roles, add -IncludeEmptyRoles $true
+Reports all the Microsoft Entra ID (Azure AD) roles with their members, including PIM eligible assignments and last sign-in activity.
 
 ## EXAMPLES
 
