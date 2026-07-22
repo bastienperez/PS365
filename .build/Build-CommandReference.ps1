@@ -16,9 +16,18 @@ Import-Module PlatyPS
 #$commandsIndexFile = "./website/docs/commands/readme.md"
 #$readmeContent = Get-Content $commandsIndexFile  # Backup the readme.md since it will be deleted by New-DocusaurusHelp
 
-# Get all the filenames in the ./powershell/internal folder without the extension
-$internalCommands = Get-ChildItem @("./$powershellModuleFolder/Public") -Filter *.ps1 | ForEach-Object { $_.BaseName }
-New-DocusaurusHelp -Module "./$powershellModuleFolder/$powershellModuleName" -DocsFolder "./$websiteFolder" -NoPlaceHolderExamples -Exclude $internalCommands -VendorAgnostic
+# Get all the public command names (recursive: the Public folder is organized in nested subfolders)
+$publicCommands = Get-ChildItem -Path "$powershellModuleFolder/Public" -Filter *.ps1 -File -Recurse | ForEach-Object { $_.BaseName }
+
+# The .psm1 dot-sources both Public and Private, so everything it exposes that is not a public
+# command is private and must be excluded from the documentation
+$module = Import-Module "$powershellModuleFolder/$powershellModuleName" -PassThru -Force
+$privateCommands = @($module.ExportedCommands.Keys | Where-Object { $_ -notin $publicCommands })
+Remove-Module -ModuleInfo $module -Force
+
+Write-Host "Documenting $($publicCommands.Count) public commands, excluding $($privateCommands.Count) private ones"
+
+New-DocusaurusHelp -Module "$powershellModuleFolder/$powershellModuleName" -DocsFolder $websiteFolder -NoPlaceHolderExamples -Exclude $privateCommands -VendorAgnostic
 
 # Update the markdown to include the synopsis as description so it can be displayed correctly in the doc links.
 $cmdMarkdownFiles = Get-ChildItem ./website/docs/commands
