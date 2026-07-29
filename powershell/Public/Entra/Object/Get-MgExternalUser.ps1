@@ -1,27 +1,47 @@
 <#
     .SYNOPSIS
-    Lists external (federated) users in Microsoft Entra ID based on their identities, not on userType.
+    Lists external users in Microsoft Entra ID based on their identities and invitation trace, not on userType.
 
     .DESCRIPTION
     Most scripts identify external users with userType -eq 'Guest'. This is unreliable:
     users onboarded through cross-tenant synchronization, or guests converted to members,
     keep userType 'Member' while still being backed by an account from another directory.
 
-    Get-MgExternalUser inspects the 'identities' collection of every user and returns those
-    holding at least one identity with signInType 'federated'. The issuer of that identity
-    tells where the account really comes from:
+    Get-MgExternalUser returns every account that is external by any of these criteria:
+    - it holds at least one identity with signInType 'federated' (the account authenticates elsewhere)
+    - it was created through an invitation (creationType 'Invitation')
+    - it carries an invitation state (externalUserState)
+    - its userPrincipalName contains the #EXT# pattern
+    - its userType is 'Guest'
 
-    - ExternalAzureAD : account from another Microsoft Entra ID tenant (B2B / cross-tenant sync)
-    - MSA            : personal Microsoft account
-    - mail           : email one-time passcode (OTP) authentication
-    - google.com, facebook.com, ... : social / external identity providers
+    The invitation state is deliberately NOT part of the detection: a guest who never redeemed
+    its invitation is reported like any other external account.
+
+    Each result is classified through the AuthSource property, which tells whether the account
+    relies on its own identity provider or exists only thanks to this tenant:
+
+    - ExternalTenant    : issuer ExternalAzureAD - account from another Microsoft Entra ID tenant (B2B / cross-tenant sync)
+    - MicrosoftAccount  : issuer MSA - personal Microsoft account
+    - SocialIdP         : google.com, facebook.com, ... - social identity provider
+    - ExternalIdP       : issuer is a third-party domain - direct federation (SAML / WS-Fed)
+    - LocalOTP          : issuer 'mail' or one of this tenant's own domains - email one-time passcode,
+                          the account has NO external identity provider and depends entirely on this tenant
+    - PendingRedemption : no federated identity yet - the invitation was never redeemed, so Entra ID
+                          has not determined which identity provider the account will use
+    - Other             : anything else
+
+    Accounts with their own identity provider are ExternalTenant, MicrosoftAccount, SocialIdP and
+    ExternalIdP. Accounts depending on this tenant are LocalOTP. PendingRedemption is undetermined
+    until the invitation is redeemed.
 
     Filtering is done client-side because Microsoft Graph does not support server-side
     filtering on identities/signInType.
 
     .PARAMETER Issuer
     (Optional) Restricts the results to one or more identity issuers (for example 'ExternalAzureAD').
-    When omitted, every user holding a federated identity is returned, whatever the issuer.
+    Because the filter applies to the federated identities, accounts classified PendingRedemption
+    are excluded when this parameter is used: they do not carry an issuer yet.
+    When omitted, every external account is returned whatever its issuer or invitation state.
 
     .PARAMETER UserType
     (Optional) Restricts the results to a given userType. Valid values: All, Member, Guest. Default is All.
@@ -47,12 +67,18 @@
     .EXAMPLE
     Get-MgExternalUser
 
-    Returns every user backed by a federated identity, whatever the issuer and the userType.
+    Returns every external account of the tenant, whatever its issuer, userType and invitation state.
 
     .EXAMPLE
-    Get-MgExternalUser -Issuer 'ExternalAzureAD'
+    Get-MgExternalUser | Where-Object { $_.AuthSource -eq 'LocalOTP' }
 
-    Returns only the users coming from another Microsoft Entra ID tenant (B2B or cross-tenant sync).
+    Returns the external accounts that have no external identity provider and exist only through
+    this tenant (email one-time passcode).
+
+    .EXAMPLE
+    Get-MgExternalUser | Where-Object { $_.AuthSource -eq 'PendingRedemption' }
+
+    Returns the invited accounts that never redeemed their invitation.
 
     .EXAMPLE
     Get-MgExternalUser -Issuer 'ExternalAzureAD' -UserType Member
@@ -66,9 +92,9 @@
     Returns external users that have not signed in interactively for more than 90 days.
 
     .EXAMPLE
-    Get-MgExternalUser -IncludeSignInActivity -ExportToExcel
+    Get-MgExternalUser -ExportToExcel
 
-    Exports the external users report, sign-in activity included, to an Excel file in the user's profile directory.
+    Exports the external users report to an Excel file in the user's profile directory.
 
     .OUTPUTS
     System.Collections.Generic.List[PSCustomObject]
@@ -78,10 +104,11 @@
     Identity        : DisplayName, UserPrincipalName, Mail, ExternalDomain
                       ExternalDomain is the domain the account really belongs to, derived from the UPN
                       (#EXT# pattern) or from the mail attribute.
-    Origin          : UserType, Issuer, SignInType, IssuerAssignedId
-                      IssuerAssignedId is the unique identifier assigned to the user by the issuer
-                      (typically the email address for social or OTP accounts). It is usually empty
-                      for ExternalAzureAD identities, where the home tenant does not expose it.
+    Origin          : UserType, CreationType, AuthSource, Issuer, SignInType, IssuerAssignedId
+                      Issuer, SignInType and IssuerAssignedId come from the federated identities and
+                      are empty for PendingRedemption accounts.
+                      IssuerAssignedId is the identifier assigned by the issuer (typically the email
+                      address for social or OTP accounts). It is usually empty for ExternalAzureAD.
     Account state   : AccountEnabled, InvitationState, InvitationStateChangeDateTime
                       InvitationState is the Graph 'externalUserState' property: PendingAcceptance until
                       the invitee redeems the invitation, then Accepted. It stays empty for accounts
@@ -92,7 +119,12 @@
 
     Required Microsoft Graph permissions:
         - User.Read.All
+        - Domain.Read.All (to recognize an issuer that is one of this tenant's own domains)
         - AuditLog.Read.All (only with -IncludeSignInActivity)
+
+    An external account that redeemed its invitation carries two identities: one with
+    signInType 'userPrincipalName' issued by this tenant, and one with signInType 'federated'
+    issued by its identity provider. Only the federated ones drive the AuthSource classification.
 
     With -IncludeSignInActivity the page size is capped at 120 users per request: Microsoft Graph
     enforces this limit when signInActivity is part of the $select clause. The report is therefore
@@ -134,7 +166,7 @@ function Get-MgExternalUser {
         return
     }
 
-    $permissionsNeeded = @('User.Read.All')
+    $permissionsNeeded = @('User.Read.All', 'Domain.Read.All')
     if ($IncludeSignInActivity.IsPresent) {
         # signInActivity is only returned when the token carries AuditLog.Read.All
         $permissionsNeeded += 'AuditLog.Read.All'
@@ -154,9 +186,30 @@ function Get-MgExternalUser {
         return
     }
 
+    # Tenant domains: an issuer matching one of them means the account has no external identity
+    # provider (email one-time passcode), so it depends entirely on this tenant.
+    Write-Host -ForegroundColor Cyan 'Retrieving tenant domains'
+    [System.Collections.Generic.List[string]]$tenantDomains = @()
+    $domainsUri = 'https://graph.microsoft.com/v1.0/domains?$select=id&$top=999'
+    try {
+        do {
+            $domainsResponse = Invoke-MgGraphRequestWithRetry -Method GET -Uri $domainsUri
+            foreach ($domain in $domainsResponse.value) {
+                $tenantDomains.Add($domain.id)
+            }
+            $domainsUri = $domainsResponse.'@odata.nextLink'
+        } while ($domainsUri)
+    }
+    catch {
+        Write-Warning "Unable to retrieve the tenant domains: $_"
+        Write-Warning 'Identities issued by one of this tenant domains will not be classified as LocalOTP.'
+    }
+
+    $socialIssuers = @('google.com', 'facebook.com', 'twitter.com', 'linkedin.com', 'github.com', 'apple.com', 'amazon.com')
+
     # identities is not returned by default and cannot be filtered server-side on signInType,
     # so the whole user set is retrieved and filtered client-side.
-    $selectBaseProperties = 'id,displayName,userPrincipalName,mail,userType,accountEnabled,companyName,createdDateTime,externalUserState,externalUserStateChangeDateTime,onPremisesSyncEnabled,identities'
+    $selectBaseProperties = 'id,displayName,userPrincipalName,mail,userType,creationType,accountEnabled,companyName,createdDateTime,externalUserState,externalUserStateChangeDateTime,onPremisesSyncEnabled,identities'
 
     # Not an alias of the switch: this one is turned off at runtime when the tenant cannot
     # serve signInActivity (missing Entra ID P1/P2 license), so the report degrades instead of failing.
@@ -198,12 +251,15 @@ function Get-MgExternalUser {
         foreach ($user in $response.value) {
             $processedCount++
 
-            $federatedIdentities = @($user.identities | Where-Object { $_.signInType -eq 'federated' })
-            if ($federatedIdentities.Count -eq 0) {
+            if (-not (Test-MgUserIsExternal -User $user)) {
                 continue
             }
 
+            $userPrincipalName = $user.userPrincipalName
+            $federatedIdentities = @($user.identities | Where-Object { $_.signInType -eq 'federated' })
+
             if ($Issuer) {
+                # Filtering on the issuer necessarily drops the accounts that do not have one yet
                 $federatedIdentities = @($federatedIdentities | Where-Object { $_.issuer -in $Issuer })
                 if ($federatedIdentities.Count -eq 0) {
                     continue
@@ -214,9 +270,27 @@ function Get-MgExternalUser {
                 continue
             }
 
+            # Where the account really authenticates
+            if ($federatedIdentities.Count -eq 0) {
+                $authSource = 'PendingRedemption'
+            }
+            else {
+                $authSourceList = foreach ($identity in $federatedIdentities) {
+                    $issuerValue = $identity.issuer
+                    if (-not $issuerValue) { 'Other' }
+                    elseif ($issuerValue -eq 'ExternalAzureAD') { 'ExternalTenant' }
+                    elseif ($issuerValue -eq 'MSA') { 'MicrosoftAccount' }
+                    elseif ($issuerValue -eq 'mail') { 'LocalOTP' }
+                    elseif ($issuerValue -in $tenantDomains) { 'LocalOTP' }
+                    elseif ($issuerValue -in $socialIssuers) { 'SocialIdP' }
+                    elseif ($issuerValue -match '\.') { 'ExternalIdP' }
+                    else { 'Other' }
+                }
+                $authSource = (@($authSourceList) | Sort-Object -Unique) -join '; '
+            }
+
             # Resolve the domain the account really belongs to
             $externalDomain = $null
-            $userPrincipalName = $user.userPrincipalName
             if ($userPrincipalName -match '#EXT#') {
                 $externalPart = ($userPrincipalName -split '#EXT#')[0]
                 if ($externalPart -match '^.+_(?<domain>[^_]+\.[^_]+)$') {
@@ -241,6 +315,8 @@ function Get-MgExternalUser {
                 Mail                          = $user.mail
                 ExternalDomain                = $externalDomain
                 UserType                      = $user.userType
+                CreationType                  = $user.creationType
+                AuthSource                    = $authSource
                 Issuer                        = $issuerList
                 SignInType                    = $signInTypeList
                 IssuerAssignedId              = $issuerAssignedIdList
@@ -297,14 +373,14 @@ function Get-MgExternalUser {
 
     Write-Host -ForegroundColor Green "Found $($externalUsersArray.Count) external user(s) among $processedCount user(s) scanned."
 
+    Write-Host -ForegroundColor Cyan 'Breakdown by AuthSource:'
+    foreach ($group in ($externalUsersArray | Group-Object AuthSource | Sort-Object Count -Descending)) {
+        Write-Host "  $($group.Name): $($group.Count)"
+    }
+
     $externalMembersCount = @($externalUsersArray | Where-Object { $_.UserType -eq 'Member' }).Count
     if ($externalMembersCount -gt 0) {
         Write-Host -ForegroundColor Yellow "$externalMembersCount external user(s) have userType 'Member' and would be missed by a userType-based script."
-    }
-
-    $pendingCount = @($externalUsersArray | Where-Object { $_.InvitationState -eq 'PendingAcceptance' }).Count
-    if ($pendingCount -gt 0) {
-        Write-Host -ForegroundColor Yellow "$pendingCount external user(s) never accepted their invitation (InvitationState: PendingAcceptance)."
     }
 
     if ($ExportToExcel.IsPresent) {

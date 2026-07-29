@@ -1,0 +1,191 @@
+---
+sidebarTitle: "Get-MgUserIdentitySummary"
+title: "Get-MgUserIdentitySummary"
+Module Name: PS365
+---
+
+## SYNOPSIS
+
+Summarizes how every user of a Microsoft Entra ID tenant authenticates, internal and external alike.
+
+## SYNTAX
+
+```powershell
+Get-MgUserIdentitySummary [-ExternalOnly] [-Anonymize] [-ForceNewToken] [-ExportToExcel]
+ [[-ExportPath] <String>] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+```
+
+## DESCRIPTION
+
+Returns one row per distinct combination of (SignInType, Issuer, UserType, CreationType,
+InvitationState, IsExternal) with the number of identities matching it.
+It gives a one-page
+picture of the authentication landscape of the tenant.
+
+The granularity is the identity, not the user.
+A cloud-only internal user carries a single
+identity ('userPrincipalName' issued by this tenant).
+An external account that redeemed its
+invitation carries two: the local 'userPrincipalName' one plus a 'federated' one issued by its
+identity provider.
+An account that never redeemed its invitation only carries the local one,
+which is exactly what this view makes visible.
+
+Because internal and external accounts can share the very same (SignInType, Issuer) pair, the
+IsExternal column tells them apart.
+It uses the same detection as Get-MgExternalUser, so both
+reports always agree.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Get-MgUserIdentitySummary | Format-Table -AutoSize
+```
+
+Displays the identity summary of the whole tenant as a table.
+Format-Table is needed because the
+objects carry more than four properties, which PowerShell would otherwise render as a list.
+
+### EXAMPLE 2
+
+```powershell
+Get-MgUserIdentitySummary -ExternalOnly | Format-Table -AutoSize
+```
+
+Same summary restricted to the external accounts.
+
+### EXAMPLE 3
+
+```powershell
+Get-MgUserIdentitySummary -Anonymize | Format-Table -AutoSize
+```
+
+Same summary with the real domains masked, suitable for sharing outside of the organization.
+
+### EXAMPLE 4
+
+```powershell
+Get-MgUserIdentitySummary -ExportToExcel
+```
+
+Exports the identity summary to an Excel file in the user's profile directory.
+
+## PARAMETERS
+
+### -ExternalOnly
+
+(Optional) Restricts the summary to external accounts.
+Without it, every user of the tenant is
+included, which is the point of this function.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Anonymize
+
+(Optional) Replaces the real issuer domains with placeholders: &lt;OUR-TENANT-DOMAIN&gt; for a domain
+belonging to this tenant, &lt;OTHER-DOMAIN&gt; for any third-party domain.
+Well-known issuers
+(ExternalAzureAD, MSA, mail, google.com, ...) are kept as-is.
+Use it to share the summary outside of the organization.
+Requires the Domain.Read.All permission to know which domains belong to this tenant.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ForceNewToken
+
+Switch parameter to force getting a new token from Microsoft Graph.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ExportToExcel
+
+(Optional) If specified, exports the results to an Excel file in the user's profile directory.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ExportPath
+
+(Optional) Output directory for the Excel export.
+Defaults to the user profile.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+### System.Collections.Generic.List[PSCustomObject]
+
+## NOTES
+OUTPUT PROPERTIES
+- Count           : number of identities matching the combination
+- SignInType      : signInType of the identity ('userPrincipalName', 'federated', ...)
+                    '&lt;no identities&gt;' when Graph returned no identity at all for the account
+- Issuer          : issuer of the identity (a tenant domain, ExternalAzureAD, MSA, mail, ...)
+- UserType        : userType of the account holding the identity (Member or Guest)
+- CreationType    : creationType of the account ('Invitation' when it comes from a B2B invitation)
+- InvitationState : Graph 'externalUserState' property (PendingAcceptance, Accepted, or empty)
+- IsExternal      : whether the account holding the identity is external (see Get-MgExternalUser)
+
+Required Microsoft Graph permissions:
+    - User.Read.All
+    - Domain.Read.All (only with -Anonymize)
+
+## RELATED LINKS
+
+[https://ps365.clidsys.com/docs/commands/Get-MgUserIdentitySummary](https://ps365.clidsys.com/docs/commands/Get-MgUserIdentitySummary)

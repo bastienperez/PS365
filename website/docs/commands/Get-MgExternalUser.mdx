@@ -1,0 +1,266 @@
+---
+sidebarTitle: "Get-MgExternalUser"
+title: "Get-MgExternalUser"
+Module Name: PS365
+---
+
+## SYNOPSIS
+
+Lists external users in Microsoft Entra ID based on their identities and invitation trace, not on userType.
+
+## SYNTAX
+
+```powershell
+Get-MgExternalUser [[-Issuer] <String[]>] [-UserType <String>] [-IncludeSignInActivity] [-ForceNewToken]
+ [-ExportToExcel] [-ExportPath <String>] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+```
+
+## DESCRIPTION
+
+Most scripts identify external users with userType -eq 'Guest'.
+This is unreliable:
+users onboarded through cross-tenant synchronization, or guests converted to members,
+keep userType 'Member' while still being backed by an account from another directory.
+
+Get-MgExternalUser returns every account that is external by any of these criteria:
+- it holds at least one identity with signInType 'federated' (the account authenticates elsewhere)
+- it was created through an invitation (creationType 'Invitation')
+- it carries an invitation state (externalUserState)
+- its userPrincipalName contains the #EXT# pattern
+- its userType is 'Guest'
+
+The invitation state is deliberately NOT part of the detection: a guest who never redeemed
+its invitation is reported like any other external account.
+
+Each result is classified through the AuthSource property, which tells whether the account
+relies on its own identity provider or exists only thanks to this tenant:
+
+- ExternalTenant    : issuer ExternalAzureAD - account from another Microsoft Entra ID tenant (B2B / cross-tenant sync)
+- MicrosoftAccount  : issuer MSA - personal Microsoft account
+- SocialIdP         : google.com, facebook.com, ...
+- social identity provider
+- ExternalIdP       : issuer is a third-party domain - direct federation (SAML / WS-Fed)
+- LocalOTP          : issuer 'mail' or one of this tenant's own domains - email one-time passcode,
+                      the account has NO external identity provider and depends entirely on this tenant
+- PendingRedemption : no federated identity yet - the invitation was never redeemed, so Entra ID
+                      has not determined which identity provider the account will use
+- Other             : anything else
+
+Accounts with their own identity provider are ExternalTenant, MicrosoftAccount, SocialIdP and
+ExternalIdP.
+Accounts depending on this tenant are LocalOTP.
+PendingRedemption is undetermined
+until the invitation is redeemed.
+
+Filtering is done client-side because Microsoft Graph does not support server-side
+filtering on identities/signInType.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Get-MgExternalUser
+```
+
+Returns every external account of the tenant, whatever its issuer, userType and invitation state.
+
+### EXAMPLE 2
+
+```powershell
+Get-MgExternalUser | Where-Object { $_.AuthSource -eq 'LocalOTP' }
+```
+
+Returns the external accounts that have no external identity provider and exist only through
+this tenant (email one-time passcode).
+
+### EXAMPLE 3
+
+```powershell
+Get-MgExternalUser | Where-Object { $_.AuthSource -eq 'PendingRedemption' }
+```
+
+Returns the invited accounts that never redeemed their invitation.
+
+### EXAMPLE 4
+
+```powershell
+Get-MgExternalUser -Issuer 'ExternalAzureAD' -UserType Member
+```
+
+Returns external users from another tenant that are NOT flagged as guests, which is the
+typical footprint of cross-tenant synchronization.
+
+### EXAMPLE 5
+
+```powershell
+Get-MgExternalUser -IncludeSignInActivity | Where-Object { $_.DaysSinceLastSignIn -gt 90 }
+```
+
+Returns external users that have not signed in interactively for more than 90 days.
+
+### EXAMPLE 6
+
+```powershell
+Get-MgExternalUser -ExportToExcel
+```
+
+Exports the external users report to an Excel file in the user's profile directory.
+
+## PARAMETERS
+
+### -Issuer
+
+(Optional) Restricts the results to one or more identity issuers (for example 'ExternalAzureAD').
+Because the filter applies to the federated identities, accounts classified PendingRedemption
+are excluded when this parameter is used: they do not carry an issuer yet.
+When omitted, every external account is returned whatever its issuer or invitation state.
+
+```yaml
+Type: String[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -UserType
+
+(Optional) Restricts the results to a given userType.
+Valid values: All, Member, Guest.
+Default is All.
+Use 'Member' to surface external accounts that are NOT flagged as guests - typically
+cross-tenant synchronized users, which a userType-based script would miss.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: All
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -IncludeSignInActivity
+
+(Optional) Adds the last sign-in information (interactive, non-interactive and last successful sign-in)
+plus the number of days since the last interactive sign-in.
+Requires the AuditLog.Read.All permission and a Microsoft Entra ID P1 or P2 license.
+When the tenant does not meet those requirements, the report falls back to the standard
+properties and a warning is displayed.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ForceNewToken
+
+Switch parameter to force getting a new token from Microsoft Graph.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ExportToExcel
+
+(Optional) If specified, exports the results to an Excel file in the user's profile directory.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ExportPath
+
+(Optional) Output directory for the Excel export.
+Defaults to the user profile.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+### System.Collections.Generic.List[PSCustomObject]
+
+## NOTES
+OUTPUT PROPERTIES
+Identity        : DisplayName, UserPrincipalName, Mail, ExternalDomain
+                  ExternalDomain is the domain the account really belongs to, derived from the UPN
+                  (#EXT# pattern) or from the mail attribute.
+Origin          : UserType, CreationType, AuthSource, Issuer, SignInType, IssuerAssignedId
+                  Issuer, SignInType and IssuerAssignedId come from the federated identities and
+                  are empty for PendingRedemption accounts.
+                  IssuerAssignedId is the identifier assigned by the issuer (typically the email
+                  address for social or OTP accounts).
+It is usually empty for ExternalAzureAD.
+Account state   : AccountEnabled, InvitationState, InvitationStateChangeDateTime
+                  InvitationState is the Graph 'externalUserState' property: PendingAcceptance until
+                  the invitee redeems the invitation, then Accepted.
+It stays empty for accounts
+                  that were never invited (cross-tenant sync, direct creation).
+Sign-in activity: LastSignInDateTime, LastNonInteractiveSignInDateTime, LastSuccessfulSignInDateTime,
+                  DaysSinceLastSignIn (only with -IncludeSignInActivity)
+Metadata        : CompanyName, CreatedDateTime, OnPremisesSyncEnabled, Id
+
+Required Microsoft Graph permissions:
+    - User.Read.All
+    - Domain.Read.All (to recognize an issuer that is one of this tenant's own domains)
+    - AuditLog.Read.All (only with -IncludeSignInActivity)
+
+An external account that redeemed its invitation carries two identities: one with
+signInType 'userPrincipalName' issued by this tenant, and one with signInType 'federated'
+issued by its identity provider.
+Only the federated ones drive the AuthSource classification.
+
+With -IncludeSignInActivity the page size is capped at 120 users per request: Microsoft Graph
+enforces this limit when signInActivity is part of the $select clause.
+The report is therefore
+slower on large tenants.
+
+## RELATED LINKS
+
+[https://ps365.clidsys.com/docs/commands/Get-MgExternalUser](https://ps365.clidsys.com/docs/commands/Get-MgExternalUser)

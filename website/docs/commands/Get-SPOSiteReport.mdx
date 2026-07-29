@@ -1,0 +1,396 @@
+---
+sidebarTitle: "Get-SPOSiteReport"
+title: "Get-SPOSiteReport"
+Module Name: PS365
+---
+
+## SYNOPSIS
+
+Builds an inventory report of every SharePoint Online site of the tenant using PnP.PowerShell app-only.
+
+## SYNTAX
+
+```powershell
+Get-SPOSiteReport [-ClientId] <String> [-Tenant] <String> [[-CertificateThumbprint] <String>]
+ [[-CertificatePath] <String>] [[-CertificatePassword] <SecureString>] [[-CertificateBase64Encoded] <String>]
+ [[-AdminUrl] <String>] [[-SiteUrl] <String>] [-ExcludeOneDrive] [-OnlyOneDrive] [-IncludeSiteAdmins]
+ [-RegionalSettingsDetails] [-SharingRightsAdminOrFullControl] [-M365GroupsDetails] [[-ThrottleLimit] <Int32>]
+ [-ExportToExcel] [[-ExportPath] <String>] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+```
+
+## DESCRIPTION
+
+Get-SPOSiteReport collects the configuration of the SharePoint Online sites: storage quota and usage,
+site collection administrators, external sharing settings, sensitivity label, default sharing links,
+conditional access policy and hub site membership.
+
+The function connects with PnP.PowerShell in app-only mode (Entra app registration plus a certificate).
+This is the only reliable way to read site-level data (site collection administrators, site groups,
+regional settings) across every site of the tenant: the SharePoint Administrator role alone grants
+access to the admin center, not to the content of each site, so a delegated connection returns
+Access Denied on Get-PnPSiteCollectionAdmin.
+An app registration holding the SharePoint
+Sites.FullControl.All application permission bypasses the site collection admin requirement.
+
+Client secrets are not supported by SharePoint for app-only: a certificate is mandatory.
+Provide it
+through CertificateThumbprint (Windows certificate store), CertificatePath (.pfx file) or
+CertificateBase64Encoded (base64 string, handy for Azure Automation or a pipeline variable).
+
+The site-level collection runs in parallel (ForEach-Object -Parallel) with one PnP connection per site.
+Tune the concurrency with ThrottleLimit.
+PowerShell 7 is required.
+
+Optional switches enrich the report:
+- IncludeSiteAdmins adds the full list of site collection administrators of each site.
+- RegionalSettingsDetails adds the time zone, hour format and locale of each site.
+- SharingRightsAdminOrFullControl adds, best effort, the members of the site groups holding Full Control.
+- M365GroupsDetails adds the Microsoft 365 group and Microsoft Teams layer.
+This layer relies on
+  Exchange Online (Get-UnifiedGroup) and the MicrosoftTeams module (Get-Team), which are NOT covered
+  by the PnP app-only certificate: connect Exchange Online and Microsoft Teams separately beforehand.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Get-SPOSiteReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificateThumbprint $thumb
+```
+
+Returns every SharePoint Online site of the tenant, including the personal OneDrive sites, using an
+app-only connection based on a certificate from the Windows certificate store.
+
+### EXAMPLE 2
+
+```powershell
+Get-SPOSiteReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificateBase64Encoded $certB64 -ExcludeOneDrive -IncludeSiteAdmins
+```
+
+Returns the SharePoint sites without the OneDrive ones and adds the full list of site collection
+administrators of each site.
+
+### EXAMPLE 3
+
+```powershell
+Get-SPOSiteReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificatePath 'C:\Certs\app.pfx' -CertificatePassword $pwd -SiteUrl 'https://contoso.sharepoint.com/sites/marketing' -RegionalSettingsDetails
+```
+
+Returns a single site with its regional settings, using a .pfx certificate file.
+
+### EXAMPLE 4
+
+```powershell
+Get-SPOSiteReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificateThumbprint $thumb -IncludeSiteAdmins -ThrottleLimit 12 -ExportToExcel
+```
+
+Collects the site collection administrators with 12 concurrent connections and exports the results
+to an Excel file in the user profile directory.
+
+## PARAMETERS
+
+### -ClientId
+
+(Mandatory) Application (client) ID of the Entra app registration used for the app-only connection.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Tenant
+
+(Mandatory) Tenant domain name for the PnP connection, for example contoso.onmicrosoft.com.
+Used by Connect-PnPOnline (it expects the domain, not the tenant GUID).
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 2
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -CertificateThumbprint
+
+Thumbprint of the certificate located in the current user's Windows certificate store.
+Provide exactly one of CertificateThumbprint, CertificatePath or CertificateBase64Encoded.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 3
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -CertificatePath
+
+Path to a local .pfx certificate file.
+Use CertificatePassword when the file is protected.
+Provide exactly one of CertificateThumbprint, CertificatePath or CertificateBase64Encoded.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 4
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -CertificatePassword
+
+(Optional) SecureString password protecting the .pfx file passed to CertificatePath.
+
+```yaml
+Type: SecureString
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 5
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -CertificateBase64Encoded
+
+Base64-encoded certificate (with its private key) passed directly to Connect-PnPOnline.
+Provide exactly one of CertificateThumbprint, CertificatePath or CertificateBase64Encoded.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 6
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -AdminUrl
+
+(Optional) URL of the SharePoint admin center, for example https://contoso-admin.sharepoint.com.
+When omitted, it is derived from the tenant name of the Tenant parameter.
+Provide it explicitly
+when Tenant is a vanity domain (for example contoso.com) rather than an onmicrosoft.com domain.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 7
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -SiteUrl
+
+(Optional) Restricts the report to a single site collection URL.
+When omitted, every site of the tenant is processed.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 8
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ExcludeOneDrive
+
+(Optional) Excludes the personal OneDrive sites from the report.
+Cannot be combined with OnlyOneDrive.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -OnlyOneDrive
+
+(Optional) Restricts the report to the personal OneDrive sites.
+Cannot be combined with ExcludeOneDrive.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -IncludeSiteAdmins
+
+(Optional) Adds the full list of site collection administrators of each site, resolved with
+Get-PnPSiteCollectionAdmin.
+Requires the app-only connection described above.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -RegionalSettingsDetails
+
+(Optional) Adds the regional settings of each site (time zone, hour format, locale), read with Get-PnPWeb.
+This switch significantly increases the execution time on large tenants.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -SharingRightsAdminOrFullControl
+
+(Optional) Adds, best effort, the members of the site groups holding Full Control permissions.
+This relies on Get-PnPGroup and Get-PnPGroupPermissions and is marked experimental in PnP mode:
+the permission level names depend on the site language and are matched against 'Full Control'.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -M365GroupsDetails
+
+(Optional) Adds the Microsoft 365 group and Microsoft Teams details of the group-connected sites.
+Requires an active Exchange Online session (Connect-ExchangeOnline) and the MicrosoftTeams module,
+both connected separately from the PnP app-only certificate.
+This switch significantly increases the execution time on large tenants.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ThrottleLimit
+
+(Optional) Maximum number of sites processed concurrently by the parallel site-level collection.
+Default is 8.
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 9
+Default value: 8
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ExportToExcel
+
+(Optional) If specified, exports the results to an Excel file in the user's profile directory.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ExportPath
+
+(Optional) Output directory for the Excel export.
+Defaults to the user profile.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 10
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+## NOTES
+
+## RELATED LINKS
+
+[https://ps365.clidsys.com/docs/commands/Get-SPOSiteReport](https://ps365.clidsys.com/docs/commands/Get-SPOSiteReport)

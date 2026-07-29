@@ -83,7 +83,9 @@
             "group": "Object",
             "pages": [
               "docs/commands/Convert-EntraObjectIDAndSID",
-              "docs/commands/Get-MgCustomSecurityAttributeInfo"
+              "docs/commands/Get-MgCustomSecurityAttributeInfo",
+              "docs/commands/Get-MgExternalUser",
+              "docs/commands/Get-MgUserIdentitySummary"
             ]
           },
           {
@@ -179,6 +181,12 @@
         "pages": [
           "docs/commands/Disable-MSSelfServicePurchase",
           "docs/commands/Enable-MSSelfServicePurchase"
+        ]
+      },
+      {
+        "group": "Share Point",
+        "pages": [
+          "docs/commands/Get-SPOSiteReport"
         ]
       },
       {
