@@ -171,6 +171,7 @@
         "pages": [
           "docs/commands/Compare-UserAttribute",
           "docs/commands/Find-M365Email",
+          "docs/commands/Invoke-MgGraphBatchRequest",
           "docs/commands/Switch-AzureCliAuthMode",
           "docs/commands/Switch-AzurePowerShellMode",
           "docs/commands/Switch-MgGraphPowerShellMode"

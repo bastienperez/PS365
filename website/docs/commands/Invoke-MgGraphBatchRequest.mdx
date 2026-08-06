@@ -1,0 +1,143 @@
+---
+sidebarTitle: "Invoke-MgGraphBatchRequest"
+title: "Invoke-MgGraphBatchRequest"
+Module Name: PS365
+---
+
+## SYNOPSIS
+
+Sends multiple Microsoft Graph requests in a single HTTP call using JSON batching.
+
+## SYNTAX
+
+```powershell
+Invoke-MgGraphBatchRequest [-Requests] <System.Collections.Generic.List`1[System.Collections.Hashtable]>
+ [[-GraphVersion] <String>] [[-MaxRetries] <Int32>] [[-Activity] <String>] [-ProgressAction <ActionPreference>]
+ [<CommonParameters>]
+```
+
+## DESCRIPTION
+
+Wraps the Microsoft Graph $batch endpoint (https://learn.microsoft.com/en-us/graph/json-batching) to combine
+up to 20 requests per HTTP call, drastically reducing round-trips for bulk read scenarios (e.g.
+one call per user).
+Requests are automatically chunked into batches of 20.
+Sub-requests throttled by Graph (HTTP 429) are retried
+automatically, honoring the Retry-After header announced by Graph (exponential backoff when absent).
+Returns a hashtable of responses indexed by the request id, so callers can match each response back to its request.
+
+Each request is a hashtable with the keys expected by the $batch endpoint: id (unique string), method (GET, POST...),
+url (relative to the Graph version, e.g.
+/users/&lt;id&gt;/authentication/methods) and optionally body and headers.
+
+Note: this function performs no permission check because the required scopes depend entirely on the URLs of the
+requests passed by the caller.
+The caller is responsible for connecting with the appropriate scopes beforehand.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+[System.Collections.Generic.List[hashtable]]$requests = @()
+foreach ($user in $mgUsers) {
+    $requests.Add(@{ id = "$($user.Id)"; method = 'GET'; url = "/users/$($user.Id)/authentication/methods" })
+}
+$responses = Invoke-MgGraphBatchRequest -Requests $requests -Activity 'Getting authentication methods'
+```
+
+Retrieves the authentication methods of every user in $mgUsers with 20x fewer HTTP calls, then reads each
+result with $responses["$($user.Id)"].body.value.
+
+### EXAMPLE 2
+
+```powershell
+$responses = Invoke-MgGraphBatchRequest -Requests $requests -GraphVersion 'v1.0'
+```
+
+Sends the requests against the v1.0 endpoint instead of beta.
+
+## PARAMETERS
+
+### -Requests
+
+List of request hashtables to send.
+Each hashtable must contain at least id, method and url keys.
+
+```yaml
+Type: System.Collections.Generic.List`1[System.Collections.Hashtable]
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -GraphVersion
+
+Graph API version used for the $batch endpoint: beta (default) or v1.0.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 2
+Default value: Beta
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -MaxRetries
+
+Maximum number of retry rounds for throttled sub-requests (default 5).
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 3
+Default value: 5
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Activity
+
+Activity name displayed by Write-Progress while batches are being processed.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 4
+Default value: Processing Graph batch requests
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+### System.Collections.Hashtable
+
+## NOTES
+[0.1.0] - 2026-08-05
+# Added
+- Initial version, promoted from the internal helper of Get-MgAuthNMethodInfo (PS365.Clidsys)
+
+## RELATED LINKS
+
+[https://ps365.clidsys.com/docs/commands/Invoke-MgGraphBatchRequest](https://ps365.clidsys.com/docs/commands/Invoke-MgGraphBatchRequest)

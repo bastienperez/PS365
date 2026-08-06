@@ -12,8 +12,8 @@ Retrieves dynamic groups from Microsoft 365, Exchange Online, and Entra ID with 
 
 ```powershell
 Get-DynamicGroup [[-GroupId] <String>] [-ExchangeOnlineOnly] [-EntraIDOnly] [-ExportToExcel]
- [-ExportPath <String>] [-IncludeMembers] [-MemberReport] [-ProgressAction <ActionPreference>]
- [<CommonParameters>]
+ [-ExportPath <String>] [-IncludeMembers] [-MemberReport] [-DeprecatedMemberOfRuleOnly]
+ [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -78,6 +78,23 @@ Get-DynamicGroup -MemberReport -ExportToExcel
 
 Exports both the per-group sheet ("DynamicGroups") and the per-member sheet ("Members") in the
 same Excel workbook.
+
+### EXAMPLE 7
+
+```powershell
+Get-DynamicGroup -DeprecatedMemberOfRuleOnly
+```
+
+Returns only the dynamic groups using the deprecated MemberOf rule operator, whose
+memberships stop updating after November 3, 2026.
+
+### EXAMPLE 8
+
+```powershell
+Get-DynamicGroup -DeprecatedMemberOfRuleOnly -ExportToExcel
+```
+
+Exports the groups using the deprecated MemberOf rule operator to an Excel file.
 
 ## PARAMETERS
 
@@ -205,6 +222,28 @@ Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
+
+### -DeprecatedMemberOfRuleOnly
+
+When specified, returns only the groups whose membership rule uses the deprecated MemberOf
+rule operator (e.g.
+user.memberof -any (group.objectId -in [...])).
+Microsoft ends this
+preview operator: after November 3, 2026, affected memberships stop updating and stay in
+their last known state.
+Without this switch, the DeprecatedMemberOfRule property still flags affected groups.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
 ### CommonParameters
 
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
@@ -232,7 +271,10 @@ Returns a collection of custom objects with the following properties:
 - MembersId: Pipe-separated list of member IDs (only with -IncludeMembers)
 - DisplayName, Description, Mail, MailEnabled, MailNickname, SecurityEnabled, GroupTypes,
   CreatedDateTime, RenewedDateTime, OnPremisesSyncEnabled, SecurityIdentifier, Classification, Visibility
-- Warning: Security warning if any attribute is in the "Personal-Information" property set
+- DeprecatedMemberOfRule: True if the membership rule uses the deprecated MemberOf rule operator
+  (preview ending: memberships stop updating after November 3, 2026)
+- Warning: Security warning if any attribute is in the "Personal-Information" property set,
+  and/or deprecation warning if the group uses the MemberOf rule operator
 
 OUTPUT PROPERTIES (-MemberReport mode)
 - GroupId, GroupName, GroupType, MembershipRule

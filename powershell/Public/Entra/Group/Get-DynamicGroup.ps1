@@ -40,6 +40,13 @@
     Output columns: GroupId, GroupName, GroupType, MembershipRule, MemberId, MemberDisplayName,
     MemberPrincipal, MemberType.
 
+    .PARAMETER DeprecatedMemberOfRuleOnly
+    When specified, returns only the groups whose membership rule uses the deprecated MemberOf
+    rule operator (e.g. user.memberof -any (group.objectId -in [...])). Microsoft ends this
+    preview operator: after November 3, 2026, affected memberships stop updating and stay in
+    their last known state.
+    Without this switch, the DeprecatedMemberOfRule property still flags affected groups.
+
     .EXAMPLE
     Get-DynamicGroup
 
@@ -71,6 +78,17 @@
     Exports both the per-group sheet ("DynamicGroups") and the per-member sheet ("Members") in the
     same Excel workbook.
 
+    .EXAMPLE
+    Get-DynamicGroup -DeprecatedMemberOfRuleOnly
+
+    Returns only the dynamic groups using the deprecated MemberOf rule operator, whose
+    memberships stop updating after November 3, 2026.
+
+    .EXAMPLE
+    Get-DynamicGroup -DeprecatedMemberOfRuleOnly -ExportToExcel
+
+    Exports the groups using the deprecated MemberOf rule operator to an Excel file.
+
     .OUTPUTS
     System.Collections.Generic.List[Object]
 
@@ -91,7 +109,10 @@
     - MembersId: Pipe-separated list of member IDs (only with -IncludeMembers)
     - DisplayName, Description, Mail, MailEnabled, MailNickname, SecurityEnabled, GroupTypes,
       CreatedDateTime, RenewedDateTime, OnPremisesSyncEnabled, SecurityIdentifier, Classification, Visibility
-    - Warning: Security warning if any attribute is in the "Personal-Information" property set
+    - DeprecatedMemberOfRule: True if the membership rule uses the deprecated MemberOf rule operator
+      (preview ending: memberships stop updating after November 3, 2026)
+    - Warning: Security warning if any attribute is in the "Personal-Information" property set,
+      and/or deprecation warning if the group uses the MemberOf rule operator
 
     OUTPUT PROPERTIES (-MemberReport mode)
     - GroupId, GroupName, GroupType, MembershipRule
@@ -130,7 +151,10 @@ function Get-DynamicGroup {
         [switch]$IncludeMembers,
 
         [Parameter(Mandatory = $false)]
-        [switch]$MemberReport
+        [switch]$MemberReport,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$DeprecatedMemberOfRuleOnly
     )
 
     # The Exchange Online only mode performs no Graph call, so no Graph scope is needed
@@ -487,16 +511,52 @@ function Get-DynamicGroup {
     # if it's, add a warning to the object 
     Write-Verbose "Analyzing security attributes for $($dynGroupArray.Count) groups..."
     foreach ($group in $dynGroupArray) {
+        $group | Add-Member -MemberType NoteProperty -Name DeprecatedMemberOfRule -Value $false
         $group | Add-Member -MemberType NoteProperty -Name Warning -Value $null
+
+        # Microsoft ends the MemberOf rule operator preview in Entra ID dynamic membership rules:
+        # after November 3, 2026 these groups stop updating and stay in their last known state
+        # (some resources may be quarantined from October 27, 2026 per the message center announcement)
+        if ($group.MembershipRule -match '(?i)\b(user|device)\.memberof\b') {
+            $group.DeprecatedMemberOfRule = $true
+            $group.Warning = 'This group uses the deprecated MemberOf rule operator (preview ending). After November 3, 2026, membership stops updating and stays in its last known state. Migrate before that date. See https://learn.microsoft.com/entra/identity/users/groups-dynamic-rule-member-of'
+        }
+
         if ([string]::IsNullOrWhiteSpace($group.UserAttributes)) { continue }
         foreach ($rawAttribute in $group.UserAttributes.Split('|')) {
             $attribute = $rawAttribute.Trim()
             if ($propertySetsAttribute.Contains($attribute)) {
-                $group.Warning = "'$attribute' is in the 'Personal-Information' property set, the user can modify it and add himself to the group. See https://itpro-tips.com/property-set-personal-information-and-active-directory-security-and-governance/"
+                $personalInfoWarning = "'$attribute' is in the 'Personal-Information' property set, the user can modify it and add himself to the group. See https://itpro-tips.com/property-set-personal-information-and-active-directory-security-and-governance/"
+                $group.Warning = if ($group.Warning) { "$($group.Warning) | $personalInfoWarning" } else { $personalInfoWarning }
             }
         }
     }
-    
+
+    if ($DeprecatedMemberOfRuleOnly.IsPresent) {
+        [System.Collections.Generic.List[Object]]$filteredGroupArray = @()
+        foreach ($group in $dynGroupArray) {
+            if ($group.DeprecatedMemberOfRule) {
+                $filteredGroupArray.Add($group)
+            }
+        }
+        Write-Verbose "DeprecatedMemberOfRuleOnly: $($filteredGroupArray.Count) of $($dynGroupArray.Count) groups use the deprecated MemberOf rule"
+        $dynGroupArray = $filteredGroupArray
+
+        if ($MemberReport.IsPresent) {
+            $deprecatedGroupIds = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+            foreach ($group in $dynGroupArray) {
+                [void]$deprecatedGroupIds.Add([string]$group.GroupId)
+            }
+            [System.Collections.Generic.List[Object]]$filteredMemberArray = @()
+            foreach ($row in $memberReportArray) {
+                if ($deprecatedGroupIds.Contains([string]$row.GroupId)) {
+                    $filteredMemberArray.Add($row)
+                }
+            }
+            $memberReportArray = $filteredMemberArray
+        }
+    }
+
     if ($ExportToExcel.IsPresent) {
         Write-Verbose 'Preparing Excel export...'
         $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
