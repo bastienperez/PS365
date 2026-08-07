@@ -45,6 +45,8 @@
     rule operator (e.g. user.memberof -any (group.objectId -in [...])). Microsoft ends this
     preview operator: after November 3, 2026, affected memberships stop updating and stay in
     their last known state.
+    This operator only exists in Entra ID membership rules, so this switch implies Entra ID only
+    (Exchange Online is skipped, no need to add -EntraIDOnly).
     Without this switch, the DeprecatedMemberOfRule property still flags affected groups.
 
     .EXAMPLE
@@ -157,6 +159,11 @@ function Get-DynamicGroup {
         [switch]$DeprecatedMemberOfRuleOnly
     )
 
+    if ($DeprecatedMemberOfRuleOnly.IsPresent -and $ExchangeOnlineOnly.IsPresent) {
+        Write-Warning 'The deprecated MemberOf rule operator only exists in Entra ID membership rules. -DeprecatedMemberOfRuleOnly cannot be combined with -ExchangeOnlineOnly.'
+        return
+    }
+
     # The Exchange Online only mode performs no Graph call, so no Graph scope is needed
     if (-not $ExchangeOnlineOnly.IsPresent) {
         $requiredScopes = @('Group.Read.All')
@@ -221,6 +228,9 @@ function Get-DynamicGroup {
     # msDS-cloudExtensionAttribute15       xx
     # msDS-ExternalDirectoryObjectId       externalDirectoryObjectId
     
+    # Deprecated MemberOf rule operator (preview ending after November 3, 2026)
+    $deprecatedMemberOfRulePattern = '(?i)\b(user|device)\.memberof\b'
+
     # HashSet for O(1) -contains checks in the warning loop below
     $propertySetsAttribute = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
     foreach ($attr in @(
@@ -237,7 +247,12 @@ function Get-DynamicGroup {
     [System.Collections.Generic.List[Object]]$dynGroupArray = @()
 
     # Check Exchange Online for Dynamic Distribution Groups
-    if (-not $EntraIDOnly) {
+    # The deprecated MemberOf rule operator only exists in Entra ID membership rules,
+    # so DeprecatedMemberOfRuleOnly skips Exchange Online entirely
+    if ($DeprecatedMemberOfRuleOnly.IsPresent -and -not $EntraIDOnly.IsPresent) {
+        Write-Verbose 'DeprecatedMemberOfRuleOnly: skipping Exchange Online (the MemberOf rule operator only exists in Entra ID)'
+    }
+    if (-not $EntraIDOnly -and -not $DeprecatedMemberOfRuleOnly) {
         Write-Verbose 'Retrieving Exchange Online Dynamic Distribution Groups...'
         # Retrieve dynamic distribution groups
         if ([string]::IsNullOrWhitespace($GroupId) -eq $false) {
@@ -420,6 +435,14 @@ function Get-DynamicGroup {
             }
         }
 
+        # Filter early on the membership rule so per-group Graph calls (memberOf, members)
+        # only run on affected groups
+        if ($DeprecatedMemberOfRuleOnly.IsPresent) {
+            $entraGroups = @($entraGroups | Where-Object { $_.MembershipRule -match $deprecatedMemberOfRulePattern })
+            $entraMatchCount = @($entraGroups).Count
+            Write-Verbose "DeprecatedMemberOfRuleOnly: $entraMatchCount Entra ID groups match the deprecated MemberOf rule"
+        }
+
         $entraCounter = 0
         $entraTotal = @($entraGroups).Count
         foreach ($group in $entraGroups) {
@@ -478,25 +501,33 @@ function Get-DynamicGroup {
             }
 
             try {
-                $mgMembers = @(Get-MgGroupMember -GroupId $group.Id -All -ErrorAction Stop)
-                $object.MembersCount = $mgMembers.Count
-                if ($MemberReport.IsPresent) {
-                    foreach ($m in $mgMembers) {
-                        $memberReportArray.Add([PSCustomObject][ordered]@{
-                                GroupId           = $group.Id
-                                GroupName         = $group.DisplayName
-                                GroupType         = $object.Type
-                                MembershipRule    = $object.MembershipRule
-                                MemberId          = $m.Id
-                                MemberDisplayName = $m.AdditionalProperties['displayName']
-                                MemberPrincipal   = $m.AdditionalProperties['userPrincipalName']
-                                MemberType        = ($m.AdditionalProperties['@odata.type'] -replace '#microsoft\.graph\.', '')
-                            })
+                if ($MemberReport.IsPresent -or $IncludeMembers.IsPresent) {
+                    $mgMembers = @(Get-MgGroupMember -GroupId $group.Id -All -PageSize 999 -ErrorAction Stop)
+                    $object.MembersCount = $mgMembers.Count
+                    if ($MemberReport.IsPresent) {
+                        foreach ($m in $mgMembers) {
+                            $memberReportArray.Add([PSCustomObject][ordered]@{
+                                    GroupId           = $group.Id
+                                    GroupName         = $group.DisplayName
+                                    GroupType         = $object.Type
+                                    MembershipRule    = $object.MembershipRule
+                                    MemberId          = $m.Id
+                                    MemberDisplayName = $m.AdditionalProperties['displayName']
+                                    MemberPrincipal   = $m.AdditionalProperties['userPrincipalName']
+                                    MemberType        = ($m.AdditionalProperties['@odata.type'] -replace '#microsoft\.graph\.', '')
+                                })
+                        }
+                    }
+                    else {
+                        $object.MembersName = ($mgMembers | ForEach-Object { $_.AdditionalProperties['displayName'] }) -join '|'
+                        $object.MembersId = ($mgMembers | ForEach-Object { $_.Id }) -join '|'
                     }
                 }
-                elseif ($IncludeMembers.IsPresent) {
-                    $object.MembersName = ($mgMembers | ForEach-Object { $_.AdditionalProperties['displayName'] }) -join '|'
-                    $object.MembersId = ($mgMembers | ForEach-Object { $_.Id }) -join '|'
+                else {
+                    # Single lightweight $count call instead of paging through every member
+                    $countUri = "v1.0/groups/$($group.Id)/members/`$count"
+                    $rawCount = Invoke-MgGraphRequest -Method GET -Uri $countUri -Headers @{ ConsistencyLevel = 'eventual' } -OutputType Text -ErrorAction Stop
+                    $object.MembersCount = [int]($rawCount -replace '[^\d]', '')
                 }
             }
             catch {
@@ -517,7 +548,7 @@ function Get-DynamicGroup {
         # Microsoft ends the MemberOf rule operator preview in Entra ID dynamic membership rules:
         # after November 3, 2026 these groups stop updating and stay in their last known state
         # (some resources may be quarantined from October 27, 2026 per the message center announcement)
-        if ($group.MembershipRule -match '(?i)\b(user|device)\.memberof\b') {
+        if ($group.MembershipRule -match $deprecatedMemberOfRulePattern) {
             $group.DeprecatedMemberOfRule = $true
             $group.Warning = 'This group uses the deprecated MemberOf rule operator (preview ending). After November 3, 2026, membership stops updating and stays in its last known state. Migrate before that date. See https://learn.microsoft.com/entra/identity/users/groups-dynamic-rule-member-of'
         }
