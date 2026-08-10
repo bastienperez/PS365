@@ -652,7 +652,7 @@ function Get-MgApplicationSCIM {
         # standalone deployments (e.g. Azure Automation runbook) where the module is not available.
         # Keep the fallback in sync with ModuleVersion in PS365.psd1.
         $ps365Module = Get-Module -Name 'PS365' -ErrorAction SilentlyContinue
-        $ps365Version = if ($ps365Module) { $ps365Module.Version } else { '0.4.2' }
+        $ps365Version = if ($ps365Module) { $ps365Module.Version } else { '0.4.3' }
         $ps365VersionDisplay = " (PS365 v$ps365Version)"
 
         # Human-readable execution duration for the report footer (e.g. '4 min 32 s' or '45 s')
@@ -671,6 +671,10 @@ function Get-MgApplicationSCIM {
 
         $quarantinedJobs = $synchronizationJobsDetailsArray | Where-Object { $_.Quarantined -eq $true }
         $failingJobs = $synchronizationJobsDetailsArray | Where-Object { $_.CountSuccessiveCompleteFailures -gt 0 }
+        $healthyJobs = $synchronizationJobsDetailsArray | Where-Object {
+            $_.Quarantined -ne $true -and
+            -not ($_.CountSuccessiveCompleteFailures -gt 0)
+        }
 
         Write-Verbose "Sending SCIM health report email ($($unhealthyJobs.Count) issues found out of $($synchronizationJobsDetailsArray.Count) jobs)."
 
@@ -900,6 +904,27 @@ function Get-MgApplicationSCIM {
         }
         else {
             $emailBody += "    <p style=`"color:#107c10;font-weight:600;`">All SCIM provisioning jobs are healthy.</p>"
+        }
+
+        # Always list the healthy jobs too, so the recipient can verify which applications are covered
+        if ($healthyJobs.Count -gt 0) {
+            $emailBody += @'
+    <h2>Healthy SCIM Provisioning Jobs</h2>
+    <table>
+        <tr>
+            <th>Application</th>
+            <th>Status</th>
+            <th>Escrowed (last run)</th>
+            <th>Last Successful Sync</th>
+            <th>Scheduling</th>
+            <th>Scheduling State</th>
+        </tr>
+'@
+            foreach ($job in ($healthyJobs | Sort-Object DisplayName)) {
+                $appLink = "<strong style=`"color:#11100f;font-size:12px;line-height:16px;`">$($job.DisplayName)</strong> <a href=`"$($job.EntraUrl)`" style=`"text-decoration:none;font-size:14px;line-height:16px;`" title=`"Open in Entra`">&#x1F517;</a>"
+                $emailBody += "<tr><td>$appLink</td><td>$($job.StatusCode)</td><td>$($job.LastExecutionCountEscrowed)</td><td>$($job.LastSuccessfulExecutionDate)</td><td>$($job.Scheduling)</td><td>$($job.SchedulingState)</td></tr>"
+            }
+            $emailBody += '    </table>'
         }
 
         $emailBody += @"

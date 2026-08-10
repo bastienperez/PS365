@@ -594,7 +594,7 @@ function Get-MgApplicationSAML {
         # standalone deployments (e.g. Azure Automation runbook) where the module is not available.
         # Keep the fallback in sync with ModuleVersion in PS365.psd1.
         $ps365Module = Get-Module -Name 'PS365' -ErrorAction SilentlyContinue
-        $ps365Version = if ($ps365Module) { $ps365Module.Version } else { '0.4.2' }
+        $ps365Version = if ($ps365Module) { $ps365Module.Version } else { '0.4.3' }
         $ps365VersionDisplay = " (PS365 v$ps365Version)"
 
         # Human-readable execution duration for the report footer (e.g. '4 min 32 s' or '45 s')
