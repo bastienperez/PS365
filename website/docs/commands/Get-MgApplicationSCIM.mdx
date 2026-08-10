@@ -15,8 +15,8 @@ Retrieves all Entra ID applications configured for SCIM provisioning.
 ```powershell
 Get-MgApplicationSCIM [-ExcludeAttributeMappings] [-IncludeFailedObjects] [-ForceNewToken] [-ExportToExcel]
  [-ExportPath <String>] [-RunFromAzureAutomation] [-NotificationRecipient <String>]
- [-NotificationSender <String>] [-DisableParallel] [-ThrottleLimit <Int32>] [-EntraCloudSync]
- [-ProgressAction <ActionPreference>] [<CommonParameters>]
+ [-NotificationSender <String>] [-DisableParallel] [-ThrottleLimit <Int32>] [-UseBatchRequest]
+ [-EntraCloudSync] [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ### ByObjectId
@@ -24,8 +24,8 @@ Get-MgApplicationSCIM [-ExcludeAttributeMappings] [-IncludeFailedObjects] [-Forc
 ```powershell
 Get-MgApplicationSCIM [-ObjectID <String>] [-ExcludeAttributeMappings] [-IncludeFailedObjects] [-ForceNewToken]
  [-ExportToExcel] [-ExportPath <String>] [-RunFromAzureAutomation] [-NotificationRecipient <String>]
- [-NotificationSender <String>] [-DisableParallel] [-ThrottleLimit <Int32>] [-EntraCloudSync]
- [-ProgressAction <ActionPreference>] [<CommonParameters>]
+ [-NotificationSender <String>] [-DisableParallel] [-ThrottleLimit <Int32>] [-UseBatchRequest]
+ [-EntraCloudSync] [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ### ByDisplayName
@@ -34,7 +34,7 @@ Get-MgApplicationSCIM [-ObjectID <String>] [-ExcludeAttributeMappings] [-Include
 Get-MgApplicationSCIM [-DisplayName <String>] [-ExcludeAttributeMappings] [-IncludeFailedObjects]
  [-ForceNewToken] [-ExportToExcel] [-ExportPath <String>] [-RunFromAzureAutomation]
  [-NotificationRecipient <String>] [-NotificationSender <String>] [-DisableParallel] [-ThrottleLimit <Int32>]
- [-EntraCloudSync] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+ [-UseBatchRequest] [-EntraCloudSync] [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -63,12 +63,21 @@ Forces sequential processing even on PowerShell 7+ (useful for debugging or to a
 ### EXAMPLE 3
 
 ```powershell
+Get-MgApplicationSCIM -UseBatchRequest
+```
+
+Uses the Graph JSON $batch endpoint for the discovery phase (20 requests per HTTP call, automatic 429 retry).
+Requires the PS365 module; falls back to the default behavior when Invoke-MgGraphBatchRequest is not available.
+
+### EXAMPLE 4
+
+```powershell
 Get-MgApplicationSCIM -EntraCloudSync
 ```
 
 Returns only Entra Cloud Sync jobs, excluding application provisioning (SCIM) jobs.
 
-### EXAMPLE 4
+### EXAMPLE 5
 
 ```powershell
 Get-MgApplicationSCIM -ForceNewToken
@@ -76,7 +85,7 @@ Get-MgApplicationSCIM -ForceNewToken
 
 Forces the function to disconnect and reconnect to Microsoft Graph to obtain a new access token.
 
-### EXAMPLE 5
+### EXAMPLE 6
 
 ```powershell
 Get-MgApplicationSCIM -ExportToExcel
@@ -84,7 +93,7 @@ Get-MgApplicationSCIM -ExportToExcel
 
 Exports the SCIM configuration details to an Excel file.
 
-### EXAMPLE 6
+### EXAMPLE 7
 
 ```powershell
 Get-MgApplicationSCIM -ObjectID "xxx-xxx-xxx"
@@ -92,7 +101,7 @@ Get-MgApplicationSCIM -ObjectID "xxx-xxx-xxx"
 
 Retrieves the SCIM configuration for a specific application by its ObjectID.
 
-### EXAMPLE 7
+### EXAMPLE 8
 
 ```powershell
 Get-MgApplicationSCIM -DisplayName "My App"
@@ -100,7 +109,7 @@ Get-MgApplicationSCIM -DisplayName "My App"
 
 Retrieves the SCIM configuration for a specific application by its DisplayName.
 
-### EXAMPLE 8
+### EXAMPLE 9
 
 ```powershell
 Get-MgApplicationSCIM -DisplayName "Azure*"
@@ -108,7 +117,7 @@ Get-MgApplicationSCIM -DisplayName "Azure*"
 
 Retrieves the SCIM configuration for all applications whose DisplayName starts with "Azure".
 
-### EXAMPLE 9
+### EXAMPLE 10
 
 ```powershell
 Get-MgApplicationSCIM -DisplayName "*Provisioning*"
@@ -116,7 +125,7 @@ Get-MgApplicationSCIM -DisplayName "*Provisioning*"
 
 Retrieves the SCIM configuration for all applications whose DisplayName contains "Provisioning".
 
-### EXAMPLE 10
+### EXAMPLE 11
 
 ```powershell
 Get-MgApplicationSCIM -RunFromAzureAutomation -NotificationRecipient 'admin@company.com' -NotificationSender 'automation@company.com'
@@ -331,6 +340,27 @@ Aliases:
 Required: False
 Position: Named
 Default value: 5
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -UseBatchRequest
+
+(Optional) Uses the Microsoft Graph JSON $batch endpoint (via Invoke-MgGraphBatchRequest, 20 requests per
+HTTP call with automatic HTTP 429 retry) for the synchronization jobs discovery phase, instead of
+ForEach-Object -Parallel.
+Requires the PS365 module (Invoke-MgGraphBatchRequest); when the command is not
+available (e.g.
+script deployed standalone), the function warns and falls back to the default behavior.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

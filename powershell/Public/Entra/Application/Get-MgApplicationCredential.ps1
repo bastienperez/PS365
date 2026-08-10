@@ -47,10 +47,21 @@
     (Optional) Maximum number of concurrent runspaces when running in parallel. Default is 5.
     Keep this value moderate to avoid Microsoft Graph throttling (HTTP 429).
 
+    .PARAMETER UseBatchRequest
+    (Optional) Uses the Microsoft Graph JSON $batch endpoint (via Invoke-MgGraphBatchRequest, 20 requests per
+    HTTP call with automatic HTTP 429 retry) to retrieve the application owners, instead of ForEach-Object -Parallel.
+    Requires the PS365 module (Invoke-MgGraphBatchRequest); when the command is not available (e.g. script
+    deployed standalone), the function warns and falls back to the default behavior.
+
     .EXAMPLE
     Get-MgApplicationCredential
 
     Retrieves all Microsoft Entra ID applications and their credentials.
+
+    .EXAMPLE
+    Get-MgApplicationCredential -UseBatchRequest
+
+    Uses the Graph JSON $batch endpoint to retrieve the application owners (20 requests per HTTP call, automatic 429 retry).
 
     .EXAMPLE
     Get-MgApplicationCredential -DisableParallel
@@ -141,11 +152,26 @@ function Get-MgApplicationCredential {
 
         [Parameter(Mandatory = $false)]
         [ValidateRange(1, 20)]
-        [int]$ThrottleLimit = 5
+        [int]$ThrottleLimit = 5,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$UseBatchRequest
     )
 
+    # Execution duration, displayed in the Azure Automation HTML report footer
+    $executionStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+
+    # Batch mode requires Invoke-MgGraphBatchRequest (PS365 module). When the script is deployed
+    # standalone (e.g. copied to a client environment or an Azure Automation runbook), fall back
+    # to the default parallel/sequential behavior instead of failing.
+    $useBatch = $UseBatchRequest.IsPresent
+    if ($useBatch -and -not (Get-Command 'Invoke-MgGraphBatchRequest' -ErrorAction SilentlyContinue)) {
+        Write-Warning 'UseBatchRequest requires the Invoke-MgGraphBatchRequest command (PS365 module), which is not available. Falling back to the default discovery method.'
+        $useBatch = $false
+    }
+
     # Run in parallel by default on PowerShell 7+ (ForEach-Object -Parallel); always sequential on PowerShell 5.1.
-    $useParallel = ($PSVersionTable.PSVersion.Major -ge 7) -and -not $DisableParallel
+    $useParallel = (-not $useBatch) -and ($PSVersionTable.PSVersion.Major -ge 7) -and -not $DisableParallel
 
     # Validate notification parameters
     if ($RunFromAzureAutomation.IsPresent) {
@@ -310,23 +336,35 @@ function Get-MgApplicationCredential {
     Write-Host "$($mgApps.Count) application(s) found" -ForegroundColor Green
 
     # Per-application processing. Emits one object per credential (or a fallback object).
-    # Shared by the sequential and parallel paths.
+    # Shared by the sequential, parallel and batch paths: the batch path fetches the owners upfront
+    # via the $batch endpoint and passes them as PreFetchedOwners.
     $processApp = {
-        param($mgApp, $Prefix = '')
+        param($mgApp, $Prefix = '', $PreFetchedOwners = $null)
 
         Write-Host "$Prefix$($mgApp.DisplayName)" -ForegroundColor Cyan
 
         # Reset to $null before each call: prevents previous iteration's value from bleeding through on silent errors
         $ownerObjects = $null
         $ownerString = $null
-        $ownerObjects = Get-MgApplicationOwner -ApplicationId $mgApp.Id -ErrorAction SilentlyContinue
+        $ownerObjects = if ($null -ne $PreFetchedOwners) {
+            $PreFetchedOwners
+        }
+        else {
+            Get-MgApplicationOwner -ApplicationId $mgApp.Id -ErrorAction SilentlyContinue
+        }
 
         # Build owners string: DisplayName for each owner, joined with '|'
+        # SDK objects expose properties via AdditionalProperties; raw $batch JSON exposes them directly
         if ($ownerObjects) {
             $ownerString = ($ownerObjects | ForEach-Object {
-                    $props = $_.AdditionalProperties
-                    if ($props.ContainsKey('displayName') -and -not [string]::IsNullOrEmpty($props['displayName'])) { $props['displayName'] }
-                    else { $_.Id }
+                    $ownerDisplayName = if ($_.PSObject.Properties['AdditionalProperties'] -and $_.AdditionalProperties.ContainsKey('displayName')) {
+                        $_.AdditionalProperties['displayName']
+                    }
+                    elseif ($_.PSObject.Properties['displayName']) {
+                        $_.displayName
+                    }
+
+                    if ([string]::IsNullOrEmpty($ownerDisplayName)) { $_.Id } else { $ownerDisplayName }
                 }) -join '|'
         }
 
@@ -378,7 +416,34 @@ function Get-MgApplicationCredential {
         # Apps without any KeyCredentials or PasswordCredentials are intentionally skipped.
     }
 
-    if ($useParallel) {
+    if ($useBatch) {
+        Write-Verbose 'Retrieving application owners with the Graph $batch endpoint (20 requests per HTTP call)...'
+        [System.Collections.Generic.List[hashtable]]$ownersRequests = @()
+        foreach ($mgApp in $mgApps) {
+            $ownersRequests.Add(@{
+                    id     = "$($mgApp.Id)"
+                    method = 'GET'
+                    url    = "/applications/$($mgApp.Id)/owners"
+                })
+        }
+
+        $ownersResponses = Invoke-MgGraphBatchRequest -Requests $ownersRequests -GraphVersion 'v1.0' -Activity 'Getting application owners'
+
+        $i = 0
+        $mgAppsCount = @($mgApps).Count
+        foreach ($mgApp in $mgApps) {
+            $i++
+            # A failed/missing batch response passes $null: the scriptblock then falls back to Get-MgApplicationOwner
+            $ownersResponse = $ownersResponses["$($mgApp.Id)"]
+            $preFetchedOwners = if ($ownersResponse -and $ownersResponse.status -eq 200) { @($ownersResponse.body.value) } else { $null }
+
+            $results = & $processApp $mgApp "($i/$mgAppsCount) - " $preFetchedOwners
+            foreach ($result in $results) {
+                if ($result) { $credentialsArray.Add($result) }
+            }
+        }
+    }
+    elseif ($useParallel) {
         Write-Verbose "Processing applications in parallel (ThrottleLimit: $ThrottleLimit)..."
         $processText = $processApp.ToString()
         $parallelResults = $mgApps | ForEach-Object -ThrottleLimit $ThrottleLimit -Parallel {
@@ -404,7 +469,23 @@ function Get-MgApplicationCredential {
 
     # Check for expiring credentials and send notification if enabled
     if ($RunFromAzureAutomation.IsPresent) {
-        $expiringCredentials = $credentialsArray | Where-Object { 
+        # Report footer version: resolved from the loaded PS365 module, with a hardcoded fallback for
+        # standalone deployments (e.g. Azure Automation runbook) where the module is not available.
+        # Keep the fallback in sync with ModuleVersion in PS365.psd1.
+        $ps365Module = Get-Module -Name 'PS365' -ErrorAction SilentlyContinue
+        $ps365Version = if ($ps365Module) { $ps365Module.Version } else { '0.4.2' }
+        $ps365VersionDisplay = " (PS365 v$ps365Version)"
+
+        # Human-readable execution duration for the report footer (e.g. '4 min 32 s' or '45 s')
+        $executionElapsed = $executionStopwatch.Elapsed
+        $executionTimeDisplay = if ($executionElapsed.TotalMinutes -ge 1) {
+            '{0} min {1} s' -f [int][Math]::Floor($executionElapsed.TotalMinutes), $executionElapsed.Seconds
+        }
+        else {
+            '{0} s' -f [int][Math]::Ceiling($executionElapsed.TotalSeconds)
+        }
+
+        $expiringCredentials = $credentialsArray | Where-Object {
             $null -ne $_.CredentialExpiresInDays -and 
             $_.CredentialExpiresInDays -le $ExpirationThresholdDays
         }
@@ -617,7 +698,7 @@ function Get-MgApplicationCredential {
     <div class="footer">
         $emailFooter
         <hr style="border: none; border-top: 1px solid #d2d0ce; margin: 15px 0;">
-        <p><em>Generated on $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') by Get-MgApplicationCredential v0.1.9</em></p>
+        <p><em>Generated on $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') by Get-MgApplicationCredential$ps365VersionDisplay - execution time: $executionTimeDisplay</em></p>
     </div>
 </body>
 </html>

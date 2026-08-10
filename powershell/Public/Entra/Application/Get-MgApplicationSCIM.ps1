@@ -46,6 +46,12 @@
     (Optional) Forces sequential processing. By default, on PowerShell 7+ the function scans service principals in
     parallel (ForEach-Object -Parallel) to speed up discovery; on PowerShell 5.1 it always runs sequentially.
 
+    .PARAMETER UseBatchRequest
+    (Optional) Uses the Microsoft Graph JSON $batch endpoint (via Invoke-MgGraphBatchRequest, 20 requests per
+    HTTP call with automatic HTTP 429 retry) for the synchronization jobs discovery phase, instead of
+    ForEach-Object -Parallel. Requires the PS365 module (Invoke-MgGraphBatchRequest); when the command is not
+    available (e.g. script deployed standalone), the function warns and falls back to the default behavior.
+
     .PARAMETER ThrottleLimit
     (Optional) Maximum number of concurrent runspaces when running in parallel. Default is 5.
     Keep this value moderate to avoid Microsoft Graph throttling (HTTP 429).
@@ -65,6 +71,12 @@
     Get-MgApplicationSCIM -DisableParallel
 
     Forces sequential processing even on PowerShell 7+ (useful for debugging or to avoid concurrent Graph calls).
+
+    .EXAMPLE
+    Get-MgApplicationSCIM -UseBatchRequest
+
+    Uses the Graph JSON $batch endpoint for the discovery phase (20 requests per HTTP call, automatic 429 retry).
+    Requires the PS365 module; falls back to the default behavior when Invoke-MgGraphBatchRequest is not available.
 
     .EXAMPLE
     Get-MgApplicationSCIM -EntraCloudSync
@@ -158,15 +170,30 @@ function Get-MgApplicationSCIM {
         [int]$ThrottleLimit = 5,
 
         [Parameter(Mandatory = $false)]
+        [switch]$UseBatchRequest,
+
+        [Parameter(Mandatory = $false)]
         [switch]$EntraCloudSync
     )
+
+    # Execution duration, displayed in the Azure Automation HTML health report footer
+    $executionStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 
     # Entra Cloud Sync jobs are identified by these synchronization template IDs.
     $cloudSyncTemplateIds = @('AD2AADProvisioning', 'AD2AADPasswordHash')
     $templateFilter = if ($EntraCloudSync) { $cloudSyncTemplateIds } else { $null }
 
+    # Batch mode requires Invoke-MgGraphBatchRequest (PS365 module). When the script is deployed
+    # standalone (e.g. copied to a client environment or an Azure Automation runbook), fall back
+    # to the default parallel/sequential behavior instead of failing.
+    $useBatch = $UseBatchRequest.IsPresent
+    if ($useBatch -and -not (Get-Command 'Invoke-MgGraphBatchRequest' -ErrorAction SilentlyContinue)) {
+        Write-Warning 'UseBatchRequest requires the Invoke-MgGraphBatchRequest command (PS365 module), which is not available. Falling back to the default discovery method.'
+        $useBatch = $false
+    }
+
     # Run in parallel by default on PowerShell 7+ (ForEach-Object -Parallel); always sequential on PowerShell 5.1.
-    $useParallel = ($PSVersionTable.PSVersion.Major -ge 7) -and -not $DisableParallel
+    $useParallel = (-not $useBatch) -and ($PSVersionTable.PSVersion.Major -ge 7) -and -not $DisableParallel
 
     # Validate notification parameters
     if ($RunFromAzureAutomation.IsPresent) {
@@ -300,13 +327,20 @@ function Get-MgApplicationSCIM {
     Write-Host "$($servicePrincipals.Count) service principals found"
 
     # Per-service-principal processing. Returns the enriched synchronization job object, or nothing
-    # if the service principal has no synchronization job. Shared by the sequential and parallel paths.
+    # if the service principal has no synchronization job. Shared by the sequential, parallel and batch
+    # paths: the batch path fetches the jobs upfront via the $batch endpoint and passes them as PreFetchedJobs
+    # (PowerShell property access is case-insensitive, so raw camelCase JSON jobs work with the same code).
     $processServicePrincipal = {
-        param($servicePrincipal, $Prefix = '', $TemplateFilter = $null)
+        param($servicePrincipal, $Prefix = '', $TemplateFilter = $null, $PreFetchedJobs = $null)
 
         Write-Host "$Prefix$($servicePrincipal.DisplayName): check for synchronization jobs" -ForegroundColor Cyan
 
-        $jobs = Get-MgServicePrincipalSynchronizationJob -ServicePrincipalId $servicePrincipal.Id -All
+        $jobs = if ($null -ne $PreFetchedJobs) {
+            $PreFetchedJobs
+        }
+        else {
+            Get-MgServicePrincipalSynchronizationJob -ServicePrincipalId $servicePrincipal.Id -All
+        }
 
         # Optionally keep only jobs matching the requested synchronization template IDs (e.g. Entra Cloud Sync)
         if ($TemplateFilter) {
@@ -364,7 +398,36 @@ function Get-MgApplicationSCIM {
         }
     }
 
-    if ($useParallel) {
+    if ($useBatch) {
+        Write-Verbose 'Scanning service principals with the Graph $batch endpoint (20 requests per HTTP call)...'
+        [System.Collections.Generic.List[hashtable]]$jobsRequests = @()
+        foreach ($servicePrincipal in $servicePrincipals) {
+            $jobsRequests.Add(@{
+                    id     = "$($servicePrincipal.Id)"
+                    method = 'GET'
+                    url    = "/servicePrincipals/$($servicePrincipal.Id)/synchronization/jobs"
+                })
+        }
+
+        $jobsResponses = Invoke-MgGraphBatchRequest -Requests $jobsRequests -GraphVersion 'v1.0' -Activity 'Getting synchronization jobs'
+
+        $i = 0
+        $servicePrincipalsCount = @($servicePrincipals).Count
+        foreach ($servicePrincipal in $servicePrincipals) {
+            $i++
+            $response = $jobsResponses["$($servicePrincipal.Id)"]
+            # Non-200 responses mean the service principal has no synchronization resource: not a SCIM app
+            if (-not $response -or $response.status -ne 200) {
+                continue
+            }
+
+            $results = & $processServicePrincipal $servicePrincipal "($i/$servicePrincipalsCount) - " $templateFilter @($response.body.value)
+            foreach ($result in $results) {
+                if ($result) { $synchronizationJobsArray.Add($result) }
+            }
+        }
+    }
+    elseif ($useParallel) {
         Write-Verbose "Scanning service principals in parallel (ThrottleLimit: $ThrottleLimit)..."
         # ForEach-Object -Parallel runs in separate runspaces of the same process; the Microsoft.Graph
         # auth session is process-wide, but the cmdlet modules must be imported in each runspace.
@@ -585,15 +648,29 @@ function Get-MgApplicationSCIM {
 
     # Send health report if running from Azure Automation
     if ($RunFromAzureAutomation.IsPresent) {
+        # Report footer version: resolved from the loaded PS365 module, with a hardcoded fallback for
+        # standalone deployments (e.g. Azure Automation runbook) where the module is not available.
+        # Keep the fallback in sync with ModuleVersion in PS365.psd1.
+        $ps365Module = Get-Module -Name 'PS365' -ErrorAction SilentlyContinue
+        $ps365Version = if ($ps365Module) { $ps365Module.Version } else { '0.4.2' }
+        $ps365VersionDisplay = " (PS365 v$ps365Version)"
+
+        # Human-readable execution duration for the report footer (e.g. '4 min 32 s' or '45 s')
+        $executionElapsed = $executionStopwatch.Elapsed
+        $executionTimeDisplay = if ($executionElapsed.TotalMinutes -ge 1) {
+            '{0} min {1} s' -f [int][Math]::Floor($executionElapsed.TotalMinutes), $executionElapsed.Seconds
+        }
+        else {
+            '{0} s' -f [int][Math]::Ceiling($executionElapsed.TotalSeconds)
+        }
+
         $unhealthyJobs = $synchronizationJobsDetailsArray | Where-Object {
-            $_.StatusCode -ne 'Steady' -or
             $_.Quarantined -eq $true -or
             $_.CountSuccessiveCompleteFailures -gt 0
         }
 
         $quarantinedJobs = $synchronizationJobsDetailsArray | Where-Object { $_.Quarantined -eq $true }
         $failingJobs = $synchronizationJobsDetailsArray | Where-Object { $_.CountSuccessiveCompleteFailures -gt 0 }
-        $nonSteadyJobs = $synchronizationJobsDetailsArray | Where-Object { $_.StatusCode -ne 'Steady' -and $_.Quarantined -ne $true }
 
         Write-Verbose "Sending SCIM health report email ($($unhealthyJobs.Count) issues found out of $($synchronizationJobsDetailsArray.Count) jobs)."
 
@@ -684,7 +761,7 @@ function Get-MgApplicationSCIM {
 <body>
     <table border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;border-collapse:collapse;margin-bottom:12px;background:transparent;box-shadow:none;" role="presentation">
         <tr>
-            <td width="25%" valign="top" style="width:25%;padding:4pt 3pt 4pt 5pt;">
+            <td width="33%" valign="top" style="width:33%;padding:4pt 3pt 4pt 5pt;">
                 <table border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;background:#FFF0F0;border-collapse:collapse;margin-bottom:0;box-shadow:none;" role="presentation">
                     <tr>
                         <td valign="top" style="padding:6pt 8pt 6pt 8pt;border-bottom:none;">
@@ -703,7 +780,7 @@ function Get-MgApplicationSCIM {
                     </tr>
                 </table>
             </td>
-            <td width="25%" valign="top" style="width:25%;padding:4pt 3pt 4pt 3pt;">
+            <td width="34%" valign="top" style="width:34%;padding:4pt 3pt 4pt 3pt;">
                 <table border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;background:#FDEFD0;border-collapse:collapse;margin-bottom:0;box-shadow:none;" role="presentation">
                     <tr>
                         <td valign="top" style="padding:6pt 8pt 6pt 8pt;border-bottom:none;">
@@ -722,26 +799,7 @@ function Get-MgApplicationSCIM {
                     </tr>
                 </table>
             </td>
-            <td width="25%" valign="top" style="width:25%;padding:4pt 3pt 4pt 3pt;">
-                <table border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;background:#CCE4FF;border-collapse:collapse;margin-bottom:0;box-shadow:none;" role="presentation">
-                    <tr>
-                        <td valign="top" style="padding:6pt 8pt 6pt 8pt;border-bottom:none;">
-                            <h4 align="center" style="margin:0 0 5pt 0;text-align:center;line-height:14pt;font-size:11pt;font-family:'Segoe UI Semibold',sans-serif;color:#003882;font-weight:600;">Not Steady</h4>
-                            <table border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;border-collapse:collapse;margin-bottom:0;background:transparent;box-shadow:none;" role="presentation">
-                                <tr>
-                                    <td width="50%" valign="top" style="width:50%;padding:2pt 0 2pt 0;text-align:right;border-bottom:none;">
-                                        <span style="font-size:18pt;font-family:'Segoe UI',sans-serif;color:#003882;font-weight:bold;">$($nonSteadyJobs.Count)</span>
-                                    </td>
-                                    <td width="50%" valign="middle" style="width:50%;padding:2pt 0 2pt 6pt;font-size:9pt;font-family:'Segoe UI',sans-serif;color:#003882;border-bottom:none;vertical-align:middle;">
-                                        apps not in steady state
-                                    </td>
-                                </tr>
-                            </table>
-                        </td>
-                    </tr>
-                </table>
-            </td>
-            <td width="25%" valign="top" style="width:25%;padding:4pt 5pt 4pt 3pt;">
+            <td width="33%" valign="top" style="width:33%;padding:4pt 5pt 4pt 3pt;">
                 <table border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;background:#DFF6DD;border-collapse:collapse;margin-bottom:0;box-shadow:none;" role="presentation">
                     <tr>
                         <td valign="top" style="padding:6pt 8pt 6pt 8pt;border-bottom:none;">
@@ -849,7 +907,7 @@ function Get-MgApplicationSCIM {
     <div class="footer">
         $(if ($unhealthyJobs.Count -gt 0) { '<p class="action-required">Action Required:</p><p>Please review these SCIM provisioning jobs to avoid user provisioning disruptions.</p>' } else { '<p>No action required. All provisioning jobs are running as expected.</p>' })
         <hr style="border: none; border-top: 1px solid #d2d0ce; margin: 15px 0;">
-        <p><em>Generated on $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') by Get-MgApplicationSCIM v0.1.9</em></p>
+        <p><em>Generated on $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') by Get-MgApplicationSCIM$ps365VersionDisplay - execution time: $executionTimeDisplay</em></p>
     </div>
 </body>
 </html>

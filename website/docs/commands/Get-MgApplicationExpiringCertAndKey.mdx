@@ -12,7 +12,7 @@ Retrieves Entra ID applications with expiring credentials or SAML certificates.
 
 ```powershell
 Get-MgApplicationExpiringCertAndKey [[-DaysUntilExpiry] <Int32>] [-ForceNewToken] [-ExportToExcel]
- [[-ExportPath] <String>] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+ [[-ExportPath] <String>] [-UseBatchRequest] [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -35,12 +35,20 @@ Retrieves all applications with credentials or SAML certificates expiring within
 ### EXAMPLE 2
 
 ```powershell
+Get-MgApplicationExpiringCertAndKey -UseBatchRequest
+```
+
+Retrieves the expiring credentials using the Graph JSON $batch endpoint for the underlying functions.
+
+### EXAMPLE 3
+
+```powershell
 Get-MgApplicationExpiringCertAndKey -DaysUntilExpiry 7
 ```
 
 Retrieves all applications with credentials or SAML certificates expiring within the next 7 days.
 
-### EXAMPLE 3
+### EXAMPLE 4
 
 ```powershell
 Get-MgApplicationExpiringCertAndKey -DaysUntilExpiry 60 -ExportToExcel
@@ -112,6 +120,23 @@ Aliases:
 Required: False
 Position: 2
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -UseBatchRequest
+
+(Optional) Passed through to Get-MgApplicationCredential and Get-MgApplicationSAML: uses the Microsoft Graph
+JSON $batch endpoint (20 requests per HTTP call with automatic HTTP 429 retry) instead of ForEach-Object -Parallel.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

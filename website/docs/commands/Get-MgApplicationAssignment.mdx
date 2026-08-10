@@ -14,15 +14,15 @@ Retrieves all Entra ID applications and their assignment types.
 
 ```powershell
 Get-MgApplicationAssignment [-AllApplications] [-AssignmentNotEnforced] [-AssignmentEmpty] [-ExportToExcel]
- [-ExportPath <String>] [-DisableParallel] [-ThrottleLimit <Int32>] [-ProgressAction <ActionPreference>]
- [<CommonParameters>]
+ [-ExportPath <String>] [-DisableParallel] [-ThrottleLimit <Int32>] [-UseBatchRequest]
+ [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ### ByApplicationId
 
 ```powershell
 Get-MgApplicationAssignment [[-ApplicationId] <String[]>] [-AssignmentNotEnforced] [-AssignmentEmpty]
- [-ExportToExcel] [-ExportPath <String>] [-DisableParallel] [-ThrottleLimit <Int32>]
+ [-ExportToExcel] [-ExportPath <String>] [-DisableParallel] [-ThrottleLimit <Int32>] [-UseBatchRequest]
  [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
@@ -30,15 +30,15 @@ Get-MgApplicationAssignment [[-ApplicationId] <String[]>] [-AssignmentNotEnforce
 
 ```powershell
 Get-MgApplicationAssignment [-ObjectID <String>] [-AssignmentNotEnforced] [-AssignmentEmpty] [-ExportToExcel]
- [-ExportPath <String>] [-DisableParallel] [-ThrottleLimit <Int32>] [-ProgressAction <ActionPreference>]
- [<CommonParameters>]
+ [-ExportPath <String>] [-DisableParallel] [-ThrottleLimit <Int32>] [-UseBatchRequest]
+ [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ### ByDisplayName
 
 ```powershell
 Get-MgApplicationAssignment [-DisplayName <String>] [-AssignmentNotEnforced] [-AssignmentEmpty]
- [-ExportToExcel] [-ExportPath <String>] [-DisableParallel] [-ThrottleLimit <Int32>]
+ [-ExportToExcel] [-ExportPath <String>] [-DisableParallel] [-ThrottleLimit <Int32>] [-UseBatchRequest]
  [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
@@ -62,12 +62,20 @@ Retrieves all applications and their assignment types.
 ### EXAMPLE 2
 
 ```powershell
+Get-MgApplicationAssignment -UseBatchRequest
+```
+
+Uses the Graph JSON $batch endpoint to retrieve the app role assignments (20 requests per HTTP call, automatic 429 retry).
+
+### EXAMPLE 3
+
+```powershell
 Get-MgApplicationAssignment -DisableParallel
 ```
 
 Forces sequential processing even on PowerShell 7+ (useful for debugging or to avoid concurrent Graph calls).
 
-### EXAMPLE 3
+### EXAMPLE 4
 
 ```powershell
 Get-MgApplicationAssignment -ApplicationId "xxx", "yyy"
@@ -75,7 +83,7 @@ Get-MgApplicationAssignment -ApplicationId "xxx", "yyy"
 
 Retrieves assignment types for the specified application IDs.
 
-### EXAMPLE 4
+### EXAMPLE 5
 
 ```powershell
 Get-MgApplicationAssignment -ObjectID '11111111-2222-3333-4444-555555555555'
@@ -83,7 +91,7 @@ Get-MgApplicationAssignment -ObjectID '11111111-2222-3333-4444-555555555555'
 
 Retrieves assignment types for the service principal matching this ObjectID.
 
-### EXAMPLE 5
+### EXAMPLE 6
 
 ```powershell
 Get-MgApplicationAssignment -DisplayName 'My SAML App'
@@ -91,7 +99,7 @@ Get-MgApplicationAssignment -DisplayName 'My SAML App'
 
 Retrieves assignment types for the service principal matching this DisplayName.
 
-### EXAMPLE 6
+### EXAMPLE 7
 
 ```powershell
 Get-MgApplicationAssignment -AssignmentEmpty
@@ -99,7 +107,7 @@ Get-MgApplicationAssignment -AssignmentEmpty
 
 Retrieves only applications with no specific user/group/service principal assignments.
 
-### EXAMPLE 7
+### EXAMPLE 8
 
 ```powershell
 Get-MgApplicationAssignment -ExportToExcel
@@ -276,6 +284,27 @@ Aliases:
 Required: False
 Position: Named
 Default value: 5
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -UseBatchRequest
+
+(Optional) Uses the Microsoft Graph JSON $batch endpoint (via Invoke-MgGraphBatchRequest, 20 requests per
+HTTP call with automatic HTTP 429 retry) to retrieve the app role assignments, instead of ForEach-Object -Parallel.
+Requires the PS365 module (Invoke-MgGraphBatchRequest); when the command is not available (e.g.
+script
+deployed standalone), the function warns and falls back to the default behavior.
+Note: the per-principal lookups (user, group, service principal details) are still performed individually.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

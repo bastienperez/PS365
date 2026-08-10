@@ -56,10 +56,22 @@
     (Optional) Maximum number of concurrent runspaces when running in parallel. Default is 5.
     Keep this value moderate to avoid Microsoft Graph throttling (HTTP 429).
 
+    .PARAMETER UseBatchRequest
+    (Optional) Uses the Microsoft Graph JSON $batch endpoint (via Invoke-MgGraphBatchRequest, 20 requests per
+    HTTP call with automatic HTTP 429 retry) to retrieve the application owners, instead of ForEach-Object -Parallel.
+    Requires the PS365 module (Invoke-MgGraphBatchRequest); when the command is not available (e.g. script
+    deployed standalone), the function warns and falls back to the default behavior.
+    Note: with -IncludeSignInStats, the sign-in statistics are still retrieved per application (not batched).
+
     .EXAMPLE
     Get-MgApplicationSAML
 
     Retrieves all Entra ID applications configured for SAML SSO.
+
+    .EXAMPLE
+    Get-MgApplicationSAML -UseBatchRequest
+
+    Uses the Graph JSON $batch endpoint to retrieve the application owners (20 requests per HTTP call, automatic 429 retry).
 
     .EXAMPLE
     Get-MgApplicationSAML -DisableParallel
@@ -163,11 +175,26 @@ function Get-MgApplicationSAML {
 
         [Parameter(Mandatory = $false)]
         [ValidateRange(1, 20)]
-        [int]$ThrottleLimit = 5
+        [int]$ThrottleLimit = 5,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$UseBatchRequest
     )
 
+    # Execution duration, displayed in the Azure Automation HTML report footer
+    $executionStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+
+    # Batch mode requires Invoke-MgGraphBatchRequest (PS365 module). When the script is deployed
+    # standalone (e.g. copied to a client environment or an Azure Automation runbook), fall back
+    # to the default parallel/sequential behavior instead of failing.
+    $useBatch = $UseBatchRequest.IsPresent
+    if ($useBatch -and -not (Get-Command 'Invoke-MgGraphBatchRequest' -ErrorAction SilentlyContinue)) {
+        Write-Warning 'UseBatchRequest requires the Invoke-MgGraphBatchRequest command (PS365 module), which is not available. Falling back to the default discovery method.'
+        $useBatch = $false
+    }
+
     # Run in parallel by default on PowerShell 7+ (ForEach-Object -Parallel); always sequential on PowerShell 5.1.
-    $useParallel = ($PSVersionTable.PSVersion.Major -ge 7) -and -not $DisableParallel
+    $useParallel = (-not $useBatch) -and ($PSVersionTable.PSVersion.Major -ge 7) -and -not $DisableParallel
 
     # Validate notification parameters
     if ($RunFromAzureAutomation.IsPresent) {
@@ -356,22 +383,34 @@ function Get-MgApplicationSAML {
     }
 
     # Per-application processing. Emits one object per signing certificate (or a fallback object).
-    # Shared by the sequential and parallel paths.
+    # Shared by the sequential, parallel and batch paths: the batch path fetches the owners upfront
+    # via the $batch endpoint and passes them as PreFetchedOwners.
     $processSamlApp = {
-        param($samlApp, $Prefix = '', $IncludeSignInStats = $false, $AuditLogPermissionMissing = $false, $SignInStartDate = $null)
+        param($samlApp, $Prefix = '', $IncludeSignInStats = $false, $AuditLogPermissionMissing = $false, $SignInStartDate = $null, $PreFetchedOwners = $null)
 
         Write-Host "$Prefix$($samlApp.DisplayName)" -ForegroundColor Cyan
         # Reset to $null before each call: prevents previous iteration's value from bleeding through on silent errors
         $ownerObjects = $null
         $ownerString = $null
-        $ownerObjects = Get-MgServicePrincipalOwner -ServicePrincipalId $samlApp.Id -ErrorAction SilentlyContinue
+        $ownerObjects = if ($null -ne $PreFetchedOwners) {
+            $PreFetchedOwners
+        }
+        else {
+            Get-MgServicePrincipalOwner -ServicePrincipalId $samlApp.Id -ErrorAction SilentlyContinue
+        }
 
         # Build owners string: DisplayName for each owner, joined with '|'
+        # SDK objects expose properties via AdditionalProperties; raw $batch JSON exposes them directly
         if ($ownerObjects) {
             $ownerString = ($ownerObjects | ForEach-Object {
-                    $props = $_.AdditionalProperties
-                    if ($props.ContainsKey('displayName') -and -not [string]::IsNullOrEmpty($props['displayName'])) { $props['displayName'] }
-                    else { $_.Id }
+                    $ownerDisplayName = if ($_.PSObject.Properties['AdditionalProperties'] -and $_.AdditionalProperties.ContainsKey('displayName')) {
+                        $_.AdditionalProperties['displayName']
+                    }
+                    elseif ($_.PSObject.Properties['displayName']) {
+                        $_.displayName
+                    }
+
+                    if ([string]::IsNullOrEmpty($ownerDisplayName)) { $_.Id } else { $ownerDisplayName }
                 }) -join '|'
         }
         
@@ -497,7 +536,34 @@ function Get-MgApplicationSAML {
         }
     }
 
-    if ($useParallel) {
+    if ($useBatch) {
+        Write-Verbose 'Retrieving service principal owners with the Graph $batch endpoint (20 requests per HTTP call)...'
+        [System.Collections.Generic.List[hashtable]]$ownersRequests = @()
+        foreach ($samlApp in $samlApplications) {
+            $ownersRequests.Add(@{
+                    id     = "$($samlApp.Id)"
+                    method = 'GET'
+                    url    = "/servicePrincipals/$($samlApp.Id)/owners"
+                })
+        }
+
+        $ownersResponses = Invoke-MgGraphBatchRequest -Requests $ownersRequests -GraphVersion 'v1.0' -Activity 'Getting service principal owners'
+
+        $appCounter = 0
+        $samlApplicationsCount = @($samlApplications).Count
+        foreach ($samlApp in $samlApplications) {
+            $appCounter++
+            # A failed/missing batch response passes $null: the scriptblock then falls back to Get-MgServicePrincipalOwner
+            $ownersResponse = $ownersResponses["$($samlApp.Id)"]
+            $preFetchedOwners = if ($ownersResponse -and $ownersResponse.status -eq 200) { @($ownersResponse.body.value) } else { $null }
+
+            $results = & $processSamlApp $samlApp "Processing $appCounter/${samlApplicationsCount}: " $IncludeSignInStats.IsPresent $auditLogPermissionMissing $signInStartDate $preFetchedOwners
+            foreach ($result in $results) {
+                if ($result) { $samlApplicationsArray.Add($result) }
+            }
+        }
+    }
+    elseif ($useParallel) {
         Write-Verbose "Processing SAML applications in parallel (ThrottleLimit: $ThrottleLimit)..."
         $processText = $processSamlApp.ToString()
         $inclStats = $IncludeSignInStats.IsPresent
@@ -524,6 +590,22 @@ function Get-MgApplicationSAML {
 
     # Check for expiring certificates and send notification if enabled
     if ($RunFromAzureAutomation.IsPresent) {
+        # Report footer version: resolved from the loaded PS365 module, with a hardcoded fallback for
+        # standalone deployments (e.g. Azure Automation runbook) where the module is not available.
+        # Keep the fallback in sync with ModuleVersion in PS365.psd1.
+        $ps365Module = Get-Module -Name 'PS365' -ErrorAction SilentlyContinue
+        $ps365Version = if ($ps365Module) { $ps365Module.Version } else { '0.4.2' }
+        $ps365VersionDisplay = " (PS365 v$ps365Version)"
+
+        # Human-readable execution duration for the report footer (e.g. '4 min 32 s' or '45 s')
+        $executionElapsed = $executionStopwatch.Elapsed
+        $executionTimeDisplay = if ($executionElapsed.TotalMinutes -ge 1) {
+            '{0} min {1} s' -f [int][Math]::Floor($executionElapsed.TotalMinutes), $executionElapsed.Seconds
+        }
+        else {
+            '{0} s' -f [int][Math]::Ceiling($executionElapsed.TotalSeconds)
+        }
+
         $expiringCertificates = $samlApplicationsArray | Where-Object {
             $null -ne $_.SamlSigningCertificateExpiresInDays -and
             $_.SamlSigningCertificateExpiresInDays -le $ExpirationThresholdDays
@@ -740,7 +822,7 @@ function Get-MgApplicationSAML {
     <div class="footer">
         $emailFooter
         <hr style="border: none; border-top: 1px solid #d2d0ce; margin: 15px 0;">
-        <p><em>Generated on $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') by Get-MgApplicationSAML v0.1.9</em></p>
+        <p><em>Generated on $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') by Get-MgApplicationSAML$ps365VersionDisplay - execution time: $executionTimeDisplay</em></p>
     </div>
 </body>
 </html>

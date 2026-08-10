@@ -41,10 +41,22 @@
     (Optional) Maximum number of concurrent runspaces when running in parallel. Default is 5.
     Keep this value moderate to avoid Microsoft Graph throttling (HTTP 429).
 
+    .PARAMETER UseBatchRequest
+    (Optional) Uses the Microsoft Graph JSON $batch endpoint (via Invoke-MgGraphBatchRequest, 20 requests per
+    HTTP call with automatic HTTP 429 retry) to retrieve the app role assignments, instead of ForEach-Object -Parallel.
+    Requires the PS365 module (Invoke-MgGraphBatchRequest); when the command is not available (e.g. script
+    deployed standalone), the function warns and falls back to the default behavior.
+    Note: the per-principal lookups (user, group, service principal details) are still performed individually.
+
     .EXAMPLE
     Get-MgApplicationAssignment
 
     Retrieves all applications and their assignment types.
+
+    .EXAMPLE
+    Get-MgApplicationAssignment -UseBatchRequest
+
+    Uses the Graph JSON $batch endpoint to retrieve the app role assignments (20 requests per HTTP call, automatic 429 retry).
 
     .EXAMPLE
     Get-MgApplicationAssignment -DisableParallel
@@ -113,7 +125,10 @@ function Get-MgApplicationAssignment {
 
         [Parameter(Mandatory = $false)]
         [ValidateRange(1, 20)]
-        [int]$ThrottleLimit = 5
+        [int]$ThrottleLimit = 5,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$UseBatchRequest
     )
 
     $requiredScopes = @('Application.Read.All', 'User.Read.All', 'Group.Read.All')
@@ -121,8 +136,17 @@ function Get-MgApplicationAssignment {
         return
     }
 
+    # Batch mode requires Invoke-MgGraphBatchRequest (PS365 module). When the script is deployed
+    # standalone (e.g. copied to a client environment), fall back to the default parallel/sequential
+    # behavior instead of failing.
+    $useBatch = $UseBatchRequest.IsPresent
+    if ($useBatch -and -not (Get-Command 'Invoke-MgGraphBatchRequest' -ErrorAction SilentlyContinue)) {
+        Write-Warning 'UseBatchRequest requires the Invoke-MgGraphBatchRequest command (PS365 module), which is not available. Falling back to the default discovery method.'
+        $useBatch = $false
+    }
+
     # Run in parallel by default on PowerShell 7+ (ForEach-Object -Parallel); always sequential on PowerShell 5.1.
-    $useParallel = ($PSVersionTable.PSVersion.Major -ge 7) -and -not $DisableParallel
+    $useParallel = (-not $useBatch) -and ($PSVersionTable.PSVersion.Major -ge 7) -and -not $DisableParallel
 
     $spProperty = 'Id,AppId,DisplayName,AppRoles,AppRoleAssignmentRequired,PublisherName,Tags,ServicePrincipalType,CreatedDateTime'
 
@@ -196,14 +220,21 @@ function Get-MgApplicationAssignment {
     Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] Starting analysis of $($servicePrincipals.Count) applications..." -ForegroundColor Cyan
 
     # Per-service-principal processing. Emits one object per assignment (or a fallback object).
-    # Shared by the sequential and parallel paths.
+    # Shared by the sequential, parallel and batch paths: the batch path fetches the assignments upfront
+    # via the $batch endpoint and passes them as PreFetchedAssignments (PowerShell property access is
+    # case-insensitive, so raw camelCase JSON assignments work with the same code).
     $processSp = {
-        param($sp, $Prefix = '')
+        param($sp, $Prefix = '', $PreFetchedAssignments = $null)
 
         Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] ${Prefix}Analyzing application: $($sp.DisplayName)" -ForegroundColor Cyan
 
         # Get app role assignments for this service principal
-        $appRoleAssignments = Get-MgServicePrincipalAppRoleAssignedTo -ServicePrincipalId $sp.Id
+        $appRoleAssignments = if ($null -ne $PreFetchedAssignments) {
+            $PreFetchedAssignments
+        }
+        else {
+            Get-MgServicePrincipalAppRoleAssignedTo -ServicePrincipalId $sp.Id
+        }
 
         # Pre-hash AppRoles by Id for O(1) per-assignment lookup (instead of a Where-Object per assignment)
         $appRoleById = @{}
@@ -423,7 +454,34 @@ function Get-MgApplicationAssignment {
         }
     }
 
-    if ($useParallel) {
+    if ($useBatch) {
+        Write-Verbose 'Retrieving app role assignments with the Graph $batch endpoint (20 requests per HTTP call)...'
+        [System.Collections.Generic.List[hashtable]]$assignmentsRequests = @()
+        foreach ($sp in $servicePrincipals) {
+            $assignmentsRequests.Add(@{
+                    id     = "$($sp.Id)"
+                    method = 'GET'
+                    url    = "/servicePrincipals/$($sp.Id)/appRoleAssignedTo"
+                })
+        }
+
+        $assignmentsResponses = Invoke-MgGraphBatchRequest -Requests $assignmentsRequests -GraphVersion 'v1.0' -Activity 'Getting app role assignments'
+
+        $counter = 0
+        $servicePrincipalsCount = @($servicePrincipals).Count
+        foreach ($sp in $servicePrincipals) {
+            $counter++
+            # A failed/missing batch response passes $null: the scriptblock then falls back to Get-MgServicePrincipalAppRoleAssignedTo
+            $assignmentsResponse = $assignmentsResponses["$($sp.Id)"]
+            $preFetchedAssignments = if ($assignmentsResponse -and $assignmentsResponse.status -eq 200) { @($assignmentsResponse.body.value) } else { $null }
+
+            $results = & $processSp $sp "[$counter/$servicePrincipalsCount] " $preFetchedAssignments
+            foreach ($result in $results) {
+                if ($result) { $applicationAssignmentsArray.Add($result) }
+            }
+        }
+    }
+    elseif ($useParallel) {
         Write-Verbose "Analyzing applications in parallel (ThrottleLimit: $ThrottleLimit)..."
         $processText = $processSp.ToString()
         $parallelResults = $servicePrincipals | ForEach-Object -ThrottleLimit $ThrottleLimit -Parallel {

@@ -231,6 +231,8 @@ user.memberof -any (group.objectId -in [...])).
 Microsoft ends this
 preview operator: after November 3, 2026, affected memberships stop updating and stay in
 their last known state.
+This operator only exists in Entra ID membership rules, so this switch implies Entra ID only
+(Exchange Online is skipped, no need to add -EntraIDOnly).
 Without this switch, the DeprecatedMemberOfRule property still flags affected groups.
 
 ```yaml

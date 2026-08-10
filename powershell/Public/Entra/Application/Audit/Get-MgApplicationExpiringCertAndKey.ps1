@@ -14,10 +14,19 @@
     .PARAMETER ExportToExcel
     Exports the results to an Excel file.
 
+    .PARAMETER UseBatchRequest
+    (Optional) Passed through to Get-MgApplicationCredential and Get-MgApplicationSAML: uses the Microsoft Graph
+    JSON $batch endpoint (20 requests per HTTP call with automatic HTTP 429 retry) instead of ForEach-Object -Parallel.
+
     .EXAMPLE
     Get-MgApplicationExpiringCertAndKey
 
     Retrieves all applications with credentials or SAML certificates expiring within the next 30 days.
+
+    .EXAMPLE
+    Get-MgApplicationExpiringCertAndKey -UseBatchRequest
+
+    Retrieves the expiring credentials using the Graph JSON $batch endpoint for the underlying functions.
 
     .EXAMPLE
     Get-MgApplicationExpiringCertAndKey -DaysUntilExpiry 7
@@ -51,7 +60,10 @@ function Get-MgApplicationExpiringCertAndKey {
         [switch]$ExportToExcel,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Optional output directory for the Excel export (defaults to the user profile).')]
-        [string]$ExportPath
+        [string]$ExportPath,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$UseBatchRequest
     )
 
     Write-Verbose "Checking for credentials expiring within $DaysUntilExpiry days"
@@ -61,7 +73,7 @@ function Get-MgApplicationExpiringCertAndKey {
     try {
         # Get application credentials
         Write-Verbose 'Retrieving application credentials...'
-        $appCredentials = Get-MgApplicationCredential -ForceNewToken:$ForceNewToken
+        $appCredentials = Get-MgApplicationCredential -ForceNewToken:$ForceNewToken -UseBatchRequest:$UseBatchRequest
 
         # Filter credentials expiring within specified days
         $expiringAppCredentials = $appCredentials | Where-Object { 
@@ -83,7 +95,7 @@ function Get-MgApplicationExpiringCertAndKey {
 
         # Get SAML applications
         Write-Verbose 'Retrieving SAML applications...'
-        $samlApps = Get-MgApplicationSAML -ForceNewToken:$false  # Don't force token again
+        $samlApps = Get-MgApplicationSAML -ForceNewToken:$false -UseBatchRequest:$UseBatchRequest  # Don't force token again
 
         # Filter SAML certificates expiring within specified days
         $expiringSamlCerts = $samlApps | Where-Object { 
