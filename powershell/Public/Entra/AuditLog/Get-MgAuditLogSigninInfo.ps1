@@ -45,6 +45,14 @@
     .PARAMETER MFASignInsOnly
     Switch to filter MFA sign-ins only.
 
+    .PARAMETER SmsVoiceMFASignInsOnly
+    Switch to return only the sign-ins where a deprecated MFA method was actually used and succeeded:
+    SMS (Text message) or voice call (Phone call), both retired by Microsoft on February 1, 2027.
+    The detection reads the authentication steps (authenticationDetails) and the MFA detail of each sign-in,
+    so it reflects real usage, unlike the registration reports which only say what users have enrolled.
+    The filter is applied client-side: Microsoft Graph does not allow filtering on authenticationDetails server-side.
+    See https://itpro-tips.com/microsoft-entra-scheduled-end-of-life-for-sms-and-voice-call-mfa/
+
     .PARAMETER NonInteractiveSignIns
     Switch to filter non-interactive sign-ins only.
 
@@ -102,6 +110,12 @@
 
     Retrieves non-MFA sign-ins from the last hour.
 
+    .EXAMPLE
+    Get-MgAuditLogSigninInfo -TimeRange Maximum -SmsVoiceMFASignInsOnly -ExportToExcel
+
+    Exports the sign-ins where SMS or voice call MFA was actually used over the full log retention,
+    to identify who still relies on the methods retired on February 1, 2027.
+
     .LINK
     https://ps365.clidsys.com/docs/commands/Get-MgAuditLogSigninInfo
 
@@ -145,6 +159,9 @@ function Get-MgAuditLogSigninInfo {
 
         [Parameter(Mandatory = $false)]
         [switch]$MFASignInsOnly,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$SmsVoiceMFASignInsOnly,
 
         [Parameter(Mandatory = $false)]
         [switch]$NonInteractiveSignIns,
@@ -511,6 +528,22 @@ function Get-MgAuditLogSigninInfo {
     }
     
     Write-Verbose "Filter is $filter"
+
+    if ($SmsVoiceMFASignInsOnly.IsPresent) {
+        Write-Verbose 'Filter sign-ins where SMS or voice call MFA was actually used (client-side, authenticationDetails is not filterable server-side)'
+
+        # authenticationDetails.authenticationMethod values: 'Text message' (SMS), 'Phone call' (voice)
+        # mfaDetail.authMethod values: 'Text message', 'Phone call approval'
+        # Only succeeded steps count: a failed or skipped step does not prove the method is in real use
+        $smsVoiceMfaPattern = '^(Text message|Phone call|SMS|Voice)'
+
+        $signsIn = @($signsIn | Where-Object {
+                (@($_.AuthenticationDetails | Where-Object { $_.Succeeded -and "$($_.AuthenticationMethod)" -match $smsVoiceMfaPattern }).Count -gt 0) -or
+                ("$($_.MfaDetail.AuthMethod)" -match $smsVoiceMfaPattern)
+            })
+
+        Write-Host -ForegroundColor Yellow "$(@($signsIn).Count) sign-in(s) using SMS or voice call MFA found"
+    }
 
     if ($ConditionalAccessPolicyName) {
         Write-Verbose "Filter signs-in with Conditional Access Policy Name: $ConditionalAccessPolicyName"

@@ -13,11 +13,12 @@ Get Microsoft Entra ID Audit Log Sign-In Details
 ```powershell
 Get-MgAuditLogSigninInfo [[-StartDate] <Object>] [[-EndDate] <Object>] [[-Users] <String[]>]
  [[-LastXSignIns] <Int32>] [[-IPAddresses] <Int32>] [-BasicAuthenticationOnly] [-SuccessOnly] [-FailureOnly]
- [-BadCredentialsOnly] [-LastLogonOnly] [-NonMFASignInsOnly] [-MFASignInsOnly] [-NonInteractiveSignIns]
- [-ServicePrincipalSignIns] [-ManagedIdentitySignIns] [[-ConditionalAccessPolicyName] <String>]
- [-ConditionalAccessPolicyNotApplied] [-ConditionalAccessPolicySuccessOnly]
- [-ConditionalAccessPolicyFailedOnly] [[-TimeRange] <String>] [-UseDatePicker] [-ForceNewToken]
- [-AnalyzeCAPInReportOnly] [-ExportToExcel] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+ [-BadCredentialsOnly] [-LastLogonOnly] [-NonMFASignInsOnly] [-MFASignInsOnly] [-SmsVoiceMFASignInsOnly]
+ [-NonInteractiveSignIns] [-ServicePrincipalSignIns] [-ManagedIdentitySignIns]
+ [[-ConditionalAccessPolicyName] <String>] [-ConditionalAccessPolicyNotApplied]
+ [-ConditionalAccessPolicySuccessOnly] [-ConditionalAccessPolicyFailedOnly] [[-TimeRange] <String>]
+ [-UseDatePicker] [-ForceNewToken] [-AnalyzeCAPInReportOnly] [-ExportToExcel]
+ [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -57,6 +58,15 @@ Get-MgAuditLogSigninInfo -StartDate (Get-Date).AddHours(-1) -NonMFASignInsOnly
 ```
 
 Retrieves non-MFA sign-ins from the last hour.
+
+### EXAMPLE 5
+
+```powershell
+Get-MgAuditLogSigninInfo -TimeRange Maximum -SmsVoiceMFASignInsOnly -ExportToExcel
+```
+
+Exports the sign-ins where SMS or voice call MFA was actually used over the full log retention,
+to identify who still relies on the methods retired on February 1, 2027.
 
 ## PARAMETERS
 
@@ -242,6 +252,27 @@ Accept wildcard characters: False
 ### -MFASignInsOnly
 
 Switch to filter MFA sign-ins only.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -SmsVoiceMFASignInsOnly
+
+Switch to return only the sign-ins where a deprecated MFA method was actually used and succeeded:
+SMS (Text message) or voice call (Phone call), both retired by Microsoft on February 1, 2027.
+The detection reads the authentication steps (authenticationDetails) and the MFA detail of each sign-in,
+so it reflects real usage, unlike the registration reports which only say what users have enrolled.
+The filter is applied client-side: Microsoft Graph does not allow filtering on authenticationDetails server-side.
+See https://itpro-tips.com/microsoft-entra-scheduled-end-of-life-for-sms-and-voice-call-mfa/
 
 ```yaml
 Type: SwitchParameter
