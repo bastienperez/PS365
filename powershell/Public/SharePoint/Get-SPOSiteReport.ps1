@@ -14,6 +14,12 @@
     Access Denied on Get-PnPSiteCollectionAdmin. An app registration holding the SharePoint
     Sites.FullControl.All application permission bypasses the site collection admin requirement.
 
+    That permission covers the personal OneDrive sites as well: they are ordinary site collections of the
+    -my.sharepoint.com host, so they are enumerated and read exactly like any other site (use ExcludeOneDrive
+    or OnlyOneDrive to filter them). The one documented exception is the list of site collection
+    administrators of a OneDrive site, which stays invisible even under this permission: see SECONDARY
+    ADMINISTRATORS ON ONEDRIVE SITES ARE NOT CAPTURED under the IncludeSiteAdmins parameter.
+
     Client secrets are not supported by SharePoint for app-only: a certificate is mandatory. Provide it
     through CertificateThumbprint (Windows certificate store), CertificatePath (.pfx file) or
     CertificateBase64Encoded (base64 string, handy for Azure Automation or a pipeline variable).
@@ -50,6 +56,12 @@
     permission Group.ReadWrite.All (or Group.Read.All for the read-only subset), on top of the SharePoint
     Sites.FullControl.All permission used for the rest of the report, both consented on the same certificate.
 
+    The retrieval is scoped to what the run actually needs. Only a site carrying a GroupId can have a group
+    behind it, so that list is computed first: when no site in scope is group-connected (a OneDrive-only run,
+    or SiteUrl on a classic site) nothing is retrieved at all, and up to 25 group-connected sites are looked
+    up one by one. The tenant-wide enumeration - which is expensive, since IncludeSiteUrl and IncludeOwners
+    each add their own Graph work per group - only kicks in beyond that, where it becomes the cheaper option.
+
     MULTI-GEO TENANTS
     By default, every geo location of a Multi-Geo tenant is enumerated automatically (detected via
     Get-PnPTenantInstance): the function opens one additional PnP connection per satellite geo admin center
@@ -69,8 +81,15 @@
     - IncludeSiteVisitors adds the site Visitors on top of IncludeSiteMembers. Kept separate because the
       Visitors group is often large (for example 'Everyone except external users') and less relevant to a
       rights audit than Owners/Members.
+    - IncludeSharingLinks adds a per-site count of the existing sharing links, broken down by link type.
+    - IncludeSharingLinksDetails drills into those links file by file, through Get-SPOSharingLinkReport.
     - RegionalSettingsDetails adds the time zone, hour format and locale of each site.
     - M365GroupsDetails adds the Microsoft 365 group and Microsoft Teams layer of the group-connected sites.
+
+    Each of these switches literally adds its columns to the output objects: without the switch, the columns
+    are absent, not empty. This is deliberate - an empty SiteAdmins column would read as "this site has no
+    administrator", where the truth is "this was not collected". A column that is present but empty therefore
+    always means the data really is empty (or could not be read, see the Status counters at the end of a run).
 
     .PARAMETER ClientId
     (Mandatory) Application (client) ID of the Entra app registration used for the app-only connection.
@@ -125,7 +144,7 @@
 
     .PARAMETER IncludeAllDetails
     (Optional) Shorthand that turns on IncludeSiteAdmins, IncludeSiteMembers, IncludeSiteVisitors,
-    RegionalSettingsDetails and M365GroupsDetails all at once, so you don't have to remember and list
+    IncludeSharingLinks, RegionalSettingsDetails and M365GroupsDetails all at once, so you don't have to remember and list
     each one individually. Does NOT affect ExcludeOneDrive/OnlyOneDrive: those are mutually exclusive
     site filters, not detail enrichment, and are left untouched. Individual switches passed alongside
     IncludeAllDetails have no additional effect (everything is already on).
@@ -155,6 +174,53 @@
     (Optional) Adds the site Visitors group of each site (Get-PnPGroup -AssociatedVisitorGroup), raw and
     resolved. Kept separate from IncludeSiteMembers because this group is often large and less relevant
     to a rights audit.
+
+    .PARAMETER IncludeSharingLinks
+    (Optional) Adds five columns counting the sharing links that currently exist on each site:
+    SharingLinksAnyoneCount (anonymous 'Anyone with the link'), SharingLinksCompanyCount (people in the organization),
+    SharingLinksFlexibleCount, SharingLinksOtherCount and SharingLinksTotalCount. Meant as a triage indicator: it answers
+    "which sites have an exposure worth looking at", not "which file is shared with whom".
+
+    SharingLinksFlexibleCount deserves a word: Flexible is the modern SharePoint link type, whose scope is
+    set per link. The group name says the link exists, not whether it is restricted to named people or open
+    to anyone holding it, and this report will not guess - counting Flexible links as 'specific people'
+    would make SharingLinksAnyoneCount read as zero on a site that may well be exposing an anonymous link.
+    A high SharingLinksFlexibleCount therefore means "worth resolving", which is what
+    Get-SPOSharingLinkReport -IncludeGraphDetails does.
+
+    SharePoint stores every sharing link as a hidden site group named
+    'SharingLinks.<itemGuid>.<linkType>.<linkGuid>', so this switch only costs one extra Get-PnPGroup call
+    per site, and it reuses the app-only connection already opened for the site. The link type is derived
+    from that group name (AnonymousEdit/AnonymousView, OrganizationEdit/OrganizationView, Flexible); since
+    the naming is an internal SharePoint convention rather than a documented API, any unknown type is
+    counted in SharingLinksOtherCount instead of being dropped. A non-zero SharingLinksOtherCount is worth investigating:
+    it usually means a link type this function does not know about yet.
+
+    What it deliberately does not provide: which file or folder is shared, and with whom. Use
+    IncludeSharingLinksDetails, or Get-SPOSharingLinkReport directly, on the sites this report flags.
+
+    .PARAMETER IncludeSharingLinksDetails
+    (Optional) Drill-down of IncludeSharingLinks (which it turns on automatically): instead of stopping at
+    the counts, each link is resolved down to the file or folder it points at and to the people it was
+    shared with. The work is delegated to Get-SPOSharingLinkReport, which can also be called on its own.
+
+    Only the sites whose counts came back non-zero are visited, so the pass is naturally limited to the
+    sites that actually have something to show. It still opens one connection per site and resolves every
+    shared item, which is why IncludeAllDetails does NOT turn this switch on - it has to be asked for
+    explicitly.
+
+    No Microsoft Graph permission is involved: the drill-down runs in the Graph-free mode of
+    Get-SPOSharingLinkReport, where the shared-with list comes from the members of the SharingLinks group
+    itself. The columns Graph alone can provide - link URL, expiration date, password protection, download
+    block, and the resolved scope of a Flexible link - are therefore absent here. Call
+    Get-SPOSharingLinkReport -IncludeGraphDetails yourself when you need them, after reading the permission
+    trade-off documented in that function.
+
+    Shape of the output: every site object receives a SharingLinksDetails property holding the collection of
+    its own links (an empty collection when it has none, never $null), so the report stays one object per
+    site and the drill-down is $site.SharingLinksDetails. With ExportToExcel, that nested property is
+    dropped from the main worksheet - a cell cannot hold a collection - and the links are written to their
+    own SharePoint-SharingLinks worksheet, one link per row.
 
     .PARAMETER RegionalSettingsDetails
     (Optional) Adds the regional settings of each site (time zone, hour format, locale), read with Get-PnPWeb.
@@ -259,6 +325,20 @@
     logo already present in the template file.
 
     .EXAMPLE
+    Get-SPOSiteReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificateThumbprint $thumb -IncludeSharingLinks | Where-Object { $_.SharingLinksAnyoneCount -gt 0 }
+
+    Lists the sites holding at least one anonymous 'Anyone with the link' sharing link. Pipe the result to
+    Get-SPOSharingLinkReport to get the file-level detail of those links on the sites that came out.
+
+    .EXAMPLE
+    $report = Get-SPOSiteReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificateThumbprint $thumb -IncludeSharingLinksDetails
+    $report[0].SharingLinksDetails | Format-Table ItemName, LinkType, SharedWith, ExpirationDateTime
+
+    Same triage, in one command: the counts decide which sites deserve the file-level pass, and each site
+    object carries its own links in SharingLinksDetails. Add -ExportToExcel to get them as a second
+    worksheet instead.
+
+    .EXAMPLE
     Get-SPOSiteReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificateThumbprint $thumb -ExcludeOneDrive -IncludeAllDetails -ExportToExcel
 
     Turns on every detail switch (site admins, Owners/Members/Visitors, regional settings, Microsoft 365
@@ -340,6 +420,12 @@ function Get-SPOSiteReport {
 
         [Parameter(Mandatory = $false)]
         [switch]$IncludeSiteVisitors,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$IncludeSharingLinks,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$IncludeSharingLinksDetails,
 
         [Parameter(Mandatory = $false)]
         [switch]$RegionalSettingsDetails,
@@ -858,7 +944,7 @@ function Get-SPOSiteReport {
         }
 
         foreach ($group in $tree.Groups) {
-            $null = $sb.Append("<li><details class='group-block'><summary><span class='badge-group'>M365 group '$(ConvertTo-SPOHtmlEncoded $group.GroupName)' &middot; $($group.Role)</span><span class='count'>($($group.Users.Count))</span></summary><ul class='identity-list'>")
+            $null = $sb.Append("<li><details class='group-block'><summary><span class='badge-group'>M365 group '$(ConvertTo-SPOHtmlEncoded $group.GroupName)' - $($group.Role)</span><span class='count'>($($group.Users.Count))</span></summary><ul class='identity-list'>")
             foreach ($user in $group.Users) {
                 $null = $sb.Append("<li class='user-item'>$(ConvertTo-SPOHtmlEncoded $user)</li>")
             }
@@ -885,8 +971,17 @@ function Get-SPOSiteReport {
         $IncludeSiteAdmins = [switch]$true
         $IncludeSiteMembers = [switch]$true
         $IncludeSiteVisitors = [switch]$true
+        $IncludeSharingLinks = [switch]$true
         $RegionalSettingsDetails = [switch]$true
         $M365GroupsDetails = [switch]$true
+    }
+
+    # IncludeSharingLinksDetails is the drill-down of IncludeSharingLinks and needs its counts to know which
+    # sites are worth visiting, so it turns the cheap switch on. It is deliberately NOT part of
+    # IncludeAllDetails: unlike every other detail switch, its cost is driven by Microsoft Graph calls per
+    # shared item, which is a different order of magnitude and has to be asked for explicitly.
+    if ($IncludeSharingLinksDetails.IsPresent) {
+        $IncludeSharingLinks = [switch]$true
     }
 
     # Exactly one certificate method is required for the app-only connection
@@ -1123,30 +1218,74 @@ function Get-SPOSiteReport {
     $groupNameCache = @{}
 
     if ($M365GroupsDetails.IsPresent) {
-        Write-Host -ForegroundColor Cyan 'Retrieving Microsoft 365 groups...'
+        # Only the sites carrying a GroupId can have a Microsoft 365 group behind them. Computing that list
+        # first avoids two pointless situations: enumerating every group of the tenant to enrich a handful
+        # of sites, and enumerating them for a scope that cannot contain a single group-connected site (a
+        # OneDrive-only run, or -SiteUrl on a classic site). Get-PnPTenantSite already returned GroupId, so
+        # this costs nothing.
+        $groupConnectedSites = @($spoSites | Where-Object {
+                $_.GroupId -and $_.GroupId.ToString() -ne '00000000-0000-0000-0000-000000000000'
+            })
 
-        try {
-            $allM365Groups = Get-PnPMicrosoft365Group -IncludeSiteUrl -IncludeOwners -Connection $adminConnection -ErrorAction Stop
-        }
-        catch {
-            Write-Warning "Unable to retrieve the Microsoft 365 groups: $_"
-            Write-Warning 'M365GroupsDetails requires the Microsoft Graph application permission Group.ReadWrite.All (or Group.Read.All) on the certificate used for the PnP connection.'
-            return
-        }
+        # Below this many group-connected sites, one targeted lookup per site beats enumerating the whole
+        # tenant: -IncludeSiteUrl and -IncludeOwners make the tenant-wide call expensive on its own, and a
+        # tenant holds orders of magnitude more groups than a narrow run needs.
+        $targetedLookupThreshold = 25
 
-        foreach ($m365Group in $allM365Groups) {
-            if ($m365Group.SiteUrl) {
-                $m365GroupsLookup[$m365Group.SiteUrl] = $m365Group
+        if ($groupConnectedSites.Count -eq 0) {
+            Write-Host -ForegroundColor Cyan 'No group-connected site in scope: skipping the Microsoft 365 groups retrieval.'
+        }
+        elseif ($groupConnectedSites.Count -le $targetedLookupThreshold) {
+            Write-Host -ForegroundColor Cyan "Retrieving the Microsoft 365 group of $($groupConnectedSites.Count) group-connected site(s)..."
+
+            foreach ($groupConnectedSite in $groupConnectedSites) {
+                $siteGroupId = $groupConnectedSite.GroupId.ToString()
+
+                try {
+                    $m365Group = Get-PnPMicrosoft365Group -Identity $siteGroupId -IncludeSiteUrl -IncludeOwners -Connection $adminConnection -ErrorAction Stop
+                }
+                catch {
+                    Write-Warning "Unable to retrieve the Microsoft 365 group $siteGroupId of $($groupConnectedSite.Url): $_"
+                    continue
+                }
+
+                # Keyed on the site URL the caller actually asked for, not on the group's own SiteUrl: the
+                # merge loop below looks the group up by site URL, and this path already knows the mapping.
+                $m365GroupsLookup[$groupConnectedSite.Url] = $m365Group
+
+                if ($m365Group.DisplayName) {
+                    $groupNameCache[$siteGroupId] = $m365Group.DisplayName
+                }
             }
 
-            # Property name defensively checked (Id vs GroupId) - not guaranteed identical across PnP versions
-            $m365GroupId = if ($m365Group.Id) { $m365Group.Id.ToString() } elseif ($m365Group.GroupId) { $m365Group.GroupId.ToString() } else { $null }
-            if ($m365GroupId -and $m365Group.DisplayName) {
-                $groupNameCache[$m365GroupId] = $m365Group.DisplayName
-            }
+            Write-Host -ForegroundColor Cyan "Microsoft 365 groups count: $($m365GroupsLookup.Count)"
         }
+        else {
+            Write-Host -ForegroundColor Cyan 'Retrieving Microsoft 365 groups...'
 
-        Write-Host -ForegroundColor Cyan "Microsoft 365 groups count: $($m365GroupsLookup.Count)"
+            try {
+                $allM365Groups = Get-PnPMicrosoft365Group -IncludeSiteUrl -IncludeOwners -Connection $adminConnection -ErrorAction Stop
+            }
+            catch {
+                Write-Warning "Unable to retrieve the Microsoft 365 groups: $_"
+                Write-Warning 'M365GroupsDetails requires the Microsoft Graph application permission Group.ReadWrite.All (or Group.Read.All) on the certificate used for the PnP connection.'
+                return
+            }
+
+            foreach ($m365Group in $allM365Groups) {
+                if ($m365Group.SiteUrl) {
+                    $m365GroupsLookup[$m365Group.SiteUrl] = $m365Group
+                }
+
+                # Property name defensively checked (Id vs GroupId) - not guaranteed identical across PnP versions
+                $m365GroupId = if ($m365Group.Id) { $m365Group.Id.ToString() } elseif ($m365Group.GroupId) { $m365Group.GroupId.ToString() } else { $null }
+                if ($m365GroupId -and $m365Group.DisplayName) {
+                    $groupNameCache[$m365GroupId] = $m365Group.DisplayName
+                }
+            }
+
+            Write-Host -ForegroundColor Cyan "Microsoft 365 groups count: $($m365GroupsLookup.Count)"
+        }
     }
 
     # Site-level data (admins, Owners/Members/Visitors groups, regional settings) requires one PnP connection
@@ -1155,7 +1294,7 @@ function Get-SPOSiteReport {
     # do not share mutable state with each other, so a cache of Graph lookups written concurrently by several
     # runspaces is not trivial to get right. It is deferred to the sequential merge loop below instead.
     $perSiteLookup = @{}
-    $needPerSite = $IncludeSiteAdmins.IsPresent -or $IncludeSiteMembers.IsPresent -or $IncludeSiteVisitors.IsPresent -or $RegionalSettingsDetails.IsPresent
+    $needPerSite = $IncludeSiteAdmins.IsPresent -or $IncludeSiteMembers.IsPresent -or $IncludeSiteVisitors.IsPresent -or $IncludeSharingLinks.IsPresent -or $RegionalSettingsDetails.IsPresent
 
     if ($needPerSite) {
         Write-Host -ForegroundColor Cyan "Collecting site-level data with $ThrottleLimit concurrent connection(s)..."
@@ -1165,6 +1304,7 @@ function Get-SPOSiteReport {
             $doAdmins = $using:IncludeSiteAdmins
             $doMembers = $using:IncludeSiteMembers
             $doVisitors = $using:IncludeSiteVisitors
+            $doSharingLinks = $using:IncludeSharingLinks
             $doRegional = $using:RegionalSettingsDetails
             $site = $_
 
@@ -1175,6 +1315,11 @@ function Get-SPOSiteReport {
                 SiteOwnerLoginNames  = $null
                 SiteMemberLoginNames = $null
                 SiteVisitorLoginNames = $null
+                SharingLinksAnyoneCount     = $null
+                SharingLinksCompanyCount    = $null
+                SharingLinksFlexibleCount = $null
+                SharingLinksOtherCount      = $null
+                SharingLinksTotalCount      = $null
                 TimeZoneId           = $null
                 TimeZoneString       = $null
                 HourFormat           = $null
@@ -1237,6 +1382,46 @@ function Get-SPOSiteReport {
                 }
             }
 
+            if ($doSharingLinks) {
+                # SharePoint materialises every sharing link as a hidden site group named
+                # 'SharingLinks.<itemGuid>.<linkType>.<linkGuid>', so counting those groups gives a per-site
+                # picture of the sharing surface for the cost of a single call, instead of one Graph call per
+                # file. The link type is read from the group name: AnonymousEdit/AnonymousView (Anyone links),
+                # OrganizationEdit/OrganizationView (people in the organization) and Flexible (specific
+                # people, and the newer link types). This naming is an implementation detail of SharePoint,
+                # not a documented contract: anything that does not match a known type is counted as Other
+                # rather than silently dropped, so a future rename shows up as a bucket that fills instead of
+                # counts that quietly go to zero. These counts say how many links exist and of which kind,
+                # nothing more: expiration dates, password protection and the link URLs themselves require
+                # the per-item Graph calls of Get-SPOSharingLinkReport.
+                try {
+                    $siteGroups = Get-PnPGroup -Connection $siteConnection -ErrorAction Stop
+                    $sharingLinkGroups = @($siteGroups | Where-Object { $_.Title -like 'SharingLinks.*' })
+
+                    $anyoneLinks = 0
+                    $companyLinks = 0
+                    $flexibleLinks = 0
+                    $otherLinks = 0
+
+                    foreach ($sharingLinkGroup in $sharingLinkGroups) {
+                        $groupTitle = $sharingLinkGroup.Title
+                        if ($groupTitle -match '\.Anonymous[^.]*\.') { $anyoneLinks++ }
+                        elseif ($groupTitle -match '\.Organization[^.]*\.') { $companyLinks++ }
+                        elseif ($groupTitle -match '\.Flexible\.') { $flexibleLinks++ }
+                        else { $otherLinks++ }
+                    }
+
+                    $result.SharingLinksAnyoneCount = $anyoneLinks
+                    $result.SharingLinksCompanyCount = $companyLinks
+                    $result.SharingLinksFlexibleCount = $flexibleLinks
+                    $result.SharingLinksOtherCount = $otherLinks
+                    $result.SharingLinksTotalCount = $sharingLinkGroups.Count
+                }
+                catch {
+                    $partialErrors.Add("SharingLinks: $($_.Exception.Message)")
+                }
+            }
+
             if ($doRegional) {
                 try {
                     $web = Get-PnPWeb -Includes RegionalSettings, RegionalSettings.TimeZone -Connection $siteConnection -ErrorAction Stop
@@ -1294,6 +1479,8 @@ function Get-SPOSiteReport {
         $siteOwnersLoginNames = $siteOwnersRaw = $siteOwnersResolved = $null
         $siteMembersLoginNames = $siteMembersRaw = $siteMembersResolved = $null
         $siteVisitorsLoginNames = $siteVisitorsRaw = $siteVisitorsResolved = $null
+        $sharingLinksAnyoneCount = $sharingLinksCompanyCount = $sharingLinksFlexibleCount = $null
+        $sharingLinksOtherCount = $sharingLinksTotalCount = $null
         $timezoneId = $timezoneString = $hourFormat = $localeId = $localeIdString = $null
 
         # Get-PnPTenantSite exposes GroupId as a System.Guid (not a wrapper with a .Guid property)
@@ -1323,6 +1510,11 @@ function Get-SPOSiteReport {
             $siteOwnersRaw = if ($siteOwnersLoginNames) { $siteOwnersLoginNames -join '|' } else { $null }
             $siteMembersRaw = if ($siteMembersLoginNames) { $siteMembersLoginNames -join '|' } else { $null }
             $siteVisitorsRaw = if ($siteVisitorsLoginNames) { $siteVisitorsLoginNames -join '|' } else { $null }
+            $sharingLinksAnyoneCount = $perSite.SharingLinksAnyoneCount
+            $sharingLinksCompanyCount = $perSite.SharingLinksCompanyCount
+            $sharingLinksFlexibleCount = $perSite.SharingLinksFlexibleCount
+            $sharingLinksOtherCount = $perSite.SharingLinksOtherCount
+            $sharingLinksTotalCount = $perSite.SharingLinksTotalCount
             $timezoneId = $perSite.TimeZoneId
             $hourFormat = $perSite.HourFormat
             $localeId = $perSite.RegionalLocaleId
@@ -1438,65 +1630,93 @@ function Get-SPOSiteReport {
         # Get-PnPTenantSite exposes StorageUsage (MB) instead of Get-SPOSite's StorageUsageCurrent
         $storageUsed = if ($null -ne $spoSite.StorageUsageCurrent) { $spoSite.StorageUsageCurrent } else { $spoSite.StorageUsage }
 
-        $object = [PSCustomObject][ordered]@{
-            SPTitle                                     = $spoSite.Title
-            GroupID                                     = $groupId
-            Url                                         = $spoSite.Url
-            Geo                                         = $spoSite.Geo
-            StorageLimit                                = (($spoSite.StorageQuota) / 1024)
-            StorageUsed                                 = (($storageUsed) / 1024)
-            Owner                                       = $spoSite.Owner
-            SiteAdmins                                  = $siteAdminsRaw
-            SiteAdminsResolved                          = $siteAdminsResolved
-            SiteOwnersLoginNames                        = $siteOwnersRaw
-            SiteOwnersResolved                          = $siteOwnersResolved
-            SiteMembersLoginNames                       = $siteMembersRaw
-            SiteMembersResolved                         = $siteMembersResolved
-            SiteVisitorsLoginNames                      = $siteVisitorsRaw
-            SiteVisitorsResolved                        = $siteVisitorsResolved
-            SharingCapability                           = $spoSite.SharingCapability
-            SharingAllowedDomain                        = $spoSite.SharingAllowedDomainList -join '|'
-            SharingBlockedDomain                        = $spoSite.SharingBlockedDomainList -join '|'
-            SiteDefinedSharingCapability                = $spoSite.SiteDefinedSharingCapability
-            LockState                                   = $spoSite.LockState
-            LocaleID                                    = $localeId
-            LocaleIDString                              = $localeIdString
-            Timezone                                    = $timezoneId
-            TimezoneString                              = $timezoneString
-            HourFormat                                  = $hourFormat
-            Template                                    = $spoSite.Template
-            ConditionalAccessPolicy                     = $spoSite.ConditionalAccessPolicy
-            LastContentModifiedDate                     = $spoSite.LastContentModifiedDate
-            IsTeamsConnected                            = $spoSite.IsTeamsConnected
-            IsTeamsChannelConnected                     = $spoSite.IsTeamsChannelConnected
-            SensitivityLabel                            = $spoSite.SensitivityLabel
-            DefaultLinkPermission                       = $spoSite.DefaultLinkPermission
-            DefaultSharingLinkType                      = $spoSite.DefaultSharingLinkType
-            DefaultLinkToExistingAccess                 = $spoSite.DefaultLinkToExistingAccess
-            AnonymousLinkExpirationInDays               = $spoSite.AnonymousLinkExpirationInDays
-            OverrideTenantAnonymousLinkExpirationPolicy = $spoSite.OverrideTenantAnonymousLinkExpirationPolicy
-            ExternalUserExpirationInDays                = $spoSite.ExternalUserExpirationInDays
-            OverrideTenantExternalUserExpirationPolicy  = $spoSite.OverrideTenantExternalUserExpirationPolicy
-            IsHubSite                                   = $spoSite.IsHubSite
+        # The properties are accumulated in an ordered dictionary rather than declared in a single literal:
+        # the columns coming from an optional switch are added only when that switch was used (an absent
+        # column reads as "not collected", where an empty one would wrongly read as "collected, and there is
+        # nobody/nothing"), while still landing at their historical position in the column order.
+        $properties = [ordered]@{
+            SPTitle        = $spoSite.Title
+            GroupID        = $groupId
+            Url            = $spoSite.Url
+            Geo            = $spoSite.Geo
+            # StorageQuota/StorageUsage are returned in MB by SPO/PnP: convert to GB
+            StorageLimitGB = [math]::Round(($spoSite.StorageQuota) / 1024, 2)
+            StorageUsedGB  = [math]::Round(($storageUsed) / 1024, 2)
+            Owner          = $spoSite.Owner
         }
+
+        if ($IncludeSiteAdmins.IsPresent) {
+            $properties['SiteAdmins'] = $siteAdminsRaw
+            $properties['SiteAdminsResolved'] = $siteAdminsResolved
+        }
+
+        if ($IncludeSiteMembers.IsPresent) {
+            $properties['SiteOwnersLoginNames'] = $siteOwnersRaw
+            $properties['SiteOwnersResolved'] = $siteOwnersResolved
+            $properties['SiteMembersLoginNames'] = $siteMembersRaw
+            $properties['SiteMembersResolved'] = $siteMembersResolved
+        }
+
+        if ($IncludeSiteVisitors.IsPresent) {
+            $properties['SiteVisitorsLoginNames'] = $siteVisitorsRaw
+            $properties['SiteVisitorsResolved'] = $siteVisitorsResolved
+        }
+
+        $properties['SharingCapability'] = $spoSite.SharingCapability
+        $properties['SharingAllowedDomain'] = $spoSite.SharingAllowedDomainList -join '|'
+        $properties['SharingBlockedDomain'] = $spoSite.SharingBlockedDomainList -join '|'
+        $properties['SiteDefinedSharingCapability'] = $spoSite.SiteDefinedSharingCapability
+
+        if ($IncludeSharingLinks.IsPresent) {
+            $properties['SharingLinksAnyoneCount'] = $sharingLinksAnyoneCount
+            $properties['SharingLinksCompanyCount'] = $sharingLinksCompanyCount
+            $properties['SharingLinksFlexibleCount'] = $sharingLinksFlexibleCount
+            $properties['SharingLinksOtherCount'] = $sharingLinksOtherCount
+            $properties['SharingLinksTotalCount'] = $sharingLinksTotalCount
+        }
+
+        $properties['LockState'] = $spoSite.LockState
+
+        if ($RegionalSettingsDetails.IsPresent) {
+            $properties['LocaleID'] = $localeId
+            $properties['LocaleIDString'] = $localeIdString
+            $properties['Timezone'] = $timezoneId
+            $properties['TimezoneString'] = $timezoneString
+            $properties['HourFormat'] = $hourFormat
+        }
+
+        $properties['Template'] = $spoSite.Template
+        $properties['ConditionalAccessPolicy'] = $spoSite.ConditionalAccessPolicy
+        $properties['LastContentModifiedDate'] = $spoSite.LastContentModifiedDate
+        $properties['IsTeamsConnected'] = $spoSite.IsTeamsConnected
+        $properties['IsTeamsChannelConnected'] = $spoSite.IsTeamsChannelConnected
+        $properties['SensitivityLabel'] = $spoSite.SensitivityLabel
+        $properties['DefaultLinkPermission'] = $spoSite.DefaultLinkPermission
+        $properties['DefaultSharingLinkType'] = $spoSite.DefaultSharingLinkType
+        $properties['DefaultLinkToExistingAccess'] = $spoSite.DefaultLinkToExistingAccess
+        $properties['AnonymousLinkExpirationInDays'] = $spoSite.AnonymousLinkExpirationInDays
+        $properties['OverrideTenantAnonymousLinkExpirationPolicy'] = $spoSite.OverrideTenantAnonymousLinkExpirationPolicy
+        $properties['ExternalUserExpirationInDays'] = $spoSite.ExternalUserExpirationInDays
+        $properties['OverrideTenantExternalUserExpirationPolicy'] = $spoSite.OverrideTenantExternalUserExpirationPolicy
+        $properties['IsHubSite'] = $spoSite.IsHubSite
 
         # If the team has been renamed, its DisplayName differs from the SharePoint site Title
         if ($M365GroupsDetails.IsPresent) {
-            $object | Add-Member -NotePropertyName 'PrimarySmtpAddress' -NotePropertyValue $primarySmtpAddress
-            $object | Add-Member -NotePropertyName 'Type' -NotePropertyValue $siteType
-            $object | Add-Member -NotePropertyName 'M365WhenCreatedUTC' -NotePropertyValue $whenCreatedUTC
-            $object | Add-Member -NotePropertyName 'M365GroupOwners' -NotePropertyValue $m365GroupOwnersResolved
-            $object | Add-Member -NotePropertyName 'M365GroupMembersCount' -NotePropertyValue $m365GroupMembersCount
-            $object | Add-Member -NotePropertyName 'M365GroupGuestsCount' -NotePropertyValue $m365GroupGuestsCount
-            $object | Add-Member -NotePropertyName 'TeamDisplayName' -NotePropertyValue $team.DisplayName
-            $object | Add-Member -NotePropertyName 'TeamDescription' -NotePropertyValue $team.Description
-            $object | Add-Member -NotePropertyName 'TeamVisibility' -NotePropertyValue $team.Visibility
-            $object | Add-Member -NotePropertyName 'TeamIsArchived' -NotePropertyValue $team.IsArchived
-            $object | Add-Member -NotePropertyName 'TeamWebUrl' -NotePropertyValue $team.WebUrl
-            $object | Add-Member -NotePropertyName 'TeamChannelCount' -NotePropertyValue $channelCount
+            $properties['PrimarySmtpAddress'] = $primarySmtpAddress
+            $properties['Type'] = $siteType
+            $properties['M365WhenCreatedUTC'] = $whenCreatedUTC
+            $properties['M365GroupOwners'] = $m365GroupOwnersResolved
+            $properties['M365GroupMembersCount'] = $m365GroupMembersCount
+            $properties['M365GroupGuestsCount'] = $m365GroupGuestsCount
+            $properties['TeamDisplayName'] = $team.DisplayName
+            $properties['TeamDescription'] = $team.Description
+            $properties['TeamVisibility'] = $team.Visibility
+            $properties['TeamIsArchived'] = $team.IsArchived
+            $properties['TeamWebUrl'] = $team.WebUrl
+            $properties['TeamChannelCount'] = $channelCount
         }
 
-        $spoSitesInfosArray.Add($object)
+        $spoSitesInfosArray.Add([PSCustomObject]$properties)
     }
 
     # Disconnect-PnPOnline cannot target a specific connection; releasing the variable disposes it
@@ -1522,7 +1742,53 @@ function Get-SPOSiteReport {
         Write-Host -ForegroundColor Yellow 'A recurring error usually means the app registration lacks the Microsoft Graph application permission Group.ReadWrite.All (or Group.Read.All), or the group was deleted.'
     }
 
+    # Drill-down: the per-site counts collected above already say which sites carry at least one link, so the
+    # expensive file-level pass only visits those. Delegated to Get-SPOSharingLinkReport rather than
+    # duplicated here - it owns the item resolution and the Graph calls, and stays usable on its own.
+    [System.Collections.Generic.List[PSCustomObject]]$sharingLinksDetailsArray = @()
+
+    if ($IncludeSharingLinksDetails.IsPresent) {
+        $sitesWithLinks = @($spoSitesInfosArray | Where-Object { $_.SharingLinksTotalCount -gt 0 })
+
+        if ($sitesWithLinks.Count -eq 0) {
+            Write-Host -ForegroundColor Cyan 'No site holds a sharing link: skipping the file-level sharing link collection.'
+        }
+        else {
+            Write-Host -ForegroundColor Cyan "Collecting the file-level sharing links of $($sitesWithLinks.Count) site(s) holding at least one link..."
+
+            $sharingLinkParams = $pnpAuthParams.Clone()
+            # Get-SPOSharingLinkReport names the tenant parameter Tenant and the certificate the same way,
+            # except for the PnP-specific Thumbprint alias used by Connect-PnPOnline.
+            if ($sharingLinkParams.ContainsKey('Thumbprint')) {
+                $sharingLinkParams.Remove('Thumbprint')
+                $sharingLinkParams.Add('CertificateThumbprint', $CertificateThumbprint)
+            }
+            $sharingLinkParams.Add('ThrottleLimit', $ThrottleLimit)
+
+            try {
+                $collectedLinks = @($sitesWithLinks.Url | Get-SPOSharingLinkReport @sharingLinkParams -ErrorAction Stop)
+                foreach ($collectedLink in $collectedLinks) {
+                    $sharingLinksDetailsArray.Add($collectedLink)
+                }
+            }
+            catch {
+                Write-Warning "Unable to collect the file-level sharing links: $_"
+            }
+
+            # Attached per site so the caller keeps a single object per site and drills down with
+            # $site.SharingLinksDetails. Sites with no link get an empty collection, never $null: iterating
+            # the property must be safe without a null check.
+            $linksBySite = $sharingLinksDetailsArray | Group-Object -Property SiteUrl -AsHashTable -AsString
+            foreach ($siteInfo in $spoSitesInfosArray) {
+                $siteLinks = if ($linksBySite -and $linksBySite.ContainsKey($siteInfo.Url)) { @($linksBySite[$siteInfo.Url]) } else { @() }
+                $siteInfo | Add-Member -NotePropertyName 'SharingLinksDetails' -NotePropertyValue $siteLinks -Force
+            }
+        }
+    }
+
     Write-Host -ForegroundColor Yellow "Reminder: check 'My Site Secondary Admin' too - https://<tenant>-admin.sharepoint.com/_layouts/15/Online/PersonalSites.aspx?PersonalSitesOverridden=1"
+    Write-Host -ForegroundColor Yellow "  Why: that tenant setting silently makes an account a secondary site collection administrator on every OneDrive, but it is not exposed by any supported cmdlet or API (Get-SPOTenant / Graph / PnP), so this report cannot read it."
+    Write-Host -ForegroundColor Yellow '  On top of that, an app-only connection is not granted access to OneDrive sites it is not explicitly admin of, so SiteAdmins/SiteAdminsResolved are expected to be incomplete or empty for those sites. The admin center page above is the only reliable source.'
 
     if ($ExportToExcel.IsPresent) {
         $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
@@ -1543,7 +1809,24 @@ function Get-SPOSiteReport {
         }
 
         Write-Host -ForegroundColor Cyan "Exporting SharePoint sites to Excel file: $excelFilePath"
-        $spoSitesInfosArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'SharePoint-SiteReport'
+
+        # SharingLinksDetails holds a collection, which a spreadsheet cell cannot represent (it would render
+        # as the type name). It is dropped from the main worksheet and written to its own sheet below, where
+        # one link per row is the natural shape anyway.
+        $sitesToExport = if ($IncludeSharingLinksDetails.IsPresent) {
+            $spoSitesInfosArray | Select-Object -Property * -ExcludeProperty 'SharingLinksDetails'
+        }
+        else {
+            $spoSitesInfosArray
+        }
+
+        $sitesToExport | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'SharePoint-SiteReport'
+
+        if ($IncludeSharingLinksDetails.IsPresent -and $sharingLinksDetailsArray.Count -gt 0) {
+            Write-Host -ForegroundColor Cyan "Exporting $($sharingLinksDetailsArray.Count) sharing link(s) to the SharePoint-SharingLinks worksheet..."
+            $sharingLinksDetailsArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'SharePoint-SharingLinks'
+        }
+
         Write-Host -ForegroundColor Green 'Export completed successfully!'
     }
     elseif ($ExportToHtml.IsPresent) {
@@ -1566,7 +1849,7 @@ function Get-SPOSiteReport {
             $null = $sitesHtmlBuilder.Append("<details class='site-block' data-search='$searchText'>")
             $null = $sitesHtmlBuilder.Append("<summary><span class='site-title'>$(ConvertTo-SPOHtmlEncoded $site.SPTitle)</span><span class='site-url'>$(ConvertTo-SPOHtmlEncoded $site.Url)</span>$typeBadge</summary>")
             $null = $sitesHtmlBuilder.Append("<div class='site-body'>")
-            $null = $sitesHtmlBuilder.Append("<div class='site-meta'>Template: $(ConvertTo-SPOHtmlEncoded $site.Template) &middot; Storage: $($site.StorageUsed) / $($site.StorageLimit) MB &middot; Sharing: $(ConvertTo-SPOHtmlEncoded $site.SharingCapability)</div>")
+            $null = $sitesHtmlBuilder.Append("<div class='site-meta'>Template: $(ConvertTo-SPOHtmlEncoded $site.Template) - Storage: $($site.StorageUsedGB) / $($site.StorageLimitGB) GB - Sharing: $(ConvertTo-SPOHtmlEncoded $site.SharingCapability)</div>")
 
             $null = $sitesHtmlBuilder.Append((ConvertTo-SPORoleHtml -RoleLabel 'Site Collection Admins' -RoleCssClass 'admins' -ResolvedString $site.SiteAdminsResolved))
             $null = $sitesHtmlBuilder.Append((ConvertTo-SPORoleHtml -RoleLabel 'Owners' -RoleCssClass 'owners' -ResolvedString $site.SiteOwnersResolved))

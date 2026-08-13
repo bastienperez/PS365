@@ -12,7 +12,7 @@
 RootModule = 'PS365.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.4.4'
+ModuleVersion = '0.4.5'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -102,7 +102,8 @@ FunctionsToExport = 'Copy-AzAutomationRunbook', 'Get-MgApplicationExpiringCertAn
                'Invoke-MgGraphBatchRequest', 'Switch-AzureCliAuthMode', 
                'Switch-AzurePowerShellMode', 'Switch-MgGraphPowerShellMode', 
                'Disable-MSSelfServicePurchase', 'Enable-MSSelfServicePurchase', 
-               'Get-SPOSiteReport', 'Search-UnifiedAuditLogCustom'
+               'Get-SPOSiteReport', 'Get-SPOSharingLinkReport',
+               'Search-UnifiedAuditLogCustom'
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
 CmdletsToExport = @()
