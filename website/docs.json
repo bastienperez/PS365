@@ -187,6 +187,7 @@
       {
         "group": "Share Point",
         "pages": [
+          "docs/commands/Get-SPOSharingLinkReport",
           "docs/commands/Get-SPOSiteReport"
         ]
       },

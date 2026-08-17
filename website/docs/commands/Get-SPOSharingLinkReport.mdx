@@ -1,0 +1,422 @@
+---
+sidebarTitle: "Get-SPOSharingLinkReport"
+title: "Get-SPOSharingLinkReport"
+Module Name: PS365
+---
+
+## SYNOPSIS
+
+Lists every sharing link of one or more SharePoint Online sites, one row per link, using PnP.PowerShell app-only.
+
+## SYNTAX
+
+```powershell
+Get-SPOSharingLinkReport -ClientId <String> -Tenant <String> [-CertificateThumbprint <String>]
+ [-CertificatePath <String>] [-CertificatePassword <SecureString>] [-CertificateBase64Encoded <String>]
+ [-SiteUrl] <String[]> [-IncludeGraphDetails] [-LinkType <String[]>] [-ExpiredOnly] [-NeverExpiringOnly]
+ [-ExpiringInDays <Int32>] [-ThrottleLimit <Int32>] [-ExportToExcel] [-ExportPath <String>]
+ [-ProgressAction <ActionPreference>] [<CommonParameters>]
+```
+
+## DESCRIPTION
+
+Get-SPOSharingLinkReport is the file-level companion of Get-SPOSiteReport -IncludeSharingLinks: where the
+latter answers "which sites have an exposure worth looking at" with a per-site count, this function
+answers "which file is shared, with whom, until when, and through which URL" for the sites you point it
+at.
+It is deliberately not tenant-wide by default: the detail costs Microsoft Graph calls per shared
+item, so the intended workflow is to triage with Get-SPOSiteReport, then drill into the sites it flags.
+
+HOW THE SHARED ITEMS ARE FOUND
+A naive implementation walks every document library, loads HasUniqueRoleAssignments on every single item,
+and asks Graph for the links of the ones that have unique permissions.
+That is one round trip per file,
+which does not survive a real tenant.
+This function inverts the problem: SharePoint already materialises
+every sharing link as a hidden site group named 'SharingLinks.&lt;itemUniqueId&gt;.&lt;linkType&gt;.&lt;linkGuid&gt;', so a
+single Get-PnPGroup call per site yields the exact list of items that carry a link.
+Only those items are
+then resolved and queried.
+The cost is proportional to the number of shared items, not to the number of
+files in the site, which is usually several orders of magnitude smaller.
+
+Each candidate item is resolved from its unique ID through the REST endpoints /_api/web/GetFileById and,
+if that returns nothing, /_api/web/GetFolderById - an item is one or the other, and the group name does
+not say which.
+The links themselves are then read with Get-PnPFileSharingLink / Get-PnPFolderSharingLink,
+which is what provides the authoritative link type (the Graph 'scope' property), the expiration date, the
+password protection, the download block and the identities the link was shared with.
+The group name is
+used only as an index of what to look at, never as the source of truth for the link itself.
+
+TWO MODES, AND WHY THE DEFAULT AVOIDS GRAPH
+By default the function never calls Microsoft Graph.
+Everything it reports comes from the SharingLinks
+groups themselves: the shared item (resolved through SharePoint REST), the link type read from the group
+name, and - the part that matters most for an access audit - the people the link was shared with, who
+are literally the members of that group.
+This runs with the SharePoint Sites.FullControl.All permission
+the rest of the module already needs, and nothing more.
+
+IncludeGraphDetails adds what only Graph knows: the link URL, the expiration date, the password
+protection, the download block, the role granted, and the authoritative scope of a Flexible link.
+That
+costs one Graph call per shared item AND the Microsoft Graph APPLICATION permissions Files.Read.All and
+Sites.Read.All - which mean "read every file of the tenant, with no user behind the call".
+On a
+production tenant that is a decision worth making deliberately, not a checkbox: consider Sites.Selected
+instead, which scopes the app to the sites you explicitly grant it.
+
+WHAT THE DEFAULT MODE CANNOT TELL YOU
+A link type of 'Flexible' is reported as Flexible, never as 'SpecificPeople'.
+Flexible is the modern
+SharePoint link model where the scope is set per link, so the group name genuinely does not say whether
+such a link is restricted to named people or open to anyone holding it.
+Guessing here would be actively
+harmful: reporting a Flexible link as 'SpecificPeople' makes SharingLinksAnyoneCount read as zero on a
+site that may well have an anonymous link.
+When that distinction matters, IncludeGraphDetails is the
+only way to resolve it - the shared-with list of the default mode is often enough to conclude on its own.
+
+PERMISSIONS
+- Default mode: SharePoint (Office 365 SharePoint Online) Sites.FullControl.All application permission,
+  the same one Get-SPOSiteReport uses.
+No Graph permission at all.
+- IncludeGraphDetails: the above, plus the Microsoft Graph APPLICATION permissions Files.Read.All and
+  Sites.Read.All.
+These are a different Entra resource - consenting to the SharePoint one does not cover
+  Graph.
+Without them every item fails at the last step with 'accessDenied 403' (Graph token present but
+  insufficient) or 'Either scp or roles claim need to be present in the token' (no Graph permission on
+  the certificate at all).
+After granting consent, allow a few minutes for propagation and reconnect:
+  PnP caches the acquired token.
+
+Client secrets are not supported by SharePoint for app-only: a certificate is mandatory.
+Provide it
+through CertificateThumbprint (Windows certificate store), CertificatePath (.pfx file) or
+CertificateBase64Encoded (base64 string, handy for Azure Automation or a pipeline variable).
+
+Sites are processed in parallel (ForEach-Object -Parallel) with one PnP connection per site.
+Tune the
+concurrency with ThrottleLimit.
+PowerShell 7 is required.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Get-SPOSharingLinkReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificateThumbprint $thumb -SiteUrl 'https://contoso.sharepoint.com/sites/marketing'
+```
+
+Lists every sharing link of a single site.
+
+### EXAMPLE 2
+
+```powershell
+Get-SPOSiteReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificateThumbprint $thumb -IncludeSharingLinks |
+    Where-Object { $_.SharingLinksAnyoneCount -gt 0 } |
+    Get-SPOSharingLinkReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificateThumbprint $thumb -LinkType Anyone
+```
+
+The intended workflow: triage the whole tenant with the cheap per-site counts, then get the file-level
+detail of the anonymous links only on the sites that actually have one.
+
+### EXAMPLE 3
+
+```powershell
+Get-SPOSharingLinkReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificateThumbprint $thumb -SiteUrl $urls -NeverExpiringOnly -ExportToExcel
+```
+
+Exports every link that will never expire on the given sites to an Excel file in the user profile directory.
+
+## PARAMETERS
+
+### -ClientId
+
+(Mandatory) Application (client) ID of the Entra app registration used for the app-only connection.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Tenant
+
+(Mandatory) Tenant domain name for the PnP connection, for example contoso.onmicrosoft.com.
+Used by Connect-PnPOnline (it expects the domain, not the tenant GUID).
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -CertificateThumbprint
+
+Thumbprint of the certificate located in the current user's Windows certificate store.
+Provide exactly one of CertificateThumbprint, CertificatePath or CertificateBase64Encoded.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -CertificatePath
+
+Path to a local .pfx certificate file.
+Use CertificatePassword when the file is protected.
+Provide exactly one of CertificateThumbprint, CertificatePath or CertificateBase64Encoded.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -CertificatePassword
+
+(Optional) SecureString password protecting the .pfx file passed to CertificatePath.
+
+```yaml
+Type: SecureString
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -CertificateBase64Encoded
+
+Base64-encoded certificate (with its private key) passed directly to Connect-PnPOnline.
+Provide exactly one of CertificateThumbprint, CertificatePath or CertificateBase64Encoded.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -SiteUrl
+
+(Mandatory) One or more site collection URLs to scan.
+Accepts pipeline input, by value or by the Url
+property, so the output of Get-SPOSiteReport can be piped straight in (its Url column binds to this
+parameter through its alias).
+
+```yaml
+Type: String[]
+Parameter Sets: (All)
+Aliases: Url
+
+Required: True
+Position: 1
+Default value: None
+Accept pipeline input: True (ByPropertyName, ByValue)
+Accept wildcard characters: False
+```
+
+### -IncludeGraphDetails
+
+(Optional) Re-reads every link through Microsoft Graph to add the link URL, the expiration date, the
+password protection, the download block, the granted role, and the real scope of a Flexible link.
+Requires the Microsoft Graph Files.Read.All and Sites.Read.All application permissions - see the
+PERMISSIONS section above before turning this on against a production tenant.
+
+Without it, the report carries LinkType/LinkTypeRaw, SharedWith, the item, and the SharingLinks group it
+came from.
+With it, those Graph columns are added and the type is resolved.
+Columns that were not
+collected are absent rather than empty, so an empty cell always means the data really is empty.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -LinkType
+
+(Optional) Restricts the output to one or more link types: Anyone (anonymous 'Anyone with the link'),
+Company (people in the organization), Flexible (modern link whose scope is only resolvable through
+Graph), SpecificPeople (requires IncludeGraphDetails), or Other for a type this function does not know
+about yet.
+Filtering happens after collection, so it does not make the run faster - it only makes the
+report shorter.
+
+```yaml
+Type: String[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ExpiredOnly
+
+(Optional) Keeps only the links whose expiration date is in the past.
+Requires IncludeGraphDetails:
+expiration dates only exist in the Graph payload.
+Mutually exclusive with NeverExpiringOnly and
+ExpiringInDays.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -NeverExpiringOnly
+
+(Optional) Keeps only the links that carry no expiration date at all.
+Requires IncludeGraphDetails.
+Mutually exclusive with ExpiredOnly and ExpiringInDays.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ExpiringInDays
+
+(Optional) Keeps only the links expiring within that many days from now, excluding those already
+expired.
+Requires IncludeGraphDetails.
+Mutually exclusive with ExpiredOnly and NeverExpiringOnly.
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: 0
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ThrottleLimit
+
+(Optional) Number of sites processed concurrently.
+Defaults to 8.
+Lower it if SharePoint starts
+answering 429: past a certain rate, more concurrency means more throttling and a longer total run.
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: 8
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ExportToExcel
+
+(Optional) Exports the result to an .xlsx file instead of returning the objects to the pipeline.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ExportPath
+
+(Optional) Output directory for the Excel export.
+Defaults to the user profile directory.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+## NOTES
+
+## RELATED LINKS
+
+[https://ps365.clidsys.com/docs/commands/Get-SPOSharingLinkReport](https://ps365.clidsys.com/docs/commands/Get-SPOSharingLinkReport)

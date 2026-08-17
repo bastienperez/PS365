@@ -14,9 +14,9 @@ Builds an inventory report of every SharePoint Online site of the tenant using P
 Get-SPOSiteReport [-ClientId] <String> [-Tenant] <String> [[-CertificateThumbprint] <String>]
  [[-CertificatePath] <String>] [[-CertificatePassword] <SecureString>] [[-CertificateBase64Encoded] <String>]
  [[-AdminUrl] <String>] [[-SiteUrl] <String>] [-ExcludeOneDrive] [-OnlyOneDrive] [[-ExcludeGeo] <String[]>]
- [-IncludeAllDetails] [-IncludeSiteAdmins] [-IncludeSiteMembers] [-IncludeSiteVisitors]
- [-RegionalSettingsDetails] [-M365GroupsDetails] [[-ThrottleLimit] <Int32>] [-ExportToExcel]
- [[-ExcelTemplatePath] <String>] [[-ExportPath] <String>] [-ExportToHtml] [-MultiGeoStats]
+ [-IncludeAllDetails] [-IncludeSiteAdmins] [-IncludeSiteMembers] [-IncludeSiteVisitors] [-IncludeSharingLinks]
+ [-IncludeSharingLinksDetails] [-RegionalSettingsDetails] [-M365GroupsDetails] [[-ThrottleLimit] <Int32>]
+ [-ExportToExcel] [[-ExcelTemplatePath] <String>] [[-ExportPath] <String>] [-ExportToHtml] [-MultiGeoStats]
  [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
@@ -33,6 +33,13 @@ access to the admin center, not to the content of each site, so a delegated conn
 Access Denied on Get-PnPSiteCollectionAdmin.
 An app registration holding the SharePoint
 Sites.FullControl.All application permission bypasses the site collection admin requirement.
+
+That permission covers the personal OneDrive sites as well: they are ordinary site collections of the
+-my.sharepoint.com host, so they are enumerated and read exactly like any other site (use ExcludeOneDrive
+or OnlyOneDrive to filter them).
+The one documented exception is the list of site collection
+administrators of a OneDrive site, which stays invisible even under this permission: see SECONDARY
+ADMINISTRATORS ON ONEDRIVE SITES ARE NOT CAPTURED under the IncludeSiteAdmins parameter.
 
 Client secrets are not supported by SharePoint for app-only: a certificate is mandatory.
 Provide it
@@ -78,6 +85,14 @@ The Entra app registration must additionally hold the Microsoft Graph applicatio
 permission Group.ReadWrite.All (or Group.Read.All for the read-only subset), on top of the SharePoint
 Sites.FullControl.All permission used for the rest of the report, both consented on the same certificate.
 
+The retrieval is scoped to what the run actually needs.
+Only a site carrying a GroupId can have a group
+behind it, so that list is computed first: when no site in scope is group-connected (a OneDrive-only run,
+or SiteUrl on a classic site) nothing is retrieved at all, and up to 25 group-connected sites are looked
+up one by one.
+The tenant-wide enumeration - which is expensive, since IncludeSiteUrl and IncludeOwners
+each add their own Graph work per group - only kicks in beyond that, where it becomes the cheaper option.
+
 MULTI-GEO TENANTS
 By default, every geo location of a Multi-Geo tenant is enumerated automatically (detected via
 Get-PnPTenantInstance): the function opens one additional PnP connection per satellite geo admin center
@@ -102,8 +117,17 @@ Optional switches enrich the report:
 Kept separate because the
   Visitors group is often large (for example 'Everyone except external users') and less relevant to a
   rights audit than Owners/Members.
+- IncludeSharingLinks adds a per-site count of the existing sharing links, broken down by link type.
+- IncludeSharingLinksDetails drills into those links file by file, through Get-SPOSharingLinkReport.
 - RegionalSettingsDetails adds the time zone, hour format and locale of each site.
 - M365GroupsDetails adds the Microsoft 365 group and Microsoft Teams layer of the group-connected sites.
+
+Each of these switches literally adds its columns to the output objects: without the switch, the columns
+are absent, not empty.
+This is deliberate - an empty SiteAdmins column would read as "this site has no
+administrator", where the truth is "this was not collected".
+A column that is present but empty therefore
+always means the data really is empty (or could not be read, see the Status counters at the end of a run).
 
 ## EXAMPLES
 
@@ -192,13 +216,35 @@ logo already present in the template file.
 ### EXAMPLE 10
 
 ```powershell
+Get-SPOSiteReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificateThumbprint $thumb -IncludeSharingLinks | Where-Object { $_.SharingLinksAnyoneCount -gt 0 }
+```
+
+Lists the sites holding at least one anonymous 'Anyone with the link' sharing link.
+Pipe the result to
+Get-SPOSharingLinkReport to get the file-level detail of those links on the sites that came out.
+
+### EXAMPLE 11
+
+```powershell
+$report = Get-SPOSiteReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificateThumbprint $thumb -IncludeSharingLinksDetails
+$report[0].SharingLinksDetails | Format-Table ItemName, LinkType, SharedWith, ExpirationDateTime
+```
+
+Same triage, in one command: the counts decide which sites deserve the file-level pass, and each site
+object carries its own links in SharingLinksDetails.
+Add -ExportToExcel to get them as a second
+worksheet instead.
+
+### EXAMPLE 12
+
+```powershell
 Get-SPOSiteReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificateThumbprint $thumb -ExcludeOneDrive -IncludeAllDetails -ExportToExcel
 ```
 
 Turns on every detail switch (site admins, Owners/Members/Visitors, regional settings, Microsoft 365
 group and Teams layer) in one go, without having to remember each switch name individually.
 
-### EXAMPLE 11
+### EXAMPLE 13
 
 ```powershell
 Get-SPOSiteReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificateThumbprint $thumb -ExcludeOneDrive -IncludeAllDetails -ExportToHtml
@@ -417,7 +463,7 @@ Accept wildcard characters: False
 ### -IncludeAllDetails
 
 (Optional) Shorthand that turns on IncludeSiteAdmins, IncludeSiteMembers, IncludeSiteVisitors,
-RegionalSettingsDetails and M365GroupsDetails all at once, so you don't have to remember and list
+IncludeSharingLinks, RegionalSettingsDetails and M365GroupsDetails all at once, so you don't have to remember and list
 each one individually.
 Does NOT affect ExcludeOneDrive/OnlyOneDrive: those are mutually exclusive
 site filters, not detail enrichment, and are left untouched.
@@ -494,6 +540,89 @@ Accept wildcard characters: False
 resolved.
 Kept separate from IncludeSiteMembers because this group is often large and less relevant
 to a rights audit.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -IncludeSharingLinks
+
+(Optional) Adds five columns counting the sharing links that currently exist on each site:
+SharingLinksAnyoneCount (anonymous 'Anyone with the link'), SharingLinksCompanyCount (people in the organization),
+SharingLinksFlexibleCount, SharingLinksOtherCount and SharingLinksTotalCount.
+Meant as a triage indicator: it answers
+"which sites have an exposure worth looking at", not "which file is shared with whom".
+
+SharingLinksFlexibleCount deserves a word: Flexible is the modern SharePoint link type, whose scope is
+set per link.
+The group name says the link exists, not whether it is restricted to named people or open
+to anyone holding it, and this report will not guess - counting Flexible links as 'specific people'
+would make SharingLinksAnyoneCount read as zero on a site that may well be exposing an anonymous link.
+A high SharingLinksFlexibleCount therefore means "worth resolving", which is what
+Get-SPOSharingLinkReport -IncludeGraphDetails does.
+
+SharePoint stores every sharing link as a hidden site group named
+'SharingLinks.&lt;itemGuid&gt;.&lt;linkType&gt;.&lt;linkGuid&gt;', so this switch only costs one extra Get-PnPGroup call
+per site, and it reuses the app-only connection already opened for the site.
+The link type is derived
+from that group name (AnonymousEdit/AnonymousView, OrganizationEdit/OrganizationView, Flexible); since
+the naming is an internal SharePoint convention rather than a documented API, any unknown type is
+counted in SharingLinksOtherCount instead of being dropped.
+A non-zero SharingLinksOtherCount is worth investigating:
+it usually means a link type this function does not know about yet.
+
+What it deliberately does not provide: which file or folder is shared, and with whom.
+Use
+IncludeSharingLinksDetails, or Get-SPOSharingLinkReport directly, on the sites this report flags.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -IncludeSharingLinksDetails
+
+(Optional) Drill-down of IncludeSharingLinks (which it turns on automatically): instead of stopping at
+the counts, each link is resolved down to the file or folder it points at and to the people it was
+shared with.
+The work is delegated to Get-SPOSharingLinkReport, which can also be called on its own.
+
+Only the sites whose counts came back non-zero are visited, so the pass is naturally limited to the
+sites that actually have something to show.
+It still opens one connection per site and resolves every
+shared item, which is why IncludeAllDetails does NOT turn this switch on - it has to be asked for
+explicitly.
+
+No Microsoft Graph permission is involved: the drill-down runs in the Graph-free mode of
+Get-SPOSharingLinkReport, where the shared-with list comes from the members of the SharingLinks group
+itself.
+The columns Graph alone can provide - link URL, expiration date, password protection, download
+block, and the resolved scope of a Flexible link - are therefore absent here.
+Call
+Get-SPOSharingLinkReport -IncludeGraphDetails yourself when you need them, after reading the permission
+trade-off documented in that function.
+
+Shape of the output: every site object receives a SharingLinksDetails property holding the collection of
+its own links (an empty collection when it has none, never $null), so the report stays one object per
+site and the drill-down is $site.SharingLinksDetails.
+With ExportToExcel, that nested property is
+dropped from the main worksheet - a cell cannot hold a collection - and the links are written to their
+own SharePoint-SharingLinks worksheet, one link per row.
 
 ```yaml
 Type: SwitchParameter
