@@ -269,54 +269,63 @@ function Get-MgAuditLogSigninInfo {
     [System.Collections.Generic.List[PSObject]]$signsInList = @()
 
     # Build StartDate/EndDate from TimeRange if provided (use full datetime when relevant)
+    # A single reference time for every date computation: two Get-Date calls milliseconds apart made the
+    # retention clamp below fire wrongly with TimeRange 'Maximum' (start = now-30d compared to a slightly later now-30d)
+    $nowReference = Get-Date
     $endWasDayOnly = $false
+
+    if ($TimeRange -and ($StartDate -or $EndDate)) {
+        Write-Warning 'Use either -TimeRange or -StartDate/-EndDate, not both: the two define the same window and would conflict'
+        return
+    }
+
     if ($TimeRange) {
         switch ($TimeRange) {
             'Last2Minutes' {
-                $startDt = (Get-Date).AddMinutes(-2)
+                $startDt = $nowReference.AddMinutes(-2)
                 break
             }
             'Last10Minutes' {
-                $startDt = (Get-Date).AddMinutes(-10)
+                $startDt = $nowReference.AddMinutes(-10)
                 break
             }
             'LastHour' {
-                $startDt = (Get-Date).AddHours(-1)
+                $startDt = $nowReference.AddHours(-1)
                 break
             }
             'Last6Hours' {
-                $startDt = (Get-Date).AddHours(-6)
+                $startDt = $nowReference.AddHours(-6)
                 break
             }
             'Last12Hours' {
-                $startDt = (Get-Date).AddHours(-12)
+                $startDt = $nowReference.AddHours(-12)
                 break
             }
             'Last24Hours' {
-                $startDt = (Get-Date).AddHours(-24)
+                $startDt = $nowReference.AddHours(-24)
                 break
             }
             'Last3Days' {
-                $startDt = (Get-Date).AddDays(-3)
+                $startDt = $nowReference.AddDays(-3)
                 break
             }
             'Last7Days' {
-                $startDt = (Get-Date).AddDays(-7)
+                $startDt = $nowReference.AddDays(-7)
                 break
             }
             'Last15Days' {
-                $startDt = (Get-Date).AddDays(-14)
+                $startDt = $nowReference.AddDays(-14)
                 break
             }
             'Maximum' {
                 Write-Host -ForegroundColor Cyan "You have selected the 'Maximum' TimeRange option. The value corresponds to the maximum retention period of Microsoft Entra ID (Azure AD) sign-in logs, which is 30 days for Entra P1/P2 licence and 7 days otherwise."
-                $startDt = (Get-Date).AddDays(-30)
+                $startDt = $nowReference.AddDays(-30)
                 break
             }
         }
 
         # When using predefined TimeRange, default EndDate to now (preserve time resolution)
-        $endDt = (Get-Date)
+        $endDt = $nowReference
         $endWasDayOnly = $false
     }
 
@@ -334,9 +343,9 @@ function Get-MgAuditLogSigninInfo {
                 }
                 
                 # if startDate greater than 30 days ago, warn the user and set it to 30 days ago
-                if ($parsedStart -lt (Get-Date).AddDays(-30)) {
+                if ($parsedStart -lt $nowReference.AddDays(-30)) {
                     Write-Warning 'StartDate is greater than 30 days ago. Microsoft Entra ID (Azure AD) sign-in logs are retained for 30 days only. Setting StartDate to 30 days ago.'
-                    $startDt = (Get-Date).AddDays(-30)
+                    $startDt = $nowReference.AddDays(-30)
                 }
                 else {
                     # use the provided datetime (preserving time if it's a DateTime object)
@@ -346,14 +355,14 @@ function Get-MgAuditLogSigninInfo {
             else {
                 # Default: 30 days ago (keeps previous behaviour)
                 # https://learn.microsoft.com/en-us/entra/identity/monitoring-health/reference-reports-data-retention#how-long-does-microsoft-entra-id-store-the-data
-                $startDt = (Get-Date).AddDays(-30)
+                $startDt = $nowReference.AddDays(-30)
             }
         }
         else {
             # If TimeRange produced a startDt older than retention, clamp it and warn
-            if ($startDt -lt (Get-Date).AddDays(-30)) {
+            if ($startDt -lt $nowReference.AddDays(-30)) {
                 Write-Warning 'Computed TimeRange start is greater than 30 days ago. Microsoft Entra ID sign-in logs are retained for 30 days only. Setting StartDate to 30 days ago.'
-                $startDt = (Get-Date).AddDays(-30)
+                $startDt = $nowReference.AddDays(-30)
             }
         }
     }
@@ -380,7 +389,7 @@ function Get-MgAuditLogSigninInfo {
             }
             else {
                 # Default endDate: now (we will make it exclusive only if user provided day-only EndDate)
-                $endDt = (Get-Date)
+                $endDt = $nowReference
                 $endWasDayOnly = $false
             }
         }
