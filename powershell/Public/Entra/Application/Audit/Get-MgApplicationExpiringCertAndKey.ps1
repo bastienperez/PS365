@@ -124,7 +124,7 @@ function Get-MgApplicationExpiringCertAndKey {
             $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
             $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-ExpiringCredentials_$($DaysUntilExpiry)days.xlsx"
             Write-Host -ForegroundColor Cyan "Exporting expiring credentials to Excel file: $excelFilePath"
-            $expiringCredentialsArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'ExpiringCredentials'
+            $expiringCredentialsArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'ExpiringCredentials' -TableStyle Light9
             Write-Host -ForegroundColor Green 'Export completed successfully!'
         }
         else {

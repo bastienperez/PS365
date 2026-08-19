@@ -735,7 +735,7 @@ function Get-MgApplicationCredential {
         $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
         $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-MgApplicationCredential.xlsx"
         Write-Host -ForegroundColor Cyan "Exporting application credentials to Excel file: $excelFilePath"
-        $credentialsArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'EntraApplicationCredentials'
+        $credentialsArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'EntraApplicationCredentials' -TableStyle Light9
         Write-Host -ForegroundColor Green 'Export completed successfully!'
     }
     elseif (-not $RunFromAzureAutomation.IsPresent) {

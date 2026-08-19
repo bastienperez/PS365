@@ -592,7 +592,7 @@ function Get-ExMailboxForwarding {
 		$now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
 		$excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-ExMailboxForwarding.xlsx"
 		Write-Host -ForegroundColor Cyan "Exporting to Excel file: $excelFilePath"
-		$forwardList | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'ExMailboxForwarding'
+		$forwardList | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'ExMailboxForwarding' -TableStyle Light9
 		Write-Host -ForegroundColor Green 'Export completed successfully!'
 	}
 	else {

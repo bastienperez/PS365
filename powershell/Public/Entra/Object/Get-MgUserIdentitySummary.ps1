@@ -244,7 +244,7 @@ function Get-MgUserIdentitySummary {
         $exportDirectory = if ($ExportPath) { $ExportPath } else { $env:userprofile }
         $excelFilePath = Join-Path -Path $exportDirectory -ChildPath "$now-MgUserIdentitySummary.xlsx"
         Write-Host -ForegroundColor Cyan "Exporting identity summary to Excel file: $excelFilePath"
-        $summaryArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'Entra-IdentitySummary'
+        $summaryArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'Entra-IdentitySummary' -TableStyle Light9
         Write-Host -ForegroundColor Green 'Export completed successfully!'
     }
     else {

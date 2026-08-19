@@ -204,7 +204,7 @@ function Get-ExMailboxPermission {
             $filenameSuffix = if ($UserPermission) { "User-$($UserPermission -replace '[<>:"/\\|?*]', '_')" } elseif ($ByDomain) { "Domain-$($ByDomain -replace '[<>:"/\\|?*]', '_')" } elseif ($Identity) { $Identity -replace '[<>:"/\\|?*]', '_' } else { 'AllMailboxes' }
             $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-ExMailboxPermissions-$filenameSuffix.xlsx"
             Write-Host -ForegroundColor Cyan "Exporting mailbox permissions to Excel file: $excelFilePath"
-            $allPermissions | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'ExchangeMailboxPermissions'
+            $allPermissions | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'ExchangeMailboxPermissions' -TableStyle Light9
             Write-Host -ForegroundColor Green 'Export completed successfully!'
         }
         else {

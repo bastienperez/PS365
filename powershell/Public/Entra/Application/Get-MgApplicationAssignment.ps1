@@ -530,7 +530,7 @@ function Get-MgApplicationAssignment {
         $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
         $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-MgApplicationAssignment.xlsx"
         Write-Host -ForegroundColor Cyan "Exporting application assignments to Excel file: $excelFilePath"
-        $applicationAssignmentsArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'EntraApplicationAssignments'
+        $applicationAssignmentsArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'EntraApplicationAssignments' -TableStyle Light9
         Write-Host -ForegroundColor Green 'Export completed successfully!'
     }
     else {

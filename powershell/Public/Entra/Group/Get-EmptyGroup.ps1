@@ -1,4 +1,4 @@
-﻿<#
+<#
     .SYNOPSIS
     Retrieves all empty groups (zero members) in Microsoft Entra ID.
 
@@ -137,7 +137,7 @@ function Get-EmptyGroup {
         $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-EmptyGroups.xlsx"
         Write-Verbose "Excel file path: $excelFilePath"
         Write-Host -ForegroundColor Cyan "Exporting empty groups to Excel file: $excelFilePath"
-        $emptyGroups | Sort-Object DisplayName | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'EmptyGroups'
+        $emptyGroups | Sort-Object DisplayName | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'EmptyGroups' -TableStyle Light9
         Write-Host -ForegroundColor Green 'Export completed successfully!'
     }
     else {

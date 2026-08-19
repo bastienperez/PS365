@@ -271,11 +271,11 @@ function Get-MgCustomSecurityAttributeInfo {
         Write-Host -ForegroundColor Cyan "Exporting custom security attribute report to Excel file: $excelFilePath"
 
         # One worksheet per entity type, plus a consolidated 'All' sheet
-        $assignmentsArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'Entra-CustomSecAttr-All'
+        $assignmentsArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'Entra-CustomSecAttr-All' -TableStyle Light9
 
         foreach ($type in ($assignmentsArray.EntityType | Sort-Object -Unique)) {
             $sheetName = "Entra-CustomSecAttr-$type"
-            $assignmentsArray | Where-Object { $_.EntityType -eq $type } | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName $sheetName
+            $assignmentsArray | Where-Object { $_.EntityType -eq $type } | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName $sheetName -TableStyle Light9
         }
 
         Write-Host -ForegroundColor Green 'Export completed successfully!'

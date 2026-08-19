@@ -704,7 +704,7 @@ function Get-MgAuditLogSigninInfo {
         $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
         $ExcelFilePath = "$($env:userprofile)\$now-MgAuditLogSignInDetail_Report.xlsx"
         Write-Host -ForegroundColor Cyan "Exporting sign-in details to Excel file: $ExcelFilePath"
-        $signsInList | Export-Excel -Path $ExcelFilePath -AutoSize -AutoFilter -WorksheetName 'Entra-SignInLog'
+        $signsInList | Export-Excel -Path $ExcelFilePath -AutoSize -AutoFilter -WorksheetName 'Entra-SignInLog' -TableStyle Light9
     }
     else {
         return $signsInList

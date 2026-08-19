@@ -108,7 +108,7 @@ function Get-ExMailboxRegionalConfiguration {
         $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
         $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-ExMailboxRegionalConfiguration.xlsx"
         Write-Host -ForegroundColor Cyan "Exporting to Excel file: $excelFilePath"
-        $exoMbxRegionalConfigArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'ExMailboxRegionalConfiguration'
+        $exoMbxRegionalConfigArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'ExMailboxRegionalConfiguration' -TableStyle Light9
         Write-Host -ForegroundColor Green 'Export completed successfully!'
     }
     else {

@@ -1054,8 +1054,32 @@ function Get-SPOSiteReport {
     try {
         if ($SiteUrl) {
             # Single site targeted explicitly: no Multi-Geo notion applies, unchanged from before.
-            $singleSite = Get-PnPTenantSite -Identity $SiteUrl -Detailed -Connection $adminConnection -ErrorAction Stop
-            $singleSite | Add-Member -NotePropertyName 'Geo' -NotePropertyValue 'Default' -Force
+            try {
+                $singleSite = Get-PnPTenantSite -Identity $SiteUrl -Detailed -Connection $adminConnection -ErrorAction Stop
+            }
+            catch {
+                # Tenant-level read denied ('Attempted to perform an unauthorized operation': app limited to
+                # Sites.Selected, or identity without the SharePoint Administrator role). The site-level pass
+                # below still works through a direct connection to the site itself, so degrade to a minimal
+                # site object and keep going instead of aborting the whole report
+                Write-Warning "Unable to read the tenant-level properties of $SiteUrl ($($_.Exception.Message.Trim())). Continuing with site-level data only: storage, owner, sharing and the other tenant-level columns will be empty for this site."
+
+                $singleSite = [PSCustomObject]@{
+                    Url                 = $SiteUrl
+                    Title               = $null
+                    GroupId             = $null
+                    Owner               = $null
+                    StorageQuota        = $null
+                    StorageUsage        = $null
+                    StorageUsageCurrent = $null
+                    # Carried into the SiteDataStatus column so the failure is visible in the report itself
+                    TenantDataError     = "$($_.Exception.Message.Trim())"
+                }
+            }
+
+            # No fabricated tenant-level values when the tenant read failed: empty beats wrong
+            $singleSiteGeo = if ($singleSite.PSObject.Properties.Name -contains 'TenantDataError') { $null } else { 'Default' }
+            $singleSite | Add-Member -NotePropertyName 'Geo' -NotePropertyValue $singleSiteGeo -Force
             $spoSites.Add($singleSite)
             $geoAdminUrlByName['Default'] = $AdminUrl
             $geoIsDefaultByName['Default'] = $true
@@ -1196,7 +1220,7 @@ function Get-SPOSiteReport {
             }
 
             Write-Host -ForegroundColor Cyan "Exporting Multi-Geo stats to Excel file: $excelFilePath"
-            $statsArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'SharePoint-MultiGeoStats'
+            $statsArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'SharePoint-MultiGeoStats' -TableStyle Light9
             Write-Host -ForegroundColor Green 'Export completed successfully!'
         }
         else {
@@ -1459,6 +1483,8 @@ function Get-SPOSiteReport {
 
     # Access denied / claim resolution counters, reported once at the end instead of flooding the console
     $siteErrorCount = 0
+    # Failing site URLs, listed in the final summary so identifying them does not require -Verbose
+    [System.Collections.Generic.List[string]]$siteErrorUrls = @()
     $sitePartialErrorCount = 0
     $claimResolutionErrorCount = 0
 
@@ -1488,15 +1514,24 @@ function Get-SPOSiteReport {
 
         # Merge the parallel site-level data collected above, then resolve claims sequentially
         $perSite = $perSiteLookup[$spoSite.Url]
+
+        # Carried into the report row: empty site-level columns must be distinguishable from a collection failure
+        $siteDataStatus = 'NotCollected'
+
         if ($null -ne $perSite) {
+            $siteDataStatus = 'OK'
+
             if ($perSite.Status -like 'ERROR:*') {
                 # Connection to the site itself failed: no site-level data at all for this site
                 $siteErrorCount++
+                $siteErrorUrls.Add($spoSite.Url)
+                $siteDataStatus = "$($perSite.Status)"
                 Write-Verbose "Site-level collection failed for $($spoSite.Url): $($perSite.Status)"
             }
             elseif ($perSite.Status -like 'PARTIAL:*') {
                 # Connection succeeded but one or more data points failed; the others are still usable
                 $sitePartialErrorCount++
+                $siteDataStatus = "$($perSite.Status)"
                 Write-Verbose "Site-level collection partially failed for $($spoSite.Url): $($perSite.Status)"
             }
 
@@ -1639,10 +1674,16 @@ function Get-SPOSiteReport {
             GroupID        = $groupId
             Url            = $spoSite.Url
             Geo            = $spoSite.Geo
-            # StorageQuota/StorageUsage are returned in MB by SPO/PnP: convert to GB
-            StorageLimitGB = [math]::Round(($spoSite.StorageQuota) / 1024, 2)
-            StorageUsedGB  = [math]::Round(($storageUsed) / 1024, 2)
+            # StorageQuota/StorageUsage are returned in MB by SPO/PnP: convert to GB.
+            # Left empty (not 0, which would read as real data) when the tenant-level read failed
+            StorageLimitGB = if ($spoSite.TenantDataError) { $null } else { [math]::Round(($spoSite.StorageQuota) / 1024, 2) }
+            StorageUsedGB  = if ($spoSite.TenantDataError) { $null } else { [math]::Round(($storageUsed) / 1024, 2) }
             Owner          = $spoSite.Owner
+            # 'OK', 'ERROR: ...' (no site-level data at all), 'PARTIAL: ...' (some data points missing)
+            # or 'NotCollected': tells whether the empty site-level columns of this row mean
+            # 'nothing there' or 'could not read'. When the tenant-level read failed too (single-site
+            # fallback), its error is prepended so the report carries the full picture on its own
+            SiteDataStatus = if ($spoSite.TenantDataError) { "TenantError: $($spoSite.TenantDataError) | SiteLevel: $siteDataStatus" } else { $siteDataStatus }
         }
 
         if ($IncludeSiteAdmins.IsPresent) {
@@ -1729,7 +1770,12 @@ function Get-SPOSiteReport {
     }
 
     if ($siteErrorCount -gt 0) {
-        Write-Host -ForegroundColor Yellow "The PnP connection could not be established on $siteErrorCount site(s) - no site-level data at all for those. Run with -Verbose to see each failing site."
+        Write-Host -ForegroundColor Yellow "The PnP connection could not be established on $siteErrorCount site(s) - no site-level data at all for those. Run with -Verbose to see the exact error per site:"
+
+        foreach ($siteErrorUrl in $siteErrorUrls) {
+            Write-Host -ForegroundColor Yellow "  $siteErrorUrl"
+        }
+
         Write-Host -ForegroundColor Yellow 'A recurring error usually means the app registration lacks the SharePoint Sites.FullControl.All application permission, or the OneDrive personal sites block app-only access.'
     }
 
@@ -1820,11 +1866,11 @@ function Get-SPOSiteReport {
             $spoSitesInfosArray
         }
 
-        $sitesToExport | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'SharePoint-SiteReport'
+        $sitesToExport | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'SharePoint-SiteReport' -TableStyle Light9
 
         if ($IncludeSharingLinksDetails.IsPresent -and $sharingLinksDetailsArray.Count -gt 0) {
             Write-Host -ForegroundColor Cyan "Exporting $($sharingLinksDetailsArray.Count) sharing link(s) to the SharePoint-SharingLinks worksheet..."
-            $sharingLinksDetailsArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'SharePoint-SharingLinks'
+            $sharingLinksDetailsArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'SharePoint-SharingLinks' -TableStyle Light9
         }
 
         Write-Host -ForegroundColor Green 'Export completed successfully!'

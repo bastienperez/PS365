@@ -158,7 +158,7 @@ function Get-ExMailboxStatisticsInfo {
 			$now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
 			$excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-ExMailboxStatisticsInfo.xlsx"
 			Write-Host -ForegroundColor Cyan "Exporting to Excel file: $excelFilePath"
-			$resultsArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'ExMailboxStatisticsInfo'
+			$resultsArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'ExMailboxStatisticsInfo' -TableStyle Light9
 			Write-Host -ForegroundColor Green 'Export completed successfully!'
 		}
 		else {

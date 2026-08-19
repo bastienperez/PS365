@@ -653,7 +653,7 @@ function Get-MgRoleReport {
         $excelFileName = "$($env:userprofile)\$now-MgRoleReport.xlsx"
         Write-Verbose "Exporting report to Excel file: $excelFileName"
 
-        $rolesMembersArray | Export-Excel -Path $excelFileName -AutoSize -AutoFilter -Title 'Microsoft Entra ID Role Report' -WorksheetName 'Role Report' -TableName 'MgRoleReport' -FreezeTopRow
+        $rolesMembersArray | Export-Excel -Path $excelFileName -AutoSize -AutoFilter -Title 'Microsoft Entra ID Role Report' -WorksheetName 'Role Report' -TableName 'MgRoleReport' -FreezeTopRow -TableStyle Light9
     }
     else {
         return $rolesMembersArray

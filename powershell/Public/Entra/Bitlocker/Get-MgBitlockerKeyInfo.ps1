@@ -594,12 +594,12 @@ function Get-MgBitlockerKeyInfo {
                     'transitiveMemberOf', 'RegisteredOwners', 'RegisteredUsers'
                 )
                 $devices | Select-Object * -ExcludeProperty $excludeProps | 
-                Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'BitLocker-DeviceReport'
+                Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'BitLocker-DeviceReport' -TableStyle Light9
             }
             else {
                 Write-Verbose 'Exporting BitLocker keys report to Excel...'
                 $keys | Select-Object * -ExcludeProperty Id, VolumeType, AdditionalProperties, CreatedDateTime, Key | 
-                Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'BitLocker-Keys'
+                Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'BitLocker-Keys' -TableStyle Light9
             }
             
             Write-Host "Report successfully exported to: $excelFilePath" -ForegroundColor Green

@@ -1,4 +1,4 @@
-﻿<#
+<#
     .SYNOPSIS
     Lists all nested group dependencies (group-in-group) in Microsoft Entra ID.
 
@@ -183,7 +183,7 @@ function Get-NestedGroup {
         $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-NestedGroups.xlsx"
         Write-Verbose "Excel file path: $excelFilePath"
         Write-Host -ForegroundColor Cyan "Exporting nested groups to Excel file: $excelFilePath"
-        $dependencies | Sort-Object ParentGroup, MemberGroup | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'NestedGroups'
+        $dependencies | Sort-Object ParentGroup, MemberGroup | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'NestedGroups' -TableStyle Light9
         Write-Host -ForegroundColor Green 'Export completed successfully!'
     }
     elseif ($ExportToHtml.IsPresent) {

@@ -388,7 +388,7 @@ function Get-MgExternalUser {
         $exportDirectory = if ($ExportPath) { $ExportPath } else { $env:userprofile }
         $excelFilePath = Join-Path -Path $exportDirectory -ChildPath "$now-MgExternalUser.xlsx"
         Write-Host -ForegroundColor Cyan "Exporting external users to Excel file: $excelFilePath"
-        $externalUsersArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'Entra-ExternalUsers'
+        $externalUsersArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'Entra-ExternalUsers' -TableStyle Light9
         Write-Host -ForegroundColor Green 'Export completed successfully!'
     }
     else {

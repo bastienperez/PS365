@@ -614,10 +614,10 @@ function Get-DynamicGroup {
         }
 
         & $sanitizeForExcel $dynGroupArray
-        $dynGroupArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'DynamicGroups'
+        $dynGroupArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'DynamicGroups' -TableStyle Light9
         if ($MemberReport.IsPresent) {
             & $sanitizeForExcel $memberReportArray
-            $memberReportArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'Members'
+            $memberReportArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'Members' -TableStyle Light9
         }
         Write-Host -ForegroundColor Green 'Export completed successfully!'
     }

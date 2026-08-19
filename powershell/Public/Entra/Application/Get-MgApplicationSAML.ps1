@@ -859,7 +859,7 @@ function Get-MgApplicationSAML {
         $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
         $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-MgApplicationSAML.xlsx"
         Write-Host -ForegroundColor Cyan "Exporting SAML applications to Excel file: $excelFilePath"
-        $samlApplicationsArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'EntraSAMLApplications'
+        $samlApplicationsArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'EntraSAMLApplications' -TableStyle Light9
         Write-Host -ForegroundColor Green 'Export completed successfully!'
     }
     elseif (-not $RunFromAzureAutomation.IsPresent) {

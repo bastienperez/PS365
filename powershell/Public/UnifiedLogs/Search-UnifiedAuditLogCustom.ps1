@@ -1445,6 +1445,7 @@ function Invoke-SearchUnifiedAuditLogCustomHelperGUI {
                     AutoFilter    = $true
                     FreezeTopRow  = $true
                     TableName     = 'AuditLog'
+                    TableStyle    = 'Light9'
                     ClearSheet    = $true
                 }
                 $results | Export-Excel @excelSplat

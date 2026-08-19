@@ -626,7 +626,7 @@ function Get-SPOSharingLinkReport {
             $excelFilePath = Join-Path -Path $exportDirectory -ChildPath "$now-SPOSharingLinkReport.xlsx"
 
             Write-Host -ForegroundColor Cyan "Exporting to Excel file: $excelFilePath"
-            $sharingLinksArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'SPO-SharingLinks'
+            $sharingLinksArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'SPO-SharingLinks' -TableStyle Light9
             Write-Host -ForegroundColor Green 'Export completed successfully!'
         }
         else {

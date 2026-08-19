@@ -212,7 +212,7 @@ function Get-ExResourceMailbox {
             $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
             $excelFilePath = "$($env:userprofile)\$now-ExResourceMailbox.xlsx"
             Write-Host -ForegroundColor Cyan "Exporting to Excel file: $excelFilePath"
-            $resourceMailboxesResults | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'ExResourceMailbox'
+            $resourceMailboxesResults | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'ExResourceMailbox' -TableStyle Light9
             Write-Host -ForegroundColor Green 'Export completed successfully!'
         }
         else {

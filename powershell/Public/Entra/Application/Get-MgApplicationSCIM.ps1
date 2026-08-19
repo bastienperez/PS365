@@ -969,7 +969,7 @@ function Get-MgApplicationSCIM {
         $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
         $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-MgApplicationSCIM-SynchronizationJobsInfo.xlsx"
         Write-Host -ForegroundColor Cyan "Exporting SCIM synchronization jobs to Excel file: $excelFilePath"
-        $synchronizationJobsDetailsArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'Entra-ApplicationSCIM'
+        $synchronizationJobsDetailsArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'Entra-ApplicationSCIM' -TableStyle Light9
         Write-Host -ForegroundColor Green 'Export completed successfully!'
     }
     elseif (-not $RunFromAzureAutomation.IsPresent) {
