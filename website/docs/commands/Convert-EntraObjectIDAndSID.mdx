@@ -1,7 +1,12 @@
 ---
 sidebarTitle: "Convert-EntraObjectIDAndSID"
-title: "Convert-EntraObjectIDAndSID"
+document type: cmdlet
+HelpUri: https://ps365.clidsys.com/docs/commands/Convert-EntraObjectIDAndSID
+Locale: en-US
 Module Name: PS365
+ms.date: 08/28/2026
+PlatyPS schema version: 2024-05-01
+title: "Convert-EntraObjectIDAndSID"
 ---
 
 ## SYNOPSIS
@@ -11,7 +16,7 @@ Converts between Microsoft Entra ID SID and Object ID formats.
 ## SYNTAX
 
 ```powershell
-Convert-EntraObjectIDAndSID [-Value] <String> [-ProgressAction <ActionPreference>] [<CommonParameters>]
+Convert-EntraObjectIDAndSID [-Value] <string>
 ```
 
 ## DESCRIPTION
@@ -58,21 +63,32 @@ Accepts pipeline input.
 - Object ID format: GUID (e.g., xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)
 
 ```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: 1
-Default value: None
-Accept pipeline input: True (ByValue)
-Accept wildcard characters: False
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: true
+  ValueFromPipeline: true
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
+
 ### CommonParameters
 
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
+
+### System.String
 
 ## OUTPUTS
 
@@ -83,4 +99,4 @@ This conversion is bijective: SID &lt;-&gt; ObjectID.
 
 ## RELATED LINKS
 
-[https://ps365.clidsys.com/docs/commands/Convert-EntraObjectIDAndSID](https://ps365.clidsys.com/docs/commands/Convert-EntraObjectIDAndSID)
+- [https://ps365.clidsys.com/docs/commands/Convert-EntraObjectIDAndSID](https://ps365.clidsys.com/docs/commands/Convert-EntraObjectIDAndSID)

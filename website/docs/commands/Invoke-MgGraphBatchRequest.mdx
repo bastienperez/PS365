@@ -1,7 +1,12 @@
 ---
 sidebarTitle: "Invoke-MgGraphBatchRequest"
-title: "Invoke-MgGraphBatchRequest"
+document type: cmdlet
+HelpUri: https://ps365.clidsys.com/docs/commands/Invoke-MgGraphBatchRequest
+Locale: en-US
 Module Name: PS365
+ms.date: 08/28/2026
+PlatyPS schema version: 2024-05-01
+title: "Invoke-MgGraphBatchRequest"
 ---
 
 ## SYNOPSIS
@@ -11,9 +16,8 @@ Sends multiple Microsoft Graph requests in a single HTTP call using JSON batchin
 ## SYNTAX
 
 ```powershell
-Invoke-MgGraphBatchRequest [-Requests] <System.Collections.Generic.List`1[System.Collections.Hashtable]>
- [[-GraphVersion] <String>] [[-MaxRetries] <Int32>] [[-Activity] <String>] [-ProgressAction <ActionPreference>]
- [<CommonParameters>]
+Invoke-MgGraphBatchRequest [-Requests] <List`1[hashtable]> [[-GraphVersion] <string>]
+ [[-MaxRetries] <int>] [[-Activity] <string>]
 ```
 
 ## DESCRIPTION
@@ -59,21 +63,25 @@ Sends the requests against the v1.0 endpoint instead of beta.
 
 ## PARAMETERS
 
-### -Requests
+### -Activity
 
-List of request hashtables to send.
-Each hashtable must contain at least id, method and url keys.
+Activity name displayed by Write-Progress while batches are being processed.
 
 ```yaml
-Type: System.Collections.Generic.List`1[System.Collections.Hashtable]
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: 1
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.String
+DefaultValue: Processing Graph batch requests
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 3
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -GraphVersion
@@ -81,15 +89,20 @@ Accept wildcard characters: False
 Graph API version used for the $batch endpoint: beta (default) or v1.0.
 
 ```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 2
-Default value: Beta
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.String
+DefaultValue: beta
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 1
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -MaxRetries
@@ -97,35 +110,50 @@ Accept wildcard characters: False
 Maximum number of retry rounds for throttled sub-requests (default 5).
 
 ```yaml
-Type: Int32
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 3
-Default value: 5
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Int32
+DefaultValue: 5
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 2
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
-### -Activity
+### -Requests
 
-Activity name displayed by Write-Progress while batches are being processed.
+List of request hashtables to send.
+Each hashtable must contain at least id, method and url keys.
 
 ```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 4
-Default value: Processing Graph batch requests
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Collections.Generic.List`1[System.Collections.Hashtable]
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
+
 ### CommonParameters
 
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
@@ -134,10 +162,11 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ### System.Collections.Hashtable
 
 ## NOTES
+
 [0.1.0] - 2026-08-05
 # Added
 - Initial version, promoted from the internal helper of Get-MgAuthNMethodInfo (PS365.Clidsys)
 
 ## RELATED LINKS
 
-[https://ps365.clidsys.com/docs/commands/Invoke-MgGraphBatchRequest](https://ps365.clidsys.com/docs/commands/Invoke-MgGraphBatchRequest)
+- [https://ps365.clidsys.com/docs/commands/Invoke-MgGraphBatchRequest](https://ps365.clidsys.com/docs/commands/Invoke-MgGraphBatchRequest)

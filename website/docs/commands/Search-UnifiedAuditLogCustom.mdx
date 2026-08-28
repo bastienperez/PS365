@@ -1,7 +1,12 @@
 ---
 sidebarTitle: "Search-UnifiedAuditLogCustom"
-title: "Search-UnifiedAuditLogCustom"
+document type: cmdlet
+HelpUri: ''
+Locale: en-US
 Module Name: PS365
+ms.date: 08/28/2026
+PlatyPS schema version: 2024-05-01
+title: "Search-UnifiedAuditLogCustom"
 ---
 
 ## SYNOPSIS
@@ -11,9 +16,9 @@ Search-UnifiedAuditLogCustom is an enhanced wrapper around the native Search-Uni
 ## SYNTAX
 
 ```powershell
-Search-UnifiedAuditLogCustom [[-StartDate] <DateTime>] [[-EndDate] <DateTime>] [[-Operations] <String[]>]
- [[-UserIds] <String[]>] [[-FreeText] <String>] [[-ResultSize] <Int32>] [-SimpleView] [-HelperGUI]
- [[-ChunkDays] <Int32>] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+Search-UnifiedAuditLogCustom [[-StartDate] <datetime>] [[-EndDate] <datetime>]
+ [[-Operations] <string[]>] [[-UserIds] <string[]>] [[-FreeText] <string>] [[-ResultSize] <int>]
+ [[-ChunkDays] <int>] [-SimpleView] [-HelperGUI]
 ```
 
 ## DESCRIPTION
@@ -33,149 +38,7 @@ Search-UnifiedAuditLogCustom -StartDate (Get-Date).AddDays(-7) -EndDate (Get-Dat
 
 This example searches the Unified Audit Log for "UserLoggedIn" and "FileAccessed" operations that occurred in the last 7 days, and returns the results in a simplified format.
 
-### EXAMPLE 2
-
-```powershell
-
-```
-
 ## PARAMETERS
-
-### -StartDate
-
-The start date and time for the audit log search.
-If not specified, defaults to 24 hours ago.
-
-```yaml
-Type: DateTime
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 1
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -EndDate
-
-The end date and time for the audit log search.
-If not specified, defaults to the current date and time.
-
-```yaml
-Type: DateTime
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 2
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Operations
-
-An array of operation names to filter the search.
-These can be selected from the helper GUI, which loads the catalog of operations from Microsoft Learn.
-Users can also enter raw cmdlet names (e.g., New-TransportRule) to filter by specific operations.
-
-```yaml
-Type: String[]
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 3
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -UserIds
-
-An array of user identifiers (e.g., email addresses) to filter the search results by specific users.
-
-```yaml
-Type: String[]
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 4
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -FreeText
-
-A free text string to search for within the audit log records.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 5
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ResultSize
-
-The maximum number of results to return from the search.
-Defaults to 5000.
-
-```yaml
-Type: Int32
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 6
-Default value: 5000
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -SimpleView
-
-When specified, the output will be processed to flatten nested JSON structures into a simpler format.
-This is ideal for exporting to CSV or performing quick analysis without dealing with complex nested properties.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases: Simple
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -HelperGUI
-
-When specified, opens a graphical user interface to assist in constructing the search query with user-friendly controls and operation selection.
-The operations list is populated from the Microsoft Learn catalog of audit log activities, allowing users to easily find and select relevant operations for their search.
-Make sure to have access to the Microsoft Learn page for audit log activities to load the operations catalog successfully (https://learn.microsoft.com/en-us/purview/audit-log-activities).
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
 
 ### -ChunkDays
 
@@ -187,19 +50,205 @@ Lower this value (e.g.
 1 or 3) if a chunk itself returns the 'too long' error.
 
 ```yaml
-Type: Int32
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 7
-Default value: 7
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Int32
+DefaultValue: 7
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 6
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
+
+### -EndDate
+
+The end date and time for the audit log search.
+If not specified, defaults to the current date and time.
+
+```yaml
+Type: System.DateTime
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 1
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -FreeText
+
+A free text string to search for within the audit log records.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 4
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -HelperGUI
+
+When specified, opens a graphical user interface to assist in constructing the search query with user-friendly controls and operation selection.
+The operations list is populated from the Microsoft Learn catalog of audit log activities, allowing users to easily find and select relevant operations for their search.
+Make sure to have access to the Microsoft Learn page for audit log activities to load the operations catalog successfully (https://learn.microsoft.com/en-us/purview/audit-log-activities).
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Operations
+
+An array of operation names to filter the search.
+These can be selected from the helper GUI, which loads the catalog of operations from Microsoft Learn.
+Users can also enter raw cmdlet names (e.g., New-TransportRule) to filter by specific operations.
+
+```yaml
+Type: System.String[]
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 2
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ResultSize
+
+The maximum number of results to return from the search.
+Defaults to 5000.
+
+```yaml
+Type: System.Int32
+DefaultValue: 5000
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 5
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -SimpleView
+
+When specified, the output will be processed to flatten nested JSON structures into a simpler format.
+This is ideal for exporting to CSV or performing quick analysis without dealing with complex nested properties.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases:
+- Simple
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -StartDate
+
+The start date and time for the audit log search.
+If not specified, defaults to 24 hours ago.
+
+```yaml
+Type: System.DateTime
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -UserIds
+
+An array of user identifiers (e.g., email addresses) to filter the search results by specific users.
+
+```yaml
+Type: System.String[]
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 3
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
 ### CommonParameters
 
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 

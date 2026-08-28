@@ -85,7 +85,8 @@
               "docs/commands/Convert-EntraObjectIDAndSID",
               "docs/commands/Get-MgCustomSecurityAttributeInfo",
               "docs/commands/Get-MgExternalUser",
-              "docs/commands/Get-MgUserIdentitySummary"
+              "docs/commands/Get-MgUserIdentitySummary",
+              "docs/commands/Get-MgUserProvisioningError"
             ]
           },
           {

@@ -1,7 +1,12 @@
 ---
 sidebarTitle: "Get-MgBitlockerKeyInfo"
-title: "Get-MgBitlockerKeyInfo"
+document type: cmdlet
+HelpUri: https://ps365.clidsys.com/docs/commands/Get-MgBitlockerKeyInfo
+Locale: en-US
 Module Name: PS365
+ms.date: 08/28/2026
+PlatyPS schema version: 2024-05-01
+title: "Get-MgBitlockerKeyInfo"
 ---
 
 ## SYNOPSIS
@@ -13,17 +18,17 @@ Invokes the backup of BitLocker recovery keys to Intune for all Intune managed d
 ### Default (Default)
 
 ```powershell
-Get-MgBitlockerKeyInfo [-IncludeDeviceInfo] [-IncludeDeviceOwner] [-ExportToExcel] [-ExportPath <String>]
- [-ShowKeyInPlainText] [-RunFromAzureAutomation] [-DeviceName <String>] [-DeviceID <String>]
- [-ProgressAction <ActionPreference>] [<CommonParameters>]
+Get-MgBitlockerKeyInfo [-IncludeDeviceInfo] [-IncludeDeviceOwner] [-ExportToExcel]
+ [-ExportPath <string>] [-ShowKeyInPlainText] [-RunFromAzureAutomation] [-DeviceName <string>]
+ [-DeviceID <string>]
 ```
 
 ### KeyVault
 
 ```powershell
-Get-MgBitlockerKeyInfo [-IncludeDeviceInfo] [-IncludeDeviceOwner] [-ExportToExcel] [-ExportPath <String>]
- [-ShowKeyInPlainText] [-RunFromAzureAutomation] [-BackupToKeyVault] -KeyVaultName <String>
- [-DeviceName <String>] [-DeviceID <String>] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+Get-MgBitlockerKeyInfo -BackupToKeyVault -KeyVaultName <string> [-IncludeDeviceInfo]
+ [-IncludeDeviceOwner] [-ExportToExcel] [-ExportPath <string>] [-ShowKeyInPlainText]
+ [-RunFromAzureAutomation] [-DeviceName <string>] [-DeviceID <string>]
 ```
 
 ## DESCRIPTION
@@ -95,37 +100,91 @@ This command retrieves BitLocker keys for a specific device by ID and exports th
 
 ## PARAMETERS
 
-### -IncludeDeviceInfo
+### -BackupToKeyVault
 
-Switch to include device information such as device name, OS, compliance status, etc.
+Switch to enable backup of BitLocker recovery keys to Azure Key Vault.
+Must be used together with -KeyVaultName.
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: KeyVault
+  Position: Named
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
-### -IncludeDeviceOwner
+### -DeviceID
 
-Switch to include device owner information (UPN).
-Requires IncludeDeviceInfo parameter.
+Filter results to a specific device by its device ID (GUID).
+Cannot be used together with DeviceName parameter.
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
 
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+### -DeviceName
+
+Filter results to a specific device by its display name.
+Cannot be used together with DeviceID parameter.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ExportPath
+
+Optional output directory for the Excel export (defaults to the user profile).
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -ExportToExcel
@@ -134,50 +193,87 @@ Switch to export the results to an Excel file in the user profile directory.
 If not specified, the function returns the data objects.
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
-### -ExportPath
+### -IncludeDeviceInfo
 
-Optional output directory for the Excel export (defaults to the user profile).
+Switch to include device information such as device name, OS, compliance status, etc.
 
 ```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
-### -ShowKeyInPlainText
+### -IncludeDeviceOwner
 
-Switch to display BitLocker recovery keys in plain text format in the output.
-WARNING: This will expose sensitive BitLocker recovery keys!
-Only use when absolutely necessary and ensure secure handling of the output.
-Without this parameter, keys will be hidden for security (displayed as '[HIDDEN]').
+Switch to include device owner information (UPN).
+Requires IncludeDeviceInfo parameter.
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
 
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+### -KeyVaultName
+
+Specify the name of Azure Key Vault to backup BitLocker recovery keys.
+Mandatory when -BackupToKeyVault is specified.
+Requires Azure PowerShell module and appropriate permissions to access Key Vault.
+Keys will be stored with device name and BitLocker key ID as the secret name.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: KeyVault
+  Position: Named
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -RunFromAzureAutomation
@@ -192,89 +288,52 @@ https://github.com/microsoftgraph/msgraph-sdk-powershell/issues/3151
 https://github.com/microsoftgraph/msgraph-sdk-powershell/issues/3166
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
-### -BackupToKeyVault
+### -ShowKeyInPlainText
 
-Switch to enable backup of BitLocker recovery keys to Azure Key Vault.
-Must be used together with -KeyVaultName.
+Switch to display BitLocker recovery keys in plain text format in the output.
+WARNING: This will expose sensitive BitLocker recovery keys!
+Only use when absolutely necessary and ensure secure handling of the output.
+Without this parameter, keys will be hidden for security (displayed as '[HIDDEN]').
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: KeyVault
-Aliases:
-
-Required: True
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
-### -KeyVaultName
-
-Specify the name of Azure Key Vault to backup BitLocker recovery keys.
-Mandatory when -BackupToKeyVault is specified.
-Requires Azure PowerShell module and appropriate permissions to access Key Vault.
-Keys will be stored with device name and BitLocker key ID as the secret name.
-
-```yaml
-Type: String
-Parameter Sets: KeyVault
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -DeviceName
-
-Filter results to a specific device by its display name.
-Cannot be used together with DeviceID parameter.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -DeviceID
-
-Filter results to a specific device by its device ID (GUID).
-Cannot be used together with DeviceName parameter.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
 ### CommonParameters
 
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
@@ -297,9 +356,10 @@ PERMISSION SCOPE CONSIDERATIONS:
 - Application context: Can read BitLocker keys for all devices in the organization (requires admin consent)
 - Managed Identity: Same as application context when properly configured with admin consent
 
-SECURITY WARNING: The exported CSV file contains sensitive BitLocker recovery keys. 
+SECURITY WARNING: The exported CSV file contains sensitive BitLocker recovery keys.
+
 Store it in a secure location and limit access appropriately!
 
 ## RELATED LINKS
 
-[https://ps365.clidsys.com/docs/commands/Get-MgBitlockerKeyInfo](https://ps365.clidsys.com/docs/commands/Get-MgBitlockerKeyInfo)
+- [https://ps365.clidsys.com/docs/commands/Get-MgBitlockerKeyInfo](https://ps365.clidsys.com/docs/commands/Get-MgBitlockerKeyInfo)

@@ -1,7 +1,12 @@
 ---
 sidebarTitle: "Get-SPOSiteReport"
-title: "Get-SPOSiteReport"
+document type: cmdlet
+HelpUri: https://ps365.clidsys.com/docs/commands/Get-SPOSiteReport
+Locale: en-US
 Module Name: PS365
+ms.date: 08/28/2026
+PlatyPS schema version: 2024-05-01
+title: "Get-SPOSiteReport"
 ---
 
 ## SYNOPSIS
@@ -11,13 +16,14 @@ Builds an inventory report of every SharePoint Online site of the tenant using P
 ## SYNTAX
 
 ```powershell
-Get-SPOSiteReport [-ClientId] <String> [-Tenant] <String> [[-CertificateThumbprint] <String>]
- [[-CertificatePath] <String>] [[-CertificatePassword] <SecureString>] [[-CertificateBase64Encoded] <String>]
- [[-AdminUrl] <String>] [[-SiteUrl] <String>] [-ExcludeOneDrive] [-OnlyOneDrive] [[-ExcludeGeo] <String[]>]
- [-IncludeAllDetails] [-IncludeSiteAdmins] [-IncludeSiteMembers] [-IncludeSiteVisitors] [-IncludeSharingLinks]
- [-IncludeSharingLinksDetails] [-RegionalSettingsDetails] [-M365GroupsDetails] [[-ThrottleLimit] <Int32>]
- [-ExportToExcel] [[-ExcelTemplatePath] <String>] [[-ExportPath] <String>] [-ExportToHtml] [-MultiGeoStats]
- [-ProgressAction <ActionPreference>] [<CommonParameters>]
+Get-SPOSiteReport [-ClientId] <string> [-Tenant] <string> [[-CertificateThumbprint] <string>]
+ [[-CertificatePath] <string>] [[-CertificatePassword] <securestring>]
+ [[-CertificateBase64Encoded] <string>] [[-AdminUrl] <string>] [[-SiteUrl] <string>]
+ [[-ExcludeGeo] <string[]>] [[-ThrottleLimit] <int>] [[-ExcelTemplatePath] <string>]
+ [[-ExportPath] <string>] [-ExcludeOneDrive] [-OnlyOneDrive] [-IncludeAllDetails]
+ [-IncludeSiteAdmins] [-IncludeSiteMembers] [-IncludeSiteVisitors] [-IncludeSharingLinks]
+ [-IncludeSharingLinksDetails] [-RegionalSettingsDetails] [-M365GroupsDetails] [-ExportToExcel]
+ [-ExportToHtml] [-MultiGeoStats]
 ```
 
 ## DESCRIPTION
@@ -256,107 +262,6 @@ opens it automatically.
 
 ## PARAMETERS
 
-### -ClientId
-
-(Mandatory) Application (client) ID of the Entra app registration used for the app-only connection.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: 1
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Tenant
-
-(Mandatory) Tenant domain name for the PnP connection, for example contoso.onmicrosoft.com.
-Used by Connect-PnPOnline (it expects the domain, not the tenant GUID).
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: 2
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -CertificateThumbprint
-
-Thumbprint of the certificate located in the current user's Windows certificate store.
-Provide exactly one of CertificateThumbprint, CertificatePath or CertificateBase64Encoded.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 3
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -CertificatePath
-
-Path to a local .pfx certificate file.
-Use CertificatePassword when the file is protected.
-Provide exactly one of CertificateThumbprint, CertificatePath or CertificateBase64Encoded.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 4
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -CertificatePassword
-
-(Optional) SecureString password protecting the .pfx file passed to CertificatePath.
-
-```yaml
-Type: SecureString
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 5
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -CertificateBase64Encoded
-
-Base64-encoded certificate (with its private key) passed directly to Connect-PnPOnline.
-Provide exactly one of CertificateThumbprint, CertificatePath or CertificateBase64Encoded.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 6
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -AdminUrl
 
 (Optional) URL of the SharePoint admin center, for example https://contoso-admin.sharepoint.com.
@@ -368,69 +273,155 @@ automatic loop over every geo (see MULTI-GEO TENANTS above) only runs when Admin
 derived automatically from Tenant.
 
 ```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 7
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 6
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
-### -SiteUrl
+### -CertificateBase64Encoded
 
-(Optional) Restricts the report to a single site collection URL.
-When omitted, every site of the tenant
-is processed.
-Always single-site/single-geo: the automatic Multi-Geo enumeration never applies when
-SiteUrl is used.
+Base64-encoded certificate (with its private key) passed directly to Connect-PnPOnline.
+Provide exactly one of CertificateThumbprint, CertificatePath or CertificateBase64Encoded.
 
 ```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 8
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 5
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
-### -ExcludeOneDrive
+### -CertificatePassword
 
-(Optional) Excludes the personal OneDrive sites from the report.
-Cannot be combined with OnlyOneDrive.
+(Optional) SecureString password protecting the .pfx file passed to CertificatePath.
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Security.SecureString
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 4
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
-### -OnlyOneDrive
+### -CertificatePath
 
-(Optional) Restricts the report to the personal OneDrive sites.
-Cannot be combined with ExcludeOneDrive.
+Path to a local .pfx certificate file.
+Use CertificatePassword when the file is protected.
+Provide exactly one of CertificateThumbprint, CertificatePath or CertificateBase64Encoded.
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 3
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
 
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+### -CertificateThumbprint
+
+Thumbprint of the certificate located in the current user's Windows certificate store.
+Provide exactly one of CertificateThumbprint, CertificatePath or CertificateBase64Encoded.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 2
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ClientId
+
+(Mandatory) Application (client) ID of the Entra app registration used for the app-only connection.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ExcelTemplatePath
+
+(Optional) Path to an existing .xlsx file used as a template for the Excel export.
+The template is
+copied to the destination path first, then the report data is written into a 'SharePoint-SiteReport'
+worksheet in that copy: any other worksheet, formatting or logo already present in the template is left
+untouched.
+Ignored when ExportToExcel is not specified.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 10
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -ExcludeGeo
@@ -449,15 +440,116 @@ Has no effect when
 SiteUrl or an explicit AdminUrl already restrict the report to a single geo.
 
 ```yaml
-Type: String[]
-Parameter Sets: (All)
-Aliases:
+Type: System.String[]
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 8
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
 
-Required: False
-Position: 9
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+### -ExcludeOneDrive
+
+(Optional) Excludes the personal OneDrive sites from the report.
+Cannot be combined with OnlyOneDrive.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ExportPath
+
+(Optional) Output directory for the Excel or HTML export.
+Defaults to the user profile.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 11
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ExportToExcel
+
+(Optional) If specified, exports the results to an Excel file in the user's profile directory.
+Cannot be combined with ExportToHtml: only one export format is produced per call.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ExportToHtml
+
+(Optional) If specified, exports the results as a single self-contained HTML file (no external
+dependency, works offline) instead of returning the objects.
+Every site is rendered as a collapsible
+tree: Site Collection Admins / Owners / Members / Visitors, each showing the individual users
+resolved through the claim model above, with identities inherited from a nested Microsoft 365 group
+shown under their own collapsible sub-node (name and role of that group).
+A search box filters sites
+by title or URL, useful when the tenant has many sites.
+The file opens automatically once written.
+Cannot be combined with ExportToExcel: only one export format is produced per call.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -IncludeAllDetails
@@ -471,86 +563,20 @@ Individual switches passed alongside
 IncludeAllDetails have no additional effect (everything is already on).
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -IncludeSiteAdmins
-
-(Optional) Adds the full list of site collection administrators of each site, resolved with
-Get-PnPSiteCollectionAdmin, plus their resolved identities (SiteAdminsResolved).
-Requires the app-only
-connection described above.
-
-SECONDARY ADMINISTRATORS ON ONEDRIVE SITES ARE NOT CAPTURED
-SharePoint Administrators or Global Administrators cannot view the site collection administrators of a
-OneDrive site by default: they must be explicitly added as a site collection administrator on that
-specific OneDrive site to gain visibility into its admin list.
-Because of this restriction,
-Get-PnPSiteCollectionAdmin - which this switch relies on - does not pick up secondary administrators on
-OneDrive sites, even under the app-only certificate used by this function (see
-https://github.com/pnp/powershell/discussions/4697).
-Expect SiteAdmins/SiteAdminsResolved to be
-incomplete or empty for OneDrive sites: this is not a bug in this function, it reflects what the
-connection is actually allowed to see.
-The 'My Site Secondary Admin' admin center page (reminded at the
-end of every run) remains the only reliable source for OneDrive secondary administrators.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -IncludeSiteMembers
-
-(Optional) Adds the site Owners and Members groups of each site (Get-PnPGroup -AssociatedOwnerGroup /
--AssociatedMemberGroup), raw and resolved through the claim resolution model described above.
-This is
-the reliable, site-type-agnostic replacement for auditing who effectively has rights on a site.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -IncludeSiteVisitors
-
-(Optional) Adds the site Visitors group of each site (Get-PnPGroup -AssociatedVisitorGroup), raw and
-resolved.
-Kept separate from IncludeSiteMembers because this group is often large and less relevant
-to a rights audit.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -IncludeSharingLinks
@@ -584,15 +610,20 @@ Use
 IncludeSharingLinksDetails, or Get-SPOSharingLinkReport directly, on the sites this report flags.
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -IncludeSharingLinksDetails
@@ -625,32 +656,106 @@ dropped from the main worksheet - a cell cannot hold a collection - and the link
 own SharePoint-SharingLinks worksheet, one link per row.
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
-### -RegionalSettingsDetails
+### -IncludeSiteAdmins
 
-(Optional) Adds the regional settings of each site (time zone, hour format, locale), read with Get-PnPWeb.
-This switch significantly increases the execution time on large tenants.
+(Optional) Adds the full list of site collection administrators of each site, resolved with
+Get-PnPSiteCollectionAdmin, plus their resolved identities (SiteAdminsResolved).
+Requires the app-only
+connection described above.
+
+SECONDARY ADMINISTRATORS ON ONEDRIVE SITES ARE NOT CAPTURED
+SharePoint Administrators or Global Administrators cannot view the site collection administrators of a
+OneDrive site by default: they must be explicitly added as a site collection administrator on that
+specific OneDrive site to gain visibility into its admin list.
+Because of this restriction,
+Get-PnPSiteCollectionAdmin - which this switch relies on - does not pick up secondary administrators on
+OneDrive sites, even under the app-only certificate used by this function (see
+https://github.com/pnp/powershell/discussions/4697).
+Expect SiteAdmins/SiteAdminsResolved to be
+incomplete or empty for OneDrive sites: this is not a bug in this function, it reflects what the
+connection is actually allowed to see.
+The 'My Site Secondary Admin' admin center page (reminded at the
+end of every run) remains the only reliable source for OneDrive secondary administrators.
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
 
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+### -IncludeSiteMembers
+
+(Optional) Adds the site Owners and Members groups of each site (Get-PnPGroup -AssociatedOwnerGroup /
+-AssociatedMemberGroup), raw and resolved through the claim resolution model described above.
+This is
+the reliable, site-type-agnostic replacement for auditing who effectively has rights on a site.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -IncludeSiteVisitors
+
+(Optional) Adds the site Visitors group of each site (Get-PnPGroup -AssociatedVisitorGroup), raw and
+resolved.
+Kept separate from IncludeSiteMembers because this group is often large and less relevant
+to a rights audit.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -M365GroupsDetails
@@ -662,112 +767,20 @@ Exchange Online or Microsoft Teams session is needed.
 This switch significantly increases the execution time on large tenants.
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ThrottleLimit
-
-(Optional) Maximum number of sites processed concurrently by the parallel site-level collection.
-Default is 8.
-
-```yaml
-Type: Int32
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 10
-Default value: 8
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ExportToExcel
-
-(Optional) If specified, exports the results to an Excel file in the user's profile directory.
-Cannot be combined with ExportToHtml: only one export format is produced per call.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ExcelTemplatePath
-
-(Optional) Path to an existing .xlsx file used as a template for the Excel export.
-The template is
-copied to the destination path first, then the report data is written into a 'SharePoint-SiteReport'
-worksheet in that copy: any other worksheet, formatting or logo already present in the template is left
-untouched.
-Ignored when ExportToExcel is not specified.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 11
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ExportPath
-
-(Optional) Output directory for the Excel or HTML export.
-Defaults to the user profile.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 12
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ExportToHtml
-
-(Optional) If specified, exports the results as a single self-contained HTML file (no external
-dependency, works offline) instead of returning the objects.
-Every site is rendered as a collapsible
-tree: Site Collection Admins / Owners / Members / Visitors, each showing the individual users
-resolved through the claim model above, with identities inherited from a nested Microsoft 365 group
-shown under their own collapsible sub-node (name and role of that group).
-A search box filters sites
-by title or URL, useful when the tenant has many sites.
-The file opens automatically once written.
-Cannot be combined with ExportToExcel: only one export format is produced per call.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -MultiGeoStats
@@ -789,19 +802,141 @@ ExportToExcel is honored (worksheet
 renders the detailed rights tree, which does not apply to a stats-only run.
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
+
+### -OnlyOneDrive
+
+(Optional) Restricts the report to the personal OneDrive sites.
+Cannot be combined with ExcludeOneDrive.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -RegionalSettingsDetails
+
+(Optional) Adds the regional settings of each site (time zone, hour format, locale), read with Get-PnPWeb.
+This switch significantly increases the execution time on large tenants.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -SiteUrl
+
+(Optional) Restricts the report to a single site collection URL.
+When omitted, every site of the tenant
+is processed.
+Always single-site/single-geo: the automatic Multi-Geo enumeration never applies when
+SiteUrl is used.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 7
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Tenant
+
+(Mandatory) Tenant domain name for the PnP connection, for example contoso.onmicrosoft.com.
+Used by Connect-PnPOnline (it expects the domain, not the tenant GUID).
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 1
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ThrottleLimit
+
+(Optional) Maximum number of sites processed concurrently by the parallel site-level collection.
+Default is 8.
+
+```yaml
+Type: System.Int32
+DefaultValue: 8
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 9
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
 ### CommonParameters
 
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
@@ -811,4 +946,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## RELATED LINKS
 
-[https://ps365.clidsys.com/docs/commands/Get-SPOSiteReport](https://ps365.clidsys.com/docs/commands/Get-SPOSiteReport)
+- [https://ps365.clidsys.com/docs/commands/Get-SPOSiteReport](https://ps365.clidsys.com/docs/commands/Get-SPOSiteReport)

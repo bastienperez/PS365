@@ -1,7 +1,12 @@
 ---
 sidebarTitle: "Get-MgApplicationExpiringCertAndKey"
-title: "Get-MgApplicationExpiringCertAndKey"
+document type: cmdlet
+HelpUri: https://ps365.clidsys.com/docs/commands/Get-MgApplicationExpiringCertAndKey
+Locale: en-US
 Module Name: PS365
+ms.date: 08/28/2026
+PlatyPS schema version: 2024-05-01
+title: "Get-MgApplicationExpiringCertAndKey"
 ---
 
 ## SYNOPSIS
@@ -11,8 +16,8 @@ Retrieves Entra ID applications with expiring credentials or SAML certificates.
 ## SYNTAX
 
 ```powershell
-Get-MgApplicationExpiringCertAndKey [[-DaysUntilExpiry] <Int32>] [-ForceNewToken] [-ExportToExcel]
- [[-ExportPath] <String>] [-UseBatchRequest] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+Get-MgApplicationExpiringCertAndKey [[-DaysUntilExpiry] <int>] [[-ExportPath] <string>]
+ [-ForceNewToken] [-ExportToExcel] [-UseBatchRequest]
 ```
 
 ## DESCRIPTION
@@ -65,47 +70,20 @@ Applications with credentials expiring within this timeframe will be returned.
 Default is 30 days.
 
 ```yaml
-Type: Int32
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 1
-Default value: 30
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ForceNewToken
-
-\{\{ Fill ForceNewToken Description \}\}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ExportToExcel
-
-Exports the results to an Excel file.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Int32
+DefaultValue: 30
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -ExportPath
@@ -113,15 +91,62 @@ Accept wildcard characters: False
 Optional output directory for the Excel export (defaults to the user profile).
 
 ```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 1
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
 
-Required: False
-Position: 2
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+### -ExportToExcel
+
+Exports the results to an Excel file.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ForceNewToken
+
+\{\{ Fill ForceNewToken Description \}\}
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -UseBatchRequest
@@ -130,19 +155,28 @@ Accept wildcard characters: False
 JSON $batch endpoint (20 requests per HTTP call with automatic HTTP 429 retry) instead of ForEach-Object -Parallel.
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
+
 ### CommonParameters
 
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
@@ -156,4 +190,4 @@ Author: Bastien Perez
 
 ## RELATED LINKS
 
-[https://ps365.clidsys.com/docs/commands/Get-MgApplicationExpiringCertAndKey](https://ps365.clidsys.com/docs/commands/Get-MgApplicationExpiringCertAndKey)
+- [https://ps365.clidsys.com/docs/commands/Get-MgApplicationExpiringCertAndKey](https://ps365.clidsys.com/docs/commands/Get-MgApplicationExpiringCertAndKey)

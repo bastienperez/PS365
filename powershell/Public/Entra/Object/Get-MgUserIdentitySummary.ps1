@@ -21,13 +21,6 @@
     (Optional) Restricts the summary to external accounts. Without it, every user of the tenant is
     included, which is the point of this function.
 
-    .PARAMETER Anonymize
-    (Optional) Replaces the real issuer domains with placeholders: <OUR-TENANT-DOMAIN> for a domain
-    belonging to this tenant, <OTHER-DOMAIN> for any third-party domain. Well-known issuers
-    (ExternalAzureAD, MSA, mail, google.com, ...) are kept as-is.
-    Use it to share the summary outside of the organization.
-    Requires the Domain.Read.All permission to know which domains belong to this tenant.
-
     .PARAMETER ForceNewToken
     Switch parameter to force getting a new token from Microsoft Graph.
 
@@ -47,11 +40,6 @@
     Get-MgUserIdentitySummary -ExternalOnly | Format-Table -AutoSize
 
     Same summary restricted to the external accounts.
-
-    .EXAMPLE
-    Get-MgUserIdentitySummary -Anonymize | Format-Table -AutoSize
-
-    Same summary with the real domains masked, suitable for sharing outside of the organization.
 
     .EXAMPLE
     Get-MgUserIdentitySummary -ExportToExcel
@@ -74,7 +62,6 @@
 
     Required Microsoft Graph permissions:
         - User.Read.All
-        - Domain.Read.All (only with -Anonymize)
 
     .LINK
     https://ps365.clidsys.com/docs/commands/Get-MgUserIdentitySummary
@@ -85,9 +72,6 @@ function Get-MgUserIdentitySummary {
     param (
         [Parameter(Mandatory = $false)]
         [switch]$ExternalOnly,
-
-        [Parameter(Mandatory = $false)]
-        [switch]$Anonymize,
 
         [Parameter(Mandatory = $false)]
         [switch]$ForceNewToken,
@@ -108,10 +92,6 @@ function Get-MgUserIdentitySummary {
     }
 
     $permissionsNeeded = @('User.Read.All')
-    if ($Anonymize.IsPresent) {
-        # Telling our own domains apart from third-party ones requires reading the tenant domains
-        $permissionsNeeded += 'Domain.Read.All'
-    }
 
     $isConnected = $null -ne (Get-MgContext -ErrorAction SilentlyContinue)
     if ($ForceNewToken.IsPresent) {
@@ -126,29 +106,6 @@ function Get-MgUserIdentitySummary {
     if (-not (Test-MgGraphPermission -RequiredScopes $permissionsNeeded -CallerName $MyInvocation.MyCommand.Name)) {
         return
     }
-
-    [System.Collections.Generic.List[string]]$tenantDomains = @()
-    if ($Anonymize.IsPresent) {
-        Write-Host -ForegroundColor Cyan 'Retrieving tenant domains'
-        $domainsUri = 'https://graph.microsoft.com/v1.0/domains?$select=id&$top=999'
-        try {
-            do {
-                $domainsResponse = Invoke-MgGraphRequestWithRetry -Method GET -Uri $domainsUri
-                foreach ($domain in $domainsResponse.value) {
-                    $tenantDomains.Add($domain.id)
-                }
-                $domainsUri = $domainsResponse.'@odata.nextLink'
-            } while ($domainsUri)
-        }
-        catch {
-            Write-Warning "Unable to retrieve the tenant domains: $_"
-            Write-Warning 'Tenant domains will be masked as <OTHER-DOMAIN> like any third-party domain.'
-        }
-    }
-
-    # Issuers that are not domains, or whose name carries no information about the organization
-    $knownIssuers = @('ExternalAzureAD', 'MSA', 'mail', 'PhoneNumber', 'DefaultDirectory',
-        'google.com', 'facebook.com', 'twitter.com', 'linkedin.com', 'github.com', 'apple.com', 'amazon.com')
 
     $selectProperties = 'id,userPrincipalName,userType,creationType,externalUserState,identities'
     $uri = "https://graph.microsoft.com/v1.0/users?`$select=$selectProperties&`$top=999"
@@ -188,18 +145,9 @@ function Get-MgUserIdentitySummary {
             }
 
             foreach ($identity in $identities) {
-                $issuerValue = $identity.issuer
-
-                if ($Anonymize.IsPresent) {
-                    $issuerValue = if (-not $issuerValue) { '<none>' }
-                                   elseif ($issuerValue -in $knownIssuers) { $issuerValue }
-                                   elseif ($issuerValue -in $tenantDomains) { '<OUR-TENANT-DOMAIN>' }
-                                   else { '<OTHER-DOMAIN>' }
-                }
-
                 $identityRows.Add([PSCustomObject][ordered]@{
                         SignInType      = $identity.signInType
-                        Issuer          = $issuerValue
+                        Issuer          = $identity.issuer
                         UserType        = $user.userType
                         CreationType    = $user.creationType
                         InvitationState = $user.externalUserState

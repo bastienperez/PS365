@@ -1,7 +1,12 @@
 ---
 sidebarTitle: "Get-IntuneAutoMDMEnrollmentPolicy"
-title: "Get-IntuneAutoMDMEnrollmentPolicy"
+document type: cmdlet
+HelpUri: https://ps365.clidsys.com/docs/commands/Get-IntuneAutoMDMEnrollmentPolicy
+Locale: en-US
 Module Name: PS365
+ms.date: 08/28/2026
+PlatyPS schema version: 2024-05-01
+title: "Get-IntuneAutoMDMEnrollmentPolicy"
 ---
 
 ## SYNOPSIS
@@ -11,7 +16,7 @@ Retrieves the current MDM enrollment policy for Microsoft Entra ID.
 ## SYNTAX
 
 ```powershell
-Get-IntuneAutoMDMEnrollmentPolicy [-AsObject] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+Get-IntuneAutoMDMEnrollmentPolicy [-AsObject]
 ```
 
 ## DESCRIPTION
@@ -44,19 +49,28 @@ Retrieves the complete policy object from Microsoft Graph.
 When specified, returns the complete policy object instead of just the state.
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
+
 ### CommonParameters
 
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
@@ -64,8 +78,10 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ### String - Returns 'Enabled' or 'Disabled' by default
 
-### PSObject - Returns full policy object when -AsObject is used
+PSObject - Returns full policy object when -AsObject is used
+
 ## NOTES
+
 Requires the following Microsoft Graph permissions:
 - Policy.Read.All
 
@@ -73,4 +89,4 @@ Connect-MgGraph -Scopes 'Policy.Read.All'
 
 ## RELATED LINKS
 
-[https://ps365.clidsys.com/docs/commands/Get-IntuneAutoMDMEnrollmentPolicy](https://ps365.clidsys.com/docs/commands/Get-IntuneAutoMDMEnrollmentPolicy)
+- [https://ps365.clidsys.com/docs/commands/Get-IntuneAutoMDMEnrollmentPolicy](https://ps365.clidsys.com/docs/commands/Get-IntuneAutoMDMEnrollmentPolicy)

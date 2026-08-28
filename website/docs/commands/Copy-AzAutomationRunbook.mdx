@@ -1,7 +1,12 @@
 ---
 sidebarTitle: "Copy-AzAutomationRunbook"
-title: "Copy-AzAutomationRunbook"
+document type: cmdlet
+HelpUri: https://ps365.clidsys.com/docs/commands/Copy-AzAutomationRunbook
+Locale: en-US
 Module Name: PS365
+ms.date: 08/28/2026
+PlatyPS schema version: 2024-05-01
+title: "Copy-AzAutomationRunbook"
 ---
 
 ## SYNOPSIS
@@ -11,8 +16,8 @@ Copies all runbooks from a source Azure Automation account to a destination acco
 ## SYNTAX
 
 ```powershell
-Copy-AzAutomationRunbook [-SourceAutomationAccount] <String> [-DestinationAutomationAccount] <String>
- [-ResourceGroup] <String> [[-TempFolder] <String>] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+Copy-AzAutomationRunbook [-SourceAutomationAccount] <string>
+ [-DestinationAutomationAccount] <string> [-ResourceGroup] <string> [[-TempFolder] <string>]
 ```
 
 ## DESCRIPTION
@@ -40,36 +45,25 @@ Copies all runbooks using a custom temporary folder.
 
 ## PARAMETERS
 
-### -SourceAutomationAccount
-
-The name of the source Azure Automation account to export runbooks from.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: 1
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -DestinationAutomationAccount
 
 The name of the destination Azure Automation account to import runbooks into.
 
 ```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: 2
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 1
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -ResourceGroup
@@ -77,15 +71,41 @@ Accept wildcard characters: False
 The name of the resource group containing both Automation accounts.
 
 ```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 2
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
 
-Required: True
-Position: 3
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+### -SourceAutomationAccount
+
+The name of the source Azure Automation account to export runbooks from.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -TempFolder
@@ -96,19 +116,28 @@ Note: Only auto-generated folders are deleted at the end.
 If you provide an existing folder, its contents are NOT cleaned up.
 
 ```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 4
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 3
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
+
 ### CommonParameters
 
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
@@ -118,4 +147,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## RELATED LINKS
 
-[https://ps365.clidsys.com/docs/commands/Copy-AzAutomationRunbook](https://ps365.clidsys.com/docs/commands/Copy-AzAutomationRunbook)
+- [https://ps365.clidsys.com/docs/commands/Copy-AzAutomationRunbook](https://ps365.clidsys.com/docs/commands/Copy-AzAutomationRunbook)

@@ -1,7 +1,12 @@
 ---
 sidebarTitle: "Set-IntuneAutoMDMEnrollmentPolicy"
-title: "Set-IntuneAutoMDMEnrollmentPolicy"
+document type: cmdlet
+HelpUri: https://ps365.clidsys.com/docs/commands/Set-IntuneAutoMDMEnrollmentPolicy
+Locale: en-US
 Module Name: PS365
+ms.date: 08/28/2026
+PlatyPS schema version: 2024-05-01
+title: "Set-IntuneAutoMDMEnrollmentPolicy"
 ---
 
 ## SYNOPSIS
@@ -11,8 +16,7 @@ Configures the MDM enrollment policy for Microsoft Entra ID.
 ## SYNTAX
 
 ```powershell
-Set-IntuneAutoMDMEnrollmentPolicy [-State] <String> [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm]
- [<CommonParameters>]
+Set-IntuneAutoMDMEnrollmentPolicy [-State] <string> [-WhatIf] [-Confirm]
 ```
 
 ## DESCRIPTION
@@ -40,6 +44,28 @@ Enables automatic MDM enrollment during device registration.
 
 ## PARAMETERS
 
+### -Confirm
+
+Prompts you for confirmation before running the cmdlet.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: ''
+SupportsWildcards: false
+Aliases:
+- cf
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
 ### -State
 
 Specifies whether MDM enrollment should be enabled or disabled during registration.
@@ -47,52 +73,50 @@ Specifies whether MDM enrollment should be enabled or disabled during registrati
 - 'Disabled' : Disables automatic MDM enrollment (sets isMdmEnrollmentDuringRegistrationDisabled to true)
 
 ```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: 1
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -WhatIf
 
-Shows what would happen if the cmdlet runs.
-The cmdlet is not run.
+Runs the command in a mode that only reports what would happen without performing the actions.
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases: wi
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: ''
+SupportsWildcards: false
+Aliases:
+- wi
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
-### -Confirm
-
-Prompts you for confirmation before running the cmdlet.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases: cf
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
 ### CommonParameters
 
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
@@ -107,4 +131,4 @@ Connect-MgGraph -Scopes 'Policy.ReadWrite.MobilityManagement'
 
 ## RELATED LINKS
 
-[https://ps365.clidsys.com/docs/commands/Set-IntuneAutoMDMEnrollmentPolicy](https://ps365.clidsys.com/docs/commands/Set-IntuneAutoMDMEnrollmentPolicy)
+- [https://ps365.clidsys.com/docs/commands/Set-IntuneAutoMDMEnrollmentPolicy](https://ps365.clidsys.com/docs/commands/Set-IntuneAutoMDMEnrollmentPolicy)

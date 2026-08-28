@@ -1,7 +1,12 @@
 ---
 sidebarTitle: "Switch-AzureCliAuthMode"
-title: "Switch-AzureCliAuthMode"
+document type: cmdlet
+HelpUri: https://ps365.clidsys.com/docs/commands/Switch-AzureCliAuthMode
+Locale: en-US
 Module Name: PS365
+ms.date: 08/28/2026
+PlatyPS schema version: 2024-05-01
+title: "Switch-AzureCliAuthMode"
 ---
 
 ## SYNOPSIS
@@ -13,19 +18,19 @@ Switches Azure CLI authentication between browser and WAM modes.
 ### Toggle (Default)
 
 ```powershell
-Switch-AzureCliAuthMode [-ProgressAction <ActionPreference>] [<CommonParameters>]
+Switch-AzureCliAuthMode
 ```
 
 ### Specify
 
 ```powershell
-Switch-AzureCliAuthMode [-Mode <String>] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+Switch-AzureCliAuthMode [-Mode <string>]
 ```
 
 ### GetCurrent
 
 ```powershell
-Switch-AzureCliAuthMode [-GetCurrent] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+Switch-AzureCliAuthMode [-GetCurrent]
 ```
 
 ## DESCRIPTION
@@ -85,6 +90,27 @@ Displays the current authentication mode.
 
 ## PARAMETERS
 
+### -GetCurrent
+
+Displays the current authentication mode without making any changes.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: GetCurrent
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
 ### -Mode
 
 The authentication mode to switch to.
@@ -92,35 +118,28 @@ Valid values are 'Browser' or 'WAM'.
 If not specified, the function will toggle between the current modes.
 
 ```yaml
-Type: String
-Parameter Sets: Specify
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: Specify
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
-### -GetCurrent
-
-Displays the current authentication mode without making any changes.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: GetCurrent
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
 ### CommonParameters
 
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
@@ -130,4 +149,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## RELATED LINKS
 
-[https://ps365.clidsys.com/docs/commands/Switch-AzureCliAuthMode](https://ps365.clidsys.com/docs/commands/Switch-AzureCliAuthMode)
+- [https://ps365.clidsys.com/docs/commands/Switch-AzureCliAuthMode](https://ps365.clidsys.com/docs/commands/Switch-AzureCliAuthMode)

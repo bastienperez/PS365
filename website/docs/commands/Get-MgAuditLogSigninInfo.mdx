@@ -1,7 +1,12 @@
 ---
 sidebarTitle: "Get-MgAuditLogSigninInfo"
-title: "Get-MgAuditLogSigninInfo"
+document type: cmdlet
+HelpUri: https://ps365.clidsys.com/docs/commands/Get-MgAuditLogSigninInfo
+Locale: en-US
 Module Name: PS365
+ms.date: 08/28/2026
+PlatyPS schema version: 2024-05-01
+title: "Get-MgAuditLogSigninInfo"
 ---
 
 ## SYNOPSIS
@@ -11,14 +16,14 @@ Get Microsoft Entra ID Audit Log Sign-In Details
 ## SYNTAX
 
 ```powershell
-Get-MgAuditLogSigninInfo [[-StartDate] <Object>] [[-EndDate] <Object>] [[-Users] <String[]>]
- [[-LastXSignIns] <Int32>] [[-IPAddresses] <Int32>] [-BasicAuthenticationOnly] [-SuccessOnly] [-FailureOnly]
- [-BadCredentialsOnly] [-LastLogonOnly] [-NonMFASignInsOnly] [-MFASignInsOnly] [-SmsVoiceMFASignInsOnly]
- [-NonInteractiveSignIns] [-ServicePrincipalSignIns] [-ManagedIdentitySignIns]
- [[-ConditionalAccessPolicyName] <String>] [-ConditionalAccessPolicyNotApplied]
- [-ConditionalAccessPolicySuccessOnly] [-ConditionalAccessPolicyFailedOnly] [[-TimeRange] <String>]
- [-UseDatePicker] [-ForceNewToken] [-AnalyzeCAPInReportOnly] [-ExportToExcel]
- [-ProgressAction <ActionPreference>] [<CommonParameters>]
+Get-MgAuditLogSigninInfo [[-StartDate] <Object>] [[-EndDate] <Object>] [[-Users] <string[]>]
+ [[-LastXSignIns] <int>] [[-IPAddresses] <int>] [[-ConditionalAccessPolicyName] <string>]
+ [[-TimeRange] <string>] [-BasicAuthenticationOnly] [-SuccessOnly] [-FailureOnly]
+ [-BadCredentialsOnly] [-LastLogonOnly] [-NonMFASignInsOnly] [-MFASignInsOnly]
+ [-SmsVoiceMFASignInsOnly] [-NonInteractiveSignIns] [-ServicePrincipalSignIns]
+ [-ManagedIdentitySignIns] [-ConditionalAccessPolicyNotApplied]
+ [-ConditionalAccessPolicySuccessOnly] [-ConditionalAccessPolicyFailedOnly] [-UseDatePicker]
+ [-ForceNewToken] [-AnalyzeCAPInReportOnly] [-ExportToExcel]
 ```
 
 ## DESCRIPTION
@@ -70,21 +75,152 @@ to identify who still relies on the methods retired on February 1, 2027.
 
 ## PARAMETERS
 
-### -StartDate
+### -AnalyzeCAPInReportOnly
 
-The start date for filtering sign-in logs.
-Accepts either a DateTime object or a string in yyyy-MM-dd format.
+Switch to filter sign-ins with Conditional Access applied in ReportOnly mode.
+Only sign-ins where the policy was used (exclude 'NotApplied') are returned.
 
 ```yaml
-Type: Object
-Parameter Sets: (All)
-Aliases:
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
 
-Required: False
-Position: 1
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+### -BadCredentialsOnly
+
+Switch to filter sign-ins with bad username or password (error code 50126).
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -BasicAuthenticationOnly
+
+Switch to filter sign-ins using legacy authentication protocols.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ConditionalAccessPolicyFailedOnly
+
+Switch to filter sign-ins where the Conditional Access Policy evaluation failed.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ConditionalAccessPolicyName
+
+Filter sign-ins by a specific Conditional Access Policy Name.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 5
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ConditionalAccessPolicyNotApplied
+
+Switch to filter sign-ins where the Conditional Access Policy was not applied.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ConditionalAccessPolicySuccessOnly
+
+Switch to filter sign-ins where the Conditional Access Policy evaluation was successful.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -EndDate
@@ -93,31 +229,126 @@ The end date for filtering sign-in logs.
 Accepts either a DateTime object or a string in yyyy-MM-dd format.
 
 ```yaml
-Type: Object
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 2
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Object
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 1
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
-### -Users
+### -ExportToExcel
 
-An array of user principal names to filter the sign-in logs.
+Switch to export the sign-in details report to an Excel file.
+The file will be saved in the user's profile directory with a timestamped filename.
 
 ```yaml
-Type: String[]
-Parameter Sets: (All)
-Aliases:
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
 
-Required: False
-Position: 3
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+### -FailureOnly
+
+Switch to filter only failed sign-in attempts.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ForceNewToken
+
+Switch to force the acquisition of a new authentication token.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -IPAddresses
+
+A comma-separated list of IP addresses to filter the sign-in logs.
+
+```yaml
+Type: System.Int32
+DefaultValue: 0
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 4
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -LastLogonOnly
+
+Switch to get only the last logon details for each user.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -LastXSignIns
@@ -126,127 +357,41 @@ The number of most recent sign-ins to retrieve.
 The other filters (StartDate, EndDate, Users, etc.) will still apply.
 
 ```yaml
-Type: Int32
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 4
-Default value: 0
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Int32
+DefaultValue: 0
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 3
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
-### -IPAddresses
+### -ManagedIdentitySignIns
 
-A comma-separated list of IP addresses to filter the sign-in logs.
-
-```yaml
-Type: Int32
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 5
-Default value: 0
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -BasicAuthenticationOnly
-
-Switch to filter sign-ins using legacy authentication protocols.
+Switch to filter managed identity sign-ins only.
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -SuccessOnly
-
-Switch to filter only successful sign-in attempts.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -FailureOnly
-
-Switch to filter only failed sign-in attempts.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -BadCredentialsOnly
-
-Switch to filter sign-ins with bad username or password (error code 50126).
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -LastLogonOnly
-
-Switch to get only the last logon details for each user.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -NonMFASignInsOnly
-
-Switch to filter non-MFA sign-ins only.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -MFASignInsOnly
@@ -254,15 +399,83 @@ Accept wildcard characters: False
 Switch to filter MFA sign-ins only.
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
 
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+### -NonInteractiveSignIns
+
+Switch to filter non-interactive sign-ins only.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -NonMFASignInsOnly
+
+Switch to filter non-MFA sign-ins only.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ServicePrincipalSignIns
+
+Switch to filter service principal sign-ins only.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -SmsVoiceMFASignInsOnly
@@ -275,127 +488,63 @@ The filter is applied client-side: Microsoft Graph does not allow filtering on a
 See https://itpro-tips.com/microsoft-entra-scheduled-end-of-life-for-sms-and-voice-call-mfa/
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
-### -NonInteractiveSignIns
+### -StartDate
 
-Switch to filter non-interactive sign-ins only.
+The start date for filtering sign-in logs.
+Accepts either a DateTime object or a string in yyyy-MM-dd format.
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Object
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
-### -ServicePrincipalSignIns
+### -SuccessOnly
 
-Switch to filter service principal sign-ins only.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ManagedIdentitySignIns
-
-Switch to filter managed identity sign-ins only.
+Switch to filter only successful sign-in attempts.
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ConditionalAccessPolicyName
-
-Filter sign-ins by a specific Conditional Access Policy Name.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 6
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ConditionalAccessPolicyNotApplied
-
-Switch to filter sign-ins where the Conditional Access Policy was not applied.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ConditionalAccessPolicySuccessOnly
-
-Switch to filter sign-ins where the Conditional Access Policy evaluation was successful.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ConditionalAccessPolicyFailedOnly
-
-Switch to filter sign-ins where the Conditional Access Policy evaluation failed.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -TimeRange
@@ -403,15 +552,20 @@ Accept wildcard characters: False
 Remplace plusieurs switches par un seul paramètre avec ValidateSet
 
 ```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 7
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 6
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -UseDatePicker
@@ -421,69 +575,49 @@ Requires Windows with .NET Windows Forms support (Windows PowerShell or pwsh on 
 Any values already provided via -StartDate or -EndDate are used as the initial selection in the pickers.
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
-### -ForceNewToken
+### -Users
 
-Switch to force the acquisition of a new authentication token.
+An array of user principal names to filter the sign-in logs.
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.String[]
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 2
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
-### -AnalyzeCAPInReportOnly
-
-Switch to filter sign-ins with Conditional Access applied in ReportOnly mode.
-Only sign-ins where the policy was used (exclude 'NotApplied') are returned.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ExportToExcel
-
-Switch to export the sign-in details report to an Excel file.
-The file will be saved in the user's profile directory with a timestamped filename.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
 ### CommonParameters
 
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
@@ -493,4 +627,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## RELATED LINKS
 
-[https://ps365.clidsys.com/docs/commands/Get-MgAuditLogSigninInfo](https://ps365.clidsys.com/docs/commands/Get-MgAuditLogSigninInfo)
+- [https://ps365.clidsys.com/docs/commands/Get-MgAuditLogSigninInfo](https://ps365.clidsys.com/docs/commands/Get-MgAuditLogSigninInfo)

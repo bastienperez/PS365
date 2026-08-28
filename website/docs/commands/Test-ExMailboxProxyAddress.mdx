@@ -1,7 +1,12 @@
 ---
 sidebarTitle: "Test-ExMailboxProxyAddress"
-title: "Test-ExMailboxProxyAddress"
+document type: cmdlet
+HelpUri: https://ps365.clidsys.com/docs/commands/Test-ExMailboxProxyAddress
+Locale: en-US
 Module Name: PS365
+ms.date: 08/28/2026
+PlatyPS schema version: 2024-05-01
+title: "Test-ExMailboxProxyAddress"
 ---
 
 ## SYNOPSIS
@@ -13,15 +18,14 @@ Test if a given proxy address exists in the proxy addresses of a mailbox.
 ### Single
 
 ```powershell
-Test-ExMailboxProxyAddress [-Mailbox <String>] [-ProxyAddress <String>] [-MatchOnly] [-NotMatchOnly]
- [-ProgressAction <ActionPreference>] [<CommonParameters>]
+Test-ExMailboxProxyAddress [-Mailbox <string>] [-ProxyAddress <string>] [-MatchOnly] [-NotMatchOnly]
 ```
 
 ### Csv
 
 ```powershell
-Test-ExMailboxProxyAddress [-CsvPath <String>] [-MailboxColumn <String>] [-ProxyAddressColumn <String>]
- [-MatchOnly] [-NotMatchOnly] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+Test-ExMailboxProxyAddress [-CsvPath <string>] [-MailboxColumn <string>]
+ [-ProxyAddressColumn <string>] [-MatchOnly] [-NotMatchOnly]
 ```
 
 ## DESCRIPTION
@@ -65,55 +69,48 @@ Reads mailbox and proxy address pairs from the specified CSV file and returns on
 
 ## PARAMETERS
 
-### -Mailbox
-
-The identity of the mailbox to check (e.g., email address, alias, or GUID).
-This parameter is used when processing a single mailbox/proxy address pair.
-
-```yaml
-Type: String
-Parameter Sets: Single
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ProxyAddress
-
-The proxy address to check for in the mailbox's proxy addresses.
-This parameter is used when processing a single mailbox/proxy address pair.
-
-```yaml
-Type: String
-Parameter Sets: Single
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -CsvPath
 
 The path to a CSV file containing mailbox and proxy address pairs.
 This parameter is used when processing multiple entries from a CSV file.
 
 ```yaml
-Type: String
-Parameter Sets: Csv
-Aliases:
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: Csv
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
 
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+### -Mailbox
+
+The identity of the mailbox to check (e.g., email address, alias, or GUID).
+This parameter is used when processing a single mailbox/proxy address pair.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: Single
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -MailboxColumn
@@ -122,15 +119,84 @@ The name of the column in the CSV file that contains mailbox identities.
 Default is 'PrimarySmtpAddress'.
 
 ```yaml
-Type: String
-Parameter Sets: Csv
-Aliases:
+Type: System.String
+DefaultValue: PrimarySmtpAddress
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: Csv
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
 
-Required: False
-Position: Named
-Default value: PrimarySmtpAddress
-Accept pipeline input: False
-Accept wildcard characters: False
+### -MatchOnly
+
+If specified, only returns entries where the proxy address matches.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -NotMatchOnly
+
+If specified, only returns entries where the proxy address does not match.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ProxyAddress
+
+The proxy address to check for in the mailbox's proxy addresses.
+This parameter is used when processing a single mailbox/proxy address pair.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: Single
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -ProxyAddressColumn
@@ -139,51 +205,28 @@ The name of the column in the CSV file that contains proxy addresses.
 Default is 'OnMicrosoftAddress'.
 
 ```yaml
-Type: String
-Parameter Sets: Csv
-Aliases:
-
-Required: False
-Position: Named
-Default value: OnMicrosoftAddress
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.String
+DefaultValue: OnMicrosoftAddress
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: Csv
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
-### -MatchOnly
-
-If specified, only returns entries where the proxy address matches.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -NotMatchOnly
-
-If specified, only returns entries where the proxy address does not match.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
 ### CommonParameters
 
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
@@ -193,4 +236,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## RELATED LINKS
 
-[https://ps365.clidsys.com/docs/commands/Test-ExMailboxProxyAddress](https://ps365.clidsys.com/docs/commands/Test-ExMailboxProxyAddress)
+- [https://ps365.clidsys.com/docs/commands/Test-ExMailboxProxyAddress](https://ps365.clidsys.com/docs/commands/Test-ExMailboxProxyAddress)

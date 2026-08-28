@@ -1,7 +1,12 @@
 ---
 sidebarTitle: "Get-MgApplicationSAML"
-title: "Get-MgApplicationSAML"
+document type: cmdlet
+HelpUri: https://ps365.clidsys.com/docs/commands/Get-MgApplicationSAML
+Locale: en-US
 Module Name: PS365
+ms.date: 08/28/2026
+PlatyPS schema version: 2024-05-01
+title: "Get-MgApplicationSAML"
 ---
 
 ## SYNOPSIS
@@ -13,28 +18,28 @@ Retrieves all Entra ID applications configured for SAML SSO.
 ### All (Default)
 
 ```powershell
-Get-MgApplicationSAML [-ForceNewToken] [-ExportToExcel] [-ExportPath <String>] [-RunFromAzureAutomation]
- [-ExpirationThresholdDays <Int32>] [-NotificationRecipient <String>] [-NotificationSender <String>]
- [-IncludeSignInStats] [-DisableParallel] [-ThrottleLimit <Int32>] [-UseBatchRequest]
- [-ProgressAction <ActionPreference>] [<CommonParameters>]
+Get-MgApplicationSAML [-ForceNewToken] [-ExportToExcel] [-ExportPath <string>]
+ [-RunFromAzureAutomation] [-ExpirationThresholdDays <int>] [-NotificationRecipient <string>]
+ [-NotificationSender <string>] [-IncludeSignInStats] [-DisableParallel] [-ThrottleLimit <int>]
+ [-UseBatchRequest]
 ```
 
 ### ByObjectId
 
 ```powershell
-Get-MgApplicationSAML [-ObjectID <String>] [-ForceNewToken] [-ExportToExcel] [-ExportPath <String>]
- [-RunFromAzureAutomation] [-ExpirationThresholdDays <Int32>] [-NotificationRecipient <String>]
- [-NotificationSender <String>] [-IncludeSignInStats] [-DisableParallel] [-ThrottleLimit <Int32>]
- [-UseBatchRequest] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+Get-MgApplicationSAML [-ObjectID <string>] [-ForceNewToken] [-ExportToExcel] [-ExportPath <string>]
+ [-RunFromAzureAutomation] [-ExpirationThresholdDays <int>] [-NotificationRecipient <string>]
+ [-NotificationSender <string>] [-IncludeSignInStats] [-DisableParallel] [-ThrottleLimit <int>]
+ [-UseBatchRequest]
 ```
 
 ### ByDisplayName
 
 ```powershell
-Get-MgApplicationSAML [-DisplayName <String>] [-ForceNewToken] [-ExportToExcel] [-ExportPath <String>]
- [-RunFromAzureAutomation] [-ExpirationThresholdDays <Int32>] [-NotificationRecipient <String>]
- [-NotificationSender <String>] [-IncludeSignInStats] [-DisableParallel] [-ThrottleLimit <Int32>]
- [-UseBatchRequest] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+Get-MgApplicationSAML [-DisplayName <string>] [-ForceNewToken] [-ExportToExcel]
+ [-ExportPath <string>] [-RunFromAzureAutomation] [-ExpirationThresholdDays <int>]
+ [-NotificationRecipient <string>] [-NotificationSender <string>] [-IncludeSignInStats]
+ [-DisableParallel] [-ThrottleLimit <int>] [-UseBatchRequest]
 ```
 
 ## DESCRIPTION
@@ -149,20 +154,27 @@ Gets all SAML applications using managed identity and sends email notification f
 
 ## PARAMETERS
 
-### -ObjectID
+### -DisableParallel
 
-(Optional) Retrieves the SAML configuration for a specific application by its ObjectID.
+(Optional) Forces sequential processing.
+By default, on PowerShell 7+ the function processes SAML applications in
+parallel (ForEach-Object -Parallel) to speed up discovery; on PowerShell 5.1 it always runs sequentially.
 
 ```yaml
-Type: String
-Parameter Sets: ByObjectId
-Aliases: Identity
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -DisplayName
@@ -172,47 +184,42 @@ Supports wildcards (* and ?) for partial name matching (e.g.
 "Azure*", "*Portal*").
 
 ```yaml
-Type: String
-Parameter Sets: ByDisplayName
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: ByDisplayName
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
-### -ForceNewToken
+### -ExpirationThresholdDays
 
-(Optional) Forces the function to disconnect and reconnect to Microsoft Graph to obtain a new access token.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ExportToExcel
-
-(Optional) If specified, exports the results to an Excel file in the user's profile directory.
+(Required when RunFromAzureAutomation is enabled) Number of days threshold for expiration notification.
+Default is 30 days.
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Int32
+DefaultValue: 30
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -ExportPath
@@ -220,15 +227,149 @@ Accept wildcard characters: False
 Optional output directory for the Excel export (defaults to the user profile).
 
 ```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
 
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+### -ExportToExcel
+
+(Optional) If specified, exports the results to an Excel file in the user's profile directory.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ForceNewToken
+
+(Optional) Forces the function to disconnect and reconnect to Microsoft Graph to obtain a new access token.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -IncludeSignInStats
+
+(Optional) If specified, includes sign-in statistics for the last 30 days for each application.
+Requires AuditLog.Read.All permission.
+Please be advised that this process is time-consuming.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -NotificationRecipient
+
+(Required when RunFromAzureAutomation is enabled) Email address to receive expiration notifications.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -NotificationSender
+
+(Required when RunFromAzureAutomation is enabled) Email address of the sender for expiration notifications.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ObjectID
+
+(Optional) Retrieves the SAML configuration for a specific application by its ObjectID.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases:
+- Identity
+ParameterSets:
+- Name: ByObjectId
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -RunFromAzureAutomation
@@ -244,100 +385,20 @@ https://github.com/microsoftgraph/msgraph-sdk-powershell/issues/3151
 https://github.com/microsoftgraph/msgraph-sdk-powershell/issues/3166
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ExpirationThresholdDays
-
-(Required when RunFromAzureAutomation is enabled) Number of days threshold for expiration notification.
-Default is 30 days.
-
-```yaml
-Type: Int32
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: 30
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -NotificationRecipient
-
-(Required when RunFromAzureAutomation is enabled) Email address to receive expiration notifications.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -NotificationSender
-
-(Required when RunFromAzureAutomation is enabled) Email address of the sender for expiration notifications.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -IncludeSignInStats
-
-(Optional) If specified, includes sign-in statistics for the last 30 days for each application.
-Requires AuditLog.Read.All permission.
-Please be advised that this process is time-consuming.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -DisableParallel
-
-(Optional) Forces sequential processing.
-By default, on PowerShell 7+ the function processes SAML applications in
-parallel (ForEach-Object -Parallel) to speed up discovery; on PowerShell 5.1 it always runs sequentially.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -ThrottleLimit
@@ -347,15 +408,20 @@ Default is 5.
 Keep this value moderate to avoid Microsoft Graph throttling (HTTP 429).
 
 ```yaml
-Type: Int32
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: 5
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Int32
+DefaultValue: 5
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -UseBatchRequest
@@ -368,19 +434,28 @@ deployed standalone), the function warns and falls back to the default behavior.
 Note: with -IncludeSignInStats, the sign-in statistics are still retrieved per application (not batched).
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
+
 ### CommonParameters
 
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
@@ -393,4 +468,4 @@ The information about the SAML applications clams is not available in the Micros
 
 ## RELATED LINKS
 
-[https://ps365.clidsys.com/docs/commands/Get-MgApplicationSAML](https://ps365.clidsys.com/docs/commands/Get-MgApplicationSAML)
+- [https://ps365.clidsys.com/docs/commands/Get-MgApplicationSAML](https://ps365.clidsys.com/docs/commands/Get-MgApplicationSAML)

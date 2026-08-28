@@ -1,7 +1,12 @@
 ---
 sidebarTitle: "Get-ExMailboxFromAttribute"
-title: "Get-ExMailboxFromAttribute"
+document type: cmdlet
+HelpUri: https://ps365.clidsys.com/docs/commands/Get-ExMailboxFromAttribute
+Locale: en-US
 Module Name: PS365
+ms.date: 08/28/2026
+PlatyPS schema version: 2024-05-01
+title: "Get-ExMailboxFromAttribute"
 ---
 
 ## SYNOPSIS
@@ -11,8 +16,8 @@ Get mailboxes based on a custom attribute and compare specified attributes.
 ## SYNTAX
 
 ```powershell
-Get-ExMailboxFromAttribute [[-Attribute] <String>] [-CheckAttributes <String[]>] [-ExportToExcel]
- [-ExportPath <String>] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+Get-ExMailboxFromAttribute [[-Attribute] <string>] [-CheckAttributes <string[]>] [-ExportToExcel]
+ [-ExportPath <string>]
 ```
 
 ## DESCRIPTION
@@ -54,15 +59,20 @@ Exports results to an Excel file.
 The custom attribute to retrieve from the mailboxes.
 
 ```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 1
-Default value: None
-Accept pipeline input: True (ByPropertyName, ByValue)
-Accept wildcard characters: False
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: false
+  ValueFromPipeline: true
+  ValueFromPipelineByPropertyName: true
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -CheckAttributes
@@ -73,31 +83,20 @@ If specified, the function checks if the values of these attributes match.
 Can be useful to compare two attributes for examples
 
 ```yaml
-Type: String[]
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ExportToExcel
-
-If specified, exports the results to an Excel file in the user's profile directory.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.String[]
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -ExportPath
@@ -105,21 +104,53 @@ Accept wildcard characters: False
 Optional output directory for the Excel export (defaults to the user profile).
 
 ```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
+
+### -ExportToExcel
+
+If specified, exports the results to an Excel file in the user's profile directory.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
 ### CommonParameters
 
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
+
+### System.String
 
 ## OUTPUTS
 
@@ -129,4 +160,4 @@ You can also use `Get-AttributeMatching` to compare two attributes directly in A
 
 ## RELATED LINKS
 
-[https://ps365.clidsys.com/docs/commands/Get-ExMailboxFromAttribute](https://ps365.clidsys.com/docs/commands/Get-ExMailboxFromAttribute)
+- [https://ps365.clidsys.com/docs/commands/Get-ExMailboxFromAttribute](https://ps365.clidsys.com/docs/commands/Get-ExMailboxFromAttribute)

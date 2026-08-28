@@ -1,7 +1,12 @@
 ---
 sidebarTitle: "Set-ExMailboxProtocol"
-title: "Set-ExMailboxProtocol"
+document type: cmdlet
+HelpUri: https://ps365.clidsys.com/docs/commands/Set-ExMailboxProtocol
+Locale: en-US
 Module Name: PS365
+ms.date: 08/28/2026
+PlatyPS schema version: 2024-05-01
+title: "Set-ExMailboxProtocol"
 ---
 
 ## SYNOPSIS
@@ -13,45 +18,41 @@ Set Exchange mailbox protocol settings.
 ### Identity
 
 ```powershell
-Set-ExMailboxProtocol [-Identity] <String[]> [-GenerateCmdlets] [-OutputFile <String>] [-ModernProtocolsOnly]
- [-ModernProtocolsAndEws] [-MAPIEnabled <Boolean>] [-OWAEnabled <Boolean>] [-PopEnabled <Boolean>]
- [-ImapEnabled <Boolean>] [-ActiveSyncEnabled <Boolean>] [-EwsEnabled <Boolean>]
- [-SmtpClientAuthenticationDisabled <Boolean>] [-UniversalOutlookEnabled <Boolean>]
- [-OutlookMobileEnabled <Boolean>] [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm]
- [<CommonParameters>]
+Set-ExMailboxProtocol [-Identity] <string[]> [-GenerateCmdlets] [-OutputFile <string>]
+ [-ModernProtocolsOnly] [-ModernProtocolsAndEws] [-MAPIEnabled <bool>] [-OWAEnabled <bool>]
+ [-PopEnabled <bool>] [-ImapEnabled <bool>] [-ActiveSyncEnabled <bool>] [-EwsEnabled <bool>]
+ [-SmtpClientAuthenticationDisabled <bool>] [-UniversalOutlookEnabled <bool>]
+ [-OutlookMobileEnabled <bool>] [-WhatIf] [-Confirm]
 ```
 
 ### ByDomain
 
 ```powershell
-Set-ExMailboxProtocol -ByDomain <String> [-GenerateCmdlets] [-OutputFile <String>] [-ModernProtocolsOnly]
- [-ModernProtocolsAndEws] [-MAPIEnabled <Boolean>] [-OWAEnabled <Boolean>] [-PopEnabled <Boolean>]
- [-ImapEnabled <Boolean>] [-ActiveSyncEnabled <Boolean>] [-EwsEnabled <Boolean>]
- [-SmtpClientAuthenticationDisabled <Boolean>] [-UniversalOutlookEnabled <Boolean>]
- [-OutlookMobileEnabled <Boolean>] [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm]
- [<CommonParameters>]
+Set-ExMailboxProtocol -ByDomain <string> [-GenerateCmdlets] [-OutputFile <string>]
+ [-ModernProtocolsOnly] [-ModernProtocolsAndEws] [-MAPIEnabled <bool>] [-OWAEnabled <bool>]
+ [-PopEnabled <bool>] [-ImapEnabled <bool>] [-ActiveSyncEnabled <bool>] [-EwsEnabled <bool>]
+ [-SmtpClientAuthenticationDisabled <bool>] [-UniversalOutlookEnabled <bool>]
+ [-OutlookMobileEnabled <bool>] [-WhatIf] [-Confirm]
 ```
 
 ### FromCSV
 
 ```powershell
-Set-ExMailboxProtocol -FromCSV <String> [-GenerateCmdlets] [-OutputFile <String>] [-ModernProtocolsOnly]
- [-ModernProtocolsAndEws] [-MAPIEnabled <Boolean>] [-OWAEnabled <Boolean>] [-PopEnabled <Boolean>]
- [-ImapEnabled <Boolean>] [-ActiveSyncEnabled <Boolean>] [-EwsEnabled <Boolean>]
- [-SmtpClientAuthenticationDisabled <Boolean>] [-UniversalOutlookEnabled <Boolean>]
- [-OutlookMobileEnabled <Boolean>] [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm]
- [<CommonParameters>]
+Set-ExMailboxProtocol -FromCSV <string> [-GenerateCmdlets] [-OutputFile <string>]
+ [-ModernProtocolsOnly] [-ModernProtocolsAndEws] [-MAPIEnabled <bool>] [-OWAEnabled <bool>]
+ [-PopEnabled <bool>] [-ImapEnabled <bool>] [-ActiveSyncEnabled <bool>] [-EwsEnabled <bool>]
+ [-SmtpClientAuthenticationDisabled <bool>] [-UniversalOutlookEnabled <bool>]
+ [-OutlookMobileEnabled <bool>] [-WhatIf] [-Confirm]
 ```
 
 ### AllMailboxes
 
 ```powershell
-Set-ExMailboxProtocol [-AllMailboxes] [-GenerateCmdlets] [-OutputFile <String>] [-ModernProtocolsOnly]
- [-ModernProtocolsAndEws] [-MAPIEnabled <Boolean>] [-OWAEnabled <Boolean>] [-PopEnabled <Boolean>]
- [-ImapEnabled <Boolean>] [-ActiveSyncEnabled <Boolean>] [-EwsEnabled <Boolean>]
- [-SmtpClientAuthenticationDisabled <Boolean>] [-UniversalOutlookEnabled <Boolean>]
- [-OutlookMobileEnabled <Boolean>] [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm]
- [<CommonParameters>]
+Set-ExMailboxProtocol -AllMailboxes [-GenerateCmdlets] [-OutputFile <string>] [-ModernProtocolsOnly]
+ [-ModernProtocolsAndEws] [-MAPIEnabled <bool>] [-OWAEnabled <bool>] [-PopEnabled <bool>]
+ [-ImapEnabled <bool>] [-ActiveSyncEnabled <bool>] [-EwsEnabled <bool>]
+ [-SmtpClientAuthenticationDisabled <bool>] [-UniversalOutlookEnabled <bool>]
+ [-OutlookMobileEnabled <bool>] [-WhatIf] [-Confirm]
 ```
 
 ## DESCRIPTION
@@ -98,21 +99,46 @@ Sets modern protocols along with EWS for all mailboxes in the organization.
 
 ## PARAMETERS
 
-### -Identity
+### -ActiveSyncEnabled
 
-The identity of the mailbox(es) to set protocol settings for.
-This can be an array of email addresses, usernames, or display names.
+Set ActiveSync protocol enabled or disabled.
 
 ```yaml
-Type: String[]
-Parameter Sets: Identity
-Aliases:
+Type: System.Boolean
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
 
-Required: True
-Position: 1
-Default value: None
-Accept pipeline input: True (ByPropertyName, ByValue)
-Accept wildcard characters: False
+### -AllMailboxes
+
+If specified, all mailboxes in the organization will be processed.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: AllMailboxes
+  Position: Named
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -ByDomain
@@ -121,15 +147,63 @@ Filter mailboxes by domain name.
 All mailboxes with a primary SMTP address in this domain will be processed.
 
 ```yaml
-Type: String
-Parameter Sets: ByDomain
-Aliases:
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: ByDomain
+  Position: Named
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
 
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+### -Confirm
+
+Prompts you for confirmation before running the cmdlet.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: ''
+SupportsWildcards: false
+Aliases:
+- cf
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -EwsEnabled
+
+Set EWS protocol enabled or disabled.
+
+```yaml
+Type: System.Boolean
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -FromCSV
@@ -137,31 +211,20 @@ Accept wildcard characters: False
 The path to a CSV file containing mailbox identities to process.
 
 ```yaml
-Type: String
-Parameter Sets: FromCSV
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -AllMailboxes
-
-If specified, all mailboxes in the organization will be processed.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: AllMailboxes
-Aliases:
-
-Required: True
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: FromCSV
+  Position: Named
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -GenerateCmdlets
@@ -169,49 +232,84 @@ Accept wildcard characters: False
 If specified, the function will generate the cmdlets and save them to a file instead of executing them.
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
-### -OutputFile
+### -Identity
 
-The path to the output file where generated cmdlets will be saved.
-Default is a timestamped file in the current directory.
+The identity of the mailbox(es) to set protocol settings for.
+This can be an array of email addresses, usernames, or display names.
 
 ```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: "$(Get-Date -Format 'yyyy-MM-dd_HHmmss')-SetExMailboxProtocol_Commands.txt"
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.String[]
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: Identity
+  Position: 0
+  IsRequired: true
+  ValueFromPipeline: true
+  ValueFromPipelineByPropertyName: true
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
-### -ModernProtocolsOnly
+### -ImapEnabled
 
-If specified, enables only modern protocols (MAPI, OWA, Outlook Mobile) and disables legacy protocols (POP, IMAP, ActiveSync, EWS) along with disabling SMTP Client Authentication
-at the mailbox level.
+Set IMAP protocol enabled or disabled.
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
+Type: System.Boolean
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
 
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+### -MAPIEnabled
+
+Set MAPI protocol enabled or disabled.
+
+```yaml
+Type: System.Boolean
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -ModernProtocolsAndEws
@@ -220,143 +318,42 @@ If specified, enables modern protocols (MAPI, OWA, Outlook Mobile) along with EW
 Authentication at the mailbox level.
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
-### -MAPIEnabled
+### -ModernProtocolsOnly
 
-Set MAPI protocol enabled or disabled.
-
-```yaml
-Type: Boolean
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -OWAEnabled
-
-Set OWA protocol enabled or disabled.
+If specified, enables only modern protocols (MAPI, OWA, Outlook Mobile) and disables legacy protocols (POP, IMAP, ActiveSync, EWS) along with disabling SMTP Client Authentication
+at the mailbox level.
 
 ```yaml
-Type: Boolean
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -PopEnabled
-
-Set POP protocol enabled or disabled.
-
-```yaml
-Type: Boolean
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ImapEnabled
-
-Set IMAP protocol enabled or disabled.
-
-```yaml
-Type: Boolean
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ActiveSyncEnabled
-
-Set ActiveSync protocol enabled or disabled.
-
-```yaml
-Type: Boolean
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -EwsEnabled
-
-Set EWS protocol enabled or disabled.
-
-```yaml
-Type: Boolean
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -SmtpClientAuthenticationDisabled
-
-Set SMTP Client Authentication disabled or enabled at the mailbox level.
-
-```yaml
-Type: Boolean
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -UniversalOutlookEnabled
-
-Set Universal Outlook (the built-in Mail and Calendar app in Windows) enabled or disabled.
-
-```yaml
-Type: Boolean
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -OutlookMobileEnabled
@@ -364,54 +361,160 @@ Accept wildcard characters: False
 Set Outlook Mobile access enabled or disabled.
 
 ```yaml
-Type: Boolean
-Parameter Sets: (All)
-Aliases:
+Type: System.Boolean
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
 
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+### -OutputFile
+
+The path to the output file where generated cmdlets will be saved.
+Default is a timestamped file in the current directory.
+
+```yaml
+Type: System.String
+DefaultValue: "\"$(Get-Date -Format 'yyyy-MM-dd_HHmmss')-SetExMailboxProtocol_Commands.txt\""
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -OWAEnabled
+
+Set OWA protocol enabled or disabled.
+
+```yaml
+Type: System.Boolean
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -PopEnabled
+
+Set POP protocol enabled or disabled.
+
+```yaml
+Type: System.Boolean
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -SmtpClientAuthenticationDisabled
+
+Set SMTP Client Authentication disabled or enabled at the mailbox level.
+
+```yaml
+Type: System.Boolean
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -UniversalOutlookEnabled
+
+Set Universal Outlook (the built-in Mail and Calendar app in Windows) enabled or disabled.
+
+```yaml
+Type: System.Boolean
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -WhatIf
 
-Shows what would happen if the cmdlet runs.
-The cmdlet is not run.
+Runs the command in a mode that only reports what would happen without performing the actions.
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases: wi
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: ''
+SupportsWildcards: false
+Aliases:
+- wi
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
-### -Confirm
-
-Prompts you for confirmation before running the cmdlet.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases: cf
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
 ### CommonParameters
 
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
+
+### System.String[]
 
 ## OUTPUTS
 
@@ -419,4 +522,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## RELATED LINKS
 
-[https://ps365.clidsys.com/docs/commands/Set-ExMailboxProtocol](https://ps365.clidsys.com/docs/commands/Set-ExMailboxProtocol)
+- [https://ps365.clidsys.com/docs/commands/Set-ExMailboxProtocol](https://ps365.clidsys.com/docs/commands/Set-ExMailboxProtocol)

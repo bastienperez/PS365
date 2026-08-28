@@ -1,7 +1,12 @@
 ---
 sidebarTitle: "Get-MobileDeviceInfo"
-title: "Get-MobileDeviceInfo"
+document type: cmdlet
+HelpUri: https://ps365.clidsys.com/docs/commands/Get-MobileDeviceInfo
+Locale: en-US
 Module Name: PS365
+ms.date: 08/28/2026
+PlatyPS schema version: 2024-05-01
+title: "Get-MobileDeviceInfo"
 ---
 
 ## SYNOPSIS
@@ -11,8 +16,7 @@ Retrieves detailed information about mobile devices associated with user mailbox
 ## SYNTAX
 
 ```powershell
-Get-MobileDeviceInfo [[-UserPrincipalName] <String[]>] [-ProgressAction <ActionPreference>]
- [<CommonParameters>]
+Get-MobileDeviceInfo [[-UserPrincipalName] <string[]>]
 ```
 
 ## DESCRIPTION
@@ -45,21 +49,32 @@ An array of User Principal Names (UPNs) to retrieve mobile device details for.
 If not provided, details for all mailboxes will be retrieved.
 
 ```yaml
-Type: String[]
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 1
-Default value: None
-Accept pipeline input: True (ByPropertyName)
-Accept wildcard characters: False
+Type: System.String[]
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: true
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
+
 ### CommonParameters
 
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
+
+### System.String[]
 
 ## OUTPUTS
 
@@ -71,4 +86,4 @@ Works with both Exchange Online and on-premises Exchange environments and uses t
 
 ## RELATED LINKS
 
-[https://ps365.clidsys.com/docs/commands/Get-MobileDeviceInfo](https://ps365.clidsys.com/docs/commands/Get-MobileDeviceInfo)
+- [https://ps365.clidsys.com/docs/commands/Get-MobileDeviceInfo](https://ps365.clidsys.com/docs/commands/Get-MobileDeviceInfo)

@@ -1,7 +1,12 @@
 ---
 sidebarTitle: "Set-MgEnterpriseAppStatus"
-title: "Set-MgEnterpriseAppStatus"
+document type: cmdlet
+HelpUri: https://ps365.clidsys.com/docs/commands/Set-MgEnterpriseAppStatus
+Locale: en-US
 Module Name: PS365
+ms.date: 08/28/2026
+PlatyPS schema version: 2024-05-01
+title: "Set-MgEnterpriseAppStatus"
 ---
 
 ## SYNOPSIS
@@ -13,15 +18,15 @@ Sets the status of an enterprise application (service principal) in Microsoft Gr
 ### ByApplicationID
 
 ```powershell
-Set-MgEnterpriseAppStatus [-ApplicationID] <String> [-Status] <String> [-GenerateCmdlets]
- [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]
+Set-MgEnterpriseAppStatus [-ApplicationID] <string> [-Status] <string> [-GenerateCmdlets] [-WhatIf]
+ [-Confirm]
 ```
 
 ### ByDisplayName
 
 ```powershell
-Set-MgEnterpriseAppStatus [-DisplayName] <String> [-Status] <String> [-GenerateCmdlets]
- [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]
+Set-MgEnterpriseAppStatus [-DisplayName] <string> [-Status] <string> [-GenerateCmdlets] [-WhatIf]
+ [-Confirm]
 ```
 
 ## DESCRIPTION
@@ -54,15 +59,42 @@ This command enables the enterprise application with the specified display name.
 The App ID of the service principal to modify.
 
 ```yaml
-Type: String
-Parameter Sets: ByApplicationID
-Aliases:
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: ByApplicationID
+  Position: 0
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
 
-Required: True
-Position: 1
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+### -Confirm
+
+Prompts you for confirmation before running the cmdlet.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: ''
+SupportsWildcards: false
+Aliases:
+- cf
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -DisplayName
@@ -70,15 +102,41 @@ Accept wildcard characters: False
 The display name of the service principal to modify.
 
 ```yaml
-Type: String
-Parameter Sets: ByDisplayName
-Aliases:
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: ByDisplayName
+  Position: 0
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
 
-Required: True
-Position: 1
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+### -GenerateCmdlets
+
+If specified, the function will generate the cmdlets and save them to a file instead of executing them.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -Status
@@ -87,68 +145,50 @@ The status to set for the enterprise application.
 Valid values are 'Enabled' or 'Disabled'.
 
 ```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: 2
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -GenerateCmdlets
-
-If specified, the function will generate the cmdlets and save them to a file instead of executing them.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 1
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -WhatIf
 
-Shows what would happen if the cmdlet runs.
-The cmdlet is not run.
+Runs the command in a mode that only reports what would happen without performing the actions.
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases: wi
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: ''
+SupportsWildcards: false
+Aliases:
+- wi
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
-### -Confirm
-
-Prompts you for confirmation before running the cmdlet.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases: cf
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
 ### CommonParameters
 
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
@@ -160,4 +200,4 @@ To modify a registered application, use the `Set-MgRegisteredAppStatus` function
 
 ## RELATED LINKS
 
-[https://ps365.clidsys.com/docs/commands/Set-MgEnterpriseAppStatus](https://ps365.clidsys.com/docs/commands/Set-MgEnterpriseAppStatus)
+- [https://ps365.clidsys.com/docs/commands/Set-MgEnterpriseAppStatus](https://ps365.clidsys.com/docs/commands/Set-MgEnterpriseAppStatus)

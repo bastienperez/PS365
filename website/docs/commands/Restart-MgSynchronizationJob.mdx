@@ -1,7 +1,12 @@
 ---
 sidebarTitle: "Restart-MgSynchronizationJob"
-title: "Restart-MgSynchronizationJob"
+document type: cmdlet
+HelpUri: https://learn.microsoft.com/en-us/graph/api/synchronization-synchronizationjob-restart
+Locale: en-US
 Module Name: PS365
+ms.date: 08/28/2026
+PlatyPS schema version: 2024-05-01
+title: "Restart-MgSynchronizationJob"
 ---
 
 ## SYNOPSIS
@@ -13,15 +18,15 @@ Restarts synchronization jobs for one or more Entra ID applications.
 ### ByDisplayName (Default)
 
 ```powershell
-Restart-MgSynchronizationJob -DisplayName <String> [-ForceNewToken] [-RunFromAzureAutomation]
- [-ResetScope <String>] [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]
+Restart-MgSynchronizationJob -DisplayName <string> [-ForceNewToken] [-RunFromAzureAutomation]
+ [-ResetScope <string>] [-WhatIf] [-Confirm]
 ```
 
 ### ByObjectId
 
 ```powershell
-Restart-MgSynchronizationJob -ObjectID <String> [-ForceNewToken] [-RunFromAzureAutomation]
- [-ResetScope <String>] [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]
+Restart-MgSynchronizationJob -ObjectID <string> [-ForceNewToken] [-RunFromAzureAutomation]
+ [-ResetScope <string>] [-WhatIf] [-Confirm]
 ```
 
 ## DESCRIPTION
@@ -103,21 +108,26 @@ Emulates the "Restart provisioning" button in the Entra portal
 
 ## PARAMETERS
 
-### -ObjectID
+### -Confirm
 
-ObjectID (GUID) of the target service principal.
-Cannot be combined with -DisplayName.
+Prompts you for confirmation before running the cmdlet.
 
 ```yaml
-Type: String
-Parameter Sets: ByObjectId
-Aliases: Identity
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: ''
+SupportsWildcards: false
+Aliases:
+- cf
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -DisplayName
@@ -130,15 +140,20 @@ Supports wildcards (* and ?):
 Cannot be combined with -ObjectID.
 
 ```yaml
-Type: String
-Parameter Sets: ByDisplayName
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: ByDisplayName
+  Position: Named
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -ForceNewToken
@@ -148,37 +163,43 @@ token to be acquired.
 Useful when the current token has expired or lacks required scopes.
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
-### -RunFromAzureAutomation
+### -ObjectID
 
-Authenticates using the Managed Identity of the Azure resource.
-Use this switch when the function runs inside:
-- Azure Automation runbooks
-- Azure Functions
-- Azure VMs / Container Apps with a managed identity enabled
-
-When active, authentication uses the Managed Identity (Out-GridView is unavailable).
+ObjectID (GUID) of the target service principal.
+Cannot be combined with -DisplayName.
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
 Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+- Identity
+ParameterSets:
+- Name: ByObjectId
+  Position: Named
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -ResetScope
@@ -214,52 +235,77 @@ the entire directory).
 Reference: https://learn.microsoft.com/en-us/graph/api/resources/synchronization-synchronizationjobrestartcriteria
 
 ```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
+Type: System.String
+DefaultValue: Escrows
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
 
-Required: False
-Position: Named
-Default value: Escrows
-Accept pipeline input: False
-Accept wildcard characters: False
+### -RunFromAzureAutomation
+
+Authenticates using the Managed Identity of the Azure resource.
+Use this switch when the function runs inside:
+- Azure Automation runbooks
+- Azure Functions
+- Azure VMs / Container Apps with a managed identity enabled
+
+When active, authentication uses the Managed Identity (Out-GridView is unavailable).
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -WhatIf
 
-Shows what would happen if the cmdlet runs.
-The cmdlet is not run.
+Runs the command in a mode that only reports what would happen without performing the actions.
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases: wi
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: ''
+SupportsWildcards: false
+Aliases:
+- wi
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
-### -Confirm
-
-Prompts you for confirmation before running the cmdlet.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases: cf
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
 ### CommonParameters
 
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
@@ -283,4 +329,4 @@ In the log, you can configurationCategory: ProvisioningManagement and Activity T
 
 ## RELATED LINKS
 
-[https://learn.microsoft.com/en-us/graph/api/synchronization-synchronizationjob-restart](https://learn.microsoft.com/en-us/graph/api/synchronization-synchronizationjob-restart)
+- [https://learn.microsoft.com/en-us/graph/api/synchronization-synchronizationjob-restart](https://learn.microsoft.com/en-us/graph/api/synchronization-synchronizationjob-restart)

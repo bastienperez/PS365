@@ -1,7 +1,12 @@
 ---
 sidebarTitle: "Get-MgGroupOwnerInfo"
-title: "Get-MgGroupOwnerInfo"
+document type: cmdlet
+HelpUri: https://ps365.clidsys.com/docs/commands/Get-MgGroupOwnerInfo
+Locale: en-US
 Module Name: PS365
+ms.date: 08/28/2026
+PlatyPS schema version: 2024-05-01
+title: "Get-MgGroupOwnerInfo"
 ---
 
 ## SYNOPSIS
@@ -11,8 +16,8 @@ Retrieves the owners of all or a specific Entra ID group.
 ## SYNTAX
 
 ```powershell
-Get-MgGroupOwnerInfo [[-GroupId] <String>] [[-DisplayName] <String>] [-ExportToExcel] [[-ExportPath] <String>]
- [-ProgressAction <ActionPreference>] [<CommonParameters>]
+Get-MgGroupOwnerInfo [[-GroupId] <string>] [[-DisplayName] <string>] [[-ExportPath] <string>]
+ [-ExportToExcel]
 ```
 
 ## DESCRIPTION
@@ -64,24 +69,6 @@ Retrieves owners for the group named 'Marketing Team' and outputs to the console
 
 ## PARAMETERS
 
-### -GroupId
-
-Optional.
-The unique object ID of a specific Entra ID group to retrieve owners for.
-If omitted, all groups are processed.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases: Identity
-
-Required: False
-Position: 1
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -DisplayName
 
 Optional.
@@ -90,15 +77,41 @@ Use with GroupId to narrow the scope.
 If omitted, all groups are processed.
 
 ```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 1
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
 
-Required: False
-Position: 2
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+### -ExportPath
+
+Optional output directory for the Excel export (defaults to the user profile).
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 2
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -ExportToExcel
@@ -107,35 +120,52 @@ When specified, exports the results to an Excel file in the user's profile direc
 Requires the ImportExcel module.
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
-### -ExportPath
+### -GroupId
 
-Optional output directory for the Excel export (defaults to the user profile).
+Optional.
+The unique object ID of a specific Entra ID group to retrieve owners for.
+If omitted, all groups are processed.
 
 ```yaml
-Type: String
-Parameter Sets: (All)
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
 Aliases:
-
-Required: False
-Position: 3
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+- Identity
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
+
 ### CommonParameters
 
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
@@ -147,4 +177,4 @@ Requires Connect-MgGraph with scopes: 'Group.Read.All', 'User.Read.All'
 
 ## RELATED LINKS
 
-[https://ps365.clidsys.com/docs/commands/Get-MgGroupOwnerInfo](https://ps365.clidsys.com/docs/commands/Get-MgGroupOwnerInfo)
+- [https://ps365.clidsys.com/docs/commands/Get-MgGroupOwnerInfo](https://ps365.clidsys.com/docs/commands/Get-MgGroupOwnerInfo)

@@ -1,7 +1,12 @@
 ---
 sidebarTitle: "Get-PurviewRoleReport"
-title: "Get-PurviewRoleReport"
+document type: cmdlet
+HelpUri: https://ps365.clidsys.com/docs/commands/Get-PurviewRoleReport
+Locale: en-US
 Module Name: PS365
+ms.date: 08/28/2026
+PlatyPS schema version: 2024-05-01
+title: "Get-PurviewRoleReport"
 ---
 
 ## SYNOPSIS
@@ -11,8 +16,8 @@ Reports on Purview RBAC roles and their effective membership, including groups e
 ## SYNTAX
 
 ```powershell
-Get-PurviewRoleReport [[-Identity] <String>] [[-PrincipalID] <String>] [[-PrincipalDisplayName] <String>]
- [-ShowGraph] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+Get-PurviewRoleReport [[-Identity] <string>] [[-PrincipalID] <string>]
+ [[-PrincipalDisplayName] <string>] [-ShowGraph]
 ```
 
 ## DESCRIPTION
@@ -84,15 +89,41 @@ Exports the full report (including group-expanded members) to a CSV file.
 Filter the report on a specific role (matches the Role column, exact case-insensitive).
 
 ```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
 
-Required: False
-Position: 1
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+### -PrincipalDisplayName
+
+Filter the report on a specific MemberDisplayName (exact, case-insensitive).
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 2
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -PrincipalID
@@ -102,31 +133,20 @@ Matches MemberName (alias), MemberPrimarySMTPAddres (UPN/SMTP),
 or MemberObjectID (ExternalDirectoryObjectId / GUID).
 
 ```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 2
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -PrincipalDisplayName
-
-Filter the report on a specific MemberDisplayName (exact, case-insensitive).
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 3
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 1
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -ShowGraph
@@ -135,19 +155,28 @@ Reserved for future use.
 When specified, displays a graphical representation of the role membership.
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
+
 ### CommonParameters
 
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
@@ -155,11 +184,12 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ### [System.Collections.Generic.List[Object]] containing PSCustomObject rows with the following properties:
 
-### Role, MemberName, MemberDisplayName, MemberPrimarySMTPAddres, MemberIsDirSynced,
-### MemberObjectID, MemberRecipientTypeDetails, RoleDescription, DirectMember, MemberViaGroup.
+Role
+
 ## NOTES
+
 Requires ExchangeOnlineManagement module and an active Connect-IPPSSession session.
 
 ## RELATED LINKS
 
-[https://ps365.clidsys.com/docs/commands/Get-PurviewRoleReport](https://ps365.clidsys.com/docs/commands/Get-PurviewRoleReport)
+- [https://ps365.clidsys.com/docs/commands/Get-PurviewRoleReport](https://ps365.clidsys.com/docs/commands/Get-PurviewRoleReport)

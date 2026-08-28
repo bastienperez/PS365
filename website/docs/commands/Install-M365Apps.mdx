@@ -1,7 +1,12 @@
 ---
 sidebarTitle: "Install-M365Apps"
-title: "Install-M365Apps"
+document type: cmdlet
+HelpUri: https://ps365.clidsys.com/docs/commands/Install-M365Apps
+Locale: en-US
 Module Name: PS365
+ms.date: 08/28/2026
+PlatyPS schema version: 2024-05-01
+title: "Install-M365Apps"
 ---
 
 ## SYNOPSIS
@@ -11,8 +16,7 @@ Installs Microsoft 365 Apps using the Office Deployment Tool.
 ## SYNTAX
 
 ```powershell
-Install-M365Apps [-ODTFolderPath] <String> [-ConfigFilePath] <String> [-ProgressAction <ActionPreference>]
- [<CommonParameters>]
+Install-M365Apps [-ODTFolderPath] <string> [-ConfigFilePath] <string>
 ```
 
 ## DESCRIPTION
@@ -39,24 +43,6 @@ Installs Microsoft 365 Apps from the specified local folder using the provided c
 
 ## PARAMETERS
 
-### -ODTFolderPath
-
-The network-accessible location containing the Microsoft 365 Apps source files and the Office Deployment Tool `setup.exe`.
-This can be a UNC path (e.g., \\\\server\share\Office) or a local path (e.g., C:\OfficeSource).
-Can be a relative or absolute path.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: 1
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -ConfigFilePath
 
 The path to the configuration XML file used for the installation.
@@ -64,19 +50,51 @@ You can generate this file using the Office Customization Tool (OCT) at https://
 Can be a relative or absolute path.
 
 ```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: 2
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 1
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
+
+### -ODTFolderPath
+
+The network-accessible location containing the Microsoft 365 Apps source files and the Office Deployment Tool `setup.exe`.
+This can be a UNC path (e.g., \\server\share\Office) or a local path (e.g., C:\OfficeSource).
+Can be a relative or absolute path.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
 ### CommonParameters
 
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
@@ -91,4 +109,4 @@ The ODT folder must contains the ODT setup.exe file and the source files for ins
 
 ## RELATED LINKS
 
-[https://ps365.clidsys.com/docs/commands/Install-M365Apps](https://ps365.clidsys.com/docs/commands/Install-M365Apps)
+- [https://ps365.clidsys.com/docs/commands/Install-M365Apps](https://ps365.clidsys.com/docs/commands/Install-M365Apps)

@@ -1,7 +1,12 @@
 ---
 sidebarTitle: "Get-MgRegisteredApp"
-title: "Get-MgRegisteredApp"
+document type: cmdlet
+HelpUri: https://ps365.clidsys.com/docs/commands/Get-MgRegisteredApp
+Locale: en-US
 Module Name: PS365
+ms.date: 08/28/2026
+PlatyPS schema version: 2024-05-01
+title: "Get-MgRegisteredApp"
 ---
 
 ## SYNOPSIS
@@ -13,25 +18,25 @@ Get registered application in Microsoft Graph
 ### All (Default)
 
 ```powershell
-Get-MgRegisteredApp [-ProgressAction <ActionPreference>] [<CommonParameters>]
+Get-MgRegisteredApp
 ```
 
 ### ByAppId
 
 ```powershell
-Get-MgRegisteredApp [[-ApplicationID] <String>] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+Get-MgRegisteredApp [[-ApplicationID] <string>]
 ```
 
 ### ByObjectId
 
 ```powershell
-Get-MgRegisteredApp [-ObjectID <String>] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+Get-MgRegisteredApp [-ObjectID <string>]
 ```
 
 ### ByDisplayName
 
 ```powershell
-Get-MgRegisteredApp [-DisplayName <String>] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+Get-MgRegisteredApp [-DisplayName <string>]
 ```
 
 ## DESCRIPTION
@@ -97,31 +102,20 @@ The unique identifier (AppId) of the registered application to retrieve.
 If not provided, all applications are returned.
 
 ```yaml
-Type: String
-Parameter Sets: ByAppId
-Aliases:
-
-Required: False
-Position: 1
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ObjectID
-
-(Optional) Retrieves the application for a specific application by its ObjectID.
-
-```yaml
-Type: String
-Parameter Sets: ByObjectId
-Aliases: Identity
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: ByAppId
+  Position: 0
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -DisplayName
@@ -131,19 +125,50 @@ Supports wildcards (* and ?) for partial name matching (e.g.
 "Azure*", "*Portal*").
 
 ```yaml
-Type: String
-Parameter Sets: ByDisplayName
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: ByDisplayName
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
+
+### -ObjectID
+
+(Optional) Retrieves the application for a specific application by its ObjectID.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases:
+- Identity
+ParameterSets:
+- Name: ByObjectId
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
 ### CommonParameters
 
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
@@ -155,4 +180,4 @@ Same as the Microsoft Graph built-in function `Get-MgApplication` but with a sim
 
 ## RELATED LINKS
 
-[https://ps365.clidsys.com/docs/commands/Get-MgRegisteredApp](https://ps365.clidsys.com/docs/commands/Get-MgRegisteredApp)
+- [https://ps365.clidsys.com/docs/commands/Get-MgRegisteredApp](https://ps365.clidsys.com/docs/commands/Get-MgRegisteredApp)

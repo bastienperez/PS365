@@ -1,7 +1,12 @@
 ---
 sidebarTitle: "Get-ExMailboxPermission"
-title: "Get-ExMailboxPermission"
+document type: cmdlet
+HelpUri: https://ps365.clidsys.com/docs/commands/Get-ExMailboxPermission
+Locale: en-US
 Module Name: PS365
+ms.date: 08/28/2026
+PlatyPS schema version: 2024-05-01
+title: "Get-ExMailboxPermission"
 ---
 
 ## SYNOPSIS
@@ -11,8 +16,8 @@ Gets all permissions on an Exchange Online mailbox (Full Access, Send As, Send o
 ## SYNTAX
 
 ```powershell
-Get-ExMailboxPermission [[-Identity] <String>] [-ByDomain <String>] [-UserPermission <String>] [-ExportToExcel]
- [-ExportPath <String>] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+Get-ExMailboxPermission [[-Identity] <string>] [-ByDomain <string>] [-UserPermission <string>]
+ [-ExportToExcel] [-ExportPath <string>]
 ```
 
 ## DESCRIPTION
@@ -58,68 +63,25 @@ Finds all mailbox permissions that john.doe@contoso.com has across all mailboxes
 
 ## PARAMETERS
 
-### -Identity
-
-The identity of the mailbox (email address, username, or display name)
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 1
-Default value: None
-Accept pipeline input: True (ByPropertyName, ByValue)
-Accept wildcard characters: False
-```
-
 ### -ByDomain
 
 Filter mailboxes by domain name
 
 ```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -UserPermission
-
-Find all permissions that a specific user has across all mailboxes (reverse lookup)
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ExportToExcel
-
-Export the mailbox permissions to an Excel file
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -ExportPath
@@ -127,21 +89,95 @@ Accept wildcard characters: False
 Optional output directory for the Excel export (defaults to the user profile).
 
 ```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
+
+### -ExportToExcel
+
+Export the mailbox permissions to an Excel file
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Identity
+
+The identity of the mailbox (email address, username, or display name)
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: false
+  ValueFromPipeline: true
+  ValueFromPipelineByPropertyName: true
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -UserPermission
+
+Find all permissions that a specific user has across all mailboxes (reverse lookup)
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
 ### CommonParameters
 
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
+
+### System.String
 
 ## OUTPUTS
 
@@ -152,4 +188,4 @@ For Excel export functionality, requires the ImportExcel module
 
 ## RELATED LINKS
 
-[https://ps365.clidsys.com/docs/commands/Get-ExMailboxPermission](https://ps365.clidsys.com/docs/commands/Get-ExMailboxPermission)
+- [https://ps365.clidsys.com/docs/commands/Get-ExMailboxPermission](https://ps365.clidsys.com/docs/commands/Get-ExMailboxPermission)

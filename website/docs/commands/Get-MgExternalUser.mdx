@@ -1,7 +1,12 @@
 ---
 sidebarTitle: "Get-MgExternalUser"
-title: "Get-MgExternalUser"
+document type: cmdlet
+HelpUri: https://ps365.clidsys.com/docs/commands/Get-MgExternalUser
+Locale: en-US
 Module Name: PS365
+ms.date: 08/28/2026
+PlatyPS schema version: 2024-05-01
+title: "Get-MgExternalUser"
 ---
 
 ## SYNOPSIS
@@ -11,8 +16,8 @@ Lists external users in Microsoft Entra ID based on their identities and invitat
 ## SYNTAX
 
 ```powershell
-Get-MgExternalUser [[-Issuer] <String[]>] [-UserType <String>] [-IncludeSignInActivity] [-ForceNewToken]
- [-ExportToExcel] [-ExportPath <String>] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+Get-MgExternalUser [[-Issuer] <string[]>] [-UserType <string>] [-IncludeSignInActivity]
+ [-ForceNewToken] [-ExportToExcel] [-ExportPath <string>]
 ```
 
 ## DESCRIPTION
@@ -109,43 +114,68 @@ Exports the external users report to an Excel file in the user's profile directo
 
 ## PARAMETERS
 
-### -Issuer
+### -ExportPath
 
-(Optional) Restricts the results to one or more identity issuers (for example 'ExternalAzureAD').
-Because the filter applies to the federated identities, accounts classified PendingRedemption
-are excluded when this parameter is used: they do not carry an issuer yet.
-When omitted, every external account is returned whatever its issuer or invitation state.
+(Optional) Output directory for the Excel export.
+Defaults to the user profile.
 
 ```yaml
-Type: String[]
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 1
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
-### -UserType
+### -ExportToExcel
 
-(Optional) Restricts the results to a given userType.
-Valid values: All, Member, Guest.
-Default is All.
-Use 'Member' to surface external accounts that are NOT flagged as guests - typically
-cross-tenant synchronized users, which a userType-based script would miss.
+(Optional) If specified, exports the results to an Excel file in the user's profile directory.
 
 ```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
 
-Required: False
-Position: Named
-Default value: All
-Accept pipeline input: False
-Accept wildcard characters: False
+### -ForceNewToken
+
+Switch parameter to force getting a new token from Microsoft Graph.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -IncludeSignInActivity
@@ -157,68 +187,77 @@ When the tenant does not meet those requirements, the report falls back to the s
 properties and a warning is displayed.
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
-### -ForceNewToken
+### -Issuer
 
-Switch parameter to force getting a new token from Microsoft Graph.
+(Optional) Restricts the results to one or more identity issuers (for example 'ExternalAzureAD').
+Because the filter applies to the federated identities, accounts classified PendingRedemption
+are excluded when this parameter is used: they do not carry an issuer yet.
+When omitted, every external account is returned whatever its issuer or invitation state.
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.String[]
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
-### -ExportToExcel
+### -UserType
 
-(Optional) If specified, exports the results to an Excel file in the user's profile directory.
+(Optional) Restricts the results to a given userType.
+Valid values: All, Member, Guest.
+Default is All.
+Use 'Member' to surface external accounts that are NOT flagged as guests - typically
+cross-tenant synchronized users, which a userType-based script would miss.
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.String
+DefaultValue: All
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
-### -ExportPath
-
-(Optional) Output directory for the Excel export.
-Defaults to the user profile.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
 ### CommonParameters
 
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
@@ -227,6 +266,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ### System.Collections.Generic.List[PSCustomObject]
 
 ## NOTES
+
 OUTPUT PROPERTIES
 Identity        : DisplayName, UserPrincipalName, Mail, ExternalDomain
                   ExternalDomain is the domain the account really belongs to, derived from the UPN
@@ -263,4 +303,4 @@ slower on large tenants.
 
 ## RELATED LINKS
 
-[https://ps365.clidsys.com/docs/commands/Get-MgExternalUser](https://ps365.clidsys.com/docs/commands/Get-MgExternalUser)
+- [https://ps365.clidsys.com/docs/commands/Get-MgExternalUser](https://ps365.clidsys.com/docs/commands/Get-MgExternalUser)

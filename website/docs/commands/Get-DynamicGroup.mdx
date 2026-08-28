@@ -1,7 +1,12 @@
 ---
 sidebarTitle: "Get-DynamicGroup"
-title: "Get-DynamicGroup"
+document type: cmdlet
+HelpUri: https://ps365.clidsys.com/docs/commands/Get-DynamicGroup
+Locale: en-US
 Module Name: PS365
+ms.date: 08/28/2026
+PlatyPS schema version: 2024-05-01
+title: "Get-DynamicGroup"
 ---
 
 ## SYNOPSIS
@@ -11,9 +16,8 @@ Retrieves dynamic groups from Microsoft 365, Exchange Online, and Entra ID with 
 ## SYNTAX
 
 ```powershell
-Get-DynamicGroup [[-GroupId] <String>] [-ExchangeOnlineOnly] [-EntraIDOnly] [-ExportToExcel]
- [-ExportPath <String>] [-IncludeMembers] [-MemberReport] [-DeprecatedMemberOfRuleOnly]
- [-ProgressAction <ActionPreference>] [<CommonParameters>]
+Get-DynamicGroup [[-GroupId] <string>] [-ExchangeOnlineOnly] [-EntraIDOnly] [-ExportToExcel]
+ [-ExportPath <string>] [-IncludeMembers] [-MemberReport] [-DeprecatedMemberOfRuleOnly]
 ```
 
 ## DESCRIPTION
@@ -98,131 +102,6 @@ Exports the groups using the deprecated MemberOf rule operator to an Excel file.
 
 ## PARAMETERS
 
-### -GroupId
-
-When specified, retrieves dynamic groups by their unique GroupId.
-If not specified, retrieves all dynamic groups (both Exchange Online and Entra ID).
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 1
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ExchangeOnlineOnly
-
-When specified, retrieves only Exchange Online Dynamic Distribution Groups.
-Requires an active Exchange Online session (use Connect-ExchangeOnline).
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -EntraIDOnly
-
-When specified, retrieves only Entra ID Dynamic Groups (Security and M365 groups).
-Requires an active Microsoft Graph connection (use Connect-MgGraph).
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ExportToExcel
-
-When specified, exports the result to an Excel file in the user's profile directory instead of
-returning it.
-When combined with -MemberReport, the member rows are written to a second worksheet
-named "Members" in the same workbook.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ExportPath
-
-Optional output directory for the Excel export (defaults to the user profile).
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -IncludeMembers
-
-When specified, populates the MembersName (pipe-separated display names) and MembersId
-(pipe-separated object IDs) properties in addition to MembersCount.
-By default, only MembersCount is populated to avoid slow enumeration on large groups.
-Ignored when -MemberReport is used.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -MemberReport
-
-When specified, the function returns one row per (group, member) pair instead of the per-group
-aggregated objects.
-Useful to export a flat list of members with their parent group.
-Output columns: GroupId, GroupName, GroupType, MembershipRule, MemberId, MemberDisplayName,
-MemberPrincipal, MemberType.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -DeprecatedMemberOfRuleOnly
 
 When specified, returns only the groups whose membership rule uses the deprecated MemberOf
@@ -236,19 +115,188 @@ This operator only exists in Entra ID membership rules, so this switch implies E
 Without this switch, the DeprecatedMemberOfRule property still flags affected groups.
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
+
+### -EntraIDOnly
+
+When specified, retrieves only Entra ID Dynamic Groups (Security and M365 groups).
+Requires an active Microsoft Graph connection (use Connect-MgGraph).
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ExchangeOnlineOnly
+
+When specified, retrieves only Exchange Online Dynamic Distribution Groups.
+Requires an active Exchange Online session (use Connect-ExchangeOnline).
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ExportPath
+
+Optional output directory for the Excel export (defaults to the user profile).
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ExportToExcel
+
+When specified, exports the result to an Excel file in the user's profile directory instead of
+returning it.
+When combined with -MemberReport, the member rows are written to a second worksheet
+named "Members" in the same workbook.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -GroupId
+
+When specified, retrieves dynamic groups by their unique GroupId.
+If not specified, retrieves all dynamic groups (both Exchange Online and Entra ID).
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -IncludeMembers
+
+When specified, populates the MembersName (pipe-separated display names) and MembersId
+(pipe-separated object IDs) properties in addition to MembersCount.
+By default, only MembersCount is populated to avoid slow enumeration on large groups.
+Ignored when -MemberReport is used.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -MemberReport
+
+When specified, the function returns one row per (group, member) pair instead of the per-group
+aggregated objects.
+Useful to export a flat list of members with their parent group.
+Output columns: GroupId, GroupName, GroupType, MembershipRule, MemberId, MemberDisplayName,
+MemberPrincipal, MemberType.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
 ### CommonParameters
 
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
@@ -257,6 +305,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ### System.Collections.Generic.List[Object]
 
 ## NOTES
+
 OUTPUT PROPERTIES (default / -IncludeMembers mode)
 Returns a collection of custom objects with the following properties:
 - GroupId: Unique identifier of the group
@@ -291,4 +340,4 @@ More information on: https://itpro-tips.com/property-set-personal-information-an
 
 ## RELATED LINKS
 
-[https://ps365.clidsys.com/docs/commands/Get-DynamicGroup](https://ps365.clidsys.com/docs/commands/Get-DynamicGroup)
+- [https://ps365.clidsys.com/docs/commands/Get-DynamicGroup](https://ps365.clidsys.com/docs/commands/Get-DynamicGroup)

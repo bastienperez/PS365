@@ -1,7 +1,12 @@
 ---
 sidebarTitle: "Find-DistributionGroupMember"
-title: "Find-DistributionGroupMember"
+document type: cmdlet
+HelpUri: https://ps365.clidsys.com/docs/commands/Find-DistributionGroupMember
+Locale: en-US
 Module Name: PS365
+ms.date: 08/28/2026
+PlatyPS schema version: 2024-05-01
+title: "Find-DistributionGroupMember"
 ---
 
 ## SYNOPSIS
@@ -11,9 +16,8 @@ Find members of distribution groups based on email address or domain.
 ## SYNTAX
 
 ```powershell
-Find-DistributionGroupMember [[-FilterByDomain] <String>] [[-FilterByEmailAddresses] <String[]>]
- [-FilterByExternalDomains] [[-FilterRecipientTypeDetails] <String>] [-ProgressAction <ActionPreference>]
- [<CommonParameters>]
+Find-DistributionGroupMember [[-FilterByDomain] <string>] [[-FilterByEmailAddresses] <string[]>]
+ [[-FilterRecipientTypeDetails] <string>] [-FilterByExternalDomains]
 ```
 
 ## DESCRIPTION
@@ -53,15 +57,20 @@ Searches all distribution groups for members whose email addresses belong to ext
 Specify a domain to filter distribution group members by their email addresses.
 
 ```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 1
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -FilterByEmailAddresses
@@ -69,15 +78,20 @@ Accept wildcard characters: False
 Provide specific email addresses to filter distribution group members.
 
 ```yaml
-Type: String[]
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 2
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.String[]
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 1
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -FilterByExternalDomains
@@ -85,15 +99,20 @@ Accept wildcard characters: False
 If set to true, filters members whose email addresses belong to external domains not managed in the Exchange Online environment (based on accepted domains).
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -FilterRecipientTypeDetails
@@ -101,19 +120,28 @@ Accept wildcard characters: False
 Specify a recipient type detail to further filter the members (e.g., MailContact, MailUser).
 
 ```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 3
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 2
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
+
 ### CommonParameters
 
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
@@ -123,4 +151,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## RELATED LINKS
 
-[https://ps365.clidsys.com/docs/commands/Find-DistributionGroupMember](https://ps365.clidsys.com/docs/commands/Find-DistributionGroupMember)
+- [https://ps365.clidsys.com/docs/commands/Find-DistributionGroupMember](https://ps365.clidsys.com/docs/commands/Find-DistributionGroupMember)

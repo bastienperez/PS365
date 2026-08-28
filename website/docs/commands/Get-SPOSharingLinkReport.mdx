@@ -1,7 +1,12 @@
 ---
 sidebarTitle: "Get-SPOSharingLinkReport"
-title: "Get-SPOSharingLinkReport"
+document type: cmdlet
+HelpUri: https://ps365.clidsys.com/docs/commands/Get-SPOSharingLinkReport
+Locale: en-US
 Module Name: PS365
+ms.date: 08/28/2026
+PlatyPS schema version: 2024-05-01
+title: "Get-SPOSharingLinkReport"
 ---
 
 ## SYNOPSIS
@@ -11,11 +16,11 @@ Lists every sharing link of one or more SharePoint Online sites, one row per lin
 ## SYNTAX
 
 ```powershell
-Get-SPOSharingLinkReport -ClientId <String> -Tenant <String> [-CertificateThumbprint <String>]
- [-CertificatePath <String>] [-CertificatePassword <SecureString>] [-CertificateBase64Encoded <String>]
- [-SiteUrl] <String[]> [-IncludeGraphDetails] [-LinkType <String[]>] [-ExpiredOnly] [-NeverExpiringOnly]
- [-ExpiringInDays <Int32>] [-ThrottleLimit <Int32>] [-ExportToExcel] [-ExportPath <String>]
- [-ProgressAction <ActionPreference>] [<CommonParameters>]
+Get-SPOSharingLinkReport [-SiteUrl] <string[]> -ClientId <string> -Tenant <string>
+ [-CertificateThumbprint <string>] [-CertificatePath <string>] [-CertificatePassword <securestring>]
+ [-CertificateBase64Encoded <string>] [-IncludeGraphDetails] [-LinkType <string[]>] [-ExpiredOnly]
+ [-NeverExpiringOnly] [-ExpiringInDays <int>] [-ThrottleLimit <int>] [-ExportToExcel]
+ [-ExportPath <string>]
 ```
 
 ## DESCRIPTION
@@ -133,54 +138,47 @@ Exports every link that will never expire on the given sites to an Excel file in
 
 ## PARAMETERS
 
-### -ClientId
+### -CertificateBase64Encoded
 
-(Mandatory) Application (client) ID of the Entra app registration used for the app-only connection.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Tenant
-
-(Mandatory) Tenant domain name for the PnP connection, for example contoso.onmicrosoft.com.
-Used by Connect-PnPOnline (it expects the domain, not the tenant GUID).
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -CertificateThumbprint
-
-Thumbprint of the certificate located in the current user's Windows certificate store.
+Base64-encoded certificate (with its private key) passed directly to Connect-PnPOnline.
 Provide exactly one of CertificateThumbprint, CertificatePath or CertificateBase64Encoded.
 
 ```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
 
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+### -CertificatePassword
+
+(Optional) SecureString password protecting the .pfx file passed to CertificatePath.
+
+```yaml
+Type: System.Security.SecureString
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -CertificatePath
@@ -190,67 +188,155 @@ Use CertificatePassword when the file is protected.
 Provide exactly one of CertificateThumbprint, CertificatePath or CertificateBase64Encoded.
 
 ```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
-### -CertificatePassword
+### -CertificateThumbprint
 
-(Optional) SecureString password protecting the .pfx file passed to CertificatePath.
-
-```yaml
-Type: SecureString
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -CertificateBase64Encoded
-
-Base64-encoded certificate (with its private key) passed directly to Connect-PnPOnline.
+Thumbprint of the certificate located in the current user's Windows certificate store.
 Provide exactly one of CertificateThumbprint, CertificatePath or CertificateBase64Encoded.
 
 ```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
-### -SiteUrl
+### -ClientId
 
-(Mandatory) One or more site collection URLs to scan.
-Accepts pipeline input, by value or by the Url
-property, so the output of Get-SPOSiteReport can be piped straight in (its Url column binds to this
-parameter through its alias).
+(Mandatory) Application (client) ID of the Entra app registration used for the app-only connection.
 
 ```yaml
-Type: String[]
-Parameter Sets: (All)
-Aliases: Url
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
 
-Required: True
-Position: 1
-Default value: None
-Accept pipeline input: True (ByPropertyName, ByValue)
-Accept wildcard characters: False
+### -ExpiredOnly
+
+(Optional) Keeps only the links whose expiration date is in the past.
+Requires IncludeGraphDetails:
+expiration dates only exist in the Graph payload.
+Mutually exclusive with NeverExpiringOnly and
+ExpiringInDays.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ExpiringInDays
+
+(Optional) Keeps only the links expiring within that many days from now, excluding those already
+expired.
+Requires IncludeGraphDetails.
+Mutually exclusive with ExpiredOnly and NeverExpiringOnly.
+
+```yaml
+Type: System.Int32
+DefaultValue: 0
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ExportPath
+
+(Optional) Output directory for the Excel export.
+Defaults to the user profile directory.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ExportToExcel
+
+(Optional) Exports the result to an .xlsx file instead of returning the objects to the pipeline.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -IncludeGraphDetails
@@ -267,15 +353,20 @@ Columns that were not
 collected are absent rather than empty, so an empty cell always means the data really is empty.
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -LinkType
@@ -288,35 +379,20 @@ Filtering happens after collection, so it does not make the run faster - it only
 report shorter.
 
 ```yaml
-Type: String[]
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ExpiredOnly
-
-(Optional) Keeps only the links whose expiration date is in the past.
-Requires IncludeGraphDetails:
-expiration dates only exist in the Graph payload.
-Mutually exclusive with NeverExpiringOnly and
-ExpiringInDays.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.String[]
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -NeverExpiringOnly
@@ -326,34 +402,67 @@ Requires IncludeGraphDetails.
 Mutually exclusive with ExpiredOnly and ExpiringInDays.
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
-### -ExpiringInDays
+### -SiteUrl
 
-(Optional) Keeps only the links expiring within that many days from now, excluding those already
-expired.
-Requires IncludeGraphDetails.
-Mutually exclusive with ExpiredOnly and NeverExpiringOnly.
+(Mandatory) One or more site collection URLs to scan.
+Accepts pipeline input, by value or by the Url
+property, so the output of Get-SPOSiteReport can be piped straight in (its Url column binds to this
+parameter through its alias).
 
 ```yaml
-Type: Int32
-Parameter Sets: (All)
+Type: System.String[]
+DefaultValue: ''
+SupportsWildcards: false
 Aliases:
+- Url
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: true
+  ValueFromPipeline: true
+  ValueFromPipelineByPropertyName: true
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
 
-Required: False
-Position: Named
-Default value: 0
-Accept pipeline input: False
-Accept wildcard characters: False
+### -Tenant
+
+(Mandatory) Tenant domain name for the PnP connection, for example contoso.onmicrosoft.com.
+Used by Connect-PnPOnline (it expects the domain, not the tenant GUID).
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -ThrottleLimit
@@ -364,54 +473,32 @@ Lower it if SharePoint starts
 answering 429: past a certain rate, more concurrency means more throttling and a longer total run.
 
 ```yaml
-Type: Int32
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: 8
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Int32
+DefaultValue: 8
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
-### -ExportToExcel
-
-(Optional) Exports the result to an .xlsx file instead of returning the objects to the pipeline.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ExportPath
-
-(Optional) Output directory for the Excel export.
-Defaults to the user profile directory.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
 ### CommonParameters
 
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
+
+### System.String[]
 
 ## OUTPUTS
 
@@ -419,4 +506,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## RELATED LINKS
 
-[https://ps365.clidsys.com/docs/commands/Get-SPOSharingLinkReport](https://ps365.clidsys.com/docs/commands/Get-SPOSharingLinkReport)
+- [https://ps365.clidsys.com/docs/commands/Get-SPOSharingLinkReport](https://ps365.clidsys.com/docs/commands/Get-SPOSharingLinkReport)

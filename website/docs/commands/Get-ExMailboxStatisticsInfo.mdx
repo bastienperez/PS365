@@ -1,7 +1,12 @@
 ---
 sidebarTitle: "Get-ExMailboxStatisticsInfo"
-title: "Get-ExMailboxStatisticsInfo"
+document type: cmdlet
+HelpUri: https://ps365.clidsys.com/docs/commands/Get-ExMailboxStatisticsInfo
+Locale: en-US
 Module Name: PS365
+ms.date: 08/28/2026
+PlatyPS schema version: 2024-05-01
+title: "Get-ExMailboxStatisticsInfo"
 ---
 
 ## SYNOPSIS
@@ -11,8 +16,8 @@ Gets detailed mailbox statistics for Exchange Online including item count by typ
 ## SYNTAX
 
 ```powershell
-Get-ExMailboxStatisticsInfo [[-Identity] <String>] [-IncludeFolderDetails] [-ExportToExcel]
- [-ExportPath <String>] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+Get-ExMailboxStatisticsInfo [[-Identity] <string>] [-IncludeFolderDetails] [-ExportToExcel]
+ [-ExportPath <string>]
 ```
 
 ## DESCRIPTION
@@ -53,36 +58,25 @@ Exports results to an Excel file.
 
 ## PARAMETERS
 
-### -Identity
+### -ExportPath
 
-Mailbox identity (email address, username, etc.)
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 1
-Default value: None
-Accept pipeline input: True (ByPropertyName, ByValue)
-Accept wildcard characters: False
-```
-
-### -IncludeFolderDetails
-
-Include folder details in the results
+Optional output directory for the Excel export (defaults to the user profile).
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -ExportToExcel
@@ -90,37 +84,74 @@ Accept wildcard characters: False
 If specified, exports the results to an Excel file in the user's profile directory.
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
-### -ExportPath
+### -Identity
 
-Optional output directory for the Excel export (defaults to the user profile).
+Mailbox identity (email address, username, etc.)
 
 ```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: false
+  ValueFromPipeline: true
+  ValueFromPipelineByPropertyName: true
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
+
+### -IncludeFolderDetails
+
+Include folder details in the results
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
 ### CommonParameters
 
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
+
+### System.String
 
 ## OUTPUTS
 
@@ -131,4 +162,4 @@ Version: 1.0.0
 
 ## RELATED LINKS
 
-[https://ps365.clidsys.com/docs/commands/Get-ExMailboxStatisticsInfo](https://ps365.clidsys.com/docs/commands/Get-ExMailboxStatisticsInfo)
+- [https://ps365.clidsys.com/docs/commands/Get-ExMailboxStatisticsInfo](https://ps365.clidsys.com/docs/commands/Get-ExMailboxStatisticsInfo)

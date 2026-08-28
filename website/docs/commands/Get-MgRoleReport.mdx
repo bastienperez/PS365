@@ -1,7 +1,12 @@
 ---
 sidebarTitle: "Get-MgRoleReport"
-title: "Get-MgRoleReport"
+document type: cmdlet
+HelpUri: https://ps365.clidsys.com/docs/commands/Get-MgRoleReport
+Locale: en-US
 Module Name: PS365
+ms.date: 08/28/2026
+PlatyPS schema version: 2024-05-01
+title: "Get-MgRoleReport"
 ---
 
 ## SYNOPSIS
@@ -11,9 +16,9 @@ Reports on Microsoft Entra ID (Azure AD) roles
 ## SYNTAX
 
 ```powershell
-Get-MgRoleReport [[-Identity] <String>] [[-PrincipalID] <String>] [[-PrincipalDisplayName] <String>]
- [[-Scope] <String>] [[-TierLevel] <String>] [-IncludeEmptyRoles] [-ExcludePIMEligibleAssignments]
- [-ForceNewToken] [-MaesterMode] [-ExportToExcel] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+Get-MgRoleReport [[-Identity] <string>] [[-PrincipalID] <string>] [[-PrincipalDisplayName] <string>]
+ [[-Scope] <string>] [[-TierLevel] <string>] [-IncludeEmptyRoles] [-ExcludePIMEligibleAssignments]
+ [-ForceNewToken] [-MaesterMode] [-ExportToExcel]
 ```
 
 ## DESCRIPTION
@@ -103,6 +108,70 @@ Get-MgRoleReport | Export-CSV -NoTypeInformation "$(Get-Date -Format yyyyMMdd)_a
 
 ## PARAMETERS
 
+### -ExcludePIMEligibleAssignments
+
+Switch parameter to exclude PIM eligible assignments from the report.
+Default is $false (includes them)
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ExportToExcel
+
+Switch parameter to export the report to an Excel file in the user's profile directory
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ForceNewToken
+
+Switch parameter to force getting a new token from Microsoft Graph
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
 ### -Identity
 
 Filter the report on a specific role.
@@ -110,15 +179,83 @@ Accepts the role display name (e.g.
 'Global Administrator') or the role definition Id (GUID).
 
 ```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
 
-Required: False
-Position: 1
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+### -IncludeEmptyRoles
+
+Switch parameter to include empty roles in the report
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -MaesterMode
+
+Switch parameter to use with the Maester framework (internal process not presented here)
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -PrincipalDisplayName
+
+Filter the report on a specific principal display name (exact match, case-insensitive).
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 2
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -PrincipalID
@@ -127,31 +264,20 @@ Filter the report on a specific principal.
 Accepts the UPN (user), AppId (service principal) or ObjectId.
 
 ```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 2
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -PrincipalDisplayName
-
-Filter the report on a specific principal display name (exact match, case-insensitive).
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 3
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 1
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -Scope
@@ -160,15 +286,20 @@ Filter the report on the assignment scope (AssignedRoleScope / directoryScopeId)
 Examples: '/' (tenant-wide), '/administrativeUnits/&lt;id&gt;' (AU-scoped), or any resource scope.
 
 ```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 4
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 3
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -TierLevel
@@ -178,100 +309,28 @@ Tiering is based on Sean Metcalf's (PyroTek3) classification.
 Regardless of this filter, every row is always annotated with a RoleTier property (Tier0/Tier1/Tier2/Untiered).
 
 ```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 5
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 4
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
-### -IncludeEmptyRoles
-
-Switch parameter to include empty roles in the report
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ExcludePIMEligibleAssignments
-
-Switch parameter to exclude PIM eligible assignments from the report.
-Default is $false (includes them)
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ForceNewToken
-
-Switch parameter to force getting a new token from Microsoft Graph
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -MaesterMode
-
-Switch parameter to use with the Maester framework (internal process not presented here)
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ExportToExcel
-
-Switch parameter to export the report to an Excel file in the user's profile directory
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
 ### CommonParameters
 
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
@@ -279,8 +338,10 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ### The report is output to an array contained all the audit logs found.
 
-### To export in a csv, do Get-MgRoleReport | Export-CSV -NoTypeInformation "$(Get-Date -Format yyyyMMdd)_adminRoles.csv" -Encoding UTF8
+To export in a csv
+
 ## NOTES
+
 https://itpro-tips.com/get-the-office-365-admin-roles-and-track-the-changes/
 
 Written by Bastien Perez (Clidsys.com - ITPro-Tips.com)
@@ -288,4 +349,4 @@ For more Office 365/Microsoft 365 tips and news, check out ITPro-Tips.com.
 
 ## RELATED LINKS
 
-[https://ps365.clidsys.com/docs/commands/Get-MgRoleReport](https://ps365.clidsys.com/docs/commands/Get-MgRoleReport)
+- [https://ps365.clidsys.com/docs/commands/Get-MgRoleReport](https://ps365.clidsys.com/docs/commands/Get-MgRoleReport)

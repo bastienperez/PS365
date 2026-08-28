@@ -1,7 +1,12 @@
 ---
 sidebarTitle: "Get-IntuneODJConnectorServiceEventLog"
-title: "Get-IntuneODJConnectorServiceEventLog"
+document type: cmdlet
+HelpUri: https://ps365.clidsys.com/docs/commands/Get-IntuneODJConnectorServiceEventLog
+Locale: en-US
 Module Name: PS365
+ms.date: 08/28/2026
+PlatyPS schema version: 2024-05-01
+title: "Get-IntuneODJConnectorServiceEventLog"
 ---
 
 ## SYNOPSIS
@@ -11,8 +16,7 @@ Retrieves and parses event logs from the Microsoft Intune ODJ (Offline Domain Jo
 ## SYNTAX
 
 ```powershell
-Get-IntuneODJConnectorServiceEventLog [[-DeviceId] <String>] [[-DeviceName] <String>]
- [-ProgressAction <ActionPreference>] [<CommonParameters>]
+Get-IntuneODJConnectorServiceEventLog [[-DeviceId] <string>] [[-DeviceName] <string>]
 ```
 
 ## DESCRIPTION
@@ -65,15 +69,20 @@ Retrieves event logs for devices with names matching the wildcard pattern.
 Filters the results to show only events for the specified Device ID (GUID).
 
 ```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 1
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -DeviceName
@@ -82,19 +91,28 @@ Filters the results to show only events for the specified Device Name.
 Supports wildcards.
 
 ```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 2
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 1
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
+
 ### CommonParameters
 
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
@@ -108,4 +126,4 @@ Automatically resolves UserID to Active Directory account information (User, gMS
 
 ## RELATED LINKS
 
-[https://ps365.clidsys.com/docs/commands/Get-IntuneODJConnectorServiceEventLog](https://ps365.clidsys.com/docs/commands/Get-IntuneODJConnectorServiceEventLog)
+- [https://ps365.clidsys.com/docs/commands/Get-IntuneODJConnectorServiceEventLog](https://ps365.clidsys.com/docs/commands/Get-IntuneODJConnectorServiceEventLog)

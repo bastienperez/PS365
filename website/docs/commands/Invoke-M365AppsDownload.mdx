@@ -1,7 +1,12 @@
 ---
 sidebarTitle: "Invoke-M365AppsDownload"
-title: "Invoke-M365AppsDownload"
+document type: cmdlet
+HelpUri: https://ps365.clidsys.com/docs/commands/Invoke-M365AppsDownload
+Locale: en-US
 Module Name: PS365
+ms.date: 08/28/2026
+PlatyPS schema version: 2024-05-01
+title: "Invoke-M365AppsDownload"
 ---
 
 ## SYNOPSIS
@@ -11,7 +16,7 @@ Downloads the Microsoft 365 Apps binary using the Office Deployment Tool (ODT).
 ## SYNTAX
 
 ```powershell
-Invoke-M365AppsDownload [-ConfigFilePath] <String> [-ProgressAction <ActionPreference>] [<CommonParameters>]
+Invoke-M365AppsDownload [-ConfigFilePath] <string>
 ```
 
 ## DESCRIPTION
@@ -38,19 +43,28 @@ You can generate this file using the Office Customization Tool (OCT) at https://
 Can be a relative or absolute path.
 
 ```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: 1
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
+
 ### CommonParameters
 
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
@@ -62,4 +76,4 @@ Ensure that you have a valid configuration XML file in the ConfigFiles folder.
 
 ## RELATED LINKS
 
-[https://ps365.clidsys.com/docs/commands/Invoke-M365AppsDownload](https://ps365.clidsys.com/docs/commands/Invoke-M365AppsDownload)
+- [https://ps365.clidsys.com/docs/commands/Invoke-M365AppsDownload](https://ps365.clidsys.com/docs/commands/Invoke-M365AppsDownload)

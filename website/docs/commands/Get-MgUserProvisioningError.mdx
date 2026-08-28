@@ -1,0 +1,247 @@
+---
+sidebarTitle: "Get-MgUserProvisioningError"
+document type: cmdlet
+HelpUri: https://ps365.clidsys.com/docs/commands/Get-MgUserProvisioningError
+Locale: en-US
+Module Name: PS365
+ms.date: 08/28/2026
+PlatyPS schema version: 2024-05-01
+title: "Get-MgUserProvisioningError"
+---
+
+## SYNOPSIS
+
+Lists the users carrying provisioning errors in Microsoft Entra ID.
+
+## SYNTAX
+
+```powershell
+Get-MgUserProvisioningError [[-Identity] <string>] [-ErrorSource <string>] [-IncludeResolved]
+ [-ForceNewToken] [-ExportToExcel]
+```
+
+## DESCRIPTION
+
+Scans the tenant (or a single user) for the two kinds of provisioning errors exposed
+on the user object by Microsoft Graph:
+
+- serviceProvisioningErrors: errors raised by a downstream Microsoft 365 service
+  (typically Exchange Online) when provisioning the user.
+The error detail is an XML
+  payload, parsed to surface the service name, the error code and the description.
+- onPremisesProvisioningErrors: synchronization errors coming from Entra Connect,
+  typically an attribute conflict (AttributeValueMustBeUnique on proxyAddresses or
+  userPrincipalName).
+
+Microsoft Graph does not support server-side filtering on these properties, so the
+whole user list is retrieved and filtered client-side.
+One result row per error: a
+user carrying several errors produces several rows.
+
+Resolved service provisioning errors are excluded by default (Graph keeps them with
+isResolved = true); use -IncludeResolved to see them.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Get-MgUserProvisioningError
+```
+
+Returns every active provisioning error of the tenant, one row per error.
+
+### EXAMPLE 2
+
+```powershell
+Get-MgUserProvisioningError -Identity 'user@contoso.com'
+```
+
+Returns the provisioning errors of a single user.
+
+### EXAMPLE 3
+
+```powershell
+Get-MgUserProvisioningError -ErrorSource OnPremisesSync
+```
+
+Returns only the Entra Connect synchronization errors (attribute conflicts).
+
+### EXAMPLE 4
+
+```powershell
+Get-MgUserProvisioningError -IncludeResolved
+```
+
+Also returns the service provisioning errors already resolved.
+
+### EXAMPLE 5
+
+```powershell
+Get-MgUserProvisioningError -ExportToExcel
+```
+
+Exports the provisioning errors report to an Excel file in the user's profile directory.
+
+## PARAMETERS
+
+### -ErrorSource
+
+(Optional) Restricts the results to one error source.
+Valid values: All,
+ServiceProvisioning, OnPremisesSync.
+Default is All.
+
+```yaml
+Type: System.String
+DefaultValue: All
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ExportToExcel
+
+(Optional) If specified, exports the results to an Excel file in the user's profile directory.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ForceNewToken
+
+Switch parameter to force getting a new token from Microsoft Graph.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Identity
+
+(Optional) UserPrincipalName or object id of a single user to check.
+When omitted,
+the whole tenant is scanned.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: false
+  ValueFromPipeline: true
+  ValueFromPipelineByPropertyName: true
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -IncludeResolved
+
+(Optional) Also returns the service provisioning errors flagged as resolved by
+Microsoft Graph.
+Ignored for on-premises errors, which Graph only keeps while they
+are active.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+### System.String
+
+## OUTPUTS
+
+### System.Collections.Generic.List[PSCustomObject]
+
+### System.Collections.Generic.List`1[[System.Management.Automation.PSObject, System.Management.Automation, Version=7.6.0.500, Culture=neutral, PublicKeyToken=31bf3856ad364e35]]
+
+## NOTES
+
+OUTPUT PROPERTIES
+UserPrincipalName     : the user carrying the error
+DisplayName           : display name of the user
+ErrorSource           : ServiceProvisioning (downstream service) or OnPremisesSync (Entra Connect)
+Service               : service instance for service errors (e.g.
+exchange), empty for sync errors
+Category              : error code for service errors, Graph category for sync errors
+                        (PropertyConflict for AttributeValueMustBeUnique)
+Property              : attribute causing a sync error (e.g.
+ProxyAddresses), empty for service errors
+Description           : parsed error description for service errors, conflicting value for sync errors
+IsResolved            : True/False for service errors, empty for sync errors
+OccurredDateTime      : when the error was recorded
+OnPremisesSyncEnabled : whether the user is synchronized from on-premises
+Id                    : object id of the user
+
+Required Microsoft Graph permissions:
+    - User.Read.All
+
+Version history:
+    1.0 - Creation.
+Covers serviceProvisioningErrors (errorDetail XML parsed) and
+          onPremisesProvisioningErrors, client-side filtering (no server-side filter
+          support on these properties), one row per error.
+
+## RELATED LINKS
+
+- [https://ps365.clidsys.com/docs/commands/Get-MgUserProvisioningError](https://ps365.clidsys.com/docs/commands/Get-MgUserProvisioningError)

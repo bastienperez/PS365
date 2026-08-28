@@ -1,7 +1,12 @@
 ---
 sidebarTitle: "Get-NestedGroup"
-title: "Get-NestedGroup"
+document type: cmdlet
+HelpUri: https://ps365.clidsys.com/docs/commands/Get-NestedGroup
+Locale: en-US
 Module Name: PS365
+ms.date: 08/28/2026
+PlatyPS schema version: 2024-05-01
+title: "Get-NestedGroup"
 ---
 
 ## SYNOPSIS
@@ -11,8 +16,7 @@ Lists all nested group dependencies (group-in-group) in Microsoft Entra ID.
 ## SYNTAX
 
 ```powershell
-Get-NestedGroup [-ExportToExcel] [[-ExportPath] <String>] [-ExportToHtml] [-ProgressAction <ActionPreference>]
- [<CommonParameters>]
+Get-NestedGroup [[-ExportPath] <string>] [-ExportToExcel] [-ExportToHtml]
 ```
 
 ## DESCRIPTION
@@ -51,37 +55,47 @@ Retrieves all nested group dependencies and exports an interactive HTML graph to
 
 ## PARAMETERS
 
+### -ExportPath
+
+Optional output directory for the Excel export (defaults to the user profile).
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
 ### -ExportToExcel
 
 When specified, exports the results to an Excel file in the user's profile directory.
 Requires the ImportExcel module.
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ExportPath
-
-Optional output directory for the Excel export (defaults to the user profile).
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 1
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -ExportToHtml
@@ -93,19 +107,28 @@ Clicking a node zooms in and reveals its parent and child groups.
 The graph is frozen after stabilisation: individual nodes can be dragged without affecting the others.
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
+
 ### CommonParameters
 
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
@@ -114,6 +137,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ### System.Collections.Generic.List[Object]
 
 ## NOTES
+
 OUTPUT PROPERTIES
 Returns a collection of custom objects with the following properties:
 - MemberGroup: Display name of the nested (child) group
@@ -127,4 +151,4 @@ Requires Microsoft.Graph module: Connect-MgGraph -Scopes 'Group.Read.All'
 
 ## RELATED LINKS
 
-[https://ps365.clidsys.com/docs/commands/Get-NestedGroup](https://ps365.clidsys.com/docs/commands/Get-NestedGroup)
+- [https://ps365.clidsys.com/docs/commands/Get-NestedGroup](https://ps365.clidsys.com/docs/commands/Get-NestedGroup)

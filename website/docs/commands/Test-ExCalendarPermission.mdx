@@ -1,7 +1,12 @@
 ---
 sidebarTitle: "Test-ExCalendarPermission"
-title: "Test-ExCalendarPermission"
+document type: cmdlet
+HelpUri: ''
+Locale: en-US
 Module Name: PS365
+ms.date: 08/28/2026
+PlatyPS schema version: 2024-05-01
+title: "Test-ExCalendarPermission"
 ---
 
 ## SYNOPSIS
@@ -11,8 +16,7 @@ Tests whether delegates with calendar folder permissions still exist.
 ## SYNTAX
 
 ```powershell
-Test-ExCalendarPermission [-Mailbox] <String> [[-DelegateStatus] <String>] [-ProgressAction <ActionPreference>]
- [<CommonParameters>]
+Test-ExCalendarPermission [-Mailbox] <string> [[-DelegateStatus] <string>]
 ```
 
 ## DESCRIPTION
@@ -42,23 +46,6 @@ Tests calendar permissions for the specified mailbox and returns only delegates 
 
 ## PARAMETERS
 
-### -Mailbox
-
-The mailbox to inspect (e.g.
-user@domain.com).
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: 1
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -DelegateStatus
 
 Filters the results based on whether the delegate (the person with whom
@@ -71,19 +58,50 @@ permissions) still exists as a valid recipient in the tenant.
               permissions left behind after the account was deleted).
 
 ```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 2
-Default value: All
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.String
+DefaultValue: All
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 1
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
+
+### -Mailbox
+
+The mailbox to inspect (e.g.
+user@domain.com).
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
 ### CommonParameters
 
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
