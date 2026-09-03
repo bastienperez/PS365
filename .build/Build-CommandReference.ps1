@@ -1,4 +1,4 @@
-# Description: This script is used to generate the 'Command Reference' section of the PS365 docusaurus site
+﻿# Description: This script is used to generate the 'Command Reference' section of the PS365 docusaurus site
 # * This command needs to be run from the root of the project. e.g. ./build/Build-CommandReference.ps1
 # * If running the docusaurus site locally you will need to stop and start Docusaurus to clear the 'Module not found' errors after running this command
 
@@ -9,8 +9,10 @@ if (-not (Get-Module Alt3.Docusaurus.Powershell -ListAvailable)) { Install-Modul
 if (-not (Get-Module PlatyPS -ListAvailable)) { Install-Module PlatyPS -Scope CurrentUser -Force -SkipPublisherCheck }
 if (-not (Get-Module Pester -ListAvailable)) { Install-Module Pester -Scope CurrentUser -Force -SkipPublisherCheck }
 
-Import-Module Alt3.Docusaurus.Powershell
+# PlatyPS must be imported before Alt3.Docusaurus.Powershell: Alt3 pulls in powershell-yaml,
+# which loads its own YamlDotNet and then blocks PlatyPS from loading its copy
 Import-Module PlatyPS
+Import-Module Alt3.Docusaurus.Powershell
 
 # Generate the command reference markdown
 #$commandsIndexFile = "./website/docs/commands/readme.md"

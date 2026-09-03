@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Search-UnifiedAuditLogCustom is an enhanced wrapper around the native Search-UnifiedAuditLog cmdlet, providing additional features such as a user-friendly GUI for constructing search queries, simplified output formatting, and integration with the Microsoft 365 audit operations catalog.
 
@@ -42,8 +42,6 @@
     Search-UnifiedAuditLogCustom -StartDate (Get-Date).AddDays(-7) -EndDate (Get-Date) -Operations "UserLoggedIn", "FileAccessed" -SimpleView
 
     This example searches the Unified Audit Log for "UserLoggedIn" and "FileAccessed" operations that occurred in the last 7 days, and returns the results in a simplified format.
-
-    .EXAMPLE
 
 #>
 
@@ -340,6 +338,9 @@ function Search-UnifiedAuditLogCustom {
         Write-Warning 'Search-UnifiedAuditLog returned no records for the specified filters and time window.'
         return
     }
+
+    # Chunked retrieval returns the records grouped by sub-window: restore a single order, most recent first
+    $auditLogs = @($auditLogs | Sort-Object -Property CreationDate -Descending)
 
     if ($SimpleView) {
         return $auditLogs | Get-SimpleUnifiedAuditLog
@@ -1428,7 +1429,16 @@ function Invoke-SearchUnifiedAuditLogCustomHelperGUI {
                     }
                 }
                 if ($dedupKey) {
+                    # Dedup reorders by the key: re-sort most recent first afterwards
+                    # (CreationDate on raw records, CreationTime with -SimpleView)
                     $results = $results | Sort-Object -Property $dedupKey -Unique
+
+                    foreach ($candidate in @('CreationDate', 'CreationTime')) {
+                        if ($results[0].PSObject.Properties.Name -contains $candidate) {
+                            $results = $results | Sort-Object -Property $candidate -Descending
+                            break
+                        }
+                    }
                 }
                 $finalCount = @($results).Count
                 $duplicatesRemoved = $rawCount - $finalCount
