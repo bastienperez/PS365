@@ -22,8 +22,9 @@
     - Referenced but empty: a dynamic group rule points at an attribute no object carries, so the group stays empty.
 
     .PARAMETER TargetObject
-    Object types to count values on. Valid values: User, Group, Device. Default is User only, which is what the
-    built-in extension attributes support.
+    Object types to count values on. Valid values: User, Group, Device. Default is User only. Adding Device also
+    counts the built-in extension attributes on devices, which carry them under a different property name and can
+    be addressed by a device membership rule.
 
     .PARAMETER ExcludeBuiltIn
     Leaves the 15 built-in extension attributes out of the inventory and reports directory extensions only.
@@ -73,7 +74,15 @@
 
     The value counts use advanced queries ($count with ConsistencyLevel eventual). When Graph refuses a filter on a
     given attribute, the count is left null and the reason is reported in the CountError column rather than failing
-    the whole scan.
+    the whole scan. A count that failed on one object type is never reported as a partial total: an attribute
+    counted at zero on users and unreadable on devices is left Unknown rather than offered for cleanup.
+
+    Definitions come from getAvailableExtensionProperties rather than from a walk of the applications collection.
+    That is the only supported way to see an extension whose declaring application has been deleted, since Graph
+    exposes no extensionProperties navigation on the recycle bin.
+
+    Dynamic group rules are matched on both the user. and device. prefixes: extension attributes and directory
+    extensions can be addressed either way depending on the type of group.
 
     .LINK
     https://ps365.clidsys.com/docs/commands/Get-MgExtensionAttributeInfo
@@ -163,24 +172,37 @@ function Get-MgExtensionAttributeInfo {
         return $items
     }
 
-    # Directory extensions are declared per application, so the applications have to be
-    # enumerated to reach them. Deleted applications are read separately: their extensions
-    # are the orphaned ones, and they are invisible from the applications collection.
-    Write-Host -ForegroundColor Cyan 'Retrieving applications and their directory extensions'
-    $applicationsById = @{}
+    # Directory extension definitions are read with getAvailableExtensionProperties, which returns
+    # every definition registered in the tenant, including those declared by an application that has
+    # since been deleted. Walking the applications collection cannot reach those: the application is
+    # gone from that collection, and Graph exposes no extensionProperties navigation on the recycle
+    # bin. The declaring application is identified by the AppId embedded in the attribute name.
+    Write-Host -ForegroundColor Cyan 'Retrieving directory extension definitions'
+    $availableExtensions = @()
     try {
-        $applications = Get-GraphCollection -Uri 'https://graph.microsoft.com/v1.0/applications?$select=id,appId,displayName&$top=999'
-        foreach ($application in $applications) { $applicationsById[$application.id] = $application }
+        $response = Invoke-MgGraphRequest -Method POST -Uri 'https://graph.microsoft.com/v1.0/directoryObjects/getAvailableExtensionProperties' -Body '{}' -ContentType 'application/json' -OutputType PSObject -ErrorAction Stop
+        $availableExtensions = @($response.value)
     }
     catch {
-        Write-Warning "Unable to retrieve applications: $_"
+        Write-Warning "Unable to retrieve the directory extension definitions: $_"
         return
     }
 
-    $deletedApplicationsById = @{}
+    # Applications are read only to name the owner of each extension and to tell a live application
+    # from a missing one. The AppId is normalized the way it appears in an attribute name: no dashes.
+    $applicationsByAppId = @{}
+    try {
+        $applications = Get-GraphCollection -Uri 'https://graph.microsoft.com/v1.0/applications?$select=id,appId,displayName&$top=999'
+        foreach ($application in $applications) { $applicationsByAppId[($application.appId -replace '-', '').ToLowerInvariant()] = $application }
+    }
+    catch {
+        Write-Warning "Unable to retrieve applications, every extension will be reported as orphaned: $_"
+    }
+
+    $deletedApplicationsByAppId = @{}
     try {
         $deletedApplications = Get-GraphCollection -Uri 'https://graph.microsoft.com/v1.0/directory/deletedItems/microsoft.graph.application?$select=id,appId,displayName,deletedDateTime&$top=999'
-        foreach ($application in $deletedApplications) { $deletedApplicationsById[$application.id] = $application }
+        foreach ($application in $deletedApplications) { $deletedApplicationsByAppId[($application.appId -replace '-', '').ToLowerInvariant()] = $application }
     }
     catch {
         # Reading the recycle bin can be denied without breaking the rest: an extension whose
@@ -190,32 +212,38 @@ function Get-MgExtensionAttributeInfo {
 
     [System.Collections.Generic.List[PSCustomObject]]$extensionDefinitions = @()
 
-    foreach ($applicationId in ($applicationsById.Keys + $deletedApplicationsById.Keys)) {
-        $isDeleted = $deletedApplicationsById.ContainsKey($applicationId)
-        $application = if ($isDeleted) { $deletedApplicationsById[$applicationId] } else { $applicationsById[$applicationId] }
+    foreach ($property in $availableExtensions) {
+        # extension_<AppId without dashes>_<Name>. An on-premises synced extension follows the same
+        # shape; anything else is left with an unknown owner rather than guessed at.
+        $ownerAppKey = if ($property.name -match '^extension_([0-9a-fA-F]{32})_') { $Matches[1].ToLowerInvariant() } else { $null }
 
-        try {
-            $properties = Get-GraphCollection -Uri "https://graph.microsoft.com/v1.0/applications/$applicationId/extensionProperties"
-        }
-        catch {
-            if (-not $isDeleted) {
-                Write-Warning "Unable to read the extension properties of '$($application.displayName)': $_"
+        $ownerApplication = $null
+        $isDeleted = $false
+        if ($ownerAppKey) {
+            if ($applicationsByAppId.ContainsKey($ownerAppKey)) {
+                $ownerApplication = $applicationsByAppId[$ownerAppKey]
             }
-            continue
+            elseif ($deletedApplicationsByAppId.ContainsKey($ownerAppKey)) {
+                $ownerApplication = $deletedApplicationsByAppId[$ownerAppKey]
+                $isDeleted = $true
+            }
+            else {
+                # Neither live nor in the recycle bin: the application is gone for good, which is the
+                # worst case since the extension can no longer be maintained at all.
+                $isDeleted = $true
+            }
         }
 
-        foreach ($property in $properties) {
-            $extensionDefinitions.Add([PSCustomObject]@{
-                    Name           = $property.name
-                    DataType       = $property.dataType
-                    IsMultiValued  = $property.isMultiValued
-                    TargetObjects  = ($property.targetObjects -join ', ')
-                    AppDisplayName = $application.displayName
-                    AppId          = $application.appId
-                    AppDeleted     = $isDeleted
-                    AppDeletedDate = $application.deletedDateTime
-                })
-        }
+        $extensionDefinitions.Add([PSCustomObject]@{
+                Name           = $property.name
+                DataType       = $property.dataType
+                IsMultiValued  = $property.isMultiValued
+                TargetObjects  = ($property.targetObjects -join ', ')
+                AppDisplayName = if ($ownerApplication) { $ownerApplication.displayName } else { $property.appDisplayName }
+                AppId          = if ($ownerApplication) { $ownerApplication.appId } else { $ownerAppKey }
+                AppDeleted     = $isDeleted
+                AppDeletedDate = if ($ownerApplication) { $ownerApplication.deletedDateTime } else { $null }
+            })
     }
 
     Write-Host -ForegroundColor Cyan "Found $($extensionDefinitions.Count) directory extension(s)"
@@ -240,10 +268,11 @@ function Get-MgExtensionAttributeInfo {
             [Parameter(Mandatory = $true)] [string]$AttributeName
         )
 
-        # A rule references the attribute as 'user.<name>'. The trailing word boundary
-        # matters: a plain substring match on 'user.extensionAttribute1' also hits a rule
-        # that only uses extensionAttribute15.
-        $pattern = "user\.$([regex]::Escape($AttributeName))\b"
+        # A rule addresses the attribute as 'user.<name>' or, on a device group, as
+        # 'device.<name>': both prefixes are supported for extension attributes and for
+        # directory extensions. The trailing word boundary matters: a plain substring match
+        # on 'user.extensionAttribute1' also hits a rule that only uses extensionAttribute15.
+        $pattern = "(?:user|device)\.$([regex]::Escape($AttributeName))\b"
         return @($Groups | Where-Object { $_.membershipRule -and $_.membershipRule -match $pattern })
     }
 
@@ -272,19 +301,33 @@ function Get-MgExtensionAttributeInfo {
             $count = $null
             $countError = $null
             if (-not $SkipUsageCount.IsPresent) {
-                try {
-                    $count = Get-ValueCount -Collection 'users' -Filter "onPremisesExtensionAttributes/$attributeName ne null"
+                $countIsComplete = $true
+
+                # Users and devices hold the fifteen attributes under different property names, and
+                # a membership rule can address either. Devices are counted only when asked for.
+                $countSources = [ordered]@{ users = "onPremisesExtensionAttributes/$attributeName ne null" }
+                if ($TargetObject -contains 'Device') {
+                    $countSources['devices'] = "extensionAttributes/$attributeName ne null"
                 }
-                catch {
-                    $countError = $_.Exception.Message
+
+                foreach ($collection in $countSources.Keys) {
+                    try {
+                        $count = [int]$count + (Get-ValueCount -Collection $collection -Filter $countSources[$collection])
+                    }
+                    catch {
+                        $countError = $_.Exception.Message
+                        $countIsComplete = $false
+                    }
                 }
+
+                if (-not $countIsComplete) { $count = $null }
             }
 
             $resultsArray.Add([PSCustomObject][ordered]@{
                     Kind              = 'BuiltIn'
                     AttributeName     = $attributeName
                     FriendlyName      = $attributeName
-                    TargetObjects     = 'User'
+                    TargetObjects     = if ($TargetObject -contains 'Device') { 'User, Device' } else { 'User' }
                     DataType          = 'String'
                     IsMultiValued     = $false
                     OwnerApp          = $null
@@ -314,6 +357,7 @@ function Get-MgExtensionAttributeInfo {
         $totalCount = $null
         $countError = $null
         if (-not $SkipUsageCount.IsPresent) {
+            $countIsComplete = $true
             foreach ($object in $TargetObject) {
                 # An extension declared for users only cannot be counted on devices.
                 if ($definition.TargetObjects -and $definition.TargetObjects -notmatch $object) { continue }
@@ -324,8 +368,13 @@ function Get-MgExtensionAttributeInfo {
                 }
                 catch {
                     $countError = $_.Exception.Message
+                    $countIsComplete = $false
                 }
             }
+
+            # A partial total is worse than no total: an attribute counted at zero on users and
+            # unreadable on devices would otherwise be reported as empty and offered for cleanup.
+            if (-not $countIsComplete) { $totalCount = $null }
         }
 
         $resultsArray.Add([PSCustomObject][ordered]@{
