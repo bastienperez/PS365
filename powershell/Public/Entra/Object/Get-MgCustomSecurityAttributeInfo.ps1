@@ -21,8 +21,10 @@
     Returns the attribute definitions that exist in the tenant but are assigned to no entity, instead of the
     assignments themselves. These are the cleanup candidates: a definition nobody uses still shows up in every
     attribute picker and still has to be governed.
-    The scan is the same either way, so the count of unused definitions is always reported, whether or not this
-    switch is present.
+    The scan is the same either way, so the count is always reported, whether or not this switch is present.
+    The count is only trustworthy when every entity type was scanned without error. With a restricted -EntityType,
+    or after a read failure, the result is reported as scoped: an attribute assigned only on a skipped entity type
+    would otherwise look unused.
 
     .PARAMETER ForceNewToken
     Switch parameter to force getting a new token from Microsoft Graph.
@@ -75,6 +77,7 @@
 
 function Get-MgCustomSecurityAttributeInfo {
     [CmdletBinding()]
+    [OutputType([PSCustomObject])]
     param (
         [Parameter(Mandatory = $false, Position = 0)]
         [string]$AttributeSet,
@@ -132,6 +135,10 @@ function Get-MgCustomSecurityAttributeInfo {
         $null = Connect-MgGraph -Scopes $permissionsNeeded -NoWelcome
     }
 
+    if (-not (Test-MgGraphPermission -RequiredScopes $permissionsNeeded -CallerName $MyInvocation.MyCommand.Name)) {
+        return
+    }
+
     # Discover attribute sets (used for filtering and to surface empty sets)
     Write-Host -ForegroundColor Cyan 'Retrieving attribute sets'
     try {
@@ -161,6 +168,7 @@ function Get-MgCustomSecurityAttributeInfo {
     # Definitions are needed to report the attributes that carry no assignment.
     Write-Host -ForegroundColor Cyan 'Retrieving attribute definitions'
     [System.Collections.Generic.List[PSCustomObject]]$definitionsArray = @()
+    $definitionsRetrieved = $true
     try {
         $definitionsUri = 'https://graph.microsoft.com/v1.0/directory/customSecurityAttributeDefinitions'
         do {
@@ -174,8 +182,14 @@ function Get-MgCustomSecurityAttributeInfo {
     }
     catch {
         # Not fatal: the assignment report stays valid without it.
+        $definitionsRetrieved = $false
         Write-Warning "Unable to retrieve attribute definitions, the unused report will be skipped: $_"
     }
+
+    # An attribute is only unused if every entity type was scanned without error.
+    # A restricted -EntityType, or a failed read, makes the answer scoped rather
+    # than tenant-wide, and reporting it as unused would invite a wrong deletion.
+    $scanIsComplete = -not @('User', 'Device', 'ServicePrincipal').Where({ $EntityType -notcontains $_ })
 
     [System.Collections.Generic.List[PSCustomObject]]$assignmentsArray = @()
 
@@ -247,6 +261,7 @@ function Get-MgCustomSecurityAttributeInfo {
             } while ($uri)
         }
         catch {
+            $scanIsComplete = $false
             Write-Warning "Unable to retrieve users: $_"
         }
     }
@@ -268,6 +283,7 @@ function Get-MgCustomSecurityAttributeInfo {
             } while ($uri)
         }
         catch {
+            $scanIsComplete = $false
             Write-Warning "Unable to retrieve service principals: $_"
         }
     }
@@ -289,6 +305,7 @@ function Get-MgCustomSecurityAttributeInfo {
             } while ($uri)
         }
         catch {
+            $scanIsComplete = $false
             Write-Warning "Unable to retrieve devices: $_"
         }
     }
@@ -316,8 +333,19 @@ function Get-MgCustomSecurityAttributeInfo {
         }
     }
 
-    if ($unusedArray.Count -gt 0) {
-        Write-Host -ForegroundColor Yellow "$($unusedArray.Count) attribute definition(s) out of $($definitionsArray.Count) are assigned to nobody. Use -UnusedOnly to list them."
+    if (-not $definitionsRetrieved) {
+        # Without the definitions there is nothing to subtract from, so silence is the
+        # only honest answer: an empty list here would read as "nothing unused".
+        Write-Warning 'The unused report is unavailable because the attribute definitions could not be read.'
+        if ($UnusedOnly.IsPresent) {
+            return
+        }
+    }
+    elseif ($scanIsComplete) {
+        Write-Host -ForegroundColor $(if ($unusedArray.Count -gt 0) { 'Yellow' } else { 'Green' }) "$($unusedArray.Count) attribute definition(s) out of $($definitionsArray.Count) are assigned to nobody.$(if ($unusedArray.Count -gt 0 -and -not $UnusedOnly.IsPresent) { ' Use -UnusedOnly to list them.' })"
+    }
+    else {
+        Write-Warning "$($unusedArray.Count) attribute definition(s) out of $($definitionsArray.Count) carry no assignment within the scanned scope ($($EntityType -join ', ')). The scan is partial, so these are candidates and not confirmed unused: an attribute assigned only on an entity type that was skipped or failed would appear here."
     }
 
     if ($UnusedOnly.IsPresent) {
@@ -325,27 +353,31 @@ function Get-MgCustomSecurityAttributeInfo {
             Write-Host -ForegroundColor Green 'Every attribute definition is assigned to at least one entity.'
             return
         }
-        return $unusedArray
     }
-
-    if ($assignmentsArray.Count -eq 0) {
+    elseif ($assignmentsArray.Count -eq 0) {
         Write-Host -ForegroundColor Yellow 'No entities found with custom security attributes for the requested scope.'
-        return
+        if (-not ($ExportToExcel.IsPresent -and $unusedArray.Count -gt 0)) {
+            return
+        }
     }
-
-    Write-Host -ForegroundColor Green "Found $($assignmentsArray.Count) attribute assignment(s)."
+    else {
+        Write-Host -ForegroundColor Green "Found $($assignmentsArray.Count) attribute assignment(s)."
+    }
 
     if ($ExportToExcel.IsPresent) {
         $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
         $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-MgCustomSecurityAttributeInfo.xlsx"
         Write-Host -ForegroundColor Cyan "Exporting custom security attribute report to Excel file: $excelFilePath"
 
-        # One worksheet per entity type, plus a consolidated 'All' sheet
-        $assignmentsArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'Entra-CustomSecAttr-All' -TableStyle Light9
+        # One worksheet per entity type, plus a consolidated 'All' sheet. Skipped in
+        # -UnusedOnly mode, where the assignments are not what the caller asked for.
+        if (-not $UnusedOnly.IsPresent -and $assignmentsArray.Count -gt 0) {
+            $assignmentsArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'Entra-CustomSecAttr-All' -TableStyle Light9
 
-        foreach ($type in ($assignmentsArray.EntityType | Sort-Object -Unique)) {
-            $sheetName = "Entra-CustomSecAttr-$type"
-            $assignmentsArray | Where-Object { $_.EntityType -eq $type } | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName $sheetName -TableStyle Light9
+            foreach ($type in ($assignmentsArray.EntityType | Sort-Object -Unique)) {
+                $sheetName = "Entra-CustomSecAttr-$type"
+                $assignmentsArray | Where-Object { $_.EntityType -eq $type } | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName $sheetName -TableStyle Light9
+            }
         }
 
         if ($unusedArray.Count -gt 0) {
@@ -353,6 +385,9 @@ function Get-MgCustomSecurityAttributeInfo {
         }
 
         Write-Host -ForegroundColor Green 'Export completed successfully!'
+    }
+    elseif ($UnusedOnly.IsPresent) {
+        return $unusedArray
     }
     else {
         return $assignmentsArray
