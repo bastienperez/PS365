@@ -17,6 +17,13 @@
     If specified, only entities that actually have at least one custom security attribute assignment are returned.
     This is the default behavior; the switch is kept for explicit/discoverable usage.
 
+    .PARAMETER UnusedOnly
+    Returns the attribute definitions that exist in the tenant but are assigned to no entity, instead of the
+    assignments themselves. These are the cleanup candidates: a definition nobody uses still shows up in every
+    attribute picker and still has to be governed.
+    The scan is the same either way, so the count of unused definitions is always reported, whether or not this
+    switch is present.
+
     .PARAMETER ForceNewToken
     Switch parameter to force getting a new token from Microsoft Graph.
 
@@ -39,9 +46,15 @@
     Returns assignments only for users and service principals (skips devices).
 
     .EXAMPLE
+    Get-MgCustomSecurityAttributeInfo -UnusedOnly
+
+    Returns only the attribute definitions assigned to nobody, with their set and their status.
+
+    .EXAMPLE
     Get-MgCustomSecurityAttributeInfo -ExportToExcel
 
-    Exports results to an Excel file in the user's profile directory, with one worksheet per entity type.
+    Exports results to an Excel file in the user's profile directory, with one worksheet per entity type,
+    plus an 'Unused' worksheet listing the definitions nobody uses.
 
     .NOTES
     Required Microsoft Graph permissions:
@@ -72,6 +85,9 @@ function Get-MgCustomSecurityAttributeInfo {
 
         [Parameter(Mandatory = $false)]
         [switch]$OnlyAssigned,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$UnusedOnly,
 
         [Parameter(Mandatory = $false)]
         [switch]$ForceNewToken,
@@ -141,6 +157,25 @@ function Get-MgCustomSecurityAttributeInfo {
     }
 
     Write-Host -ForegroundColor Cyan "Found $($attributeSetsList.Count) attribute set(s) to inspect"
+
+    # Definitions are needed to report the attributes that carry no assignment.
+    Write-Host -ForegroundColor Cyan 'Retrieving attribute definitions'
+    [System.Collections.Generic.List[PSCustomObject]]$definitionsArray = @()
+    try {
+        $definitionsUri = 'https://graph.microsoft.com/v1.0/directory/customSecurityAttributeDefinitions'
+        do {
+            $definitionsResponse = Invoke-MgGraphRequest -Method GET -Uri $definitionsUri -OutputType PSObject
+            foreach ($definition in $definitionsResponse.value) {
+                if (-not $attributeSetsAllowed.ContainsKey($definition.attributeSet)) { continue }
+                $definitionsArray.Add($definition)
+            }
+            $definitionsUri = $definitionsResponse.'@odata.nextLink'
+        } while ($definitionsUri)
+    }
+    catch {
+        # Not fatal: the assignment report stays valid without it.
+        Write-Warning "Unable to retrieve attribute definitions, the unused report will be skipped: $_"
+    }
 
     [System.Collections.Generic.List[PSCustomObject]]$assignmentsArray = @()
 
@@ -258,6 +293,41 @@ function Get-MgCustomSecurityAttributeInfo {
         }
     }
 
+    # Computed before the early return on an empty scan: zero assignment means
+    # every definition is unused.
+    [System.Collections.Generic.List[PSCustomObject]]$unusedArray = @()
+    if ($definitionsArray.Count -gt 0) {
+        $assignedKeys = @{}
+        foreach ($assignment in $assignmentsArray) {
+            $assignedKeys["$($assignment.AttributeSet)/$($assignment.AttributeName)"] = $true
+        }
+
+        foreach ($definition in $definitionsArray) {
+            if ($assignedKeys.ContainsKey("$($definition.attributeSet)/$($definition.name)")) { continue }
+
+            $unusedArray.Add([PSCustomObject][ordered]@{
+                    AttributeSet  = $definition.attributeSet
+                    AttributeName = $definition.name
+                    Status        = $definition.status
+                    Type          = $definition.type
+                    IsCollection  = $definition.isCollection
+                    Description   = $definition.description
+                })
+        }
+    }
+
+    if ($unusedArray.Count -gt 0) {
+        Write-Host -ForegroundColor Yellow "$($unusedArray.Count) attribute definition(s) out of $($definitionsArray.Count) are assigned to nobody. Use -UnusedOnly to list them."
+    }
+
+    if ($UnusedOnly.IsPresent) {
+        if ($unusedArray.Count -eq 0) {
+            Write-Host -ForegroundColor Green 'Every attribute definition is assigned to at least one entity.'
+            return
+        }
+        return $unusedArray
+    }
+
     if ($assignmentsArray.Count -eq 0) {
         Write-Host -ForegroundColor Yellow 'No entities found with custom security attributes for the requested scope.'
         return
@@ -276,6 +346,10 @@ function Get-MgCustomSecurityAttributeInfo {
         foreach ($type in ($assignmentsArray.EntityType | Sort-Object -Unique)) {
             $sheetName = "Entra-CustomSecAttr-$type"
             $assignmentsArray | Where-Object { $_.EntityType -eq $type } | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName $sheetName -TableStyle Light9
+        }
+
+        if ($unusedArray.Count -gt 0) {
+            $unusedArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'Entra-CustomSecAttr-Unused' -TableStyle Light9
         }
 
         Write-Host -ForegroundColor Green 'Export completed successfully!'
