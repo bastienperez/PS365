@@ -23,8 +23,9 @@
     attribute picker and still has to be governed.
     The scan is the same either way, so the count is always reported, whether or not this switch is present.
     The count is only trustworthy when every entity type was scanned without error. With a restricted -EntityType,
-    or after a read failure, the result is reported as scoped: an attribute assigned only on a skipped entity type
-    would otherwise look unused.
+    or after an entity read failure, the result is reported as scoped: an attribute assigned only on a skipped
+    entity type would otherwise look unused. A failure to read the definitions themselves is different: there is
+    nothing to compare the assignments against, so the unused report is unavailable rather than scoped.
 
     .PARAMETER ForceNewToken
     Switch parameter to force getting a new token from Microsoft Graph.
