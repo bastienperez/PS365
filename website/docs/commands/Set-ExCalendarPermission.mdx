@@ -1,0 +1,195 @@
+---
+description: Sets calendar folder permissions for a mailbox in Exchange Online.
+document type: cmdlet
+HelpUri: https://ps365.clidsys.com/docs/commands/Set-ExCalendarPermission
+Locale: en-US
+Module Name: PS365
+ms.date: 09/07/2026
+sidebarTitle: Set-ExCalendarPermission
+title: Set-ExCalendarPermission
+---
+
+# Set-ExCalendarPermission
+
+## SYNOPSIS
+
+Sets calendar folder permissions for a mailbox in Exchange Online.
+
+## SYNTAX
+
+### __AllParameterSets
+
+```
+Set-ExCalendarPermission [-Identity] <string> -AccessRights <string> -DelegateUser <string>
+ [-WhatIf] [-Confirm]
+```
+
+
+## DESCRIPTION
+
+Grants or updates calendar permissions for a delegate user on a target mailbox.
+The calendar folder is automatically resolved from the mailbox identity.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Set-ExCalendarPermission -Identity "john.doe@contoso.com" -AccessRights Reviewer -DelegateUser "jane.doe@contoso.com"
+```
+
+Grants read-only access to Jane on John's calendar.
+
+### EXAMPLE 2
+
+```powershell
+Set-ExCalendarPermission -Identity "john.doe@contoso.com" -AccessRights AvailabilityOnly -DelegateUser "jane.doe@contoso.com"
+```
+
+Grants free/busy visibility only to Jane on John's calendar.
+
+## PARAMETERS
+
+### -AccessRights
+
+The permission level to grant to the delegate user.
+Accepted values:
+
+- None                              - The user has no permissions on the folder.
+- FreeBusyTimeOnly                  - The user can view only free/busy time within the calendar.
+- FreeBusyTimeAndSubjectAndLocation - The user can view free/busy time within the calendar and the subject and location of appointments.
+- Reviewer                          - The user can read all items in the folder.
+- Contributor                       - The user can create items in the folder.
+The contents of the folder do not appear.
+- NoneditingAuthor                  - The user can create and read all items in the folder, and delete only items that the user creates.
+- Author                            - The user can create and read all items in the folder, and edit and delete only items that the user creates.
+- PublishingAuthor                  - The user can create and read all items in the folder, edit and delete only items that the user creates, and create subfolders.
+- Editor                            - The user can create, read, edit and delete all items in the folder.
+- PublishingEditor                  - The user can create, read, edit, and delete all items in the folder, and create subfolders.
+- Owner                             - The user can create, read, edit, and delete all items in the folder, and create subfolders.
+The user is both folder owner and folder contact.
+- Custom                            - The user has custom access permissions on the folder.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Confirm
+
+Prompts you for confirmation before running the cmdlet.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: ''
+SupportsWildcards: false
+Aliases:
+- cf
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -DelegateUser
+
+The user to whom the calendar permissions will be granted.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Identity
+
+The identity of the mailbox whose calendar permissions will be modified (email address, username, or display name).
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -WhatIf
+
+Runs the command in a mode that only reports what would happen without performing the actions.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: ''
+SupportsWildcards: false
+Aliases:
+- wi
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+## NOTES
+
+Requires the ExchangeOnlineManagement module and an active connection to Exchange Online.
+
+
+## RELATED LINKS
+
+_Not documented._
+

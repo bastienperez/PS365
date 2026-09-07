@@ -1,0 +1,62 @@
+---
+description: Creates the Microsoft Intune Enrollment Service Principal if it does not already exist.
+document type: cmdlet
+HelpUri: https://ps365.clidsys.com/docs/commands/New-IntuneEnrollmentServicePrincipal
+Locale: en-US
+Module Name: PS365
+ms.date: 09/07/2026
+sidebarTitle: New-IntuneEnrollmentServicePrincipal
+title: New-IntuneEnrollmentServicePrincipal
+---
+
+# New-IntuneEnrollmentServicePrincipal
+
+## SYNOPSIS
+
+Creates the Microsoft Intune Enrollment Service Principal if it does not already exist.
+
+## SYNTAX
+
+### __AllParameterSets
+
+```
+New-IntuneEnrollmentServicePrincipal
+```
+
+
+## DESCRIPTION
+
+Creates the Microsoft Intune Enrollment Service Principal if it does not already exist in your Microsoft 365 tenant.
+
+The Microsoft Intune Enrollment Service Principal (Application ID: d4ebce55-015a-49b5-a083-c84d1797ae8c) is essential for
+properly configuring Conditional Access policies that target device enrollment scenarios
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+New-IntuneEnrollmentServicePrincipal
+```
+
+Creates the Microsoft Intune Enrollment Service Principal if it doesn't already exist in the tenant.
+
+## PARAMETERS
+
+## INPUTS
+
+## OUTPUTS
+
+## NOTES
+
+Scope(s) required:
+- Application.ReadWrite.All
+Microsoft documentation:
+https://learn.microsoft.com/en-us/intune/intune-service/enrollment/multi-factor-authentication
+> The Microsoft Intune Enrollment cloud app isn't created automatically for new tenants.
+To add the app for new tenants, a Microsoft Entra administrator must create a service principal object, with app ID d4ebce55-015a-49b5-a083-c84d1797ae8c, in PowerShell or Microsoft Graph.
+
+
+## RELATED LINKS
+
+- [https://ps365.clidsys.com/docs/commands/New-IntuneEnrollmentServicePrincipal](https://ps365.clidsys.com/docs/commands/New-IntuneEnrollmentServicePrincipal)

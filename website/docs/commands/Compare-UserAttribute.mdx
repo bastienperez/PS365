@@ -1,0 +1,199 @@
+---
+description: Compare two user attributes from different sources.
+document type: cmdlet
+HelpUri: https://ps365.clidsys.com/docs/commands/Compare-UserAttribute
+Locale: en-US
+Module Name: PS365
+ms.date: 09/07/2026
+sidebarTitle: Compare-UserAttribute
+title: Compare-UserAttribute
+---
+
+# Compare-UserAttribute
+
+## SYNOPSIS
+
+Compare two user attributes from different sources.
+
+## SYNTAX
+
+### __AllParameterSets
+
+```
+Compare-UserAttribute [-Attribute1] <string> [-Attribute2] <string> [-Source] <string>
+ [[-User] <string[]>] [[-ByDomain] <string[]>] [-Return] <string>
+```
+
+
+## DESCRIPTION
+
+This function compares two specified user attributes from Active Directory, Entra ID (Microsoft Graph),
+or Exchange.
+It can filter users based on email domain or specific user identities and returns users
+whose attributes either match or do not match.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Compare-UserAttribute -Attribute1 "mail" -Attribute2 "proxyAddresses" -
+```
+
+Compares the 'mail' and 'proxyAddresses' attributes for users in Active Directory
+and returns those with matching values.
+
+### EXAMPLE 2
+
+```powershell
+Compare-UserAttribute -Attribute1 "userPrincipalName" -Attribute2 "mail" -Source "EntraID" -Return "NotMatching"
+```
+
+Compares the 'userPrincipalName' and 'mail' attributes for users in Entra ID
+and returns those with non-matching values.
+
+## PARAMETERS
+
+### -Attribute1
+
+The first user attribute to compare.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Attribute2
+
+The second user attribute to compare.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 1
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ByDomain
+
+An array of email domains to filter users.
+
+```yaml
+Type: System.String[]
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 4
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Return
+
+Specifies whether to return users with 'Matching' or 'NotMatching' attributes.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 5
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Source
+
+The source from which to retrieve user information.
+Valid options are 'AD' for Active Directory, 'EntraID' for Microsoft Entra ID, and 'Exchange' for Exchange.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 2
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -User
+
+An array of user identities to filter the comparison.
+
+```yaml
+Type: System.String[]
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 3
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+## NOTES
+
+## RELATED LINKS
+
+- [https://ps365.clidsys.com/docs/commands/Compare-UserAttribute](https://ps365.clidsys.com/docs/commands/Compare-UserAttribute)

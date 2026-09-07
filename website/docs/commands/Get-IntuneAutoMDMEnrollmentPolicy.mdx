@@ -1,0 +1,99 @@
+---
+description: Retrieves the current MDM enrollment policy for Microsoft Entra ID.
+document type: cmdlet
+HelpUri: https://ps365.clidsys.com/docs/commands/Get-IntuneAutoMDMEnrollmentPolicy
+Locale: en-US
+Module Name: PS365
+ms.date: 09/07/2026
+sidebarTitle: Get-IntuneAutoMDMEnrollmentPolicy
+title: Get-IntuneAutoMDMEnrollmentPolicy
+---
+
+# Get-IntuneAutoMDMEnrollmentPolicy
+
+## SYNOPSIS
+
+Retrieves the current MDM enrollment policy for Microsoft Entra ID.
+
+## SYNTAX
+
+### __AllParameterSets
+
+```
+Get-IntuneAutoMDMEnrollmentPolicy [-AsObject]
+```
+
+
+## DESCRIPTION
+
+This function retrieves the current state of automatic MDM enrollment during device 
+registration in Microsoft Entra ID.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Get-IntuneAutoMDMEnrollmentPolicy
+```
+
+Retrieves the current MDM enrollment policy state (Enabled/Disabled).
+
+### EXAMPLE 2
+
+```powershell
+Get-IntuneAutoMDMEnrollmentPolicy -AsObject
+```
+
+Retrieves the complete policy object from Microsoft Graph.
+
+## PARAMETERS
+
+### -AsObject
+
+When specified, returns the complete policy object instead of just the state.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+### String - Returns 'Enabled' or 'Disabled' by default
+PSObject - Returns full policy object when -AsObject is used
+
+_Not documented._
+
+## NOTES
+
+Requires the following Microsoft Graph permissions:
+- Policy.Read.All
+
+Connect-MgGraph -Scopes 'Policy.Read.All'
+
+
+## RELATED LINKS
+
+- [https://ps365.clidsys.com/docs/commands/Get-IntuneAutoMDMEnrollmentPolicy](https://ps365.clidsys.com/docs/commands/Get-IntuneAutoMDMEnrollmentPolicy)

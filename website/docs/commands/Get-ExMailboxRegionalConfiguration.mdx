@@ -1,0 +1,176 @@
+---
+description: Get the regional configuration of Exchange Online mailboxes.
+document type: cmdlet
+HelpUri: https://ps365.clidsys.com/docs/commands/Get-ExMailboxRegionalConfiguration
+Locale: en-US
+Module Name: PS365
+ms.date: 09/07/2026
+sidebarTitle: Get-ExMailboxRegionalConfiguration
+title: Get-ExMailboxRegionalConfiguration
+---
+
+# Get-ExMailboxRegionalConfiguration
+
+## SYNOPSIS
+
+Get the regional configuration of Exchange Online mailboxes.
+
+## SYNTAX
+
+### __AllParameterSets
+
+```
+Get-ExMailboxRegionalConfiguration [[-Identity] <string>] [-ByDomain <string>] [-ExportToExcel]
+ [-ExportPath <string>]
+```
+
+
+## DESCRIPTION
+
+This function retrieves the regional configuration settings (language, time zone, date format, time format)
+for Exchange Online mailboxes.
+It can filter mailboxes by identity or by domain.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Get-ExMailboxRegionalConfiguration
+```
+
+Retrieves the regional configuration for all Exchange Online mailboxes.
+
+### EXAMPLE 2
+
+```powershell
+Get-ExMailboxRegionalConfiguration -Identity "user@example.com"
+```
+
+Retrieves the regional configuration for the specified mailbox.
+
+### EXAMPLE 3
+
+```powershell
+Get-ExMailboxRegionalConfiguration -ByDomain "example.com"
+```
+
+Retrieves the regional configuration for all mailboxes in the specified domain.
+
+### EXAMPLE 4
+
+```powershell
+Get-ExMailboxRegionalConfiguration -ExportToExcel
+```
+
+Exports results to an Excel file.
+
+## PARAMETERS
+
+### -ByDomain
+
+The domain to filter mailboxes by.
+Only mailboxes with a primary SMTP address in this
+domain will be processed.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ExportPath
+
+Optional output directory for the Excel export (defaults to the user profile).
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ExportToExcel
+
+If specified, exports the results to an Excel file in the user's profile directory.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Identity
+
+The identity of the mailbox to retrieve the regional configuration for.
+If not specified, the function retrieves the configuration for all mailboxes.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: false
+  ValueFromPipeline: true
+  ValueFromPipelineByPropertyName: true
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+### System.String
+
+_Not documented._
+
+## OUTPUTS
+
+## NOTES
+
+## RELATED LINKS
+
+- [https://ps365.clidsys.com/docs/commands/Get-ExMailboxRegionalConfiguration](https://ps365.clidsys.com/docs/commands/Get-ExMailboxRegionalConfiguration)

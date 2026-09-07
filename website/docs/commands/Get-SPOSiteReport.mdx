@@ -1,0 +1,954 @@
+---
+description: Builds an inventory report of every SharePoint Online site of the tenant using PnP.PowerShell app-only.
+document type: cmdlet
+HelpUri: https://ps365.clidsys.com/docs/commands/Get-SPOSiteReport
+Locale: en-US
+Module Name: PS365
+ms.date: 09/07/2026
+sidebarTitle: Get-SPOSiteReport
+title: Get-SPOSiteReport
+---
+
+# Get-SPOSiteReport
+
+## SYNOPSIS
+
+Builds an inventory report of every SharePoint Online site of the tenant using PnP.PowerShell app-only.
+
+## SYNTAX
+
+### __AllParameterSets
+
+```
+Get-SPOSiteReport [-ClientId] <string> [-Tenant] <string> [[-CertificateThumbprint] <string>]
+ [[-CertificatePath] <string>] [[-CertificatePassword] <securestring>]
+ [[-CertificateBase64Encoded] <string>] [[-AdminUrl] <string>] [[-SiteUrl] <string>]
+ [[-ExcludeGeo] <string[]>] [[-ThrottleLimit] <int>] [[-ExcelTemplatePath] <string>]
+ [[-ExportPath] <string>] [-ExcludeOneDrive] [-OnlyOneDrive] [-IncludeAllDetails]
+ [-IncludeSiteAdmins] [-IncludeSiteMembers] [-IncludeSiteVisitors] [-IncludeSharingLinks]
+ [-IncludeSharingLinksDetails] [-RegionalSettingsDetails] [-M365GroupsDetails] [-ExportToExcel]
+ [-ExportToHtml] [-MultiGeoStats]
+```
+
+
+## DESCRIPTION
+
+Get-SPOSiteReport collects the configuration of the SharePoint Online sites: storage quota and usage,
+site collection administrators, site Owners/Members/Visitors, external sharing settings, sensitivity
+label, default sharing links, conditional access policy and hub site membership.
+
+The function connects with PnP.PowerShell in app-only mode (Entra app registration plus a certificate).
+This is the only reliable way to read site-level data (site collection administrators, site groups,
+regional settings) across every site of the tenant: the SharePoint Administrator role alone grants
+access to the admin center, not to the content of each site, so a delegated connection returns
+Access Denied on Get-PnPSiteCollectionAdmin.
+An app registration holding the SharePoint
+Sites.FullControl.All application permission bypasses the site collection admin requirement.
+
+That permission covers the personal OneDrive sites as well: they are ordinary site collections of the
+-my.sharepoint.com host, so they are enumerated and read exactly like any other site (use ExcludeOneDrive
+or OnlyOneDrive to filter them).
+The one documented exception is the list of site collection
+administrators of a OneDrive site, which stays invisible even under this permission: see SECONDARY
+ADMINISTRATORS ON ONEDRIVE SITES ARE NOT CAPTURED under the IncludeSiteAdmins parameter.
+
+Client secrets are not supported by SharePoint for app-only: a certificate is mandatory.
+Provide it
+through CertificateThumbprint (Windows certificate store), CertificatePath (.pfx file) or
+CertificateBase64Encoded (base64 string, handy for Azure Automation or a pipeline variable).
+
+The site-level collection runs in parallel (ForEach-Object -Parallel) with one PnP connection per site.
+Tune the concurrency with ThrottleLimit.
+PowerShell 7 is required.
+
+UNIFORM MEMBERS/OWNERS MODEL
+On a site connected to a Microsoft 365 group, the SharePoint site collection administrators and the
+Owners/Members/Visitors groups do not list individual users: they list a single claim placeholder that
+represents the whole group, of the form 'federateddirectoryclaimprovider|&lt;groupId&gt;_o' (group Owners) or
+'federateddirectoryclaimprovider|&lt;groupId&gt;' (group Members).
+Get-SPOSiteReport resolves these claims in
+a second pass, so the *Resolved columns list actual users regardless of the site type (classic site,
+group-connected site, with or without a Microsoft Teams team).
+Two well-known non-user claims are also
+labelled for readability: the 'Everyone' claim and the 'Everyone except external users' claim.
+Any claim
+that cannot be resolved (deleted group, insufficient Graph permission) is reported as '&lt;unresolved:guid&gt;'
+and counted in the ClaimResolutionErrorCount summary at the end of the run.
+
+PROVENANCE OF EACH RESOLVED IDENTITY
+Every identity in a *Resolved column is annotated so you can tell how it got its rights:
+- No annotation: the user is directly assigned to that SharePoint group/role (individual claim).
+- "&lt;user&gt; (via M365 group '&lt;name&gt;' Owners)" or "...
+Members)": the user only has rights because they
+  belong to that Microsoft 365 group, which itself was added to the SharePoint group/role as a whole.
+The same user can legitimately appear twice for the same site - once without annotation (direct) and
+once with it (also a member of a group that was added) - that is not a duplicate, it reflects two
+distinct sources of access.
+The group's display name is resolved once per distinct group for the whole
+run and falls back to its GUID if that lookup fails (deleted group, insufficient Graph permission).
+
+M365GROUPSDETAILS - APP-ONLY REQUIREMENT
+M365GroupsDetails is served entirely through the PnP app-only connection already opened by this
+function (Get-PnPMicrosoft365Group, Get-PnPTeamsTeam, Get-PnPTeamsChannel, Get-PnPTeamsUser,
+Get-PnPMicrosoft365GroupOwner, Get-PnPMicrosoft365GroupMember): no Exchange Online or Microsoft Teams
+session is needed.
+The Entra app registration must additionally hold the Microsoft Graph application
+permission Group.ReadWrite.All (or Group.Read.All for the read-only subset), on top of the SharePoint
+Sites.FullControl.All permission used for the rest of the report, both consented on the same certificate.
+
+The retrieval is scoped to what the run actually needs.
+Only a site carrying a GroupId can have a group
+behind it, so that list is computed first: when no site in scope is group-connected (a OneDrive-only run,
+or SiteUrl on a classic site) nothing is retrieved at all, and up to 25 group-connected sites are looked
+up one by one.
+The tenant-wide enumeration - which is expensive, since IncludeSiteUrl and IncludeOwners
+each add their own Graph work per group - only kicks in beyond that, where it becomes the cheaper option.
+
+MULTI-GEO TENANTS
+By default, every geo location of a Multi-Geo tenant is enumerated automatically (detected via
+Get-PnPTenantInstance): the function opens one additional PnP connection per satellite geo admin center
+purely to list its sites, merges every site into a single result set, and tags each one with a Geo
+column so its origin stays visible.
+The site-level detail collection and the Microsoft 365 group layer
+do not need any geo-specific handling: the former connects directly to each site's own URL (already
+geo-specific), and Microsoft 365 groups are Entra ID directory objects, not partitioned by geo.
+This
+only happens for the full tenant-wide report: SiteUrl (single site) and an explicitly supplied AdminUrl
+(one geo targeted on purpose) both stay single-geo, exactly as before.
+On a single-geo tenant this adds
+one harmless detection call and otherwise behaves exactly as before.
+Use ExcludeGeo to skip one or more
+geo locations entirely (for example one that is too noisy for the report at hand) - MultiGeoStats
+reflects the same exclusion automatically, since it aggregates the sites this enumeration already produced.
+
+Optional switches enrich the report:
+- IncludeSiteAdmins adds the full list of site collection administrators of each site (raw and resolved).
+- IncludeSiteMembers adds the site Owners and Members, resolved through the model described above.
+- IncludeSiteVisitors adds the site Visitors on top of IncludeSiteMembers.
+Kept separate because the
+  Visitors group is often large (for example 'Everyone except external users') and less relevant to a
+  rights audit than Owners/Members.
+- IncludeSharingLinks adds a per-site count of the existing sharing links, broken down by link type.
+- IncludeSharingLinksDetails drills into those links file by file, through Get-SPOSharingLinkReport.
+- RegionalSettingsDetails adds the time zone, hour format and locale of each site.
+- M365GroupsDetails adds the Microsoft 365 group and Microsoft Teams layer of the group-connected sites.
+
+Each of these switches literally adds its columns to the output objects: without the switch, the columns
+are absent, not empty.
+This is deliberate - an empty SiteAdmins column would read as "this site has no
+administrator", where the truth is "this was not collected".
+A column that is present but empty therefore
+always means the data really is empty (or could not be read, see the Status counters at the end of a run).
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Get-SPOSiteReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificateThumbprint $thumb -MultiGeoStats
+```
+
+Returns, per Multi-Geo location (or a single row on a single-geo tenant), the total number of sites,
+the number of SharePoint sites and the number of OneDrive sites - without collecting any other detail.
+
+### EXAMPLE 2
+
+```powershell
+Get-SPOSiteReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificateThumbprint $thumb -MultiGeoStats -ExportToExcel
+```
+
+Exports the per-geo site counts to an Excel file (worksheet 'SharePoint-MultiGeoStats') instead of
+returning the objects.
+
+### EXAMPLE 3
+
+```powershell
+Get-SPOSiteReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificateThumbprint $thumb
+```
+
+Returns every SharePoint Online site of the tenant, including the personal OneDrive sites, using an
+app-only connection based on a certificate from the Windows certificate store.
+On a Multi-Geo tenant,
+this automatically covers every geo location and tags each site with its Geo column; on a single-geo
+tenant it behaves exactly like a normal full report.
+
+### EXAMPLE 4
+
+```powershell
+Get-SPOSiteReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -AdminUrl 'https://contosodeu-admin.sharepoint.com' -CertificateThumbprint $thumb
+```
+
+Restricts the report to a single Multi-Geo location by supplying its admin center URL explicitly -
+the automatic loop over every geo does not run in this case.
+
+### EXAMPLE 5
+
+```powershell
+Get-SPOSiteReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificateThumbprint $thumb -ExcludeGeo 'CHE', 'TWN'
+```
+
+Enumerates every Multi-Geo location except CHE and TWN, still looping automatically over the rest.
+
+### EXAMPLE 6
+
+```powershell
+Get-SPOSiteReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificateBase64Encoded $certB64 -ExcludeOneDrive -IncludeSiteAdmins -IncludeSiteMembers
+```
+
+Returns the SharePoint sites without the OneDrive ones and adds the site collection administrators plus
+the Owners and Members of each site, with individual users resolved even on group-connected sites.
+
+### EXAMPLE 7
+
+```powershell
+Get-SPOSiteReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificatePath 'C:\Certs\app.pfx' -CertificatePassword $pwd -SiteUrl 'https://contoso.sharepoint.com/sites/marketing' -RegionalSettingsDetails
+```
+
+Returns a single site with its regional settings, using a .pfx certificate file.
+
+### EXAMPLE 8
+
+```powershell
+Get-SPOSiteReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificateThumbprint $thumb -M365GroupsDetails -ExportToExcel
+```
+
+Adds the Microsoft 365 group and Microsoft Teams layer (Owners, Members, Guests, Teams metadata) using
+only the PnP app-only connection, and exports the results to an Excel file in the user profile directory.
+
+### EXAMPLE 9
+
+```powershell
+Get-SPOSiteReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificateThumbprint $thumb -ExportToExcel -ExcelTemplatePath 'C:\Templates\SPOSiteReport-Template.xlsx'
+```
+
+Exports the results into a copy of the given template, keeping any other worksheet, formatting or
+logo already present in the template file.
+
+### EXAMPLE 10
+
+```powershell
+Get-SPOSiteReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificateThumbprint $thumb -IncludeSharingLinks | Where-Object { $_.SharingLinksAnyoneCount -gt 0 }
+```
+
+Lists the sites holding at least one anonymous 'Anyone with the link' sharing link.
+Pipe the result to
+Get-SPOSharingLinkReport to get the file-level detail of those links on the sites that came out.
+
+### EXAMPLE 11
+
+```powershell
+$report = Get-SPOSiteReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificateThumbprint $thumb -IncludeSharingLinksDetails
+$report[0].SharingLinksDetails | Format-Table ItemName, LinkType, SharedWith, ExpirationDateTime
+```
+
+Same triage, in one command: the counts decide which sites deserve the file-level pass, and each site
+object carries its own links in SharingLinksDetails.
+Add -ExportToExcel to get them as a second
+worksheet instead.
+
+### EXAMPLE 12
+
+```powershell
+Get-SPOSiteReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificateThumbprint $thumb -ExcludeOneDrive -IncludeAllDetails -ExportToExcel
+```
+
+Turns on every detail switch (site admins, Owners/Members/Visitors, regional settings, Microsoft 365
+group and Teams layer) in one go, without having to remember each switch name individually.
+
+### EXAMPLE 13
+
+```powershell
+Get-SPOSiteReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificateThumbprint $thumb -ExcludeOneDrive -IncludeAllDetails -ExportToHtml
+```
+
+Generates a single self-contained HTML file with a collapsible rights tree per site (Admins, Owners,
+Members, Visitors, with identities inherited from a nested Microsoft 365 group shown separately), and
+opens it automatically.
+
+## PARAMETERS
+
+### -AdminUrl
+
+(Optional) URL of the SharePoint admin center, for example https://contoso-admin.sharepoint.com.
+When omitted, it is derived from the tenant name of the Tenant parameter.
+Provide it explicitly
+when Tenant is a vanity domain (for example contoso.com) rather than an onmicrosoft.com domain.
+On a Multi-Geo tenant, supplying AdminUrl explicitly restricts the whole report to that one geo: the
+automatic loop over every geo (see MULTI-GEO TENANTS above) only runs when AdminUrl is omitted and
+derived automatically from Tenant.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 6
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -CertificateBase64Encoded
+
+Base64-encoded certificate (with its private key) passed directly to Connect-PnPOnline.
+Provide exactly one of CertificateThumbprint, CertificatePath or CertificateBase64Encoded.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 5
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -CertificatePassword
+
+(Optional) SecureString password protecting the .pfx file passed to CertificatePath.
+
+```yaml
+Type: System.Security.SecureString
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 4
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -CertificatePath
+
+Path to a local .pfx certificate file.
+Use CertificatePassword when the file is protected.
+Provide exactly one of CertificateThumbprint, CertificatePath or CertificateBase64Encoded.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 3
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -CertificateThumbprint
+
+Thumbprint of the certificate located in the current user's Windows certificate store.
+Provide exactly one of CertificateThumbprint, CertificatePath or CertificateBase64Encoded.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 2
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ClientId
+
+(Mandatory) Application (client) ID of the Entra app registration used for the app-only connection.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ExcelTemplatePath
+
+(Optional) Path to an existing .xlsx file used as a template for the Excel export.
+The template is
+copied to the destination path first, then the report data is written into a 'SharePoint-SiteReport'
+worksheet in that copy: any other worksheet, formatting or logo already present in the template is left
+untouched.
+Ignored when ExportToExcel is not specified.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 10
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ExcludeGeo
+
+(Optional) On a Multi-Geo tenant, excludes one or more geo locations from the automatic enumeration (see
+MULTI-GEO TENANTS above), matched by their geo code (for example 'CHE', 'TWN' - case-insensitive).
+Handy
+when a specific geo has a lot of noise that is not relevant to the current report.
+Tab-completes against
+the official Microsoft 365 Geography (PreferredDataLocation) codes, but any value is accepted - the
+completer is a suggestion only, not a restriction, so a geo code not yet in that list still works.
+A geo
+name that does not match any detected location is ignored with a warning; excluding every detected geo
+returns nothing with a warning rather than silently producing an empty report.
+Has no effect when
+SiteUrl or an explicit AdminUrl already restrict the report to a single geo.
+
+```yaml
+Type: System.String[]
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 8
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ExcludeOneDrive
+
+(Optional) Excludes the personal OneDrive sites from the report.
+Cannot be combined with OnlyOneDrive.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ExportPath
+
+(Optional) Output directory for the Excel or HTML export.
+Defaults to the user profile.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 11
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ExportToExcel
+
+(Optional) If specified, exports the results to an Excel file in the user's profile directory.
+Cannot be combined with ExportToHtml: only one export format is produced per call.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ExportToHtml
+
+(Optional) If specified, exports the results as a single self-contained HTML file (no external
+dependency, works offline) instead of returning the objects.
+Every site is rendered as a collapsible
+tree: Site Collection Admins / Owners / Members / Visitors, each showing the individual users
+resolved through the claim model above, with identities inherited from a nested Microsoft 365 group
+shown under their own collapsible sub-node (name and role of that group).
+A search box filters sites
+by title or URL, useful when the tenant has many sites.
+The file opens automatically once written.
+Cannot be combined with ExportToExcel: only one export format is produced per call.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -IncludeAllDetails
+
+(Optional) Shorthand that turns on IncludeSiteAdmins, IncludeSiteMembers, IncludeSiteVisitors,
+IncludeSharingLinks, RegionalSettingsDetails and M365GroupsDetails all at once, so you don't have to remember and list
+each one individually.
+Does NOT affect ExcludeOneDrive/OnlyOneDrive: those are mutually exclusive
+site filters, not detail enrichment, and are left untouched.
+Individual switches passed alongside
+IncludeAllDetails have no additional effect (everything is already on).
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -IncludeSharingLinks
+
+(Optional) Adds five columns counting the sharing links that currently exist on each site:
+SharingLinksAnyoneCount (anonymous 'Anyone with the link'), SharingLinksCompanyCount (people in the organization),
+SharingLinksFlexibleCount, SharingLinksOtherCount and SharingLinksTotalCount.
+Meant as a triage indicator: it answers
+"which sites have an exposure worth looking at", not "which file is shared with whom".
+
+SharingLinksFlexibleCount deserves a word: Flexible is the modern SharePoint link type, whose scope is
+set per link.
+The group name says the link exists, not whether it is restricted to named people or open
+to anyone holding it, and this report will not guess - counting Flexible links as 'specific people'
+would make SharingLinksAnyoneCount read as zero on a site that may well be exposing an anonymous link.
+A high SharingLinksFlexibleCount therefore means "worth resolving", which is what
+Get-SPOSharingLinkReport -IncludeGraphDetails does.
+
+SharePoint stores every sharing link as a hidden site group named
+'SharingLinks.&lt;itemGuid&gt;.&lt;linkType&gt;.&lt;linkGuid&gt;', so this switch only costs one extra Get-PnPGroup call
+per site, and it reuses the app-only connection already opened for the site.
+The link type is derived
+from that group name (AnonymousEdit/AnonymousView, OrganizationEdit/OrganizationView, Flexible); since
+the naming is an internal SharePoint convention rather than a documented API, any unknown type is
+counted in SharingLinksOtherCount instead of being dropped.
+A non-zero SharingLinksOtherCount is worth investigating:
+it usually means a link type this function does not know about yet.
+
+What it deliberately does not provide: which file or folder is shared, and with whom.
+Use
+IncludeSharingLinksDetails, or Get-SPOSharingLinkReport directly, on the sites this report flags.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -IncludeSharingLinksDetails
+
+(Optional) Drill-down of IncludeSharingLinks (which it turns on automatically): instead of stopping at
+the counts, each link is resolved down to the file or folder it points at and to the people it was
+shared with.
+The work is delegated to Get-SPOSharingLinkReport, which can also be called on its own.
+
+Only the sites whose counts came back non-zero are visited, so the pass is naturally limited to the
+sites that actually have something to show.
+It still opens one connection per site and resolves every
+shared item, which is why IncludeAllDetails does NOT turn this switch on - it has to be asked for
+explicitly.
+
+No Microsoft Graph permission is involved: the drill-down runs in the Graph-free mode of
+Get-SPOSharingLinkReport, where the shared-with list comes from the members of the SharingLinks group
+itself.
+The columns Graph alone can provide - link URL, expiration date, password protection, download
+block, and the resolved scope of a Flexible link - are therefore absent here.
+Call
+Get-SPOSharingLinkReport -IncludeGraphDetails yourself when you need them, after reading the permission
+trade-off documented in that function.
+
+Shape of the output: every site object receives a SharingLinksDetails property holding the collection of
+its own links (an empty collection when it has none, never $null), so the report stays one object per
+site and the drill-down is $site.SharingLinksDetails.
+With ExportToExcel, that nested property is
+dropped from the main worksheet - a cell cannot hold a collection - and the links are written to their
+own SharePoint-SharingLinks worksheet, one link per row.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -IncludeSiteAdmins
+
+(Optional) Adds the full list of site collection administrators of each site, resolved with
+Get-PnPSiteCollectionAdmin, plus their resolved identities (SiteAdminsResolved).
+Requires the app-only
+connection described above.
+
+SECONDARY ADMINISTRATORS ON ONEDRIVE SITES ARE NOT CAPTURED
+SharePoint Administrators or Global Administrators cannot view the site collection administrators of a
+OneDrive site by default: they must be explicitly added as a site collection administrator on that
+specific OneDrive site to gain visibility into its admin list.
+Because of this restriction,
+Get-PnPSiteCollectionAdmin - which this switch relies on - does not pick up secondary administrators on
+OneDrive sites, even under the app-only certificate used by this function (see
+https://github.com/pnp/powershell/discussions/4697).
+Expect SiteAdmins/SiteAdminsResolved to be
+incomplete or empty for OneDrive sites: this is not a bug in this function, it reflects what the
+connection is actually allowed to see.
+The 'My Site Secondary Admin' admin center page (reminded at the
+end of every run) remains the only reliable source for OneDrive secondary administrators.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -IncludeSiteMembers
+
+(Optional) Adds the site Owners and Members groups of each site (Get-PnPGroup -AssociatedOwnerGroup /
+-AssociatedMemberGroup), raw and resolved through the claim resolution model described above.
+This is
+the reliable, site-type-agnostic replacement for auditing who effectively has rights on a site.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -IncludeSiteVisitors
+
+(Optional) Adds the site Visitors group of each site (Get-PnPGroup -AssociatedVisitorGroup), raw and
+resolved.
+Kept separate from IncludeSiteMembers because this group is often large and less relevant
+to a rights audit.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -M365GroupsDetails
+
+(Optional) Adds the Microsoft 365 group and Microsoft Teams details of the group-connected sites, served
+entirely through the PnP app-only connection (see the app-only requirement note above).
+No prior
+Exchange Online or Microsoft Teams session is needed.
+This switch significantly increases the execution time on large tenants.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -MultiGeoStats
+
+(Optional) Skips every detailed collection (site collection admins, Owners/Members/Visitors, regional
+settings, Microsoft 365 group and Teams layer) and returns only a per-geo site count: GeoName,
+IsDefaultGeo, AdminUrl, TotalSites, SharePointSites and OneDriveSites.
+Since the full report already
+enumerates every geo of a Multi-Geo tenant by default (see MULTI-GEO TENANTS in the description), this
+switch performs no connection or enumeration of its own: it simply groups the sites already merged
+above by their Geo tag and computes the same aggregates.
+It remains the fast, zero-per-site-connection
+mode - it still skips the detailed per-site collection entirely, it just no longer duplicates the site
+enumeration work.
+Combine with SiteUrl or an explicit AdminUrl to restrict the aggregation to that one
+site/geo, exactly like the full report does.
+ExportToExcel is honored (worksheet
+'SharePoint-MultiGeoStats', ExcelTemplatePath applies too); ExportToHtml is ignored, since that export
+renders the detailed rights tree, which does not apply to a stats-only run.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -OnlyOneDrive
+
+(Optional) Restricts the report to the personal OneDrive sites.
+Cannot be combined with ExcludeOneDrive.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -RegionalSettingsDetails
+
+(Optional) Adds the regional settings of each site (time zone, hour format, locale), read with Get-PnPWeb.
+This switch significantly increases the execution time on large tenants.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -SiteUrl
+
+(Optional) Restricts the report to a single site collection URL.
+When omitted, every site of the tenant
+is processed.
+Always single-site/single-geo: the automatic Multi-Geo enumeration never applies when
+SiteUrl is used.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 7
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Tenant
+
+(Mandatory) Tenant domain name for the PnP connection, for example contoso.onmicrosoft.com.
+Used by Connect-PnPOnline (it expects the domain, not the tenant GUID).
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 1
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ThrottleLimit
+
+(Optional) Maximum number of sites processed concurrently by the parallel site-level collection.
+Default is 8.
+
+```yaml
+Type: System.Int32
+DefaultValue: 8
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 9
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+## NOTES
+
+## RELATED LINKS
+
+- [https://ps365.clidsys.com/docs/commands/Get-SPOSiteReport](https://ps365.clidsys.com/docs/commands/Get-SPOSiteReport)

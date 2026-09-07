@@ -1,0 +1,178 @@
+---
+description: Lists Exchange Online mailboxes with an @onmicrosoft.com email address
+document type: cmdlet
+HelpUri: https://ps365.clidsys.com/docs/commands/Get-ExMailboxOnMicrosoftAddress
+Locale: en-US
+Module Name: PS365
+ms.date: 09/07/2026
+sidebarTitle: Get-ExMailboxOnMicrosoftAddress
+title: Get-ExMailboxOnMicrosoftAddress
+---
+
+# Get-ExMailboxOnMicrosoftAddress
+
+## SYNOPSIS
+
+Lists Exchange Online mailboxes with an @onmicrosoft.com email address
+
+## SYNTAX
+
+### __AllParameterSets
+
+```
+Get-ExMailboxOnMicrosoftAddress [[-Identity] <string[]>] [-ByDomain <string>] [-ExportToExcel]
+ [-ExportPath <string>]
+```
+
+
+## DESCRIPTION
+
+Retrieves Exchange Online mailboxes that have an email address ending with @onmicrosoft.com.
+Returns an object for each mailbox with relevant details.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Get-ExMailboxOnMicrosoftAddress
+```
+
+Returns objects containing mailbox details for those with @onmicrosoft.com addresses.
+
+### EXAMPLE 2
+
+```powershell
+Get-ExMailboxOnMicrosoftAddress -ByDomain "contoso.com"
+```
+
+Returns mailboxes with @onmicrosoft.com addresses filtered by the specified domain.
+
+### EXAMPLE 3
+
+```powershell
+Get-ExMailboxOnMicrosoftAddress -Identity "user@contoso.com"
+```
+
+Returns the @onmicrosoft.com address for the specified mailbox identity.
+
+### EXAMPLE 4
+
+```powershell
+$mailboxes | Get-ExMailboxOnMicrosoftAddress
+```
+
+### EXAMPLE 5
+
+```powershell
+Get-ExMailboxOnMicrosoftAddress -ExportToExcel
+```
+
+Exports results to an Excel file.
+
+## PARAMETERS
+
+### -ByDomain
+
+_Not documented._
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ExportPath
+
+Optional output directory for the Excel export (defaults to the user profile).
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ExportToExcel
+
+If specified, exports the results to an Excel file in the user's profile directory.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Identity
+
+_Not documented._
+
+```yaml
+Type: System.String[]
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: false
+  ValueFromPipeline: true
+  ValueFromPipelineByPropertyName: true
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+### System.String[]
+
+_Not documented._
+
+## OUTPUTS
+
+## NOTES
+
+## RELATED LINKS
+
+- [https://ps365.clidsys.com/docs/commands/Get-ExMailboxOnMicrosoftAddress](https://ps365.clidsys.com/docs/commands/Get-ExMailboxOnMicrosoftAddress)

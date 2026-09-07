@@ -1,0 +1,120 @@
+---
+description: Tests whether delegates with calendar folder permissions still exist.
+document type: cmdlet
+HelpUri: https://ps365.clidsys.com/docs/commands/Test-ExCalendarPermission
+Locale: en-US
+Module Name: PS365
+ms.date: 09/07/2026
+sidebarTitle: Test-ExCalendarPermission
+title: Test-ExCalendarPermission
+---
+
+# Test-ExCalendarPermission
+
+## SYNOPSIS
+
+Tests whether delegates with calendar folder permissions still exist.
+
+## SYNTAX
+
+### __AllParameterSets
+
+```
+Test-ExCalendarPermission [-Mailbox] <string> [[-DelegateStatus] <string>]
+```
+
+
+## DESCRIPTION
+
+Retrieves the calendar folder permissions for a given mailbox and checks
+whether each delegate (the person the calendar was shared with) is still
+a valid recipient.
+Default and anonymous entries are excluded.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Test-ExCalendarPermission -Mailbox "user@domain.com"
+```
+
+Tests all calendar permissions for the specified mailbox and returns a list of delegates with their existence status.
+
+### EXAMPLE 2
+
+```powershell
+Test-ExCalendarPermission -Mailbox "user@domain.com" -DelegateStatus Missing
+```
+
+Tests calendar permissions for the specified mailbox and returns only delegates that no longer exist as recipients (orphaned permissions).
+
+## PARAMETERS
+
+### -DelegateStatus
+
+Filters the results based on whether the delegate (the person with whom
+the calendar has been shared, i.e.
+who appears in the calendar folder
+permissions) still exists as a valid recipient in the tenant.
+- All       : returns every delegate, regardless of existence (default).
+- Existing  : returns only delegates that still exist as recipients.
+- Missing   : returns only delegates that no longer exist (orphaned
+              permissions left behind after the account was deleted).
+
+```yaml
+Type: System.String
+DefaultValue: All
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 1
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Mailbox
+
+The mailbox to inspect (e.g.
+user@domain.com).
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+## NOTES
+
+## RELATED LINKS
+
+_Not documented._
+
