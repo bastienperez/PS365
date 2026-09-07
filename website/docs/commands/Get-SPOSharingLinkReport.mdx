@@ -43,7 +43,7 @@ and asks Graph for the links of the ones that have unique permissions.
 That is one round trip per file,
 which does not survive a real tenant.
 This function inverts the problem: SharePoint already materialises
-every sharing link as a hidden site group named 'SharingLinks.<itemUniqueId>.<linkType>.<linkGuid>', so a
+every sharing link as a hidden site group named 'SharingLinks.`<itemUniqueId>`.`<linkType>`.`<linkGuid>`', so a
 single Get-PnPGroup call per site yields the exact list of items that carry a link.
 Only those items are
 then resolved and queried.
@@ -499,7 +499,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ### System.String[]
 
-{{ Fill in the Description }}
+_Not documented._
 
 ## OUTPUTS
 

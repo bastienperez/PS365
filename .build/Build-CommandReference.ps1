@@ -32,6 +32,21 @@ else { New-Item -ItemType Directory -Path $commandsFolder -Force | Out-Null }
 $tempFolder = Join-Path ([System.IO.Path]::GetTempPath()) "ps365-docs-$([guid]::NewGuid())"
 New-Item -ItemType Directory -Path $tempFolder -Force | Out-Null
 
+# Applies $Transform to the markdown outside of fenced ``` code blocks only. Mintlify's MDX
+# parser treats "{...}" as a JS expression and bare "<word>" as an HTML/JSX tag; comment-based
+# help routinely uses both as plain-text placeholders (e.g. "{{ Fill in the Description }}",
+# "<service-principal-id>"), which breaks the page build. Code fences are already safe (MDX does
+# not parse their content), so they must be left untouched.
+function Repair-MdxProseText {
+    param([string]$Content, [scriptblock]$Transform)
+
+    $parts = [regex]::Split($Content, '(?s)(```.*?```)')
+    for ($i = 0; $i -lt $parts.Count; $i++) {
+        if ($i % 2 -eq 0) { $parts[$i] = & $Transform $parts[$i] }
+    }
+    return ($parts -join '')
+}
+
 foreach ($commandName in $publicCommands) {
     $cmd = Get-Command -Module $module.Name -Name $commandName -ErrorAction SilentlyContinue
     if ($null -eq $cmd) { Write-Warning "Command $commandName not found in module, skipped"; continue }
@@ -75,6 +90,22 @@ foreach ($commandName in $publicCommands) {
     # fails to render/link it). Escape only backticks inside headings; fenced code blocks
     # elsewhere in the file must keep their real triple backticks untouched.
     $content = [regex]::Replace($content, '(?m)^### .*$', { param($match) $match.Value -replace '`', '\`' })
+
+    # "{{ Fill in the Description }}" (PlatyPS's literal placeholder when .INPUTS/.OUTPUTS has no
+    # description) and bare "<placeholder>" tokens in comment-based help text both break
+    # Mintlify's MDX parser (acorn expression / unclosed JSX tag). The placeholder carries no real
+    # information, so it's replaced with plain text rather than escaped - wrapping it in backticks
+    # would "fix" the crash but render it as a misleading inline-code snippet. Real placeholder
+    # tokens like "<service-principal-id>" are informative, so those keep their text and are only
+    # wrapped in backticks. Skips fenced code blocks, where "{"/"<" are legitimate (yaml
+    # hashtables, generic types) and must stay untouched.
+    $content = Repair-MdxProseText -Content $content -Transform {
+        param($text)
+        $text = $text -replace '\{\{\s*Fill[^{}]*\}\}', '_Not documented._'
+        $text = $text -replace '\{\{([^{}]*)\}\}', '`{{$1}}`'
+        $text = $text -replace '<([A-Za-z][^<>\r\n]*)>', '`<$1>`'
+        return $text
+    }
 
     Set-Content -Path (Join-Path $commandsFolder "$commandName.mdx") -Value $content -NoNewline
 }

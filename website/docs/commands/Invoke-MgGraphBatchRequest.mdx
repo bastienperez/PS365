@@ -37,7 +37,7 @@ Returns a hashtable of responses indexed by the request id, so callers can match
 
 Each request is a hashtable with the keys expected by the $batch endpoint: id (unique string), method (GET, POST...),
 url (relative to the Graph version, e.g.
-/users/<id>/authentication/methods) and optionally body and headers.
+/users/`<id>`/authentication/methods) and optionally body and headers.
 
 Note: this function performs no permission check because the required scopes depend entirely on the URLs of the
 requests passed by the caller.
@@ -162,7 +162,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ### System.Collections.Hashtable
 
-{{ Fill in the Description }}
+_Not documented._
 
 ## NOTES
 

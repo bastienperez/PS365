@@ -64,21 +64,21 @@ PowerShell 7 is required.
 UNIFORM MEMBERS/OWNERS MODEL
 On a site connected to a Microsoft 365 group, the SharePoint site collection administrators and the
 Owners/Members/Visitors groups do not list individual users: they list a single claim placeholder that
-represents the whole group, of the form 'federateddirectoryclaimprovider|<groupId>_o' (group Owners) or
-'federateddirectoryclaimprovider|<groupId>' (group Members).
+represents the whole group, of the form 'federateddirectoryclaimprovider|`<groupId>`_o' (group Owners) or
+'federateddirectoryclaimprovider|`<groupId>`' (group Members).
 Get-SPOSiteReport resolves these claims in
 a second pass, so the *Resolved columns list actual users regardless of the site type (classic site,
 group-connected site, with or without a Microsoft Teams team).
 Two well-known non-user claims are also
 labelled for readability: the 'Everyone' claim and the 'Everyone except external users' claim.
 Any claim
-that cannot be resolved (deleted group, insufficient Graph permission) is reported as '<unresolved:guid>'
+that cannot be resolved (deleted group, insufficient Graph permission) is reported as '`<unresolved:guid>`'
 and counted in the ClaimResolutionErrorCount summary at the end of the run.
 
 PROVENANCE OF EACH RESOLVED IDENTITY
 Every identity in a *Resolved column is annotated so you can tell how it got its rights:
 - No annotation: the user is directly assigned to that SharePoint group/role (individual claim).
-- "<user> (via M365 group '<name>' Owners)" or "...
+- "`<user>` (via M365 group '`<name>`' Owners)" or "...
 Members)": the user only has rights because they
   belong to that Microsoft 365 group, which itself was added to the SharePoint group/role as a whole.
 The same user can legitimately appear twice for the same site - once without annotation (direct) and
@@ -575,7 +575,7 @@ A high SharingLinksFlexibleCount therefore means "worth resolving", which is wha
 Get-SPOSharingLinkReport -IncludeGraphDetails does.
 
 SharePoint stores every sharing link as a hidden site group named
-'SharingLinks.<itemGuid>.<linkType>.<linkGuid>', so this switch only costs one extra Get-PnPGroup call
+'SharingLinks.`<itemGuid>`.`<linkType>`.`<linkGuid>`', so this switch only costs one extra Get-PnPGroup call
 per site, and it reuses the app-only connection already opened for the site.
 The link type is derived
 from that group name (AnonymousEdit/AnonymousView, OrganizationEdit/OrganizationView, Flexible); since
