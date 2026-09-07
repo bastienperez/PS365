@@ -53,12 +53,13 @@
     Required Microsoft Graph permissions:
         - Application.Read.All
         - Directory.Read.All
-        - AuditLog.Read.All
-        - OnPremDirectorySynchronization.Read.All
 
-    AuditLog.Read.All is only needed for the last sign-in of the synchronization accounts. When it is missing, those
-    accounts are reported with the Unknown status rather than presented as stale, since an account that cannot be
-    shown to be idle must not be offered for deletion.
+    Optional:
+        - AuditLog.Read.All
+
+    AuditLog.Read.All is only needed for the last sign-in of the synchronization accounts, so it is requested but not
+    required. Without it the accounts are still listed, with the Unknown status rather than presented as stale: an
+    account that cannot be shown to be idle must not be offered for deletion.
 
     .LINK
     https://learn.microsoft.com/entra/identity/hybrid/connect/authenticate-application-id
@@ -100,11 +101,15 @@ function Get-MgDirectorySyncInfo {
         }
     }
 
+    # AuditLog.Read.All is requested but not required: it only adds the last sign-in of the
+    # synchronization accounts. Requiring it would deny the whole report to a caller who can
+    # perfectly well list the identities, which is the part that matters.
     $permissionsNeeded = @(
         'Application.Read.All'
         'Directory.Read.All'
+    )
+    $optionalPermissions = @(
         'AuditLog.Read.All'
-        'OnPremDirectorySynchronization.Read.All'
     )
 
     $isConnected = $null -ne (Get-MgContext -ErrorAction SilentlyContinue)
@@ -114,7 +119,7 @@ function Get-MgDirectorySyncInfo {
     }
     if (-not $isConnected) {
         Write-Host -ForegroundColor Cyan 'Connecting to Microsoft Graph'
-        $null = Connect-MgGraph -Scopes $permissionsNeeded -NoWelcome
+        $null = Connect-MgGraph -Scopes ($permissionsNeeded + $optionalPermissions) -NoWelcome
     }
 
     if (-not (Test-MgGraphPermission -RequiredScopes $permissionsNeeded -CallerName $MyInvocation.MyCommand.Name)) {
@@ -133,9 +138,11 @@ function Get-MgDirectorySyncInfo {
         $items = [System.Collections.Generic.List[PSCustomObject]]@()
         $next = $Uri
 
+        # Through the retry wrapper: a throttled page would otherwise land in a catch block that
+        # continues with partial discovery, which is exactly the silence this report must not have.
         do {
-            $response = Invoke-MgGraphRequest -Method GET -Uri $next -OutputType PSObject -ErrorAction Stop
-            foreach ($item in $response.value) { $items.Add($item) }
+            $response = Invoke-MgGraphRequestWithRetry -Method GET -Uri $next
+            foreach ($item in $response.value) { $items.Add([PSCustomObject]$item) }
             $next = $response.'@odata.nextLink'
         } while ($next)
 
@@ -148,12 +155,14 @@ function Get-MgDirectorySyncInfo {
     # should have neither a synchronization application nor a synchronization account left.
     $syncEnabled = $null
     $lastSyncDate = $null
+    $discoveryIsComplete = $true
     try {
         $organization = Get-GraphCollection -Uri 'https://graph.microsoft.com/v1.0/organization?$select=id,displayName,onPremisesSyncEnabled,onPremisesLastSyncDateTime'
         $syncEnabled = $organization[0].onPremisesSyncEnabled
         $lastSyncDate = $organization[0].onPremisesLastSyncDateTime
     }
     catch {
+        $discoveryIsComplete = $false
         Write-Warning "Unable to read the tenant synchronization state: $_"
     }
 
@@ -171,16 +180,22 @@ function Get-MgDirectorySyncInfo {
         }
     }
     catch {
+        $discoveryIsComplete = $false
         Write-Warning "Unable to read the synchronization application assignments: $_"
     }
 
     foreach ($assignment in $assignments) {
         $servicePrincipal = $null
+        $credentialsReadable = $true
         try {
-            $servicePrincipal = Invoke-MgGraphRequest -Method GET -OutputType PSObject -ErrorAction Stop `
-                -Uri "https://graph.microsoft.com/v1.0/servicePrincipals/$($assignment.principalId)?`$select=id,appId,displayName,accountEnabled,createdDateTime,keyCredentials"
+            $servicePrincipal = [PSCustomObject](Invoke-MgGraphRequestWithRetry -Method GET `
+                    -Uri "https://graph.microsoft.com/v1.0/servicePrincipals/$($assignment.principalId)?`$select=id,appId,displayName,accountEnabled,createdDateTime,keyCredentials")
         }
         catch {
+            # Without the service principal there is no way to reach the credentials, so the
+            # certificate state is unknown. Reporting it as NoCredential would read as a broken
+            # synchronization that is not broken.
+            $credentialsReadable = $false
             Write-Warning "Unable to read the service principal '$($assignment.principalDisplayName)': $_"
         }
 
@@ -193,6 +208,7 @@ function Get-MgDirectorySyncInfo {
                 $application = $applications | Select-Object -First 1
             }
             catch {
+                $credentialsReadable = $false
                 Write-Warning "Unable to read the application '$($assignment.principalDisplayName)': $_"
             }
         }
@@ -201,7 +217,8 @@ function Get-MgDirectorySyncInfo {
         $latestExpiry = $credentials | Where-Object { $_.endDateTime } | Sort-Object { [datetime]$_.endDateTime } -Descending | Select-Object -First 1
         $daysLeft = if ($latestExpiry) { [math]::Floor(([datetime]$latestExpiry.endDateTime - (Get-Date)).TotalDays) } else { $null }
 
-        $status = if (-not $credentials -or $credentials.Count -eq 0) { 'NoCredential' }
+        $status = if (-not $credentialsReadable) { 'Unknown' }
+        elseif (-not $credentials -or $credentials.Count -eq 0) { 'NoCredential' }
         elseif ($null -eq $daysLeft) { 'Unknown' }
         elseif ($daysLeft -lt 0) { 'CertificateExpired' }
         elseif ($daysLeft -le $DaysUntilExpiry) { 'CertificateExpiring' }
@@ -231,16 +248,23 @@ function Get-MgDirectorySyncInfo {
     }
     catch {
         # The role is only instantiated once a synchronization account exists, so a 404 here means
-        # there is none, which is the expected state after a completed migration.
-        Write-Host -ForegroundColor Green 'No synchronization account holds the Directory Synchronization Accounts role in this tenant.'
+        # there is none, which is the expected state after a completed migration. Any other failure
+        # is a read that did not happen and must not be presented as an empty result.
+        if ($_.Exception.Message -match '404|not found|Resource .* does not exist') {
+            Write-Host -ForegroundColor Green 'No synchronization account holds the Directory Synchronization Accounts role in this tenant.'
+        }
+        else {
+            $discoveryIsComplete = $false
+            Write-Warning "Unable to read the Directory Synchronization Accounts role members: $_"
+        }
     }
 
     foreach ($member in $roleMembers) {
         $user = $null
         $signInReadable = $true
         try {
-            $user = Invoke-MgGraphRequest -Method GET -OutputType PSObject -ErrorAction Stop `
-                -Uri "https://graph.microsoft.com/v1.0/users/$($member.id)?`$select=id,displayName,userPrincipalName,accountEnabled,createdDateTime,signInActivity"
+            $user = [PSCustomObject](Invoke-MgGraphRequestWithRetry -Method GET `
+                    -Uri "https://graph.microsoft.com/v1.0/users/$($member.id)?`$select=id,displayName,userPrincipalName,accountEnabled,createdDateTime,signInActivity")
         }
         catch {
             # Losing signInActivity must not turn into a wrong verdict: the account is reported as
@@ -278,13 +302,20 @@ function Get-MgDirectorySyncInfo {
     }
 
     if ($resultsArray.Count -eq 0) {
-        if ($syncEnabled -eq $true) {
-            Write-Warning 'Directory synchronization is enabled on this tenant but no synchronization identity was found. Either the permissions did not allow reading them, or synchronization is broken.'
+        if (-not $discoveryIsComplete) {
+            Write-Warning 'No synchronization identity was found, but at least one read failed, so the tenant cannot be called cloud-only on this result. Review the warnings above and rerun.'
+        }
+        elseif ($syncEnabled -eq $true) {
+            Write-Warning 'Directory synchronization is enabled on this tenant but no synchronization identity was found, which means synchronization is running on an identity this report cannot see, or is broken.'
         }
         else {
             Write-Host -ForegroundColor Green 'No synchronization identity found, which matches a cloud-only tenant.'
         }
         return
+    }
+
+    if (-not $discoveryIsComplete) {
+        Write-Warning 'At least one read failed, so this list may be incomplete. An identity missing from it is not proof that it does not exist.'
     }
 
     $syncStateLabel = if ($syncEnabled -eq $true) { "enabled, last sync $lastSyncDate" } elseif ($null -eq $syncEnabled) { 'unknown' } else { 'disabled' }
