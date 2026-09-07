@@ -164,7 +164,10 @@ function Get-MgExtensionAttributeInfo {
         $next = $Uri
 
         do {
-            $response = Invoke-MgGraphRequest -Method GET -Uri $next -OutputType PSObject -ErrorAction Stop
+            # Through the retry wrapper: a throttled page would land in a catch block that carries
+            # on with a partial list, and a directory extension missing from an inventory reads as
+            # an extension that does not exist.
+            $response = Invoke-MgGraphRequestWithRetry -Method GET -Uri $next -OutputType PSObject
             foreach ($item in $response.value) { $items.Add($item) }
             $next = $response.'@odata.nextLink'
         } while ($next)
@@ -180,7 +183,7 @@ function Get-MgExtensionAttributeInfo {
     Write-Host -ForegroundColor Cyan 'Retrieving directory extension definitions'
     $availableExtensions = @()
     try {
-        $response = Invoke-MgGraphRequest -Method POST -Uri 'https://graph.microsoft.com/v1.0/directoryObjects/getAvailableExtensionProperties' -Body '{}' -ContentType 'application/json' -OutputType PSObject -ErrorAction Stop
+        $response = Invoke-MgGraphRequestWithRetry -Method POST -Uri 'https://graph.microsoft.com/v1.0/directoryObjects/getAvailableExtensionProperties' -Body '{}' -ContentType 'application/json' -OutputType PSObject
         $availableExtensions = @($response.value)
     }
     catch {
@@ -283,7 +286,9 @@ function Get-MgExtensionAttributeInfo {
         )
 
         $uri = "https://graph.microsoft.com/v1.0/$Collection/`$count?`$filter=$([uri]::EscapeDataString($Filter))"
-        $raw = Invoke-MgGraphRequest -Method GET -Uri $uri -Headers @{ ConsistencyLevel = 'eventual' } -OutputType Text -ErrorAction Stop
+        # One count per attribute and per collection is where throttling actually bites on a large
+        # tenant, so this is the call that most needs the backoff.
+        $raw = Invoke-MgGraphRequestWithRetry -Method GET -Uri $uri -Headers @{ ConsistencyLevel = 'eventual' } -OutputType Text
         return [int]$raw
     }
 
