@@ -222,6 +222,12 @@ foreach ($commandName in $publicCommands) {
         # unclosed JSX tag by Mintlify's parser. Entities never trigger tag detection at all, and
         # render back to "<...>" in the final page. Real autolinks ("<https://...>") are excluded.
         $text = $text -replace '<(?!https?://)([A-Za-z][^<>\r\n]*)>', '&lt;$1&gt;'
+
+        # Any "<" that still remains at this point isn't a placeholder pair or an autolink - e.g.
+        # an ASCII arrow "<->" or a bare "<" in prose. MDX reads any "<" as the start of a JSX/HTML
+        # tag regardless of what follows, so it must be escaped too, or the page fails to parse
+        # ("Unexpected character '-' ... expected a character that can start a name").
+        $text = $text -replace '<(?!https?://)', '&lt;'
         return $text
     }
 
