@@ -1,0 +1,272 @@
+---
+description: 'Inventories the custom attributes usable in Entra ID dynamic group rules: the 15 built-in extension attributes and the directory extensions.'
+document type: cmdlet
+HelpUri: https://ps365.clidsys.com/docs/commands/Get-MgExtensionAttributeInfo
+Locale: en-US
+Module Name: PS365
+ms.date: 09/07/2026
+sidebarTitle: Get-MgExtensionAttributeInfo
+title: Get-MgExtensionAttributeInfo
+---
+
+# Get-MgExtensionAttributeInfo
+
+## SYNOPSIS
+
+Inventories the custom attributes usable in Entra ID dynamic group rules: the 15 built-in extension attributes and the directory extensions.
+
+## SYNTAX
+
+### __AllParameterSets
+
+```
+Get-MgExtensionAttributeInfo [[-TargetObject] <string[]>] [-ExcludeBuiltIn] [-SkipUsageCount]
+ [-SkipDynamicGroups] [-ForceNewToken] [-ExportToExcel] [-ExportPath <string>]
+```
+
+
+## DESCRIPTION
+
+Returns one row per custom attribute available in the tenant, whether it carries a value or not, so the
+inventory is exhaustive.
+
+Two mechanisms are covered:
+- the 15 built-in extension attributes exposed through onPremisesExtensionAttributes (extensionAttribute1..15);
+- the directory extensions declared by an application, named extension_<AppId without dashes>_<Name>.
+
+Custom security attributes are deliberately out of scope: they cannot be used in dynamic membership rules.
+Use Get-MgCustomSecurityAttributeInfo for those.
+
+For every attribute the function reports whether it is populated, how many objects carry a value, and which
+dynamic groups reference it.
+It also flags the two situations that are hard to see from the portal:
+
+- Orphaned: the application that declared the directory extension no longer exists.
+The values remain in the
+  directory and keep driving dynamic group membership, but the attribute can no longer be listed or corrected,
+  and recreating the application does not help since the new AppId differs.
+- Referenced but empty: a dynamic group rule points at an attribute no object carries, so the group stays empty.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+Get-MgExtensionAttributeInfo
+
+Returns every built-in extension attribute and every directory extension, with their usage and their status.
+
+### EXAMPLE 2
+
+Get-MgExtensionAttributeInfo -TargetObject User, Group, Device
+
+Counts the objects carrying a value on users, groups and devices instead of users only.
+
+### EXAMPLE 3
+
+Get-MgExtensionAttributeInfo -SkipUsageCount
+
+Lists the attributes without counting values.
+Fast inventory on a large tenant.
+
+### EXAMPLE 4
+
+Get-MgExtensionAttributeInfo -ExportToExcel
+
+Exports the inventory to an Excel file in the user's profile directory.
+
+## PARAMETERS
+
+### -ExcludeBuiltIn
+
+Leaves the 15 built-in extension attributes out of the inventory and reports directory extensions only.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ExportPath
+
+Optional output directory for the Excel export.
+Defaults to the user profile.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ExportToExcel
+
+Exports the result to an Excel file in the user's profile directory instead of returning it.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ForceNewToken
+
+Forces a new token to be requested from Microsoft Graph.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -SkipDynamicGroups
+
+Skips reading the dynamic group membership rules, so the DynamicGroups columns are left empty.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -SkipUsageCount
+
+Skips counting the objects carrying a value.
+The count is one Graph query per attribute and per object type,
+which is the slow part of the scan on a large tenant.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -TargetObject
+
+Object types to count values on.
+Valid values: User, Group, Device.
+Default is User only.
+Adding Device also
+counts the built-in extension attributes on devices, which carry them under a different property name and can
+be addressed by a device membership rule.
+
+```yaml
+Type: System.String[]
+DefaultValue: "@('User')"
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+## NOTES
+
+Required Microsoft Graph permissions:
+    - Application.Read.All
+    - Directory.Read.All
+    - Group.Read.All
+    - User.Read.All
+
+The value counts use advanced queries ($count with ConsistencyLevel eventual).
+When Graph refuses a filter on a
+given attribute, the count is left null and the reason is reported in the CountError column rather than failing
+the whole scan.
+A count that failed on one object type is never reported as a partial total: an attribute
+counted at zero on users and unreadable on devices is left Unknown rather than offered for cleanup.
+
+Definitions come from getAvailableExtensionProperties rather than from a walk of the applications collection.
+That is the only supported way to see an extension whose declaring application has been deleted, since Graph
+exposes no extensionProperties navigation on the recycle bin.
+
+Dynamic group rules are matched on both the user.
+and device.
+prefixes: extension attributes and directory
+extensions can be addressed either way depending on the type of group.
+
+
+## RELATED LINKS
+
+- [https://ps365.clidsys.com/docs/commands/Get-MgExtensionAttributeInfo](https://ps365.clidsys.com/docs/commands/Get-MgExtensionAttributeInfo)

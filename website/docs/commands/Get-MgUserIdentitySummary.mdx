@@ -1,13 +1,15 @@
 ---
-sidebarTitle: "Get-MgUserIdentitySummary"
+description: Summarizes how every user of a Microsoft Entra ID tenant authenticates, internal and external alike.
 document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Get-MgUserIdentitySummary
 Locale: en-US
 Module Name: PS365
-ms.date: 09/03/2026
-PlatyPS schema version: 2024-05-01
-title: "Get-MgUserIdentitySummary"
+ms.date: 09/07/2026
+sidebarTitle: Get-MgUserIdentitySummary
+title: Get-MgUserIdentitySummary
 ---
+
+# Get-MgUserIdentitySummary
 
 ## SYNOPSIS
 
@@ -15,9 +17,12 @@ Summarizes how every user of a Microsoft Entra ID tenant authenticates, internal
 
 ## SYNTAX
 
-```powershell
+### __AllParameterSets
+
+```
 Get-MgUserIdentitySummary [[-ExportPath] <string>] [-ExternalOnly] [-ForceNewToken] [-ExportToExcel]
 ```
+
 
 ## DESCRIPTION
 
@@ -44,9 +49,7 @@ reports always agree.
 
 ### EXAMPLE 1
 
-```powershell
 Get-MgUserIdentitySummary | Format-Table -AutoSize
-```
 
 Displays the identity summary of the whole tenant as a table.
 Format-Table is needed because the
@@ -54,17 +57,13 @@ objects carry more than four properties, which PowerShell would otherwise render
 
 ### EXAMPLE 2
 
-```powershell
 Get-MgUserIdentitySummary -ExternalOnly | Format-Table -AutoSize
-```
 
 Same summary restricted to the external accounts.
 
 ### EXAMPLE 3
 
-```powershell
 Get-MgUserIdentitySummary -ExportToExcel
-```
 
 Exports the identity summary to an Excel file in the user's profile directory.
 
@@ -170,12 +169,14 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ### System.Collections.Generic.List[PSCustomObject]
 
+{{ Fill in the Description }}
+
 ## NOTES
 
 OUTPUT PROPERTIES
 - Count           : number of identities matching the combination
 - SignInType      : signInType of the identity ('userPrincipalName', 'federated', ...)
-                    '&lt;no identities&gt;' when Graph returned no identity at all for the account
+                    '<no identities>' when Graph returned no identity at all for the account
 - Issuer          : issuer of the identity (a tenant domain, ExternalAzureAD, MSA, mail, ...)
 - UserType        : userType of the account holding the identity (Member or Guest)
 - CreationType    : creationType of the account ('Invitation' when it comes from a B2B invitation)
@@ -184,6 +185,7 @@ OUTPUT PROPERTIES
 
 Required Microsoft Graph permissions:
     - User.Read.All
+
 
 ## RELATED LINKS
 

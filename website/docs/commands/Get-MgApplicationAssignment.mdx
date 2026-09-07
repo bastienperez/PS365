@@ -1,13 +1,15 @@
 ---
-sidebarTitle: "Get-MgApplicationAssignment"
+description: Retrieves all Entra ID applications and their assignment types.
 document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Get-MgApplicationAssignment
 Locale: en-US
 Module Name: PS365
-ms.date: 09/03/2026
-PlatyPS schema version: 2024-05-01
-title: "Get-MgApplicationAssignment"
+ms.date: 09/07/2026
+sidebarTitle: Get-MgApplicationAssignment
+title: Get-MgApplicationAssignment
 ---
+
+# Get-MgApplicationAssignment
 
 ## SYNOPSIS
 
@@ -17,7 +19,7 @@ Retrieves all Entra ID applications and their assignment types.
 
 ### All (Default)
 
-```powershell
+```
 Get-MgApplicationAssignment [-AllApplications] [-AssignmentNotEnforced] [-AssignmentEmpty]
  [-ExportToExcel] [-ExportPath <string>] [-DisableParallel] [-ThrottleLimit <int>]
  [-UseBatchRequest]
@@ -25,7 +27,7 @@ Get-MgApplicationAssignment [-AllApplications] [-AssignmentNotEnforced] [-Assign
 
 ### ByApplicationId
 
-```powershell
+```
 Get-MgApplicationAssignment [[-ApplicationId] <string[]>] [-AssignmentNotEnforced]
  [-AssignmentEmpty] [-ExportToExcel] [-ExportPath <string>] [-DisableParallel]
  [-ThrottleLimit <int>] [-UseBatchRequest]
@@ -33,7 +35,7 @@ Get-MgApplicationAssignment [[-ApplicationId] <string[]>] [-AssignmentNotEnforce
 
 ### ByObjectId
 
-```powershell
+```
 Get-MgApplicationAssignment [-ObjectID <string>] [-AssignmentNotEnforced] [-AssignmentEmpty]
  [-ExportToExcel] [-ExportPath <string>] [-DisableParallel] [-ThrottleLimit <int>]
  [-UseBatchRequest]
@@ -41,11 +43,12 @@ Get-MgApplicationAssignment [-ObjectID <string>] [-AssignmentNotEnforced] [-Assi
 
 ### ByDisplayName
 
-```powershell
+```
 Get-MgApplicationAssignment [-DisplayName <string>] [-AssignmentNotEnforced] [-AssignmentEmpty]
  [-ExportToExcel] [-ExportPath <string>] [-DisableParallel] [-ThrottleLimit <int>]
  [-UseBatchRequest]
 ```
+
 
 ## DESCRIPTION
 
@@ -58,65 +61,49 @@ Give information about assigned users, groups, or service principals and if the 
 
 ### EXAMPLE 1
 
-```powershell
 Get-MgApplicationAssignment
-```
 
 Retrieves all applications and their assignment types.
 
 ### EXAMPLE 2
 
-```powershell
 Get-MgApplicationAssignment -UseBatchRequest
-```
 
 Uses the Graph JSON $batch endpoint to retrieve the app role assignments (20 requests per HTTP call, automatic 429 retry).
 
 ### EXAMPLE 3
 
-```powershell
 Get-MgApplicationAssignment -DisableParallel
-```
 
 Forces sequential processing even on PowerShell 7+ (useful for debugging or to avoid concurrent Graph calls).
 
 ### EXAMPLE 4
 
-```powershell
 Get-MgApplicationAssignment -ApplicationId "xxx", "yyy"
-```
 
 Retrieves assignment types for the specified application IDs.
 
 ### EXAMPLE 5
 
-```powershell
 Get-MgApplicationAssignment -ObjectID '11111111-2222-3333-4444-555555555555'
-```
 
 Retrieves assignment types for the service principal matching this ObjectID.
 
 ### EXAMPLE 6
 
-```powershell
 Get-MgApplicationAssignment -DisplayName 'My SAML App'
-```
 
 Retrieves assignment types for the service principal matching this DisplayName.
 
 ### EXAMPLE 7
 
-```powershell
 Get-MgApplicationAssignment -AssignmentEmpty
-```
 
 Retrieves only applications with no specific user/group/service principal assignments.
 
 ### EXAMPLE 8
 
-```powershell
 Get-MgApplicationAssignment -ExportToExcel
-```
 
 Gets all applications and exports them to an Excel file
 

@@ -1,13 +1,15 @@
 ---
-sidebarTitle: "Get-ExMailboxFromAttribute"
+description: Get mailboxes based on a custom attribute and compare specified attributes.
 document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Get-ExMailboxFromAttribute
 Locale: en-US
 Module Name: PS365
-ms.date: 09/03/2026
-PlatyPS schema version: 2024-05-01
-title: "Get-ExMailboxFromAttribute"
+ms.date: 09/07/2026
+sidebarTitle: Get-ExMailboxFromAttribute
+title: Get-ExMailboxFromAttribute
 ---
+
+# Get-ExMailboxFromAttribute
 
 ## SYNOPSIS
 
@@ -15,10 +17,13 @@ Get mailboxes based on a custom attribute and compare specified attributes.
 
 ## SYNTAX
 
-```powershell
+### __AllParameterSets
+
+```
 Get-ExMailboxFromAttribute [[-Attribute] <string>] [-CheckAttributes <string[]>] [-ExportToExcel]
  [-ExportPath <string>]
 ```
+
 
 ## DESCRIPTION
 
@@ -30,25 +35,19 @@ It's more or less a `Get-ExoMailbox with specific filter
 
 ### EXAMPLE 1
 
-```powershell
 Get-ExMailboxFromAttribute -Attribute "CustomAttribute" -CheckAttributes @("Attribute1", "Attribute2")
-```
 
 This example retrieves mailboxes with the custom attribute "CustomAttribute" and compares the values of "Attribute1" and "Attribute2".
 
 ### EXAMPLE 2
 
-```powershell
 Get-ExMailboxFromAttribute -Attribute "CustomAttribute"
-```
 
 This example retrieves mailboxes with the custom attribute "CustomAttribute" without comparing any attributes.
 
 ### EXAMPLE 3
 
-```powershell
 Get-ExMailboxFromAttribute -Attribute "CustomAttribute" -ExportToExcel
-```
 
 Exports results to an Excel file.
 
@@ -152,11 +151,14 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ### System.String
 
+{{ Fill in the Description }}
+
 ## OUTPUTS
 
 ## NOTES
 
 You can also use `Get-AttributeMatching` to compare two attributes directly in AD/Exchange/Entra ID
+
 
 ## RELATED LINKS
 

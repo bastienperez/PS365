@@ -1,13 +1,15 @@
 ---
-sidebarTitle: "Disable-MSSelfServicePurchase"
+description: Disables self-service purchase for ALL products in Microsoft 365.
 document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Disable-MSSelfServicePurchase
 Locale: en-US
 Module Name: PS365
-ms.date: 09/03/2026
-PlatyPS schema version: 2024-05-01
-title: "Disable-MSSelfServicePurchase"
+ms.date: 09/07/2026
+sidebarTitle: Disable-MSSelfServicePurchase
+title: Disable-MSSelfServicePurchase
 ---
+
+# Disable-MSSelfServicePurchase
 
 ## SYNOPSIS
 
@@ -15,9 +17,12 @@ Disables self-service purchase for ALL products in Microsoft 365.
 
 ## SYNTAX
 
-```powershell
+### __AllParameterSets
+
+```
 Disable-MSSelfServicePurchase [-Force] [-WhatIf] [-Confirm]
 ```
+
 
 ## DESCRIPTION
 
@@ -30,17 +35,13 @@ want to prevent users from purchasing additional services or products on their o
 
 ### EXAMPLE 1
 
-```powershell
 Disable-MSSelfServicePurchase
-```
 
 Disables self-service purchase for all products in the Microsoft 365 tenant, prompting for confirmation for each product.
 
 ### EXAMPLE 2
 
-```powershell
 Disable-MSSelfServicePurchase -Force
-```
 
 Disables self-service purchase for all products without prompting for confirmation.
 

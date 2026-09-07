@@ -1,13 +1,15 @@
 ---
-sidebarTitle: "Get-MgExternalUser"
+description: Lists external users in Microsoft Entra ID based on their identities and invitation trace, not on userType.
 document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Get-MgExternalUser
 Locale: en-US
 Module Name: PS365
-ms.date: 09/03/2026
-PlatyPS schema version: 2024-05-01
-title: "Get-MgExternalUser"
+ms.date: 09/07/2026
+sidebarTitle: Get-MgExternalUser
+title: Get-MgExternalUser
 ---
+
+# Get-MgExternalUser
 
 ## SYNOPSIS
 
@@ -15,10 +17,13 @@ Lists external users in Microsoft Entra ID based on their identities and invitat
 
 ## SYNTAX
 
-```powershell
+### __AllParameterSets
+
+```
 Get-MgExternalUser [[-Issuer] <string[]>] [-UserType <string>] [-IncludeSignInActivity]
  [-ForceNewToken] [-ExportToExcel] [-ExportPath <string>]
 ```
+
 
 ## DESCRIPTION
 
@@ -64,51 +69,39 @@ filtering on identities/signInType.
 
 ### EXAMPLE 1
 
-```powershell
 Get-MgExternalUser
-```
 
 Returns every external account of the tenant, whatever its issuer, userType and invitation state.
 
 ### EXAMPLE 2
 
-```powershell
 Get-MgExternalUser | Where-Object { $_.AuthSource -eq 'LocalOTP' }
-```
 
 Returns the external accounts that have no external identity provider and exist only through
 this tenant (email one-time passcode).
 
 ### EXAMPLE 3
 
-```powershell
 Get-MgExternalUser | Where-Object { $_.AuthSource -eq 'PendingRedemption' }
-```
 
 Returns the invited accounts that never redeemed their invitation.
 
 ### EXAMPLE 4
 
-```powershell
 Get-MgExternalUser -Issuer 'ExternalAzureAD' -UserType Member
-```
 
 Returns external users from another tenant that are NOT flagged as guests, which is the
 typical footprint of cross-tenant synchronization.
 
 ### EXAMPLE 5
 
-```powershell
 Get-MgExternalUser -IncludeSignInActivity | Where-Object { $_.DaysSinceLastSignIn -gt 90 }
-```
 
 Returns external users that have not signed in interactively for more than 90 days.
 
 ### EXAMPLE 6
 
-```powershell
 Get-MgExternalUser -ExportToExcel
-```
 
 Exports the external users report to an Excel file in the user's profile directory.
 
@@ -265,6 +258,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ### System.Collections.Generic.List[PSCustomObject]
 
+{{ Fill in the Description }}
+
 ## NOTES
 
 OUTPUT PROPERTIES
@@ -300,6 +295,7 @@ With -IncludeSignInActivity the page size is capped at 120 users per request: Mi
 enforces this limit when signInActivity is part of the $select clause.
 The report is therefore
 slower on large tenants.
+
 
 ## RELATED LINKS
 

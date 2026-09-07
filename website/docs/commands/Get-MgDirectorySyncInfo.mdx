@@ -1,0 +1,209 @@
+---
+description: 'Reports the identities that can synchronize Active Directory to Entra ID: the Connect Sync applications and the legacy synchronization accounts.'
+document type: cmdlet
+HelpUri: https://ps365.clidsys.com/docs/commands/Get-MgDirectorySyncInfo
+Locale: en-US
+Module Name: PS365
+ms.date: 09/07/2026
+sidebarTitle: Get-MgDirectorySyncInfo
+title: Get-MgDirectorySyncInfo
+---
+
+# Get-MgDirectorySyncInfo
+
+## SYNOPSIS
+
+Reports the identities that can synchronize Active Directory to Entra ID: the Connect Sync applications and the legacy synchronization accounts.
+
+## SYNTAX
+
+### __AllParameterSets
+
+```
+Get-MgDirectorySyncInfo [[-DaysUntilExpiry] <int>] [[-StaleAfterDays] <int>]
+ [[-ExportPath] <string>] [-ForceNewToken] [-ExportToExcel]
+```
+
+
+## DESCRIPTION
+
+Microsoft Entra Connect Sync used to authenticate with a directory synchronization account, the Sync_<server>_<id>
+user holding the Directory Synchronization Accounts role.
+It now authenticates with an application identity: a
+certificate on an application that carries the ADSynchronization.ReadWrite.All application role on the first-party
+Microsoft Entra AD Synchronization Service (AppId 6bf85cfa-ac8a-4be5-b5de-425a0d0dc016).
+
+Moving to the application does not remove the account.
+Microsoft documents that removal as a separate manual step,
+so a tenant that has migrated usually still carries the old account, still in a privileged role, used by nobody.
+
+This function reports both mechanisms in one list, because it is their coexistence that has to be read:
+- which application actually synchronizes today, and when its certificate expires.
+An expired certificate stops
+  synchronization entirely, so this is an availability matter as much as a security one;
+- which synchronization accounts remain, and whether they still sign in.
+An account that has not signed in since
+  the migration is the leftover to remove.
+
+A tenant is limited to 20 synchronization accounts, and leftovers count against that limit.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+Get-MgDirectorySyncInfo
+
+Lists the synchronization applications and the synchronization accounts, with their status.
+
+### EXAMPLE 2
+
+Get-MgDirectorySyncInfo -DaysUntilExpiry 60
+
+Widens the certificate warning to 60 days, to catch the next rollover before the maintenance window closes.
+
+### EXAMPLE 3
+
+Get-MgDirectorySyncInfo -ExportToExcel
+
+Exports the report to an Excel file in the user's profile directory.
+
+## PARAMETERS
+
+### -DaysUntilExpiry
+
+Number of days below which a certificate is reported as expiring.
+Default 30.
+
+```yaml
+Type: System.Int32
+DefaultValue: 30
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ExportPath
+
+Optional output directory for the Excel export.
+Defaults to the user profile.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 2
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ExportToExcel
+
+Exports the result to an Excel file in the user's profile directory instead of returning it.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ForceNewToken
+
+Forces a new token to be requested from Microsoft Graph.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -StaleAfterDays
+
+Number of days without a sign-in above which a synchronization account is reported as stale.
+Default 30.
+
+```yaml
+Type: System.Int32
+DefaultValue: 30
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 1
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+## NOTES
+
+Required Microsoft Graph permissions:
+    - Application.Read.All
+    - Directory.Read.All
+
+Optional:
+    - AuditLog.Read.All
+
+AuditLog.Read.All is only needed for the last sign-in of the synchronization accounts, so it is requested but not
+required.
+Without it the accounts are still listed, with the Unknown status rather than presented as stale: an
+account that cannot be shown to be idle must not be offered for deletion.
+
+
+## RELATED LINKS
+
+- [https://learn.microsoft.com/entra/identity/hybrid/connect/authenticate-application-id](https://learn.microsoft.com/entra/identity/hybrid/connect/authenticate-application-id)
+- [https://ps365.clidsys.com/docs/commands/Get-MgDirectorySyncInfo](https://ps365.clidsys.com/docs/commands/Get-MgDirectorySyncInfo)

@@ -1,13 +1,15 @@
 ---
-sidebarTitle: "Get-MgAuditLogSigninInfo"
+description: Get Microsoft Entra ID Audit Log Sign-In Details
 document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Get-MgAuditLogSigninInfo
 Locale: en-US
 Module Name: PS365
-ms.date: 09/03/2026
-PlatyPS schema version: 2024-05-01
-title: "Get-MgAuditLogSigninInfo"
+ms.date: 09/07/2026
+sidebarTitle: Get-MgAuditLogSigninInfo
+title: Get-MgAuditLogSigninInfo
 ---
+
+# Get-MgAuditLogSigninInfo
 
 ## SYNOPSIS
 
@@ -15,7 +17,9 @@ Get Microsoft Entra ID Audit Log Sign-In Details
 
 ## SYNTAX
 
-```powershell
+### __AllParameterSets
+
+```
 Get-MgAuditLogSigninInfo [[-StartDate] <Object>] [[-EndDate] <Object>] [[-Users] <string[]>]
  [[-LastXSignIns] <int>] [[-IPAddresses] <int>] [[-ConditionalAccessPolicyName] <string>]
  [[-TimeRange] <string>] [-BasicAuthenticationOnly] [-SuccessOnly] [-FailureOnly]
@@ -26,6 +30,7 @@ Get-MgAuditLogSigninInfo [[-StartDate] <Object>] [[-EndDate] <Object>] [[-Users]
  [-ForceNewToken] [-AnalyzeCAPInReportOnly] [-ExportToExcel]
 ```
 
+
 ## DESCRIPTION
 
 Get Microsoft Entra ID Audit Log Sign-In Details with various filtering options.
@@ -34,41 +39,31 @@ Get Microsoft Entra ID Audit Log Sign-In Details with various filtering options.
 
 ### EXAMPLE 1
 
-```powershell
 Get-MgAuditLogSigninInfo -StartDate '2024-01-01' -EndDate '2024-01-31' -Users 'user1@contoso.com', 'user2@contoso.com'
-```
 
 Retrieves sign-in logs for specified users between January 1, 2024, and January 31, 2024.
 
 ### EXAMPLE 2
 
-```powershell
 Get-MgAuditLogSigninInfo -LastXSignIns 100 -FailureOnly
-```
 
 Retrieves the last 100 failed sign-in attempts.
 
 ### EXAMPLE 3
 
-```powershell
 Get-MgAuditLogSigninInfo -AnalyzeCAPInReportOnly
-```
 
 Retrieves sign-in logs with Conditional Access applied in ReportOnly mode.
 
 ### EXAMPLE 4
 
-```powershell
 Get-MgAuditLogSigninInfo -StartDate (Get-Date).AddHours(-1) -NonMFASignInsOnly
-```
 
 Retrieves non-MFA sign-ins from the last hour.
 
 ### EXAMPLE 5
 
-```powershell
 Get-MgAuditLogSigninInfo -TimeRange Maximum -SmsVoiceMFASignInsOnly -ExportToExcel
-```
 
 Exports the sign-ins where SMS or voice call MFA was actually used over the full log retention,
 to identify who still relies on the methods retired on February 1, 2027.

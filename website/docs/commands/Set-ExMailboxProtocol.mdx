@@ -1,13 +1,15 @@
 ---
-sidebarTitle: "Set-ExMailboxProtocol"
+description: Set Exchange mailbox protocol settings.
 document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Set-ExMailboxProtocol
 Locale: en-US
 Module Name: PS365
-ms.date: 09/03/2026
-PlatyPS schema version: 2024-05-01
-title: "Set-ExMailboxProtocol"
+ms.date: 09/07/2026
+sidebarTitle: Set-ExMailboxProtocol
+title: Set-ExMailboxProtocol
 ---
+
+# Set-ExMailboxProtocol
 
 ## SYNOPSIS
 
@@ -17,7 +19,7 @@ Set Exchange mailbox protocol settings.
 
 ### Identity
 
-```powershell
+```
 Set-ExMailboxProtocol [-Identity] <string[]> [-GenerateCmdlets] [-OutputFile <string>]
  [-ModernProtocolsOnly] [-ModernProtocolsAndEws] [-MAPIEnabled <bool>] [-OWAEnabled <bool>]
  [-PopEnabled <bool>] [-ImapEnabled <bool>] [-ActiveSyncEnabled <bool>] [-EwsEnabled <bool>]
@@ -27,7 +29,7 @@ Set-ExMailboxProtocol [-Identity] <string[]> [-GenerateCmdlets] [-OutputFile <st
 
 ### ByDomain
 
-```powershell
+```
 Set-ExMailboxProtocol -ByDomain <string> [-GenerateCmdlets] [-OutputFile <string>]
  [-ModernProtocolsOnly] [-ModernProtocolsAndEws] [-MAPIEnabled <bool>] [-OWAEnabled <bool>]
  [-PopEnabled <bool>] [-ImapEnabled <bool>] [-ActiveSyncEnabled <bool>] [-EwsEnabled <bool>]
@@ -37,7 +39,7 @@ Set-ExMailboxProtocol -ByDomain <string> [-GenerateCmdlets] [-OutputFile <string
 
 ### FromCSV
 
-```powershell
+```
 Set-ExMailboxProtocol -FromCSV <string> [-GenerateCmdlets] [-OutputFile <string>]
  [-ModernProtocolsOnly] [-ModernProtocolsAndEws] [-MAPIEnabled <bool>] [-OWAEnabled <bool>]
  [-PopEnabled <bool>] [-ImapEnabled <bool>] [-ActiveSyncEnabled <bool>] [-EwsEnabled <bool>]
@@ -47,13 +49,14 @@ Set-ExMailboxProtocol -FromCSV <string> [-GenerateCmdlets] [-OutputFile <string>
 
 ### AllMailboxes
 
-```powershell
+```
 Set-ExMailboxProtocol -AllMailboxes [-GenerateCmdlets] [-OutputFile <string>] [-ModernProtocolsOnly]
  [-ModernProtocolsAndEws] [-MAPIEnabled <bool>] [-OWAEnabled <bool>] [-PopEnabled <bool>]
  [-ImapEnabled <bool>] [-ActiveSyncEnabled <bool>] [-EwsEnabled <bool>]
  [-SmtpClientAuthenticationDisabled <bool>] [-UniversalOutlookEnabled <bool>]
  [-OutlookMobileEnabled <bool>] [-WhatIf] [-Confirm]
 ```
+
 
 ## DESCRIPTION
 
@@ -67,33 +70,25 @@ Additionally, it can configure SMTP Client Authentication settings at the mailbo
 
 ### EXAMPLE 1
 
-```powershell
 Set-ExMailboxProtocol -Identity "user@example.com" -ModernProtocolsOnly
-```
 
 Sets modern protocols only for the specified mailbox.
 
 ### EXAMPLE 2
 
-```powershell
 Set-ExMailboxProtocol -ByDomain "example.com" -GenerateCmdlets -OutputFile "C:\path\to\commands.ps1"
-```
 
 Generates the Set-EXOCasMailbox cmdlets for all mailboxes in the specified domain to enable modern protocols only and saves them to the specified file without executing them.
 
 ### EXAMPLE 3
 
-```powershell
 Set-ExMailboxProtocol -FromCSV "C:\path\to\file.csv"
-```
 
 Sets protocol settings for mailboxes listed in the specified CSV file.
 
 ### EXAMPLE 4
 
-```powershell
 Set-ExMailboxProtocol -AllMailboxes -ModernProtocolsAndEws
-```
 
 Sets modern protocols along with EWS for all mailboxes in the organization.
 
@@ -515,6 +510,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### System.String[]
+
+{{ Fill in the Description }}
 
 ## OUTPUTS
 

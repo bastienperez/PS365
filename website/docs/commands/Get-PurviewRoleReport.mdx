@@ -1,13 +1,15 @@
 ---
-sidebarTitle: "Get-PurviewRoleReport"
+description: Reports on Purview RBAC roles and their effective membership, including groups expanded recursively.
 document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Get-PurviewRoleReport
 Locale: en-US
 Module Name: PS365
-ms.date: 09/03/2026
-PlatyPS schema version: 2024-05-01
-title: "Get-PurviewRoleReport"
+ms.date: 09/07/2026
+sidebarTitle: Get-PurviewRoleReport
+title: Get-PurviewRoleReport
 ---
+
+# Get-PurviewRoleReport
 
 ## SYNOPSIS
 
@@ -15,10 +17,13 @@ Reports on Purview RBAC roles and their effective membership, including groups e
 
 ## SYNTAX
 
-```powershell
+### __AllParameterSets
+
+```
 Get-PurviewRoleReport [[-Identity] <string>] [[-PrincipalID] <string>]
  [[-PrincipalDisplayName] <string>] [-ShowGraph]
 ```
+
 
 ## DESCRIPTION
 
@@ -36,49 +41,37 @@ detected and skipped automatically.
 
 ### EXAMPLE 1
 
-```powershell
 Get-PurviewRoleReport
-```
 
 Retrieves the Purview RBAC role report, including recursive group expansion.
 
 ### EXAMPLE 2
 
-```powershell
 Get-PurviewRoleReport -Identity 'Compliance Administrator'
-```
 
 Returns only the membership of the 'Compliance Administrator' role group.
 
 ### EXAMPLE 3
 
-```powershell
 Get-PurviewRoleReport -PrincipalID 'alice@contoso.com'
-```
 
 Returns every Purview role assignment held by alice@contoso.com (direct or via group membership).
 
 ### EXAMPLE 4
 
-```powershell
 Get-PurviewRoleReport -PrincipalDisplayName 'Alice Doe'
-```
 
 Returns every Purview role assignment held by the user whose DisplayName is 'Alice Doe'.
 
 ### EXAMPLE 5
 
-```powershell
 Get-PurviewRoleReport | Where-Object { $_.DirectMember -eq $false } | Format-Table Role, MemberName, MemberViaGroup
-```
 
 Lists all users/objects resolved through group membership, showing which group is a direct member of the role.
 
 ### EXAMPLE 6
 
-```powershell
 Get-PurviewRoleReport | Export-Csv -NoTypeInformation "$(Get-Date -Format yyyyMMdd)_purviewRoles.csv" -Encoding UTF8
-```
 
 Exports the full report (including group-expanded members) to a CSV file.
 
@@ -183,12 +176,14 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## OUTPUTS
 
 ### [System.Collections.Generic.List[Object]] containing PSCustomObject rows with the following properties:
-
 Role
+
+{{ Fill in the Description }}
 
 ## NOTES
 
 Requires ExchangeOnlineManagement module and an active Connect-IPPSSession session.
+
 
 ## RELATED LINKS
 

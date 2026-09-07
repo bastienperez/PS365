@@ -1,13 +1,15 @@
 ---
-sidebarTitle: "Get-IntuneODJConnectorServiceEventLog"
+description: Retrieves and parses event logs from the Microsoft Intune ODJ (Offline Domain Join) Connector Service.
 document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Get-IntuneODJConnectorServiceEventLog
 Locale: en-US
 Module Name: PS365
-ms.date: 09/03/2026
-PlatyPS schema version: 2024-05-01
-title: "Get-IntuneODJConnectorServiceEventLog"
+ms.date: 09/07/2026
+sidebarTitle: Get-IntuneODJConnectorServiceEventLog
+title: Get-IntuneODJConnectorServiceEventLog
 ---
+
+# Get-IntuneODJConnectorServiceEventLog
 
 ## SYNOPSIS
 
@@ -15,9 +17,12 @@ Retrieves and parses event logs from the Microsoft Intune ODJ (Offline Domain Jo
 
 ## SYNTAX
 
-```powershell
+### __AllParameterSets
+
+```
 Get-IntuneODJConnectorServiceEventLog [[-DeviceId] <string>] [[-DeviceName] <string>]
 ```
+
 
 ## DESCRIPTION
 
@@ -32,33 +37,25 @@ during the device enrollment process via Windows Autopilot.
 
 ### EXAMPLE 1
 
-```powershell
 Get-IntuneODJConnectorServiceEventLog
-```
 
 Retrieves and parses the event logs for the Microsoft Intune ODJ Connector Service, returning structured objects with parsed properties.
 
 ### EXAMPLE 2
 
-```powershell
 Get-IntuneODJConnectorServiceEventLog | Where-Object { $_.DiagnosticCode -ne 0 }
-```
 
 Retrieves parsed event logs and filters for events with non-zero diagnostic codes (potential errors).
 
 ### EXAMPLE 3
 
-```powershell
 Get-IntuneODJConnectorServiceEventLog -DeviceId 'e078603c-fe1a-488a-a760-415622ff9f45'
-```
 
 Retrieves event logs for a specific device ID.
 
 ### EXAMPLE 4
 
-```powershell
 Get-IntuneODJConnectorServiceEventLog -DeviceName 'DESKTOP-*'
-```
 
 Retrieves event logs for devices with names matching the wildcard pattern.
 
@@ -123,6 +120,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 Must be executed on the server where the Microsoft Intune ODJ Connector Service is installed to access the relevant event logs.
 Requires local administrator privileges to read the event logs.
 Automatically resolves UserID to Active Directory account information (User, gMSA, Computer) when the ActiveDirectory module is available.
+
 
 ## RELATED LINKS
 

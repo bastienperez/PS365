@@ -1,13 +1,15 @@
 ---
-sidebarTitle: "Find-DistributionGroupMember"
+description: Find members of distribution groups based on email address or domain.
 document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Find-DistributionGroupMember
 Locale: en-US
 Module Name: PS365
-ms.date: 09/03/2026
-PlatyPS schema version: 2024-05-01
-title: "Find-DistributionGroupMember"
+ms.date: 09/07/2026
+sidebarTitle: Find-DistributionGroupMember
+title: Find-DistributionGroupMember
 ---
+
+# Find-DistributionGroupMember
 
 ## SYNOPSIS
 
@@ -15,10 +17,13 @@ Find members of distribution groups based on email address or domain.
 
 ## SYNTAX
 
-```powershell
+### __AllParameterSets
+
+```
 Find-DistributionGroupMember [[-FilterByDomain] <string>] [[-FilterByEmailAddresses] <string[]>]
  [[-FilterRecipientTypeDetails] <string>] [-FilterByExternalDomains]
 ```
+
 
 ## DESCRIPTION
 
@@ -28,25 +33,19 @@ This function retrieves members of all distribution groups in Exchange Online th
 
 ### EXAMPLE 1
 
-```powershell
 Find-DistributionGroupMember -FilterByDomain "contoso.com"
-```
 
 Searches all distribution groups for members with email addresses containing "contoso.com" and exports the results to a CSV file.
 
 ### EXAMPLE 2
 
-```powershell
 Find-DistributionGroupMember -FilterByEmailAddresses "user@contoso.com"
-```
 
 Searches all distribution groups for members with the email address "user@contoso.com" and exports the results to a CSV file.
 
 ### EXAMPLE 3
 
-```powershell
 Find-DistributionGroupMember -FilterByExternalDomains -FilterRecipientTypeDetails "MailContact"
-```
 
 Searches all distribution groups for members whose email addresses belong to external domains and are of the type "MailContact", then exports the results to a CSV file.
 

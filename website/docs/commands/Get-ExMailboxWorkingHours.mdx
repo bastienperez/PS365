@@ -1,13 +1,15 @@
 ---
-sidebarTitle: "Get-ExMailboxWorkingHours"
+description: Get the working hours configuration of Exchange Online mailboxes.
 document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Get-ExMailboxWorkingHours
 Locale: en-US
 Module Name: PS365
-ms.date: 09/03/2026
-PlatyPS schema version: 2024-05-01
-title: "Get-ExMailboxWorkingHours"
+ms.date: 09/07/2026
+sidebarTitle: Get-ExMailboxWorkingHours
+title: Get-ExMailboxWorkingHours
 ---
+
+# Get-ExMailboxWorkingHours
 
 ## SYNOPSIS
 
@@ -15,10 +17,13 @@ Get the working hours configuration of Exchange Online mailboxes.
 
 ## SYNTAX
 
-```powershell
+### __AllParameterSets
+
+```
 Get-ExMailboxWorkingHours [[-Identity] <string>] [-ByDomain <string>] [-ExportToExcel]
  [-ExportPath <string>]
 ```
+
 
 ## DESCRIPTION
 
@@ -32,33 +37,25 @@ The function can filter mailboxes by identity or by domain.
 
 ### EXAMPLE 1
 
-```powershell
 Get-ExMailboxWorkingHours
-```
 
 Retrieves the working hours configuration for all Exchange Online mailboxes.
 
 ### EXAMPLE 2
 
-```powershell
 Get-ExMailboxWorkingHours -Identity "user@example.com"
-```
 
 Retrieves the working hours configuration for the specified mailbox.
 
 ### EXAMPLE 3
 
-```powershell
 Get-ExMailboxWorkingHours -ByDomain "example.com"
-```
 
 Retrieves the working hours configuration for all mailboxes in the specified domain.
 
 ### EXAMPLE 4
 
-```powershell
 Get-ExMailboxWorkingHours -ExportToExcel
-```
 
 Exports results to an Excel file.
 
@@ -162,12 +159,15 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ### System.String
 
+{{ Fill in the Description }}
+
 ## OUTPUTS
 
 ## NOTES
 
 Requires connection to Exchange Online using Connect-ExchangeOnline.
 The function retrieves data from Get-MailboxCalendarConfiguration.
+
 
 ## RELATED LINKS
 

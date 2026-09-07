@@ -1,13 +1,15 @@
 ---
-sidebarTitle: "Get-ExMailboxForwarding"
+description: Get mailbox forwarding configuration
 document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Get-ExMailboxForwarding
 Locale: en-US
 Module Name: PS365
-ms.date: 09/03/2026
-PlatyPS schema version: 2024-05-01
-title: "Get-ExMailboxForwarding"
+ms.date: 09/07/2026
+sidebarTitle: Get-ExMailboxForwarding
+title: Get-ExMailboxForwarding
 ---
+
+# Get-ExMailboxForwarding
 
 ## SYNOPSIS
 
@@ -15,10 +17,13 @@ Get mailbox forwarding configuration
 
 ## SYNTAX
 
-```powershell
+### __AllParameterSets
+
+```
 Get-ExMailboxForwarding [[-Identity] <string[]>] [-ForwardingAndForwardingSMTPOnly]
  [-InboxRulesOnly] [-ExportToExcel] [-ExportPath <string>] [-ExchangeOnPremise]
 ```
+
 
 ## DESCRIPTION
 
@@ -28,41 +33,31 @@ Get mailbox forwarding configuration from ForwardingAddress, ForwardingSMTPAddre
 
 ### EXAMPLE 1
 
-```powershell
 Get-ExMailboxForwarding
-```
 
 Returns all mailboxes with forwarding configuration.
 
 ### EXAMPLE 2
 
-```powershell
 Get-ExMailboxForwarding -Mailboxes "user1@example.com","user2@example.com"
-```
 
 Returns forwarding configuration for specified mailboxes.
 
 ### EXAMPLE 3
 
-```powershell
 Get-ExMailboxForwarding -ForwardingAndForwardingSMTPOnly
-```
 
 Returns only mailboxes with ForwardingAddress or ForwardingSMTPAddress set.
 
 ### EXAMPLE 4
 
-```powershell
 Get-ExMailboxForwarding -InboxRulesOnly
-```
 
 Returns only mailboxes with inbox rules that forward emails.
 
 ### EXAMPLE 5
 
-```powershell
 Get-ExMailboxForwarding -ExportToExcel
-```
 
 Exports results to an Excel file.
 
@@ -70,7 +65,7 @@ Exports results to an Excel file.
 
 ### -ExchangeOnPremise
 
-\{\{ Fill ExchangeOnPremise Description \}\}
+{{ Fill ExchangeOnPremise Description }}
 
 ```yaml
 Type: System.Management.Automation.SwitchParameter
@@ -133,7 +128,7 @@ HelpMessage: ''
 
 ### -ForwardingAndForwardingSMTPOnly
 
-\{\{ Fill ForwardingAndForwardingSMTPOnly Description \}\}
+{{ Fill ForwardingAndForwardingSMTPOnly Description }}
 
 ```yaml
 Type: System.Management.Automation.SwitchParameter
@@ -154,7 +149,7 @@ HelpMessage: ''
 
 ### -Identity
 
-\{\{ Fill Identity Description \}\}
+{{ Fill Identity Description }}
 
 ```yaml
 Type: System.String[]
@@ -175,7 +170,7 @@ HelpMessage: ''
 
 ### -InboxRulesOnly
 
-\{\{ Fill InboxRulesOnly Description \}\}
+{{ Fill InboxRulesOnly Description }}
 
 ```yaml
 Type: System.Management.Automation.SwitchParameter
@@ -205,6 +200,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ### System.String[]
 
+{{ Fill in the Description }}
+
 ## OUTPUTS
 
 ## NOTES
@@ -212,6 +209,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 Priority 1: ForwardingAddress
 Priority 2: ForwardingSMTPAddress
 Priority 3: Inbox Rules
+
 
 ## RELATED LINKS
 

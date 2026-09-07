@@ -1,13 +1,15 @@
 ---
-sidebarTitle: "Install-M365Apps"
+description: Installs Microsoft 365 Apps using the Office Deployment Tool.
 document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Install-M365Apps
 Locale: en-US
 Module Name: PS365
-ms.date: 09/03/2026
-PlatyPS schema version: 2024-05-01
-title: "Install-M365Apps"
+ms.date: 09/07/2026
+sidebarTitle: Install-M365Apps
+title: Install-M365Apps
 ---
+
+# Install-M365Apps
 
 ## SYNOPSIS
 
@@ -15,9 +17,12 @@ Installs Microsoft 365 Apps using the Office Deployment Tool.
 
 ## SYNTAX
 
-```powershell
+### __AllParameterSets
+
+```
 Install-M365Apps [-ODTFolderPath] <string> [-ConfigFilePath] <string>
 ```
+
 
 ## DESCRIPTION
 
@@ -27,17 +32,13 @@ Uses the Office Deployment Tool to install Microsoft 365 Apps with a specified c
 
 ### EXAMPLE 1
 
-```powershell
 Install-M365Apps -ODTFolderPath '\\server\share\Office' -ConfigFilePath ".\Configuration-XX.xml"
-```
 
 Installs Microsoft 365 Apps from the specified network share using the provided configuration file.
 
 ### EXAMPLE 2
 
-```powershell
 Install-M365Apps -ODTFolderPath 'C:\Custom-OfficeDeploymentTool' -ConfigFilePath 'C:\Configs\OfficeConfig.xml'
-```
 
 Installs Microsoft 365 Apps from the specified local folder using the provided configuration file.
 
@@ -106,6 +107,7 @@ Ensure that the source path is accessible and that the configuration file is cor
 The script requires administrative privileges to run.
 The Office Deployment Tool must be downloaded and extracted prior to running this script.
 The ODT folder must contains the ODT setup.exe file and the source files for installation (see `Invoke-M365AppsDownload.ps1`).
+
 
 ## RELATED LINKS
 

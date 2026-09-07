@@ -1,13 +1,15 @@
 ---
-sidebarTitle: "Get-MgApplicationSCIM"
+description: Retrieves all Entra ID applications configured for SCIM provisioning.
 document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Get-MgApplicationSCIM
 Locale: en-US
 Module Name: PS365
-ms.date: 09/03/2026
-PlatyPS schema version: 2024-05-01
-title: "Get-MgApplicationSCIM"
+ms.date: 09/07/2026
+sidebarTitle: Get-MgApplicationSCIM
+title: Get-MgApplicationSCIM
 ---
+
+# Get-MgApplicationSCIM
 
 ## SYNOPSIS
 
@@ -17,7 +19,7 @@ Retrieves all Entra ID applications configured for SCIM provisioning.
 
 ### All (Default)
 
-```powershell
+```
 Get-MgApplicationSCIM [-ExcludeAttributeMappings] [-IncludeFailedObjects] [-ForceNewToken]
  [-ExportToExcel] [-ExportPath <string>] [-RunFromAzureAutomation] [-NotificationRecipient <string>]
  [-NotificationSender <string>] [-DisableParallel] [-ThrottleLimit <int>] [-UseBatchRequest]
@@ -26,7 +28,7 @@ Get-MgApplicationSCIM [-ExcludeAttributeMappings] [-IncludeFailedObjects] [-Forc
 
 ### ByObjectId
 
-```powershell
+```
 Get-MgApplicationSCIM [-ObjectID <string>] [-ExcludeAttributeMappings] [-IncludeFailedObjects]
  [-ForceNewToken] [-ExportToExcel] [-ExportPath <string>] [-RunFromAzureAutomation]
  [-NotificationRecipient <string>] [-NotificationSender <string>] [-DisableParallel]
@@ -35,12 +37,13 @@ Get-MgApplicationSCIM [-ObjectID <string>] [-ExcludeAttributeMappings] [-Include
 
 ### ByDisplayName
 
-```powershell
+```
 Get-MgApplicationSCIM [-DisplayName <string>] [-ExcludeAttributeMappings] [-IncludeFailedObjects]
  [-ForceNewToken] [-ExportToExcel] [-ExportPath <string>] [-RunFromAzureAutomation]
  [-NotificationRecipient <string>] [-NotificationSender <string>] [-DisableParallel]
  [-ThrottleLimit <int>] [-UseBatchRequest] [-EntraCloudSync]
 ```
+
 
 ## DESCRIPTION
 
@@ -51,90 +54,68 @@ along with their synchronization job details and settings.
 
 ### EXAMPLE 1
 
-```powershell
 $scimApps = Get-MgApplicationSCIM
-```
 
 Retrieves all Entra ID applications with SCIM provisioning enabled.
 
 ### EXAMPLE 2
 
-```powershell
 Get-MgApplicationSCIM -DisableParallel
-```
 
 Forces sequential processing even on PowerShell 7+ (useful for debugging or to avoid concurrent Graph calls).
 
 ### EXAMPLE 3
 
-```powershell
 Get-MgApplicationSCIM -UseBatchRequest
-```
 
 Uses the Graph JSON $batch endpoint for the discovery phase (20 requests per HTTP call, automatic 429 retry).
 Requires the PS365 module; falls back to the default behavior when Invoke-MgGraphBatchRequest is not available.
 
 ### EXAMPLE 4
 
-```powershell
 Get-MgApplicationSCIM -EntraCloudSync
-```
 
 Returns only Entra Cloud Sync jobs, excluding application provisioning (SCIM) jobs.
 
 ### EXAMPLE 5
 
-```powershell
 Get-MgApplicationSCIM -ForceNewToken
-```
 
 Forces the function to disconnect and reconnect to Microsoft Graph to obtain a new access token.
 
 ### EXAMPLE 6
 
-```powershell
 Get-MgApplicationSCIM -ExportToExcel
-```
 
 Exports the SCIM configuration details to an Excel file.
 
 ### EXAMPLE 7
 
-```powershell
 Get-MgApplicationSCIM -ObjectID "xxx-xxx-xxx"
-```
 
 Retrieves the SCIM configuration for a specific application by its ObjectID.
 
 ### EXAMPLE 8
 
-```powershell
 Get-MgApplicationSCIM -DisplayName "My App"
-```
 
 Retrieves the SCIM configuration for a specific application by its DisplayName.
 
 ### EXAMPLE 9
 
-```powershell
 Get-MgApplicationSCIM -DisplayName "Azure*"
-```
 
 Retrieves the SCIM configuration for all applications whose DisplayName starts with "Azure".
 
 ### EXAMPLE 10
 
-```powershell
 Get-MgApplicationSCIM -DisplayName "*Provisioning*"
-```
 
 Retrieves the SCIM configuration for all applications whose DisplayName contains "Provisioning".
 
 ### EXAMPLE 11
 
-```powershell
 Get-MgApplicationSCIM -RunFromAzureAutomation -NotificationRecipient 'admin@company.com' -NotificationSender 'automation@company.com'
-```
 
 Gets all SCIM provisioning jobs using managed identity and sends a health report for apps with synchronization issues.
 
@@ -388,7 +369,7 @@ HelpMessage: ''
 This is useful when running the script in Azure environments like Azure Functions, Logic Apps, or VMs with managed identity enabled.
 When this parameter is used, NotificationRecipient and NotificationSender are required.
 
-PowerShell modules used in Azure Automation must be a MAXIMUM of version 2.25.0 when using PowerShell &lt; 7.4.0, because starting from version 2.26.0, PowerShell 7.4.0 is required, and Azure Automation does not support it yet as of February 2026.
+PowerShell modules used in Azure Automation must be a MAXIMUM of version 2.25.0 when using PowerShell < 7.4.0, because starting from version 2.26.0, PowerShell 7.4.0 is required, and Azure Automation does not support it yet as of February 2026.
 For PowerShell 7.4.0+, there are no version restrictions.
 https://github.com/microsoftgraph/msgraph-sdk-powershell/issues/3147
 https://github.com/microsoftgraph/msgraph-sdk-powershell/issues/3151
@@ -477,6 +458,7 @@ LIMITATIONS
 The groups assignments are not retrieved because based on https://main.iam.ad.ext.azure.com
 
 This function requires the Microsoft.Graph.Applications and Microsoft.Graph.Authentication modules.
+
 
 ## RELATED LINKS
 

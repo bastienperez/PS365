@@ -1,13 +1,15 @@
 ---
-sidebarTitle: "Set-ExMailboxRegionalConfiguration"
+description: Sets the regional configuration for Exchange mailboxes, including language, time zone, date format, and time format.
 document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Set-ExMailboxRegionalConfiguration
 Locale: en-US
 Module Name: PS365
-ms.date: 09/03/2026
-PlatyPS schema version: 2024-05-01
-title: "Set-ExMailboxRegionalConfiguration"
+ms.date: 09/07/2026
+sidebarTitle: Set-ExMailboxRegionalConfiguration
+title: Set-ExMailboxRegionalConfiguration
 ---
+
+# Set-ExMailboxRegionalConfiguration
 
 ## SYNOPSIS
 
@@ -17,7 +19,7 @@ Sets the regional configuration for Exchange mailboxes, including language, time
 
 ### Identity
 
-```powershell
+```
 Set-ExMailboxRegionalConfiguration [-Identity] <string[]> [-Language <string>] [-TimeZone <string>]
  [-DateFormat <string>] [-TimeFormat <string>] [-OnlyIfLanguageEmpty] [-GenerateCmdlets]
  [-OutputFile <string>] [-WhatIf] [-Confirm]
@@ -25,7 +27,7 @@ Set-ExMailboxRegionalConfiguration [-Identity] <string[]> [-Language <string>] [
 
 ### ByDomain
 
-```powershell
+```
 Set-ExMailboxRegionalConfiguration -ByDomain <string> [-Language <string>] [-TimeZone <string>]
  [-DateFormat <string>] [-TimeFormat <string>] [-OnlyIfLanguageEmpty] [-GenerateCmdlets]
  [-OutputFile <string>] [-WhatIf] [-Confirm]
@@ -33,18 +35,19 @@ Set-ExMailboxRegionalConfiguration -ByDomain <string> [-Language <string>] [-Tim
 
 ### FromCSV
 
-```powershell
+```
 Set-ExMailboxRegionalConfiguration -FromCSV <string> [-DateFormat <string>] [-TimeFormat <string>]
  [-OnlyIfLanguageEmpty] [-GenerateCmdlets] [-OutputFile <string>] [-WhatIf] [-Confirm]
 ```
 
 ### AllMailboxes
 
-```powershell
+```
 Set-ExMailboxRegionalConfiguration -AllMailboxes [-Language <string>] [-TimeZone <string>]
  [-DateFormat <string>] [-TimeFormat <string>] [-OnlyIfLanguageEmpty] [-GenerateCmdlets]
  [-OutputFile <string>] [-WhatIf] [-Confirm]
 ```
+
 
 ## DESCRIPTION
 
@@ -57,33 +60,25 @@ It also supports generating the corresponding Set-MailboxRegionalConfiguration c
 
 ### EXAMPLE 1
 
-```powershell
 Set-ExMailboxRegionalConfiguration -Identity "user@example.com" -Language "en-US" -TimeZone "+1" -DateFormat "MM/dd/yyyy" -TimeFormat "HH:mm" -GenerateCmdlets -OutputFile "C:\temp\cmdlets.txt"
-```
 
 Generates the Set-MailboxRegionalConfiguration cmdlet for the specified mailbox with the given regional settings and saves it to the specified file without executing it.
 
 ### EXAMPLE 2
 
-```powershell
 Set-ExMailboxRegionalConfiguration -ByDomain "example.com" -Language "fr-FR" -TimeZone "Romance Standard Time"
-```
 
 Sets the regional configuration for all mailboxes in the specified domain to French language and Romance Standard Time zone.
 
 ### EXAMPLE 3
 
-```powershell
 Set-ExMailboxRegionalConfiguration -FromCSV "C:\path\to\file.csv" -GenerateCmdlets -OutputFile "C:\temp\cmdlets.txt"
-```
 
 Generates the Set-MailboxRegionalConfiguration cmdlets for mailboxes listed in the specified CSV file and saves them to the specified file without executing them.
 
 ### EXAMPLE 4
 
-```powershell
 Set-ExMailboxRegionalConfiguration -ByDomain "example.com" -Language "en-US" -TimeZone "+1" -OnlyIfLanguageEmpty
-```
 
 Sets the regional configuration only for mailboxes in the specified domain that currently have no language configured.
 
@@ -444,6 +439,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### System.String[]
+
+{{ Fill in the Description }}
 
 ## OUTPUTS
 

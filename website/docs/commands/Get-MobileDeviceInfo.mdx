@@ -1,13 +1,15 @@
 ---
-sidebarTitle: "Get-MobileDeviceInfo"
+description: Retrieves detailed information about mobile devices associated with user mailboxes.
 document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Get-MobileDeviceInfo
 Locale: en-US
 Module Name: PS365
-ms.date: 09/03/2026
-PlatyPS schema version: 2024-05-01
-title: "Get-MobileDeviceInfo"
+ms.date: 09/07/2026
+sidebarTitle: Get-MobileDeviceInfo
+title: Get-MobileDeviceInfo
 ---
+
+# Get-MobileDeviceInfo
 
 ## SYNOPSIS
 
@@ -15,9 +17,12 @@ Retrieves detailed information about mobile devices associated with user mailbox
 
 ## SYNTAX
 
-```powershell
+### __AllParameterSets
+
+```
 Get-MobileDeviceInfo [[-UserPrincipalName] <string[]>]
 ```
+
 
 ## DESCRIPTION
 
@@ -27,17 +32,13 @@ This script fetches mobile device details for specified user mailboxes or all ma
 
 ### EXAMPLE 1
 
-```powershell
 Get-MobileDeviceInfo
-```
 
 Retrieves mobile device details for all user mailboxes.
 
 ### EXAMPLE 2
 
-```powershell
 "
-```
 
 Retrieves mobile device details for the specified user.
 
@@ -76,6 +77,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ### System.String[]
 
+{{ Fill in the Description }}
+
 ## OUTPUTS
 
 ## NOTES
@@ -83,6 +86,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 Author: Bastien Perez
 
 Works with both Exchange Online and on-premises Exchange environments and uses the appropriate cmdlets based on the environment.
+
 
 ## RELATED LINKS
 

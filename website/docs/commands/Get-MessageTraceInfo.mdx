@@ -1,13 +1,15 @@
 ---
-sidebarTitle: "Get-MessageTraceInfo"
+description: Retrieves message trace information based on specified criteria.
 document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Get-MessageTraceInfo
 Locale: en-US
 Module Name: PS365
-ms.date: 09/03/2026
-PlatyPS schema version: 2024-05-01
-title: "Get-MessageTraceInfo"
+ms.date: 09/07/2026
+sidebarTitle: Get-MessageTraceInfo
+title: Get-MessageTraceInfo
 ---
+
+# Get-MessageTraceInfo
 
 ## SYNOPSIS
 
@@ -15,11 +17,14 @@ Retrieves message trace information based on specified criteria.
 
 ## SYNTAX
 
-```powershell
+### __AllParameterSets
+
+```
 Get-MessageTraceInfo [[-SenderAddress] <string[]>] [[-RecipientAddress] <string[]>]
  [[-StartDate] <datetime>] [[-EndDate] <datetime>] [[-ByConnectorName] <string>]
  [[-ByTransportRuleName] <string>] [-UsingConnector]
 ```
+
 
 ## DESCRIPTION
 
@@ -30,17 +35,13 @@ It supports filtering by sender address, recipient address, start date, end date
 
 ### EXAMPLE 1
 
-```powershell
 Get-MessageTraceInfo -SenderAddress "john.doe@example.com" -RecipientAddress "jane.doe@example.com" -StartDate (Get-Date).AddDays(-7) -EndDate (Get-Date) -ByConnectorName "OutboundConnector" -UsingConnector
-```
 
 Retrieves message trace information for messages sent by "john.doe@example.com" to "jane.doe@example.com" within the last 7 days, using the "OutboundConnector" connector.
 
 ### EXAMPLE 2
 
-```powershell
 Get-MessageTraceInfo -RecipientAddress "jane.doe@example.com" -StartDate (Get-Date).AddDays(-30) -EndDate (Get-Date) -ByTransportRuleName "Confidential" -UsingConnector
-```
 
 Retrieves message trace information for messages received by "jane.doe@example.com" within the last 30 days, filtered by the "Confidential" transport rule, using a connector.
 
@@ -218,6 +219,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 This function requires the Exchange Online PowerShell module to be installed and connected to an Exchange Online organization.
 
 For some event, it will fail to get messagetracedetail
+
 
 ## RELATED LINKS
 

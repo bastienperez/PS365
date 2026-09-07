@@ -1,13 +1,15 @@
 ---
-sidebarTitle: "Set-ExMailboxMaxSize"
+description: Set maximum mailbox size for specified mailboxes.
 document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Set-ExMailboxMaxSize
 Locale: en-US
 Module Name: PS365
-ms.date: 09/03/2026
-PlatyPS schema version: 2024-05-01
-title: "Set-ExMailboxMaxSize"
+ms.date: 09/07/2026
+sidebarTitle: Set-ExMailboxMaxSize
+title: Set-ExMailboxMaxSize
 ---
+
+# Set-ExMailboxMaxSize
 
 ## SYNOPSIS
 
@@ -17,30 +19,31 @@ Set maximum mailbox size for specified mailboxes.
 
 ### Identity
 
-```powershell
+```
 Set-ExMailboxMaxSize [-Identity] <string[]> [-GenerateCmdlets] [-OutputFile <string>] [-WhatIf]
  [-Confirm]
 ```
 
 ### ByDomain
 
-```powershell
+```
 Set-ExMailboxMaxSize -ByDomain <string> [-GenerateCmdlets] [-OutputFile <string>] [-WhatIf]
  [-Confirm]
 ```
 
 ### FromCSV
 
-```powershell
+```
 Set-ExMailboxMaxSize -FromCSV <string> [-GenerateCmdlets] [-OutputFile <string>] [-WhatIf]
  [-Confirm]
 ```
 
 ### AllMailboxes
 
-```powershell
+```
 Set-ExMailboxMaxSize -AllMailboxes [-GenerateCmdlets] [-OutputFile <string>] [-WhatIf] [-Confirm]
 ```
+
 
 ## DESCRIPTION
 
@@ -51,41 +54,31 @@ It can target mailboxes by identity, by domain, from a CSV file, or all mailboxe
 
 ### EXAMPLE 1
 
-```powershell
 Set-ExMailboxMaxSize -Identity "user@example.com" -MaxReceiveSize 150MB -MaxSendSize 150MB
-```
 
 Sets the maximum mailbox size for the specified mailbox.
 
 ### EXAMPLE 2
 
-```powershell
 Set-ExMailboxMaxSize -ByDomain "example.com"
-```
 
 Sets the maximum mailbox size for all mailboxes in the specified domain.
 
 ### EXAMPLE 3
 
-```powershell
 Set-ExMailboxMaxSize -AllMailboxes
-```
 
 Sets the maximum mailbox size for all mailboxes in the organization.
 
 ### EXAMPLE 4
 
-```powershell
 Set-ExMailboxMaxSize -FromCSV "C:\path\to\file.csv"
-```
 
 Sets the maximum mailbox size for mailboxes listed in the specified CSV file.
 
 ### EXAMPLE 5
 
-```powershell
 Set-ExMailboxMaxSize -ByDomain "example.com" -GenerateCmdlets -OutputFile "C:\path\to\commands.ps1"
-```
 
 Generates the Set-Mailbox cmdlets for all mailboxes in the specified domain and saves them to the specified file without executing them.
 
@@ -274,6 +267,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### System.String[]
+
+{{ Fill in the Description }}
 
 ## OUTPUTS
 

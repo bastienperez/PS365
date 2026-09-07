@@ -1,80 +1,79 @@
-﻿# Description: This script is used to generate the 'Command Reference' section of the PS365 docusaurus site
+﻿# Description: This script is used to generate the 'Command Reference' section of the PS365 Mintlify site
 # * This command needs to be run from the root of the project. e.g. ./build/Build-CommandReference.ps1
-# * If running the docusaurus site locally you will need to stop and start Docusaurus to clear the 'Module not found' errors after running this command
+#
+# Uses Microsoft.PowerShell.PlatyPS directly (no Alt3.Docusaurus.Powershell): that wrapper targets
+# Docusaurus, not Mintlify, which is why the previous version had to patch the generated markdown
+# afterwards with regex (title/sidebarTitle injection, ProgressAction removal, description injection).
+# PlatyPS's own -Metadata and -Locale parameters produce the right frontmatter directly.
 
 $powershellModuleFolder = './powershell'
 $powershellModuleName = 'PS365.psm1'
-$websiteFolder = './website/docs'
-if (-not (Get-Module Alt3.Docusaurus.Powershell -ListAvailable)) { Install-Module Alt3.Docusaurus.Powershell -Scope CurrentUser -Force -SkipPublisherCheck }
-if (-not (Get-Module PlatyPS -ListAvailable)) { Install-Module PlatyPS -Scope CurrentUser -Force -SkipPublisherCheck }
-if (-not (Get-Module Pester -ListAvailable)) { Install-Module Pester -Scope CurrentUser -Force -SkipPublisherCheck }
+$commandsFolder = './website/docs/commands'
+$siteBaseUrl = 'https://ps365.clidsys.com/docs/commands'
 
-# PlatyPS must be imported before Alt3.Docusaurus.Powershell: Alt3 pulls in powershell-yaml,
-# which loads its own YamlDotNet and then blocks PlatyPS from loading its copy
-Import-Module PlatyPS
-Import-Module Alt3.Docusaurus.Powershell
+# if (-not (Get-Module Microsoft.PowerShell.PlatyPS -ListAvailable)) { Install-Module Microsoft.PowerShell.PlatyPS -Scope CurrentUser -Force -SkipPublisherCheck }
+Import-Module Microsoft.PowerShell.PlatyPS -Force
 
-# Generate the command reference markdown
-#$commandsIndexFile = "./website/docs/commands/readme.md"
-#$readmeContent = Get-Content $commandsIndexFile  # Backup the readme.md since it will be deleted by New-DocusaurusHelp
+# Best-effort: most section headers follow this, but "### EXAMPLE n" still comes back as
+# "EXEMPLE" on an fr-FR OS regardless (see the post-processing regex below).
+[System.Threading.Thread]::CurrentThread.CurrentUICulture = 'en-US'
 
 # Get all the public command names (recursive: the Public folder is organized in nested subfolders)
 $publicCommands = Get-ChildItem -Path "$powershellModuleFolder/Public" -Filter *.ps1 -File -Recurse | ForEach-Object { $_.BaseName }
 
-# The .psm1 dot-sources both Public and Private, so everything it exposes that is not a public
-# command is private and must be excluded from the documentation
 $module = Import-Module "$powershellModuleFolder/$powershellModuleName" -PassThru -Force
 $privateCommands = @($module.ExportedCommands.Keys | Where-Object { $_ -notin $publicCommands })
-Remove-Module -ModuleInfo $module -Force
 
 Write-Host "Documenting $($publicCommands.Count) public commands, excluding $($privateCommands.Count) private ones"
 
-New-DocusaurusHelp -Module "$powershellModuleFolder/$powershellModuleName" -DocsFolder $websiteFolder -NoPlaceHolderExamples -Exclude $privateCommands -VendorAgnostic
+if (Test-Path $commandsFolder) { Remove-Item "$commandsFolder/*.mdx" -Force -ErrorAction SilentlyContinue }
+else { New-Item -ItemType Directory -Path $commandsFolder -Force | Out-Null }
 
-# Update the markdown to include the synopsis as description so it can be displayed correctly in the doc links.
-$cmdMarkdownFiles = Get-ChildItem ./website/docs/commands
-foreach ($file in $cmdMarkdownFiles) {
-    $content = Get-Content $file
-    $synopsis = $content[($content.IndexOf('## SYNOPSIS') + 2)] # Get the synopsis
-    if (![string]::IsNullOrWhiteSpace($synopsis)) {
-        $content = $content.Replace('id:', "description: $($synopsis)`nid:")
-        Set-Content $file $content
+$tempFolder = Join-Path ([System.IO.Path]::GetTempPath()) "ps365-docs-$([guid]::NewGuid())"
+New-Item -ItemType Directory -Path $tempFolder -Force | Out-Null
+
+foreach ($commandName in $publicCommands) {
+    $cmd = Get-Command -Module $module.Name -Name $commandName -ErrorAction SilentlyContinue
+    if ($null -eq $cmd) { Write-Warning "Command $commandName not found in module, skipped"; continue }
+
+    $synopsis = (Get-Help $cmd.Name -ErrorAction SilentlyContinue).Synopsis
+    $synopsis = if ([string]::IsNullOrWhiteSpace($synopsis)) { $null } else { $synopsis.Trim() }
+
+    # "$commandName" (not the bare variable) forces a distinct string instance for each key.
+    # PlatyPS's YAML metadata writer emits a full reflection dump instead of a plain scalar when
+    # two hashtable values share the exact same string reference.
+    $metadata = @{
+        title        = "$commandName"
+        sidebarTitle = "$commandName"
     }
+    if ($null -ne $synopsis) { $metadata.description = $synopsis }
 
-    # Remove lines containing "external help file:", "schema:", or "online version:" only within the first 10 lines
-    $first10Lines = $content | Select-Object -First 10 | Where-Object { $_ -notmatch '^(external help file:|schema:|online version:)' }
-    $remainingLines = $content | Select-Object -Skip 10
-    $content = $first10Lines + $remainingLines
+    New-MarkdownCommandHelp -CommandInfo $cmd -OutputFolder $tempFolder -Force -Locale en-US `
+        -Metadata $metadata -HelpUri "$siteBaseUrl/$commandName" -ExcludeDontShow | Out-Null
 
-    # Remove the -ProgressAction parameter section (common parameter not useful in documentation)
-    $contentText = $content -join "`n"
-    $contentText = $contentText -replace '(?s)\n*### -ProgressAction.*?Accept wildcard characters: False\s*```\s*\n*', "`n"
-    $content = $contentText -split "`n"
+    $generated = Join-Path $tempFolder "$($module.Name)/$commandName.md"
+    if (-not (Test-Path $generated)) { Write-Warning "No markdown generated for $commandName"; continue }
 
-    # Inject title + sidebarTitle with the real command name (keeps the hyphen, e.g. Get-IntuneAutoMDMEnrollmentPolicy)
-    $commandName = [System.IO.Path]::GetFileNameWithoutExtension($file.Name)
-    $contentText = $content -join "`n"
+    $content = Get-Content $generated -Raw
 
-    # title (used as the page H1 in Mintlify)
-    if ($contentText -match '(?m)^title:') {
-        $contentText = $contentText -replace '(?m)^title:.*$', "title: `"$commandName`""
-    }
-    else {
-        $contentText = $contentText -replace '(?s)^(---\r?\n)', "`$1title: `"$commandName`"`n"
-    }
+    # Drop the "external help file:"/"schema:" lines: internal PlatyPS bookkeeping, not useful in the docs
+    $content = $content -replace '(?m)^(external help file|PlatyPS schema version):.*\r?\n', ''
 
-    # sidebarTitle (keeps the hyphen in the navigation)
-    if ($contentText -match '(?m)^sidebarTitle:') {
-        $contentText = $contentText -replace '(?m)^sidebarTitle:.*$', "sidebarTitle: `"$commandName`""
-    }
-    else {
-        $contentText = $contentText -replace '(?s)^(---\r?\n)', "`$1sidebarTitle: `"$commandName`"`n"
-    }
+    # Drop the ALIASES section when PlatyPS could not find any and left its literal placeholder
+    $content = $content -replace '(?s)\r?\n## ALIASES\r?\n\r?\nThis cmdlet has the following aliases,\r?\n\s*\{\{Insert list of aliases\}\}\r?\n', "`n"
 
-    $content = $contentText -split "`n"
+    # RELATED LINKS: PlatyPS emits "- [](url)" (empty link text) when comment-based help has no .LINK label
+    $content = $content -replace '(?m)^- \[\]\((https?://[^\)]+)\)\r?$', '- [$1]($1)'
 
-    Set-Content $file $content
+    # "EXAMPLE" heading comes back translated as "EXEMPLE" on an fr-FR OS: it's produced by
+    # Get-Help's own comment-based-help parser (OS help-engine locale), not by PlatyPS's -Locale.
+    $content = $content -replace '(?m)^### EXEMPLE (\d+)\r?$', '### EXAMPLE $1'
+
+    Set-Content -Path (Join-Path $commandsFolder "$commandName.mdx") -Value $content -NoNewline
 }
+
+Remove-Module -ModuleInfo $module -Force
+Remove-Item $tempFolder -Recurse -Force -ErrorAction SilentlyContinue
 
 # Update docs.json navigation based on PowerShell module structure
 $docsJsonPath = './website/docs.json'

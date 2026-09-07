@@ -1,13 +1,15 @@
 ---
-sidebarTitle: "Get-MgCustomSecurityAttributeInfo"
+description: Reports custom security attributes assigned to users, devices, and service principals (enterprise apps) in Microsoft Entra ID.
 document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Get-MgCustomSecurityAttributeInfo
 Locale: en-US
 Module Name: PS365
-ms.date: 09/03/2026
-PlatyPS schema version: 2024-05-01
-title: "Get-MgCustomSecurityAttributeInfo"
+ms.date: 09/07/2026
+sidebarTitle: Get-MgCustomSecurityAttributeInfo
+title: Get-MgCustomSecurityAttributeInfo
 ---
+
+# Get-MgCustomSecurityAttributeInfo
 
 ## SYNOPSIS
 
@@ -15,10 +17,13 @@ Reports custom security attributes assigned to users, devices, and service princ
 
 ## SYNTAX
 
-```powershell
-Get-MgCustomSecurityAttributeInfo [[-AttributeSet] <string>] [-EntityType <string[]>]
- [-OnlyAssigned] [-ForceNewToken] [-ExportToExcel] [-ExportPath <string>]
+### __AllParameterSets
+
 ```
+Get-MgCustomSecurityAttributeInfo [[-AttributeSet] <string>] [-EntityType <string[]>]
+ [-OnlyAssigned] [-UnusedOnly] [-ForceNewToken] [-ExportToExcel] [-ExportPath <string>]
+```
+
 
 ## DESCRIPTION
 
@@ -30,35 +35,34 @@ The output is one row per (entity, attribute set, attribute name, value) so it c
 
 ### EXAMPLE 1
 
-```powershell
 Get-MgCustomSecurityAttributeInfo
-```
 
 Auto-discovers all attribute sets and returns assignments across users, devices, and service principals.
 
 ### EXAMPLE 2
 
-```powershell
 Get-MgCustomSecurityAttributeInfo -AttributeSet 'ComplianceData'
-```
 
 Returns assignments only for the 'ComplianceData' attribute set.
 
 ### EXAMPLE 3
 
-```powershell
 Get-MgCustomSecurityAttributeInfo -EntityType User, ServicePrincipal
-```
 
 Returns assignments only for users and service principals (skips devices).
 
 ### EXAMPLE 4
 
-```powershell
-Get-MgCustomSecurityAttributeInfo -ExportToExcel
-```
+Get-MgCustomSecurityAttributeInfo -UnusedOnly
 
-Exports results to an Excel file in the user's profile directory, with one worksheet per entity type.
+Returns only the attribute definitions assigned to nobody, with their set and their status.
+
+### EXAMPLE 5
+
+Get-MgCustomSecurityAttributeInfo -ExportToExcel
+
+Exports results to an Excel file in the user's profile directory, with one worksheet per entity type,
+plus an 'Unused' worksheet listing the definitions nobody uses.
 
 ## PARAMETERS
 
@@ -192,6 +196,37 @@ AcceptedValues: []
 HelpMessage: ''
 ```
 
+### -UnusedOnly
+
+Returns the attribute definitions that exist in the tenant but are assigned to no entity, instead of the
+assignments themselves.
+These are the cleanup candidates: a definition nobody uses still shows up in every
+attribute picker and still has to be governed.
+The scan is the same either way, so the count is always reported, whether or not this switch is present.
+The count is only trustworthy when every entity type was scanned without error.
+With a restricted -EntityType,
+or after an entity read failure, the result is reported as scoped: an attribute assigned only on a skipped
+entity type would otherwise look unused.
+A failure to read the definitions themselves is different: there is
+nothing to compare the assignments against, so the unused report is unavailable rather than scoped.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
 ### CommonParameters
 
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
@@ -202,6 +237,10 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ## OUTPUTS
+
+### System.Management.Automation.PSObject
+
+{{ Fill in the Description }}
 
 ## NOTES
 
@@ -215,6 +254,7 @@ Required Microsoft Graph permissions:
 The custom security attribute on devices is in preview at the time of writing and uses the Graph beta endpoint.
 Reading customSecurityAttributes requires the caller to be granted the 'Attribute Assignment Reader' (or higher) directory role
 in addition to the application/delegated permissions above.
+
 
 ## RELATED LINKS
 

@@ -1,13 +1,15 @@
 ---
-sidebarTitle: "New-ExTransportRuleFromJson"
+description: Creates Exchange Online transport (mail flow) rules from one or more JSON definition files.
 document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/New-ExTransportRuleFromJson
 Locale: en-US
 Module Name: PS365
-ms.date: 09/03/2026
-PlatyPS schema version: 2024-05-01
-title: "New-ExTransportRuleFromJson"
+ms.date: 09/07/2026
+sidebarTitle: New-ExTransportRuleFromJson
+title: New-ExTransportRuleFromJson
 ---
+
+# New-ExTransportRuleFromJson
 
 ## SYNOPSIS
 
@@ -15,10 +17,13 @@ Creates Exchange Online transport (mail flow) rules from one or more JSON defini
 
 ## SYNTAX
 
-```powershell
+### __AllParameterSets
+
+```
 New-ExTransportRuleFromJson [-Path] <string[]> [-Force] [-GenerateCmdlets] [-OutputFile <string>]
  [-WhatIf] [-Confirm]
 ```
+
 
 ## DESCRIPTION
 
@@ -39,9 +44,7 @@ The function expects a connected ExchangeOnlineManagement session (Connect-Excha
 
 ### EXAMPLE 1
 
-```powershell
 Connect-ExchangeOnline
-```
 
 New-ExTransportRuleFromJson -Path "C:\eop-rules\Block-Outbound-OnMicrosoft.json"
 
@@ -49,25 +52,19 @@ Creates a single transport rule from the specified JSON file.
 
 ### EXAMPLE 2
 
-```powershell
 New-ExTransportRuleFromJson -Path "C:\eop-rules" -WhatIf
-```
 
 Lists every transport rule that would be created from the JSON files in the directory without applying any change.
 
 ### EXAMPLE 3
 
-```powershell
 New-ExTransportRuleFromJson -Path "C:\eop-rules" -Force
-```
 
 Creates every rule defined in the directory; pre-existing rules with the same Name are removed first.
 
 ### EXAMPLE 4
 
-```powershell
 New-ExTransportRuleFromJson -Path "C:\eop-rules" -GenerateCmdlets -OutputFile "C:\temp\eop-rules.ps1"
-```
 
 Emits the equivalent New-TransportRule cmdlets to the specified file without executing them.
 Useful for review or for
@@ -221,6 +218,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ### System.String[]
 
+{{ Fill in the Description }}
+
 ## OUTPUTS
 
 ## NOTES
@@ -233,6 +232,7 @@ JSON content is converted to an ordered hashtable through a local helper to stay
   running the function (unless -GenerateCmdlets is specified, which only emits the cmdlet text).
 - The signed-in account must hold a role with permission to manage mail flow rules, typically Exchange
   Administrator or a member of the Organization Management role group.
+
 
 ## RELATED LINKS
 

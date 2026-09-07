@@ -1,13 +1,15 @@
 ---
-sidebarTitle: "Get-ExMailboxMaxSize"
+description: Get Exchange Mailbox Max Send and Receive Size limits.
 document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Get-ExMailboxMaxSize
 Locale: en-US
 Module Name: PS365
-ms.date: 09/03/2026
-PlatyPS schema version: 2024-05-01
-title: "Get-ExMailboxMaxSize"
+ms.date: 09/07/2026
+sidebarTitle: Get-ExMailboxMaxSize
+title: Get-ExMailboxMaxSize
 ---
+
+# Get-ExMailboxMaxSize
 
 ## SYNOPSIS
 
@@ -15,10 +17,13 @@ Get Exchange Mailbox Max Send and Receive Size limits.
 
 ## SYNTAX
 
-```powershell
+### __AllParameterSets
+
+```
 Get-ExMailboxMaxSize [[-Identity] <string>] [-ByDomain <string>] [-ExportToExcel]
  [-ExportPath <string>]
 ```
+
 
 ## DESCRIPTION
 
@@ -28,33 +33,25 @@ This function retrieves the maximum send and receive size limits for Exchange On
 
 ### EXAMPLE 1
 
-```powershell
 Get-ExMailboxMaxSize
     
 Retrieves the max send and receive size limits for all Exchange Online mailboxes.
-```
 
 ### EXAMPLE 2
 
-```powershell
 Get-ExMailboxMaxSize -ByDomain "contoso.com"
-```
 
 Retrieves the max send and receive size limits for mailboxes in the specified domain.
 
 ### EXAMPLE 3
 
-```powershell
 Get-ExMailboxMaxSize -Identity "user@contoso.com"
-```
 
 Retrieves the max send and receive size limits for the specified mailbox.
 
 ### EXAMPLE 4
 
-```powershell
 Get-ExMailboxMaxSize -ExportToExcel
-```
 
 Exports results to an Excel file.
 
@@ -155,6 +152,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### System.String
+
+{{ Fill in the Description }}
 
 ## OUTPUTS
 

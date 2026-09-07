@@ -1,13 +1,15 @@
 ---
-sidebarTitle: "Convert-EntraObjectIDAndSID"
+description: Converts between Microsoft Entra ID SID and Object ID formats.
 document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Convert-EntraObjectIDAndSID
 Locale: en-US
 Module Name: PS365
-ms.date: 09/03/2026
-PlatyPS schema version: 2024-05-01
-title: "Convert-EntraObjectIDAndSID"
+ms.date: 09/07/2026
+sidebarTitle: Convert-EntraObjectIDAndSID
+title: Convert-EntraObjectIDAndSID
 ---
+
+# Convert-EntraObjectIDAndSID
 
 ## SYNOPSIS
 
@@ -15,9 +17,12 @@ Converts between Microsoft Entra ID SID and Object ID formats.
 
 ## SYNTAX
 
-```powershell
+### __AllParameterSets
+
+```
 Convert-EntraObjectIDAndSID [-Value] <string>
 ```
+
 
 ## DESCRIPTION
 
@@ -31,25 +36,19 @@ and converts it to the other format.
 
 ### EXAMPLE 1
 
-```powershell
 Convert-EntraObjectIDAndSID -Value "S-1-12-1-1234567890-987654321-1122334455-5544332211"
-```
 
 Converts the given SID to its corresponding Object ID (GUID).
 
 ### EXAMPLE 2
 
-```powershell
 Convert-EntraObjectIDAndSID -Value "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
-```
 
 Converts the given Object ID to its corresponding SID.
 
 ### EXAMPLE 3
 
-```powershell
 "S-1-12-1-1234567890-987654321-1122334455-5544332211", "a1b2c3d4-e5f6-7890-abcd-ef1234567890" | Convert-EntraObjectIDAndSID
-```
 
 Converts multiple values via pipeline input.
 
@@ -59,7 +58,7 @@ Converts multiple values via pipeline input.
 
 The SID or Object ID to convert.
 Accepts pipeline input.
-- SID format:       S-1-12-1-\{4 decimal numbers separated by dashes\}
+- SID format:       S-1-12-1-{4 decimal numbers separated by dashes}
 - Object ID format: GUID (e.g., xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)
 
 ```yaml
@@ -90,12 +89,15 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ### System.String
 
+{{ Fill in the Description }}
+
 ## OUTPUTS
 
 ## NOTES
 
-Entra ID uses a specific SID format: S-1-12-1-\{4 UInt32 components derived from the GUID bytes\}.
-This conversion is bijective: SID &lt;-&gt; ObjectID.
+Entra ID uses a specific SID format: S-1-12-1-{4 UInt32 components derived from the GUID bytes}.
+This conversion is bijective: SID <-> ObjectID.
+
 
 ## RELATED LINKS
 

@@ -1,13 +1,15 @@
 ---
-sidebarTitle: "Switch-MgGraphPowerShellMode"
+description: Switches Microsoft Graph PowerShell authentication mode between Browser and WAM.
 document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Switch-MgGraphPowerShellMode
 Locale: en-US
 Module Name: PS365
-ms.date: 09/03/2026
-PlatyPS schema version: 2024-05-01
-title: "Switch-MgGraphPowerShellMode"
+ms.date: 09/07/2026
+sidebarTitle: Switch-MgGraphPowerShellMode
+title: Switch-MgGraphPowerShellMode
 ---
+
+# Switch-MgGraphPowerShellMode
 
 ## SYNOPSIS
 
@@ -17,21 +19,22 @@ Switches Microsoft Graph PowerShell authentication mode between Browser and WAM.
 
 ### Toggle (Default)
 
-```powershell
+```
 Switch-MgGraphPowerShellMode
 ```
 
 ### Specify
 
-```powershell
+```
 Switch-MgGraphPowerShellMode [-Mode <string>]
 ```
 
 ### GetCurrent
 
-```powershell
+```
 Switch-MgGraphPowerShellMode [-GetCurrent]
 ```
+
 
 ## DESCRIPTION
 
@@ -53,33 +56,25 @@ But, in some cases, especially when connecting to client environments, it might 
 
 ### EXAMPLE 1
 
-```powershell
 Switch-MgGraphPowerShellMode
-```
 
 Toggles between browser and WAM authentication modes.
 
 ### EXAMPLE 2
 
-```powershell
 Switch-MgGraphPowerShellMode -Mode Browser
-```
 
 Switches to browser-based authentication.
 
 ### EXAMPLE 3
 
-```powershell
 Switch-MgGraphPowerShellMode -Mode WAM
-```
 
 Switches to Web Account Manager authentication.
 
 ### EXAMPLE 4
 
-```powershell
 Switch-MgGraphPowerShellMode -GetCurrent
-```
 
 Displays the current authentication mode.
 

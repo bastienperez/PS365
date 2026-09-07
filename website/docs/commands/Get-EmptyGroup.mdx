@@ -1,13 +1,15 @@
 ---
-sidebarTitle: "Get-EmptyGroup"
+description: Retrieves all empty groups (zero members) in Microsoft Entra ID.
 document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Get-EmptyGroup
 Locale: en-US
 Module Name: PS365
-ms.date: 09/03/2026
-PlatyPS schema version: 2024-05-01
-title: "Get-EmptyGroup"
+ms.date: 09/07/2026
+sidebarTitle: Get-EmptyGroup
+title: Get-EmptyGroup
 ---
+
+# Get-EmptyGroup
 
 ## SYNOPSIS
 
@@ -15,9 +17,12 @@ Retrieves all empty groups (zero members) in Microsoft Entra ID.
 
 ## SYNTAX
 
-```powershell
+### __AllParameterSets
+
+```
 Get-EmptyGroup [[-ExportPath] <string>] [-ExportToExcel]
 ```
+
 
 ## DESCRIPTION
 
@@ -30,25 +35,19 @@ export to Excel or CSV for further analysis and cleanup.
 
 ### EXAMPLE 1
 
-```powershell
 Get-EmptyGroup
-```
 
 Retrieves all empty groups and outputs them to the console.
 
 ### EXAMPLE 2
 
-```powershell
 Get-EmptyGroup -ExportToExcel
-```
 
 Retrieves all empty groups and exports the results to an Excel file.
 
 ### EXAMPLE 3
 
-```powershell
 Get-EmptyGroup -ExportCsv 'C:\temp\empty-groups.csv'
-```
 
 Retrieves all empty groups and exports the results to a CSV file.
 
@@ -110,6 +109,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ### System.Collections.Generic.List[Object]
 
+{{ Fill in the Description }}
+
 ## NOTES
 
 OUTPUT PROPERTIES
@@ -122,6 +123,7 @@ Returns a collection of custom objects with the following properties:
 - Description: Description of the group
 
 Requires Microsoft.Graph module: Connect-MgGraph -Scopes 'Group.Read.All'
+
 
 ## RELATED LINKS
 

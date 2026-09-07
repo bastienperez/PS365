@@ -1,13 +1,15 @@
 ---
-sidebarTitle: "Get-ExMailboxProtocol"
+description: Retrieves mailbox protocol settings for Exchange Online mailboxes.
 document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Get-ExMailboxProtocol
 Locale: en-US
 Module Name: PS365
-ms.date: 09/03/2026
-PlatyPS schema version: 2024-05-01
-title: "Get-ExMailboxProtocol"
+ms.date: 09/07/2026
+sidebarTitle: Get-ExMailboxProtocol
+title: Get-ExMailboxProtocol
 ---
+
+# Get-ExMailboxProtocol
 
 ## SYNOPSIS
 
@@ -15,10 +17,13 @@ Retrieves mailbox protocol settings for Exchange Online mailboxes.
 
 ## SYNTAX
 
-```powershell
+### __AllParameterSets
+
+```
 Get-ExMailboxProtocol [[-Identity] <string>] [-ByDomain <string>] [-ExportToExcel]
  [-ExportPath <string>]
 ```
+
 
 ## DESCRIPTION
 
@@ -32,33 +37,25 @@ at both the mailbox and tenant levels.
 
 ### EXAMPLE 1
 
-```powershell
 Get-ExMailboxProtocol
-```
 
 Retrieves mailbox protocol settings for all Exchange Online mailboxes.
 
 ### EXAMPLE 2
 
-```powershell
 Get-ExMailboxProtocol -Identity "user@example.com"
-```
 
 Retrieves mailbox protocol settings for the specified mailbox.
 
 ### EXAMPLE 3
 
-```powershell
 Get-ExMailboxProtocol -ByDomain "example.com"
-```
 
 Retrieves mailbox protocol settings for all mailboxes in the specified domain.
 
 ### EXAMPLE 4
 
-```powershell
 Get-ExMailboxProtocol -ExportToExcel
-```
 
 Exports mailbox protocol settings for all Exchange Online mailboxes to an Excel file in the user's profile directory.
 
@@ -161,6 +158,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### System.String
+
+{{ Fill in the Description }}
 
 ## OUTPUTS
 

@@ -1,13 +1,15 @@
 ---
-sidebarTitle: "Compare-UserAttribute"
+description: Compare two user attributes from different sources.
 document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Compare-UserAttribute
 Locale: en-US
 Module Name: PS365
-ms.date: 09/03/2026
-PlatyPS schema version: 2024-05-01
-title: "Compare-UserAttribute"
+ms.date: 09/07/2026
+sidebarTitle: Compare-UserAttribute
+title: Compare-UserAttribute
 ---
+
+# Compare-UserAttribute
 
 ## SYNOPSIS
 
@@ -15,10 +17,13 @@ Compare two user attributes from different sources.
 
 ## SYNTAX
 
-```powershell
+### __AllParameterSets
+
+```
 Compare-UserAttribute [-Attribute1] <string> [-Attribute2] <string> [-Source] <string>
  [[-User] <string[]>] [[-ByDomain] <string[]>] [-Return] <string>
 ```
+
 
 ## DESCRIPTION
 
@@ -31,18 +36,14 @@ whose attributes either match or do not match.
 
 ### EXAMPLE 1
 
-```powershell
 Compare-UserAttribute -Attribute1 "mail" -Attribute2 "proxyAddresses" -
-```
 
 Compares the 'mail' and 'proxyAddresses' attributes for users in Active Directory
 and returns those with matching values.
 
 ### EXAMPLE 2
 
-```powershell
 Compare-UserAttribute -Attribute1 "userPrincipalName" -Attribute2 "mail" -Source "EntraID" -Return "NotMatching"
-```
 
 Compares the 'userPrincipalName' and 'mail' attributes for users in Entra ID
 and returns those with non-matching values.

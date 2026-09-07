@@ -1,13 +1,15 @@
 ---
-sidebarTitle: "Get-NestedGroup"
+description: Lists all nested group dependencies (group-in-group) in Microsoft Entra ID.
 document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Get-NestedGroup
 Locale: en-US
 Module Name: PS365
-ms.date: 09/03/2026
-PlatyPS schema version: 2024-05-01
-title: "Get-NestedGroup"
+ms.date: 09/07/2026
+sidebarTitle: Get-NestedGroup
+title: Get-NestedGroup
 ---
+
+# Get-NestedGroup
 
 ## SYNOPSIS
 
@@ -15,9 +17,12 @@ Lists all nested group dependencies (group-in-group) in Microsoft Entra ID.
 
 ## SYNTAX
 
-```powershell
+### __AllParameterSets
+
+```
 Get-NestedGroup [[-ExportPath] <string>] [-ExportToExcel] [-ExportToHtml]
 ```
+
 
 ## DESCRIPTION
 
@@ -31,25 +36,19 @@ further analysis.
 
 ### EXAMPLE 1
 
-```powershell
 Get-NestedGroup
-```
 
 Retrieves all nested group dependencies and outputs them to the console.
 
 ### EXAMPLE 2
 
-```powershell
 Get-NestedGroup -ExportToExcel
-```
 
 Retrieves all nested group dependencies and exports the results to an Excel file.
 
 ### EXAMPLE 3
 
-```powershell
 Get-NestedGroup -ExportToHtml
-```
 
 Retrieves all nested group dependencies and exports an interactive HTML graph to the user's profile directory.
 
@@ -136,6 +135,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ### System.Collections.Generic.List[Object]
 
+{{ Fill in the Description }}
+
 ## NOTES
 
 OUTPUT PROPERTIES
@@ -148,6 +149,7 @@ Returns a collection of custom objects with the following properties:
 - ParentGroupType: Type of the parent group
 
 Requires Microsoft.Graph module: Connect-MgGraph -Scopes 'Group.Read.All'
+
 
 ## RELATED LINKS
 

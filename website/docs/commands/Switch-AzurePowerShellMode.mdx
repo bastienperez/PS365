@@ -1,13 +1,15 @@
 ---
-sidebarTitle: "Switch-AzurePowerShellMode"
+description: Switches Azure PowerShell authentication between browser and WAM modes.
 document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Switch-AzurePowerShellMode
 Locale: en-US
 Module Name: PS365
-ms.date: 09/03/2026
-PlatyPS schema version: 2024-05-01
-title: "Switch-AzurePowerShellMode"
+ms.date: 09/07/2026
+sidebarTitle: Switch-AzurePowerShellMode
+title: Switch-AzurePowerShellMode
 ---
+
+# Switch-AzurePowerShellMode
 
 ## SYNOPSIS
 
@@ -17,21 +19,22 @@ Switches Azure PowerShell authentication between browser and WAM modes.
 
 ### Toggle (Default)
 
-```powershell
+```
 Switch-AzurePowerShellMode
 ```
 
 ### Specify
 
-```powershell
+```
 Switch-AzurePowerShellMode [-Mode <string>]
 ```
 
 ### GetCurrent
 
-```powershell
+```
 Switch-AzurePowerShellMode [-GetCurrent]
 ```
+
 
 ## DESCRIPTION
 
@@ -53,33 +56,25 @@ But, in some cases, especially when connecting to client environments, it might 
 
 ### EXAMPLE 1
 
-```powershell
 Switch-AzurePowerShellMode
-```
 
 Toggles between browser and WAM authentication modes.
 
 ### EXAMPLE 2
 
-```powershell
 Switch-AzurePowerShellMode -Mode Browser
-```
 
 Switches to browser-based authentication.
 
 ### EXAMPLE 3
 
-```powershell
 Switch-AzurePowerShellMode -Mode WAM
-```
 
 Switches to Web Account Manager authentication.
 
 ### EXAMPLE 4
 
-```powershell
 Switch-AzurePowerShellMode -GetCurrent
-```
 
 Displays the current authentication mode.
 

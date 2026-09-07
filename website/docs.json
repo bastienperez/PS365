@@ -84,6 +84,8 @@
             "pages": [
               "docs/commands/Convert-EntraObjectIDAndSID",
               "docs/commands/Get-MgCustomSecurityAttributeInfo",
+              "docs/commands/Get-MgDirectorySyncInfo",
+              "docs/commands/Get-MgExtensionAttributeInfo",
               "docs/commands/Get-MgExternalUser",
               "docs/commands/Get-MgUserIdentitySummary",
               "docs/commands/Get-MgUserProvisioningError"

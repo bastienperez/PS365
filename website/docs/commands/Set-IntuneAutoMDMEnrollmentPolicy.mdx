@@ -1,13 +1,15 @@
 ---
-sidebarTitle: "Set-IntuneAutoMDMEnrollmentPolicy"
+description: Configures the MDM enrollment policy for Microsoft Entra ID.
 document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Set-IntuneAutoMDMEnrollmentPolicy
 Locale: en-US
 Module Name: PS365
-ms.date: 09/03/2026
-PlatyPS schema version: 2024-05-01
-title: "Set-IntuneAutoMDMEnrollmentPolicy"
+ms.date: 09/07/2026
+sidebarTitle: Set-IntuneAutoMDMEnrollmentPolicy
+title: Set-IntuneAutoMDMEnrollmentPolicy
 ---
+
+# Set-IntuneAutoMDMEnrollmentPolicy
 
 ## SYNOPSIS
 
@@ -15,9 +17,12 @@ Configures the MDM enrollment policy for Microsoft Entra ID.
 
 ## SYNTAX
 
-```powershell
+### __AllParameterSets
+
+```
 Set-IntuneAutoMDMEnrollmentPolicy [-State] <string> [-WhatIf] [-Confirm]
 ```
+
 
 ## DESCRIPTION
 
@@ -28,17 +33,13 @@ registration in Microsoft Entra ID.
 
 ### EXAMPLE 1
 
-```powershell
 Set-IntuneAutoMDMEnrollmentPolicy -State 'Disabled'
-```
 
 Disables automatic MDM enrollment during device registration.
 
 ### EXAMPLE 2
 
-```powershell
 Set-IntuneAutoMDMEnrollmentPolicy -State 'Enabled'
-```
 
 Enables automatic MDM enrollment during device registration.
 
@@ -128,6 +129,7 @@ Requires the following Microsoft Graph permissions:
 - Policy.ReadWrite.MobilityManagement
 
 Connect-MgGraph -Scopes 'Policy.ReadWrite.MobilityManagement'
+
 
 ## RELATED LINKS
 

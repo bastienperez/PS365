@@ -1,13 +1,15 @@
 ---
-sidebarTitle: "Get-ExMailboxOnMicrosoftAddress"
+description: Lists Exchange Online mailboxes with an @onmicrosoft.com email address
 document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Get-ExMailboxOnMicrosoftAddress
 Locale: en-US
 Module Name: PS365
-ms.date: 09/03/2026
-PlatyPS schema version: 2024-05-01
-title: "Get-ExMailboxOnMicrosoftAddress"
+ms.date: 09/07/2026
+sidebarTitle: Get-ExMailboxOnMicrosoftAddress
+title: Get-ExMailboxOnMicrosoftAddress
 ---
+
+# Get-ExMailboxOnMicrosoftAddress
 
 ## SYNOPSIS
 
@@ -15,10 +17,13 @@ Lists Exchange Online mailboxes with an @onmicrosoft.com email address
 
 ## SYNTAX
 
-```powershell
+### __AllParameterSets
+
+```
 Get-ExMailboxOnMicrosoftAddress [[-Identity] <string[]>] [-ByDomain <string>] [-ExportToExcel]
  [-ExportPath <string>]
 ```
+
 
 ## DESCRIPTION
 
@@ -29,39 +34,29 @@ Returns an object for each mailbox with relevant details.
 
 ### EXAMPLE 1
 
-```powershell
 Get-ExMailboxOnMicrosoftAddress
-```
 
 Returns objects containing mailbox details for those with @onmicrosoft.com addresses.
 
 ### EXAMPLE 2
 
-```powershell
 Get-ExMailboxOnMicrosoftAddress -ByDomain "contoso.com"
-```
 
 Returns mailboxes with @onmicrosoft.com addresses filtered by the specified domain.
 
 ### EXAMPLE 3
 
-```powershell
 Get-ExMailboxOnMicrosoftAddress -Identity "user@contoso.com"
-```
 
 Returns the @onmicrosoft.com address for the specified mailbox identity.
 
 ### EXAMPLE 4
 
-```powershell
 $mailboxes | Get-ExMailboxOnMicrosoftAddress
-```
 
 ### EXAMPLE 5
 
-```powershell
 Get-ExMailboxOnMicrosoftAddress -ExportToExcel
-```
 
 Exports results to an Excel file.
 
@@ -69,7 +64,7 @@ Exports results to an Excel file.
 
 ### -ByDomain
 
-\{\{ Fill ByDomain Description \}\}
+{{ Fill ByDomain Description }}
 
 ```yaml
 Type: System.String
@@ -132,7 +127,7 @@ HelpMessage: ''
 
 ### -Identity
 
-\{\{ Fill Identity Description \}\}
+{{ Fill Identity Description }}
 
 ```yaml
 Type: System.String[]
@@ -161,6 +156,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### System.String[]
+
+{{ Fill in the Description }}
 
 ## OUTPUTS
 

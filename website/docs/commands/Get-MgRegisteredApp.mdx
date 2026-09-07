@@ -1,13 +1,15 @@
 ---
-sidebarTitle: "Get-MgRegisteredApp"
+description: Get registered application in Microsoft Graph
 document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Get-MgRegisteredApp
 Locale: en-US
 Module Name: PS365
-ms.date: 09/03/2026
-PlatyPS schema version: 2024-05-01
-title: "Get-MgRegisteredApp"
+ms.date: 09/07/2026
+sidebarTitle: Get-MgRegisteredApp
+title: Get-MgRegisteredApp
 ---
+
+# Get-MgRegisteredApp
 
 ## SYNOPSIS
 
@@ -17,27 +19,28 @@ Get registered application in Microsoft Graph
 
 ### All (Default)
 
-```powershell
+```
 Get-MgRegisteredApp
 ```
 
 ### ByAppId
 
-```powershell
+```
 Get-MgRegisteredApp [[-ApplicationID] <string>]
 ```
 
 ### ByObjectId
 
-```powershell
+```
 Get-MgRegisteredApp [-ObjectID <string>]
 ```
 
 ### ByDisplayName
 
-```powershell
+```
 Get-MgRegisteredApp [-DisplayName <string>]
 ```
+
 
 ## DESCRIPTION
 
@@ -48,49 +51,37 @@ If no ApplicationID, ObjectID, or DisplayName is provided, returns all applicati
 
 ### EXAMPLE 1
 
-```powershell
 Get-MgRegisteredApp -ApplicationID "your-application-id"
-```
 
 This command retrieves the registered application with the specified Application ID (AppId).
 
 ### EXAMPLE 2
 
-```powershell
 Get-MgRegisteredApp -ObjectID "xxx-xxx-xxx"
-```
 
 This command retrieves the registered application with the specified ObjectID.
 
 ### EXAMPLE 3
 
-```powershell
 Get-MgRegisteredApp -DisplayName "My Application"
-```
 
 This command retrieves the registered application with the specified DisplayName.
 
 ### EXAMPLE 4
 
-```powershell
 Get-MgRegisteredApp -DisplayName "Azure*"
-```
 
 This command retrieves all registered applications whose DisplayName starts with "Azure".
 
 ### EXAMPLE 5
 
-```powershell
 Get-MgRegisteredApp -DisplayName "*Portal*"
-```
 
 This command retrieves all registered applications whose DisplayName contains "Portal".
 
 ### EXAMPLE 6
 
-```powershell
 Get-MgRegisteredApp
-```
 
 This command retrieves all registered applications.
 
@@ -177,6 +168,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 Same as the Microsoft Graph built-in function `Get-MgApplication` but with a simplified output.
+
 
 ## RELATED LINKS
 

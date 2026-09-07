@@ -1,13 +1,15 @@
 ---
-sidebarTitle: "Copy-AzAutomationRunbook"
+description: Copies all runbooks from a source Azure Automation account to a destination account.
 document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Copy-AzAutomationRunbook
 Locale: en-US
 Module Name: PS365
-ms.date: 09/03/2026
-PlatyPS schema version: 2024-05-01
-title: "Copy-AzAutomationRunbook"
+ms.date: 09/07/2026
+sidebarTitle: Copy-AzAutomationRunbook
+title: Copy-AzAutomationRunbook
 ---
+
+# Copy-AzAutomationRunbook
 
 ## SYNOPSIS
 
@@ -15,10 +17,13 @@ Copies all runbooks from a source Azure Automation account to a destination acco
 
 ## SYNTAX
 
-```powershell
+### __AllParameterSets
+
+```
 Copy-AzAutomationRunbook [-SourceAutomationAccount] <string>
  [-DestinationAutomationAccount] <string> [-ResourceGroup] <string> [[-TempFolder] <string>]
 ```
+
 
 ## DESCRIPTION
 
@@ -29,17 +34,13 @@ into a destination Azure Automation account within the same resource group.
 
 ### EXAMPLE 1
 
-```powershell
 Copy-AzAutomationRunbook -SourceAutomationAccount 'newauto' -DestinationAutomationAccount 'newauto1' -ResourceGroup 'my-rg'
-```
 
 Copies all runbooks from 'newauto' to 'newauto1'.
 
 ### EXAMPLE 2
 
-```powershell
 Copy-AzAutomationRunbook -SourceAutomationAccount 'newauto' -DestinationAutomationAccount 'newauto1' -ResourceGroup 'my-rg' -TempFolder 'C:\Temp\Runbooks'
-```
 
 Copies all runbooks using a custom temporary folder.
 

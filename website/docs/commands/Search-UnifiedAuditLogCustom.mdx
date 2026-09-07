@@ -1,13 +1,15 @@
 ---
-sidebarTitle: "Search-UnifiedAuditLogCustom"
+description: Search-UnifiedAuditLogCustom is an enhanced wrapper around the native Search-UnifiedAuditLog cmdlet, providing additional features such as a user-friendly GUI for constructing search queries, simplified output formatting, and integration with the Microsoft 365 audit operations catalog.
 document type: cmdlet
-HelpUri: ''
+HelpUri: https://ps365.clidsys.com/docs/commands/Search-UnifiedAuditLogCustom
 Locale: en-US
 Module Name: PS365
-ms.date: 09/03/2026
-PlatyPS schema version: 2024-05-01
-title: "Search-UnifiedAuditLogCustom"
+ms.date: 09/07/2026
+sidebarTitle: Search-UnifiedAuditLogCustom
+title: Search-UnifiedAuditLogCustom
 ---
+
+# Search-UnifiedAuditLogCustom
 
 ## SYNOPSIS
 
@@ -15,11 +17,14 @@ Search-UnifiedAuditLogCustom is an enhanced wrapper around the native Search-Uni
 
 ## SYNTAX
 
-```powershell
+### __AllParameterSets
+
+```
 Search-UnifiedAuditLogCustom [[-StartDate] <datetime>] [[-EndDate] <datetime>]
  [[-Operations] <string[]>] [[-UserIds] <string[]>] [[-FreeText] <string>] [[-ResultSize] <int>]
  [[-ChunkDays] <int>] [-SimpleView] [-HelperGUI]
 ```
+
 
 ## DESCRIPTION
 
@@ -32,9 +37,7 @@ This is particularly useful for security investigations, compliance audits, and 
 
 ### EXAMPLE 1
 
-```powershell
 Search-UnifiedAuditLogCustom -StartDate (Get-Date).AddDays(-7) -EndDate (Get-Date) -Operations "UserLoggedIn", "FileAccessed" -SimpleView
-```
 
 This example searches the Unified Audit Log for "UserLoggedIn" and "FileAccessed" operations that occurred in the last 7 days, and returns the results in a simplified format.
 
@@ -257,3 +260,6 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
+
+{{ Fill in the related links here }}
+

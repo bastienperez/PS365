@@ -1,13 +1,15 @@
 ---
-sidebarTitle: "Get-IntuneAutoMDMEnrollmentPolicy"
+description: Retrieves the current MDM enrollment policy for Microsoft Entra ID.
 document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Get-IntuneAutoMDMEnrollmentPolicy
 Locale: en-US
 Module Name: PS365
-ms.date: 09/03/2026
-PlatyPS schema version: 2024-05-01
-title: "Get-IntuneAutoMDMEnrollmentPolicy"
+ms.date: 09/07/2026
+sidebarTitle: Get-IntuneAutoMDMEnrollmentPolicy
+title: Get-IntuneAutoMDMEnrollmentPolicy
 ---
+
+# Get-IntuneAutoMDMEnrollmentPolicy
 
 ## SYNOPSIS
 
@@ -15,9 +17,12 @@ Retrieves the current MDM enrollment policy for Microsoft Entra ID.
 
 ## SYNTAX
 
-```powershell
+### __AllParameterSets
+
+```
 Get-IntuneAutoMDMEnrollmentPolicy [-AsObject]
 ```
+
 
 ## DESCRIPTION
 
@@ -28,17 +33,13 @@ registration in Microsoft Entra ID.
 
 ### EXAMPLE 1
 
-```powershell
 Get-IntuneAutoMDMEnrollmentPolicy
-```
 
 Retrieves the current MDM enrollment policy state (Enabled/Disabled).
 
 ### EXAMPLE 2
 
-```powershell
 Get-IntuneAutoMDMEnrollmentPolicy -AsObject
-```
 
 Retrieves the complete policy object from Microsoft Graph.
 
@@ -77,8 +78,9 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## OUTPUTS
 
 ### String - Returns 'Enabled' or 'Disabled' by default
-
 PSObject - Returns full policy object when -AsObject is used
+
+{{ Fill in the Description }}
 
 ## NOTES
 
@@ -86,6 +88,7 @@ Requires the following Microsoft Graph permissions:
 - Policy.Read.All
 
 Connect-MgGraph -Scopes 'Policy.Read.All'
+
 
 ## RELATED LINKS
 

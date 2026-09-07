@@ -1,13 +1,15 @@
 ---
-sidebarTitle: "Get-EntraIDHybridJoinSCP"
+description: Retrieves the Service Connection Point (SCP) for Entra ID Hybrid Join from Active Directory.
 document type: cmdlet
-HelpUri: ''
+HelpUri: https://ps365.clidsys.com/docs/commands/Get-EntraIDHybridJoinSCP
 Locale: en-US
 Module Name: PS365
-ms.date: 09/03/2026
-PlatyPS schema version: 2024-05-01
-title: "Get-EntraIDHybridJoinSCP"
+ms.date: 09/07/2026
+sidebarTitle: Get-EntraIDHybridJoinSCP
+title: Get-EntraIDHybridJoinSCP
 ---
+
+# Get-EntraIDHybridJoinSCP
 
 ## SYNOPSIS
 
@@ -15,9 +17,12 @@ Retrieves the Service Connection Point (SCP) for Entra ID Hybrid Join from Activ
 
 ## SYNTAX
 
-```powershell
+### __AllParameterSets
+
+```
 Get-EntraIDHybridJoinSCP
 ```
+
 
 ## DESCRIPTION
 
@@ -31,21 +36,17 @@ an object with error information and null values for the SCP data.
 
 ### EXAMPLE 1
 
-```powershell
 Get-EntraIDHybridJoinSCP
-```
 
 Returns the SCP object with keywords containing AzureADName and azureADId when AD is accessible.
 
 ### EXAMPLE 2
 
-```powershell
 $result = Get-EntraIDHybridJoinSCP
-```
 
-if (-not $result.ADAccessible) \{
+if (-not $result.ADAccessible) {
     Write-Warning "Cannot access Active Directory: $($result.ErrorMessage)"
-\}
+}
 
 Tests if Active Directory is accessible and handles the error case.
 
@@ -68,4 +69,8 @@ The returned object includes:
 - ErrorMessage: Error details if AD is not accessible (null if successful)
 - ADAccessible: Boolean indicating if AD was accessible
 
+
 ## RELATED LINKS
+
+{{ Fill in the related links here }}
+

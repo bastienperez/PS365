@@ -1,13 +1,15 @@
 ---
-sidebarTitle: "Test-ExCalendarPermission"
+description: Tests whether delegates with calendar folder permissions still exist.
 document type: cmdlet
-HelpUri: ''
+HelpUri: https://ps365.clidsys.com/docs/commands/Test-ExCalendarPermission
 Locale: en-US
 Module Name: PS365
-ms.date: 09/03/2026
-PlatyPS schema version: 2024-05-01
-title: "Test-ExCalendarPermission"
+ms.date: 09/07/2026
+sidebarTitle: Test-ExCalendarPermission
+title: Test-ExCalendarPermission
 ---
+
+# Test-ExCalendarPermission
 
 ## SYNOPSIS
 
@@ -15,9 +17,12 @@ Tests whether delegates with calendar folder permissions still exist.
 
 ## SYNTAX
 
-```powershell
+### __AllParameterSets
+
+```
 Test-ExCalendarPermission [-Mailbox] <string> [[-DelegateStatus] <string>]
 ```
+
 
 ## DESCRIPTION
 
@@ -30,17 +35,13 @@ Default and anonymous entries are excluded.
 
 ### EXAMPLE 1
 
-```powershell
 Test-ExCalendarPermission -Mailbox "user@domain.com"
-```
 
 Tests all calendar permissions for the specified mailbox and returns a list of delegates with their existence status.
 
 ### EXAMPLE 2
 
-```powershell
 Test-ExCalendarPermission -Mailbox "user@domain.com" -DelegateStatus Missing
-```
 
 Tests calendar permissions for the specified mailbox and returns only delegates that no longer exist as recipients (orphaned permissions).
 
@@ -110,3 +111,6 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
+
+{{ Fill in the related links here }}
+

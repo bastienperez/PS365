@@ -1,13 +1,15 @@
 ---
-sidebarTitle: "Get-MgGroupOwnerInfo"
+description: Retrieves the owners of all or a specific Entra ID group.
 document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Get-MgGroupOwnerInfo
 Locale: en-US
 Module Name: PS365
-ms.date: 09/03/2026
-PlatyPS schema version: 2024-05-01
-title: "Get-MgGroupOwnerInfo"
+ms.date: 09/07/2026
+sidebarTitle: Get-MgGroupOwnerInfo
+title: Get-MgGroupOwnerInfo
 ---
+
+# Get-MgGroupOwnerInfo
 
 ## SYNOPSIS
 
@@ -15,10 +17,13 @@ Retrieves the owners of all or a specific Entra ID group.
 
 ## SYNTAX
 
-```powershell
+### __AllParameterSets
+
+```
 Get-MgGroupOwnerInfo [[-GroupId] <string>] [[-DisplayName] <string>] [[-ExportPath] <string>]
  [-ExportToExcel]
 ```
+
 
 ## DESCRIPTION
 
@@ -37,33 +42,25 @@ Microsoft Graph PowerShell cmdlet Get-MgGroupOwner.
 
 ### EXAMPLE 1
 
-```powershell
 Get-MgGroupOwnerInfo
-```
 
 Retrieves the owners for all Entra ID groups and outputs them to the console.
 
 ### EXAMPLE 2
 
-```powershell
 Get-MgGroupOwnerInfo -ExportToExcel
-```
 
 Retrieves the owners of all groups and exports the results to an Excel file.
 
 ### EXAMPLE 3
 
-```powershell
 Get-MgGroupOwnerInfo -GroupId 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
-```
 
 Retrieves owners for a specific group by its object ID and exports to Excel.
 
 ### EXAMPLE 4
 
-```powershell
 Get-MgGroupOwnerInfo -DisplayName 'Marketing Team'
-```
 
 Retrieves owners for the group named 'Marketing Team' and outputs to the console only.
 
@@ -174,6 +171,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 Requires Connect-MgGraph with scopes: 'Group.Read.All', 'User.Read.All'
+
 
 ## RELATED LINKS
 

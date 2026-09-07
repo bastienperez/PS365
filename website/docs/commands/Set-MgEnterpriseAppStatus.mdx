@@ -1,13 +1,15 @@
 ---
-sidebarTitle: "Set-MgEnterpriseAppStatus"
+description: Sets the status of an enterprise application (service principal) in Microsoft Graph by setting its 'AccountEnabled' property.
 document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Set-MgEnterpriseAppStatus
 Locale: en-US
 Module Name: PS365
-ms.date: 09/03/2026
-PlatyPS schema version: 2024-05-01
-title: "Set-MgEnterpriseAppStatus"
+ms.date: 09/07/2026
+sidebarTitle: Set-MgEnterpriseAppStatus
+title: Set-MgEnterpriseAppStatus
 ---
+
+# Set-MgEnterpriseAppStatus
 
 ## SYNOPSIS
 
@@ -17,17 +19,18 @@ Sets the status of an enterprise application (service principal) in Microsoft Gr
 
 ### ByApplicationID
 
-```powershell
+```
 Set-MgEnterpriseAppStatus [-ApplicationID] <string> [-Status] <string> [-GenerateCmdlets] [-WhatIf]
  [-Confirm]
 ```
 
 ### ByDisplayName
 
-```powershell
+```
 Set-MgEnterpriseAppStatus [-DisplayName] <string> [-Status] <string> [-GenerateCmdlets] [-WhatIf]
  [-Confirm]
 ```
+
 
 ## DESCRIPTION
 
@@ -38,17 +41,13 @@ by using Invoke-MgGraphRequest to set AccountEnabled to true or false.
 
 ### EXAMPLE 1
 
-```powershell
 Set-MgEnterpriseAppStatus -ApplicationID "12345678-1234-1234-1234-123456789012" -Status "Disabled"
-```
 
 This command disables the enterprise application with the specified App ID.
 
 ### EXAMPLE 2
 
-```powershell
 Set-MgEnterpriseAppStatus -DisplayName "MyApp" -Status "Enabled"
-```
 
 This command enables the enterprise application with the specified display name.
 
@@ -197,6 +196,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 To modify a registered application, use the `Set-MgRegisteredAppStatus` function instead.
+
 
 ## RELATED LINKS
 

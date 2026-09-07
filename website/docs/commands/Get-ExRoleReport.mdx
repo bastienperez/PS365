@@ -1,13 +1,15 @@
 ---
-sidebarTitle: "Get-ExRoleReport"
+description: Reports on Exchange RBAC roles and their effective membership, including groups expanded recursively.
 document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Get-ExRoleReport
 Locale: en-US
 Module Name: PS365
-ms.date: 09/03/2026
-PlatyPS schema version: 2024-05-01
-title: "Get-ExRoleReport"
+ms.date: 09/07/2026
+sidebarTitle: Get-ExRoleReport
+title: Get-ExRoleReport
 ---
+
+# Get-ExRoleReport
 
 ## SYNOPSIS
 
@@ -15,10 +17,13 @@ Reports on Exchange RBAC roles and their effective membership, including groups 
 
 ## SYNTAX
 
-```powershell
+### __AllParameterSets
+
+```
 Get-ExRoleReport [[-Identity] <string>] [[-PrincipalID] <string>] [[-PrincipalDisplayName] <string>]
  [-OnPrem]
 ```
+
 
 ## DESCRIPTION
 
@@ -36,49 +41,37 @@ detected and skipped automatically.
 
 ### EXAMPLE 1
 
-```powershell
 Get-ExRoleReport
-```
 
 Retrieves the Exchange RBAC role report for Exchange Online, including recursive group expansion.
 
 ### EXAMPLE 2
 
-```powershell
 Get-ExRoleReport -Identity 'Organization Management'
-```
 
 Returns only the membership of the 'Organization Management' role group.
 
 ### EXAMPLE 3
 
-```powershell
 Get-ExRoleReport -PrincipalID 'alice@contoso.com'
-```
 
 Returns every role assignment held by alice@contoso.com (direct or via group membership).
 
 ### EXAMPLE 4
 
-```powershell
 Get-ExRoleReport -PrincipalDisplayName 'Alice Doe'
-```
 
 Returns every role assignment held by the user whose DisplayName is 'Alice Doe'.
 
 ### EXAMPLE 5
 
-```powershell
 Get-ExRoleReport | Where-Object { $_.DirectMember -eq $false } | Format-Table Role, MemberName, MemberViaGroup
-```
 
 Lists all users/objects resolved through group membership, showing which group is a direct member of the role.
 
 ### EXAMPLE 6
 
-```powershell
 Get-ExRoleReport | Export-Csv -NoTypeInformation "$(Get-Date -Format yyyyMMdd)_adminRoles.csv" -Encoding UTF8
-```
 
 Exports the full report (including group-expanded members) to a CSV file.
 
@@ -183,13 +176,15 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## OUTPUTS
 
 ### [System.Collections.Generic.List[Object]] containing PSCustomObject rows with the following properties:
-
 Role
+
+{{ Fill in the Description }}
 
 ## NOTES
 
 Requires ExchangeOnlineManagement module and an active Connect-ExchangeOnline session for Exchange Online.
 For on-premises Exchange, requires the Exchange Management Shell or the Exchange snap-in loaded.
+
 
 ## RELATED LINKS
 

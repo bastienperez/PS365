@@ -1,13 +1,15 @@
 ---
-sidebarTitle: "Get-MgUserProvisioningError"
+description: Lists the users carrying provisioning errors in Microsoft Entra ID.
 document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Get-MgUserProvisioningError
 Locale: en-US
 Module Name: PS365
-ms.date: 09/03/2026
-PlatyPS schema version: 2024-05-01
-title: "Get-MgUserProvisioningError"
+ms.date: 09/07/2026
+sidebarTitle: Get-MgUserProvisioningError
+title: Get-MgUserProvisioningError
 ---
+
+# Get-MgUserProvisioningError
 
 ## SYNOPSIS
 
@@ -15,10 +17,13 @@ Lists the users carrying provisioning errors in Microsoft Entra ID.
 
 ## SYNTAX
 
-```powershell
+### __AllParameterSets
+
+```
 Get-MgUserProvisioningError [[-Identity] <string>] [-ErrorSource <string>] [-IncludeResolved]
  [-ForceNewToken] [-ExportToExcel]
 ```
+
 
 ## DESCRIPTION
 
@@ -45,41 +50,31 @@ isResolved = true); use -IncludeResolved to see them.
 
 ### EXAMPLE 1
 
-```powershell
 Get-MgUserProvisioningError
-```
 
 Returns every active provisioning error of the tenant, one row per error.
 
 ### EXAMPLE 2
 
-```powershell
 Get-MgUserProvisioningError -Identity 'user@contoso.com'
-```
 
 Returns the provisioning errors of a single user.
 
 ### EXAMPLE 3
 
-```powershell
 Get-MgUserProvisioningError -ErrorSource OnPremisesSync
-```
 
 Returns only the Entra Connect synchronization errors (attribute conflicts).
 
 ### EXAMPLE 4
 
-```powershell
 Get-MgUserProvisioningError -IncludeResolved
-```
 
 Also returns the service provisioning errors already resolved.
 
 ### EXAMPLE 5
 
-```powershell
 Get-MgUserProvisioningError -ExportToExcel
-```
 
 Exports the provisioning errors report to an Excel file in the user's profile directory.
 
@@ -209,11 +204,17 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ### System.String
 
+{{ Fill in the Description }}
+
 ## OUTPUTS
 
 ### System.Collections.Generic.List[PSCustomObject]
 
+{{ Fill in the Description }}
+
 ### System.Collections.Generic.List`1[[System.Management.Automation.PSObject, System.Management.Automation, Version=7.6.0.500, Culture=neutral, PublicKeyToken=31bf3856ad364e35]]
+
+{{ Fill in the Description }}
 
 ## NOTES
 
@@ -241,6 +242,7 @@ Version history:
 Covers serviceProvisioningErrors (errorDetail XML parsed) and
           onPremisesProvisioningErrors, client-side filtering (no server-side filter
           support on these properties), one row per error.
+
 
 ## RELATED LINKS
 

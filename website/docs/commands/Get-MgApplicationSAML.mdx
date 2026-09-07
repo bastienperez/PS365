@@ -1,13 +1,15 @@
 ---
-sidebarTitle: "Get-MgApplicationSAML"
+description: Retrieves all Entra ID applications configured for SAML SSO.
 document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Get-MgApplicationSAML
 Locale: en-US
 Module Name: PS365
-ms.date: 09/03/2026
-PlatyPS schema version: 2024-05-01
-title: "Get-MgApplicationSAML"
+ms.date: 09/07/2026
+sidebarTitle: Get-MgApplicationSAML
+title: Get-MgApplicationSAML
 ---
+
+# Get-MgApplicationSAML
 
 ## SYNOPSIS
 
@@ -17,7 +19,7 @@ Retrieves all Entra ID applications configured for SAML SSO.
 
 ### All (Default)
 
-```powershell
+```
 Get-MgApplicationSAML [-ForceNewToken] [-ExportToExcel] [-ExportPath <string>]
  [-RunFromAzureAutomation] [-ExpirationThresholdDays <int>] [-NotificationRecipient <string>]
  [-NotificationSender <string>] [-IncludeSignInStats] [-DisableParallel] [-ThrottleLimit <int>]
@@ -26,7 +28,7 @@ Get-MgApplicationSAML [-ForceNewToken] [-ExportToExcel] [-ExportPath <string>]
 
 ### ByObjectId
 
-```powershell
+```
 Get-MgApplicationSAML [-ObjectID <string>] [-ForceNewToken] [-ExportToExcel] [-ExportPath <string>]
  [-RunFromAzureAutomation] [-ExpirationThresholdDays <int>] [-NotificationRecipient <string>]
  [-NotificationSender <string>] [-IncludeSignInStats] [-DisableParallel] [-ThrottleLimit <int>]
@@ -35,12 +37,13 @@ Get-MgApplicationSAML [-ObjectID <string>] [-ForceNewToken] [-ExportToExcel] [-E
 
 ### ByDisplayName
 
-```powershell
+```
 Get-MgApplicationSAML [-DisplayName <string>] [-ForceNewToken] [-ExportToExcel]
  [-ExportPath <string>] [-RunFromAzureAutomation] [-ExpirationThresholdDays <int>]
  [-NotificationRecipient <string>] [-NotificationSender <string>] [-IncludeSignInStats]
  [-DisableParallel] [-ThrottleLimit <int>] [-UseBatchRequest]
 ```
+
 
 ## DESCRIPTION
 
@@ -58,97 +61,73 @@ The `SamlSigningCertificateIsPreferred` column identifies the currently active c
 
 ### EXAMPLE 1
 
-```powershell
 Get-MgApplicationSAML
-```
 
 Retrieves all Entra ID applications configured for SAML SSO.
 
 ### EXAMPLE 2
 
-```powershell
 Get-MgApplicationSAML -UseBatchRequest
-```
 
 Uses the Graph JSON $batch endpoint to retrieve the application owners (20 requests per HTTP call, automatic 429 retry).
 
 ### EXAMPLE 3
 
-```powershell
 Get-MgApplicationSAML -DisableParallel
-```
 
 Forces sequential processing even on PowerShell 7+ (useful for debugging or to avoid concurrent Graph calls).
 
 ### EXAMPLE 4
 
-```powershell
 Get-MgApplicationSAML -IncludeSignInStats
-```
 
 Retrieves all Entra ID applications configured for SAML SSO with sign-in statistics for the last 30 days.
 
 ### EXAMPLE 5
 
-```powershell
 Get-MgApplicationSAML -ObjectID "xxx-xxx-xxx"
-```
 
 Retrieves the SAML configuration for a specific application by its ObjectID.
 
 ### EXAMPLE 6
 
-```powershell
 Get-MgApplicationSAML -DisplayName "My SAML App"
-```
 
 Retrieves the SAML configuration for a specific application by its DisplayName.
 
 ### EXAMPLE 7
 
-```powershell
 Get-MgApplicationSAML -DisplayName "Azure*"
-```
 
 Retrieves the SAML configuration for all applications whose DisplayName starts with "Azure".
 
 ### EXAMPLE 8
 
-```powershell
 Get-MgApplicationSAML -DisplayName "*Portal*"
-```
 
 Retrieves the SAML configuration for all applications whose DisplayName contains "Portal".
 
 ### EXAMPLE 9
 
-```powershell
 Get-MgApplicationSAML -ForceNewToken
-```
 
 Forces the function to disconnect and reconnect to Microsoft Graph to obtain a new access token.
 
 ### EXAMPLE 10
 
-```powershell
 Get-MgApplicationSAML -ExportToExcel
-```
 
 Gets all SAML applications and exports them to an Excel file.
 
 ### EXAMPLE 11
 
-```powershell
 Get-MgApplicationSAML -RunFromAzureAutomation -ExpirationThresholdDays 30 -NotificationRecipient 'admin@company.com' -NotificationSender 'automation@company.com'
-```
 
 Gets all SAML applications using managed identity authentication and sends notification for certificates expiring within 30 days.
 
 ### EXAMPLE 12
 
-```powershell
 Get-MgApplicationSAML -RunFromAzureAutomation -ExpirationThresholdDays 7 -NotificationRecipient 'admin@company.com' -NotificationSender 'automation@company.com'
-```
 
 Gets all SAML applications using managed identity and sends email notification for certificates expiring within 7 days.
 
@@ -378,7 +357,7 @@ HelpMessage: ''
 This is useful when running the script in Azure environments like Azure Functions, Logic Apps, or VMs with managed identity enabled.
 When this parameter is used, ExpirationThresholdDays, NotificationRecipient and NotificationSender are required.
 
-PowerShell modules used in Azure Automation must be a MAXIMUM of version 2.25.0 when using PowerShell &lt; 7.4.0, because starting from version 2.26.0, PowerShell 7.4.0 is required, and Azure Automation does not support it yet as of February 2026.
+PowerShell modules used in Azure Automation must be a MAXIMUM of version 2.25.0 when using PowerShell < 7.4.0, because starting from version 2.26.0, PowerShell 7.4.0 is required, and Azure Automation does not support it yet as of February 2026.
 For PowerShell 7.4.0+, there are no version restrictions.
 https://github.com/microsoftgraph/msgraph-sdk-powershell/issues/3147
 https://github.com/microsoftgraph/msgraph-sdk-powershell/issues/3151
@@ -464,7 +443,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 Limitations:
-The information about the SAML applications clams is not available in the Microsoft Graph API v1 but in https://main.iam.ad.ext.azure.com/api/ApplicationSso/&lt;service-principal-id&gt;/FederatedSsoV2 so we don't get them
+The information about the SAML applications clams is not available in the Microsoft Graph API v1 but in https://main.iam.ad.ext.azure.com/api/ApplicationSso/<service-principal-id>/FederatedSsoV2 so we don't get them
+
 
 ## RELATED LINKS
 

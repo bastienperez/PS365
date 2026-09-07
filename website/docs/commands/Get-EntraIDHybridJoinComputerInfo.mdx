@@ -1,13 +1,15 @@
 ---
-sidebarTitle: "Get-EntraIDHybridJoinComputerInfo"
+description: Retrieves detailed information about Entra ID Hybrid Join configuration on the local computer.
 document type: cmdlet
-HelpUri: ''
+HelpUri: https://ps365.clidsys.com/docs/commands/Get-EntraIDHybridJoinComputerInfo
 Locale: en-US
 Module Name: PS365
-ms.date: 09/03/2026
-PlatyPS schema version: 2024-05-01
-title: "Get-EntraIDHybridJoinComputerInfo"
+ms.date: 09/07/2026
+sidebarTitle: Get-EntraIDHybridJoinComputerInfo
+title: Get-EntraIDHybridJoinComputerInfo
 ---
+
+# Get-EntraIDHybridJoinComputerInfo
 
 ## SYNOPSIS
 
@@ -15,9 +17,12 @@ Retrieves detailed information about Entra ID Hybrid Join configuration on the l
 
 ## SYNTAX
 
-```powershell
+### __AllParameterSets
+
+```
 Get-EntraIDHybridJoinComputerInfo [[-ExportPath] <string>] [-ExportToExcel]
 ```
+
 
 ## DESCRIPTION
 
@@ -34,17 +39,13 @@ This function gathers comprehensive diagnostics for Entra ID Hybrid Join status 
 
 ### EXAMPLE 1
 
-```powershell
 Get-EntraIDHybridJoinComputerInfo
-```
 
 Retrieves all hybrid join diagnostic information for the local computer.
 
 ### EXAMPLE 2
 
-```powershell
 Get-EntraIDHybridJoinComputerInfo -ExportToExcel "C:\Reports\HybridJoinInfo.xlsx"
-```
 
 Retrieves hybrid join information and exports it to an Excel file.
 
@@ -107,4 +108,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 Must be run on a domain-joined computer.
 
+
 ## RELATED LINKS
+
+{{ Fill in the related links here }}
+

@@ -1,13 +1,15 @@
 ---
-sidebarTitle: "Enable-MSSelfServicePurchase"
+description: Enables self-service purchase for all products in Microsoft 365.
 document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Enable-MSSelfServicePurchase
 Locale: en-US
 Module Name: PS365
-ms.date: 09/03/2026
-PlatyPS schema version: 2024-05-01
-title: "Enable-MSSelfServicePurchase"
+ms.date: 09/07/2026
+sidebarTitle: Enable-MSSelfServicePurchase
+title: Enable-MSSelfServicePurchase
 ---
+
+# Enable-MSSelfServicePurchase
 
 ## SYNOPSIS
 
@@ -15,9 +17,12 @@ Enables self-service purchase for all products in Microsoft 365.
 
 ## SYNTAX
 
-```powershell
+### __AllParameterSets
+
+```
 Enable-MSSelfServicePurchase [-Force] [-WhatIf] [-Confirm]
 ```
+
 
 ## DESCRIPTION
 
@@ -30,17 +35,13 @@ want to allow users to purchase additional services or products on their own.
 
 ### EXAMPLE 1
 
-```powershell
 Enable-MSSelfServicePurchase
-```
 
 Enables self-service purchase for all products in the Microsoft 365 tenant, prompting for confirmation for each product.
 
 ### EXAMPLE 2
 
-```powershell
 Enable-MSSelfServicePurchase -Force
-```
 
 Enables self-service purchase for all products without prompting for confirmation.
 

@@ -1,13 +1,15 @@
 ---
-sidebarTitle: "Test-ExMailboxProxyAddress"
+description: Test if a given proxy address exists in the proxy addresses of a mailbox.
 document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Test-ExMailboxProxyAddress
 Locale: en-US
 Module Name: PS365
-ms.date: 09/03/2026
-PlatyPS schema version: 2024-05-01
-title: "Test-ExMailboxProxyAddress"
+ms.date: 09/07/2026
+sidebarTitle: Test-ExMailboxProxyAddress
+title: Test-ExMailboxProxyAddress
 ---
+
+# Test-ExMailboxProxyAddress
 
 ## SYNOPSIS
 
@@ -17,16 +19,17 @@ Test if a given proxy address exists in the proxy addresses of a mailbox.
 
 ### Single
 
-```powershell
+```
 Test-ExMailboxProxyAddress [-Mailbox <string>] [-ProxyAddress <string>] [-MatchOnly] [-NotMatchOnly]
 ```
 
 ### Csv
 
-```powershell
+```
 Test-ExMailboxProxyAddress [-CsvPath <string>] [-MailboxColumn <string>]
  [-ProxyAddressColumn <string>] [-MatchOnly] [-NotMatchOnly]
 ```
+
 
 ## DESCRIPTION
 
@@ -37,33 +40,25 @@ It can process a single mailbox/proxy address pair or read multiple entries from
 
 ### EXAMPLE 1
 
-```powershell
 Test-ExMailboxProxyAddress -Mailbox "user@example.com" -ProxyAddress "alias@example.com"
-```
 
 Tests if "alias@example.com" exists in the proxy addresses of the mailbox "user@example.com".
 
 ### EXAMPLE 2
 
-```powershell
 Test-ExMailboxProxyAddress -CsvPath "C:\path\to\file.csv" -MailboxColumn "PrimarySmtpAddress" -ProxyAddressColumn "OnMicrosoftAddress"
-```
 
 Reads mailbox and proxy address pairs from the specified CSV file and tests each pair.
 
 ### EXAMPLE 3
 
-```powershell
 Test-ExMailboxProxyAddress -CsvPath "C:\path\to\file.csv" -MatchOnly
-```
 
 Reads mailbox and proxy address pairs from the specified CSV file and returns only those that match.
 
 ### EXAMPLE 4
 
-```powershell
 Test-ExMailboxProxyAddress -CsvPath "C:\path\to\file.csv" -NotMatchOnly
-```
 
 Reads mailbox and proxy address pairs from the specified CSV file and returns only those that do not match.
 

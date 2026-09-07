@@ -1,13 +1,15 @@
 ---
-sidebarTitle: "Get-ExMailboxByDomain"
+description: Retrieves all Exchange mailboxes for a specified domain.
 document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Get-ExMailboxByDomain
 Locale: en-US
 Module Name: PS365
-ms.date: 09/03/2026
-PlatyPS schema version: 2024-05-01
-title: "Get-ExMailboxByDomain"
+ms.date: 09/07/2026
+sidebarTitle: Get-ExMailboxByDomain
+title: Get-ExMailboxByDomain
 ---
+
+# Get-ExMailboxByDomain
 
 ## SYNOPSIS
 
@@ -15,9 +17,12 @@ Retrieves all Exchange mailboxes for a specified domain.
 
 ## SYNTAX
 
-```powershell
+### __AllParameterSets
+
+```
 Get-ExMailboxByDomain [[-Domain] <string>] [-RecipientTypeDetails <string>] [-ExportToExcel]
 ```
+
 
 ## DESCRIPTION
 
@@ -28,9 +33,7 @@ It filters the mailboxes based on their *primarySMTP* address to ensure they mat
 
 ### EXAMPLE 1
 
-```powershell
 Get-ExMailboxByDomain -Domain "example.com"
-```
 
 Returns all Exchange mailboxes associated with the domain "example.com".
 
@@ -117,6 +120,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### System.String
+
+{{ Fill in the Description }}
 
 ## OUTPUTS
 

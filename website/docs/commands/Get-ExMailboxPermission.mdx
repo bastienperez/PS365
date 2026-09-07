@@ -1,13 +1,15 @@
 ---
-sidebarTitle: "Get-ExMailboxPermission"
+description: Gets all permissions on an Exchange Online mailbox (Full Access, Send As, Send on Behalf)
 document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Get-ExMailboxPermission
 Locale: en-US
 Module Name: PS365
-ms.date: 09/03/2026
-PlatyPS schema version: 2024-05-01
-title: "Get-ExMailboxPermission"
+ms.date: 09/07/2026
+sidebarTitle: Get-ExMailboxPermission
+title: Get-ExMailboxPermission
 ---
+
+# Get-ExMailboxPermission
 
 ## SYNOPSIS
 
@@ -15,10 +17,13 @@ Gets all permissions on an Exchange Online mailbox (Full Access, Send As, Send o
 
 ## SYNTAX
 
-```powershell
+### __AllParameterSets
+
+```
 Get-ExMailboxPermission [[-Identity] <string>] [-ByDomain <string>] [-UserPermission <string>]
  [-ExportToExcel] [-ExportPath <string>]
 ```
+
 
 ## DESCRIPTION
 
@@ -31,33 +36,25 @@ This function retrieves and displays all permissions granted on a specific mailb
 
 ### EXAMPLE 1
 
-```powershell
 Get-ExMailboxPermission -Identity "john.doe@contoso.com"
-```
 
 Gets all permissions for the mailbox john.doe@contoso.com
 
 ### EXAMPLE 2
 
-```powershell
 Get-ExMailboxPermission -Identity "john.doe@contoso.com" -ExportToExcel
-```
 
 Gets all permissions for the mailbox and exports them to an Excel file
 
 ### EXAMPLE 3
 
-```powershell
 Get-ExMailboxPermission -ByDomain "contoso.com"
-```
 
 Gets all permissions for all mailboxes in the contoso.com domain
 
 ### EXAMPLE 4
 
-```powershell
 Get-ExMailboxPermission -UserPermission "john.doe@contoso.com"
-```
 
 Finds all mailbox permissions that john.doe@contoso.com has across all mailboxes
 
@@ -179,12 +176,15 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ### System.String
 
+{{ Fill in the Description }}
+
 ## OUTPUTS
 
 ## NOTES
 
 Requires the ExchangeOnlineManagement module and an active connection to Exchange Online
 For Excel export functionality, requires the ImportExcel module
+
 
 ## RELATED LINKS
 

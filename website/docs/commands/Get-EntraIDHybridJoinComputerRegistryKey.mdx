@@ -1,13 +1,15 @@
 ---
-sidebarTitle: "Get-EntraIDHybridJoinComputerRegistryKey"
+description: Retrieves Entra ID Hybrid Join registry keys from the local computer.
 document type: cmdlet
-HelpUri: ''
+HelpUri: https://ps365.clidsys.com/docs/commands/Get-EntraIDHybridJoinComputerRegistryKey
 Locale: en-US
 Module Name: PS365
-ms.date: 09/03/2026
-PlatyPS schema version: 2024-05-01
-title: "Get-EntraIDHybridJoinComputerRegistryKey"
+ms.date: 09/07/2026
+sidebarTitle: Get-EntraIDHybridJoinComputerRegistryKey
+title: Get-EntraIDHybridJoinComputerRegistryKey
 ---
+
+# Get-EntraIDHybridJoinComputerRegistryKey
 
 ## SYNOPSIS
 
@@ -15,9 +17,12 @@ Retrieves Entra ID Hybrid Join registry keys from the local computer.
 
 ## SYNTAX
 
-```powershell
+### __AllParameterSets
+
+```
 Get-EntraIDHybridJoinComputerRegistryKey
 ```
+
 
 ## DESCRIPTION
 
@@ -28,9 +33,7 @@ to retrieve TenantId, TenantName, and other hybrid join configuration values.
 
 ### EXAMPLE 1
 
-```powershell
 Get-EntraIDHybridJoinComputerRegistryKey
-```
 
 Returns an object containing TenantId, TenantName, and other registry keys if present.
 
@@ -45,4 +48,8 @@ Returns an object containing TenantId, TenantName, and other registry keys if pr
 Returns a PSCustomObject with ComputerName, TenantId, TenantName, and OtherKeys properties.
 Properties will be null if the registry path or values do not exist.
 
+
 ## RELATED LINKS
+
+{{ Fill in the related links here }}
+
