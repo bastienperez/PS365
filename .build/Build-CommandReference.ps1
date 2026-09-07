@@ -69,6 +69,13 @@ foreach ($commandName in $publicCommands) {
     # Get-Help's own comment-based-help parser (OS help-engine locale), not by PlatyPS's -Locale.
     $content = $content -replace '(?m)^### EXEMPLE (\d+)\r?$', '### EXAMPLE $1'
 
+    # INPUTS/OUTPUTS headings can be a raw .NET generic type name (e.g. "List`1[[...]]"): the
+    # backtick is .NET's generic-arity notation, but in Markdown/MDX an unmatched backtick opens
+    # an inline code span that is never closed, corrupting the rest of the page (Mintlify then
+    # fails to render/link it). Escape only backticks inside headings; fenced code blocks
+    # elsewhere in the file must keep their real triple backticks untouched.
+    $content = [regex]::Replace($content, '(?m)^### .*$', { param($match) $match.Value -replace '`', '\`' })
+
     Set-Content -Path (Join-Path $commandsFolder "$commandName.mdx") -Value $content -NoNewline
 }
 
