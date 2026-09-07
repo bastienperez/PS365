@@ -35,25 +35,31 @@ It also includes a "splatting" feature that deploys distribution groups to displ
 PARAMETER Filter
 Specifies filters to target specific mailboxes.
 If no filter is provided, all resource mailboxes will be returned.
-Example: '{emailaddresses -like "*contoso.com"}''
+Example: '`{emailaddresses -like "*contoso.com"}`''
 
 ## EXAMPLES
 
 ### EXAMPLE 1
 
+```powershell
 Get-ExResourceMailbox | Export-Csv c:\scripts\All365Mailboxes.csv -NoTypeInformation -Encoding UTF8
+```
 
 Exports all resource mailboxes to a CSV file.
 
 ### EXAMPLE 2
 
+```powershell
 Get-ExResourceMailbox -Filter '{emailaddresses -like "*contoso.com"}' -ExpandGroups | Export-Csv c:\scripts\365ResourceMailboxes.csv -NoTypeInformation -Encoding UTF8
+```
 
 Exports resource mailboxes from the contoso.com domain with group expansion.
 
 ### EXAMPLE 3
 
+```powershell
 Get-ExResourceMailbox -ExportToExcel
+```
 
 Exports results to an Excel file.
 

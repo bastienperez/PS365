@@ -64,21 +64,21 @@ PowerShell 7 is required.
 UNIFORM MEMBERS/OWNERS MODEL
 On a site connected to a Microsoft 365 group, the SharePoint site collection administrators and the
 Owners/Members/Visitors groups do not list individual users: they list a single claim placeholder that
-represents the whole group, of the form 'federateddirectoryclaimprovider|`<groupId>`_o' (group Owners) or
-'federateddirectoryclaimprovider|`<groupId>`' (group Members).
+represents the whole group, of the form 'federateddirectoryclaimprovider|&lt;groupId&gt;_o' (group Owners) or
+'federateddirectoryclaimprovider|&lt;groupId&gt;' (group Members).
 Get-SPOSiteReport resolves these claims in
 a second pass, so the *Resolved columns list actual users regardless of the site type (classic site,
 group-connected site, with or without a Microsoft Teams team).
 Two well-known non-user claims are also
 labelled for readability: the 'Everyone' claim and the 'Everyone except external users' claim.
 Any claim
-that cannot be resolved (deleted group, insufficient Graph permission) is reported as '`<unresolved:guid>`'
+that cannot be resolved (deleted group, insufficient Graph permission) is reported as '&lt;unresolved:guid&gt;'
 and counted in the ClaimResolutionErrorCount summary at the end of the run.
 
 PROVENANCE OF EACH RESOLVED IDENTITY
 Every identity in a *Resolved column is annotated so you can tell how it got its rights:
 - No annotation: the user is directly assigned to that SharePoint group/role (individual claim).
-- "`<user>` (via M365 group '`<name>`' Owners)" or "...
+- "&lt;user&gt; (via M365 group '&lt;name&gt;' Owners)" or "...
 Members)": the user only has rights because they
   belong to that Microsoft 365 group, which itself was added to the SharePoint group/role as a whole.
 The same user can legitimately appear twice for the same site - once without annotation (direct) and
@@ -144,21 +144,27 @@ always means the data really is empty (or could not be read, see the Status coun
 
 ### EXAMPLE 1
 
+```powershell
 Get-SPOSiteReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificateThumbprint $thumb -MultiGeoStats
+```
 
 Returns, per Multi-Geo location (or a single row on a single-geo tenant), the total number of sites,
 the number of SharePoint sites and the number of OneDrive sites - without collecting any other detail.
 
 ### EXAMPLE 2
 
+```powershell
 Get-SPOSiteReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificateThumbprint $thumb -MultiGeoStats -ExportToExcel
+```
 
 Exports the per-geo site counts to an Excel file (worksheet 'SharePoint-MultiGeoStats') instead of
 returning the objects.
 
 ### EXAMPLE 3
 
+```powershell
 Get-SPOSiteReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificateThumbprint $thumb
+```
 
 Returns every SharePoint Online site of the tenant, including the personal OneDrive sites, using an
 app-only connection based on a certificate from the Windows certificate store.
@@ -168,47 +174,61 @@ tenant it behaves exactly like a normal full report.
 
 ### EXAMPLE 4
 
+```powershell
 Get-SPOSiteReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -AdminUrl 'https://contosodeu-admin.sharepoint.com' -CertificateThumbprint $thumb
+```
 
 Restricts the report to a single Multi-Geo location by supplying its admin center URL explicitly -
 the automatic loop over every geo does not run in this case.
 
 ### EXAMPLE 5
 
+```powershell
 Get-SPOSiteReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificateThumbprint $thumb -ExcludeGeo 'CHE', 'TWN'
+```
 
 Enumerates every Multi-Geo location except CHE and TWN, still looping automatically over the rest.
 
 ### EXAMPLE 6
 
+```powershell
 Get-SPOSiteReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificateBase64Encoded $certB64 -ExcludeOneDrive -IncludeSiteAdmins -IncludeSiteMembers
+```
 
 Returns the SharePoint sites without the OneDrive ones and adds the site collection administrators plus
 the Owners and Members of each site, with individual users resolved even on group-connected sites.
 
 ### EXAMPLE 7
 
+```powershell
 Get-SPOSiteReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificatePath 'C:\Certs\app.pfx' -CertificatePassword $pwd -SiteUrl 'https://contoso.sharepoint.com/sites/marketing' -RegionalSettingsDetails
+```
 
 Returns a single site with its regional settings, using a .pfx certificate file.
 
 ### EXAMPLE 8
 
+```powershell
 Get-SPOSiteReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificateThumbprint $thumb -M365GroupsDetails -ExportToExcel
+```
 
 Adds the Microsoft 365 group and Microsoft Teams layer (Owners, Members, Guests, Teams metadata) using
 only the PnP app-only connection, and exports the results to an Excel file in the user profile directory.
 
 ### EXAMPLE 9
 
+```powershell
 Get-SPOSiteReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificateThumbprint $thumb -ExportToExcel -ExcelTemplatePath 'C:\Templates\SPOSiteReport-Template.xlsx'
+```
 
 Exports the results into a copy of the given template, keeping any other worksheet, formatting or
 logo already present in the template file.
 
 ### EXAMPLE 10
 
+```powershell
 Get-SPOSiteReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificateThumbprint $thumb -IncludeSharingLinks | Where-Object { $_.SharingLinksAnyoneCount -gt 0 }
+```
 
 Lists the sites holding at least one anonymous 'Anyone with the link' sharing link.
 Pipe the result to
@@ -216,8 +236,11 @@ Get-SPOSharingLinkReport to get the file-level detail of those links on the site
 
 ### EXAMPLE 11
 
+```powershell
 $report = Get-SPOSiteReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificateThumbprint $thumb -IncludeSharingLinksDetails
+
 $report[0].SharingLinksDetails | Format-Table ItemName, LinkType, SharedWith, ExpirationDateTime
+```
 
 Same triage, in one command: the counts decide which sites deserve the file-level pass, and each site
 object carries its own links in SharingLinksDetails.
@@ -226,14 +249,18 @@ worksheet instead.
 
 ### EXAMPLE 12
 
+```powershell
 Get-SPOSiteReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificateThumbprint $thumb -ExcludeOneDrive -IncludeAllDetails -ExportToExcel
+```
 
 Turns on every detail switch (site admins, Owners/Members/Visitors, regional settings, Microsoft 365
 group and Teams layer) in one go, without having to remember each switch name individually.
 
 ### EXAMPLE 13
 
+```powershell
 Get-SPOSiteReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificateThumbprint $thumb -ExcludeOneDrive -IncludeAllDetails -ExportToHtml
+```
 
 Generates a single self-contained HTML file with a collapsible rights tree per site (Admins, Owners,
 Members, Visitors, with identities inherited from a nested Microsoft 365 group shown separately), and
@@ -575,7 +602,7 @@ A high SharingLinksFlexibleCount therefore means "worth resolving", which is wha
 Get-SPOSharingLinkReport -IncludeGraphDetails does.
 
 SharePoint stores every sharing link as a hidden site group named
-'SharingLinks.`<itemGuid>`.`<linkType>`.`<linkGuid>`', so this switch only costs one extra Get-PnPGroup call
+'SharingLinks.&lt;itemGuid&gt;.&lt;linkType&gt;.&lt;linkGuid&gt;', so this switch only costs one extra Get-PnPGroup call
 per site, and it reuses the app-only connection already opened for the site.
 The link type is derived
 from that group name (AnonymousEdit/AnonymousView, OrganizationEdit/OrganizationView, Flexible); since

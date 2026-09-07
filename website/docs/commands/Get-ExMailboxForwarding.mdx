@@ -33,31 +33,41 @@ Get mailbox forwarding configuration from ForwardingAddress, ForwardingSMTPAddre
 
 ### EXAMPLE 1
 
+```powershell
 Get-ExMailboxForwarding
+```
 
 Returns all mailboxes with forwarding configuration.
 
 ### EXAMPLE 2
 
+```powershell
 Get-ExMailboxForwarding -Mailboxes "user1@example.com","user2@example.com"
+```
 
 Returns forwarding configuration for specified mailboxes.
 
 ### EXAMPLE 3
 
+```powershell
 Get-ExMailboxForwarding -ForwardingAndForwardingSMTPOnly
+```
 
 Returns only mailboxes with ForwardingAddress or ForwardingSMTPAddress set.
 
 ### EXAMPLE 4
 
+```powershell
 Get-ExMailboxForwarding -InboxRulesOnly
+```
 
 Returns only mailboxes with inbox rules that forward emails.
 
 ### EXAMPLE 5
 
+```powershell
 Get-ExMailboxForwarding -ExportToExcel
+```
 
 Exports results to an Excel file.
 

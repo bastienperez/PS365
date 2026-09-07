@@ -49,7 +49,9 @@ reports always agree.
 
 ### EXAMPLE 1
 
+```powershell
 Get-MgUserIdentitySummary | Format-Table -AutoSize
+```
 
 Displays the identity summary of the whole tenant as a table.
 Format-Table is needed because the
@@ -57,13 +59,17 @@ objects carry more than four properties, which PowerShell would otherwise render
 
 ### EXAMPLE 2
 
+```powershell
 Get-MgUserIdentitySummary -ExternalOnly | Format-Table -AutoSize
+```
 
 Same summary restricted to the external accounts.
 
 ### EXAMPLE 3
 
+```powershell
 Get-MgUserIdentitySummary -ExportToExcel
+```
 
 Exports the identity summary to an Excel file in the user's profile directory.
 
@@ -176,7 +182,7 @@ _Not documented._
 OUTPUT PROPERTIES
 - Count           : number of identities matching the combination
 - SignInType      : signInType of the identity ('userPrincipalName', 'federated', ...)
-                    '`<no identities>`' when Graph returned no identity at all for the account
+                    '&lt;no identities&gt;' when Graph returned no identity at all for the account
 - Issuer          : issuer of the identity (a tenant domain, ExternalAzureAD, MSA, mail, ...)
 - UserType        : userType of the account holding the identity (Member or Guest)
 - CreationType    : creationType of the account ('Invitation' when it comes from a B2B invitation)

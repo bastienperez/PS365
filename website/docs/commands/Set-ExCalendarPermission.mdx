@@ -34,13 +34,17 @@ The calendar folder is automatically resolved from the mailbox identity.
 
 ### EXAMPLE 1
 
+```powershell
 Set-ExCalendarPermission -Identity "john.doe@contoso.com" -AccessRights Reviewer -DelegateUser "jane.doe@contoso.com"
+```
 
 Grants read-only access to Jane on John's calendar.
 
 ### EXAMPLE 2
 
+```powershell
 Set-ExCalendarPermission -Identity "john.doe@contoso.com" -AccessRights AvailabilityOnly -DelegateUser "jane.doe@contoso.com"
+```
 
 Grants free/busy visibility only to Jane on John's calendar.
 

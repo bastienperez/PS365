@@ -37,25 +37,33 @@ at both the mailbox and tenant levels.
 
 ### EXAMPLE 1
 
+```powershell
 Get-ExMailboxProtocol
+```
 
 Retrieves mailbox protocol settings for all Exchange Online mailboxes.
 
 ### EXAMPLE 2
 
+```powershell
 Get-ExMailboxProtocol -Identity "user@example.com"
+```
 
 Retrieves mailbox protocol settings for the specified mailbox.
 
 ### EXAMPLE 3
 
+```powershell
 Get-ExMailboxProtocol -ByDomain "example.com"
+```
 
 Retrieves mailbox protocol settings for all mailboxes in the specified domain.
 
 ### EXAMPLE 4
 
+```powershell
 Get-ExMailboxProtocol -ExportToExcel
+```
 
 Exports mailbox protocol settings for all Exchange Online mailboxes to an Excel file in the user's profile directory.
 

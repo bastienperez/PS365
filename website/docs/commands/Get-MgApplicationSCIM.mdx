@@ -54,68 +54,90 @@ along with their synchronization job details and settings.
 
 ### EXAMPLE 1
 
+```powershell
 $scimApps = Get-MgApplicationSCIM
+```
 
 Retrieves all Entra ID applications with SCIM provisioning enabled.
 
 ### EXAMPLE 2
 
+```powershell
 Get-MgApplicationSCIM -DisableParallel
+```
 
 Forces sequential processing even on PowerShell 7+ (useful for debugging or to avoid concurrent Graph calls).
 
 ### EXAMPLE 3
 
+```powershell
 Get-MgApplicationSCIM -UseBatchRequest
+```
 
 Uses the Graph JSON $batch endpoint for the discovery phase (20 requests per HTTP call, automatic 429 retry).
 Requires the PS365 module; falls back to the default behavior when Invoke-MgGraphBatchRequest is not available.
 
 ### EXAMPLE 4
 
+```powershell
 Get-MgApplicationSCIM -EntraCloudSync
+```
 
 Returns only Entra Cloud Sync jobs, excluding application provisioning (SCIM) jobs.
 
 ### EXAMPLE 5
 
+```powershell
 Get-MgApplicationSCIM -ForceNewToken
+```
 
 Forces the function to disconnect and reconnect to Microsoft Graph to obtain a new access token.
 
 ### EXAMPLE 6
 
+```powershell
 Get-MgApplicationSCIM -ExportToExcel
+```
 
 Exports the SCIM configuration details to an Excel file.
 
 ### EXAMPLE 7
 
+```powershell
 Get-MgApplicationSCIM -ObjectID "xxx-xxx-xxx"
+```
 
 Retrieves the SCIM configuration for a specific application by its ObjectID.
 
 ### EXAMPLE 8
 
+```powershell
 Get-MgApplicationSCIM -DisplayName "My App"
+```
 
 Retrieves the SCIM configuration for a specific application by its DisplayName.
 
 ### EXAMPLE 9
 
+```powershell
 Get-MgApplicationSCIM -DisplayName "Azure*"
+```
 
 Retrieves the SCIM configuration for all applications whose DisplayName starts with "Azure".
 
 ### EXAMPLE 10
 
+```powershell
 Get-MgApplicationSCIM -DisplayName "*Provisioning*"
+```
 
 Retrieves the SCIM configuration for all applications whose DisplayName contains "Provisioning".
 
 ### EXAMPLE 11
 
+```powershell
 Get-MgApplicationSCIM -RunFromAzureAutomation -NotificationRecipient 'admin@company.com' -NotificationSender 'automation@company.com'
+```
 
 Gets all SCIM provisioning jobs using managed identity and sends a health report for apps with synchronization issues.
 

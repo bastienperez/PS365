@@ -60,25 +60,33 @@ It also supports generating the corresponding Set-MailboxRegionalConfiguration c
 
 ### EXAMPLE 1
 
+```powershell
 Set-ExMailboxRegionalConfiguration -Identity "user@example.com" -Language "en-US" -TimeZone "+1" -DateFormat "MM/dd/yyyy" -TimeFormat "HH:mm" -GenerateCmdlets -OutputFile "C:\temp\cmdlets.txt"
+```
 
 Generates the Set-MailboxRegionalConfiguration cmdlet for the specified mailbox with the given regional settings and saves it to the specified file without executing it.
 
 ### EXAMPLE 2
 
+```powershell
 Set-ExMailboxRegionalConfiguration -ByDomain "example.com" -Language "fr-FR" -TimeZone "Romance Standard Time"
+```
 
 Sets the regional configuration for all mailboxes in the specified domain to French language and Romance Standard Time zone.
 
 ### EXAMPLE 3
 
+```powershell
 Set-ExMailboxRegionalConfiguration -FromCSV "C:\path\to\file.csv" -GenerateCmdlets -OutputFile "C:\temp\cmdlets.txt"
+```
 
 Generates the Set-MailboxRegionalConfiguration cmdlets for mailboxes listed in the specified CSV file and saves them to the specified file without executing them.
 
 ### EXAMPLE 4
 
+```powershell
 Set-ExMailboxRegionalConfiguration -ByDomain "example.com" -Language "en-US" -TimeZone "+1" -OnlyIfLanguageEmpty
+```
 
 Sets the regional configuration only for mailboxes in the specified domain that currently have no language configured.
 

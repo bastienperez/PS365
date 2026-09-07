@@ -39,31 +39,41 @@ Get Microsoft Entra ID Audit Log Sign-In Details with various filtering options.
 
 ### EXAMPLE 1
 
+```powershell
 Get-MgAuditLogSigninInfo -StartDate '2024-01-01' -EndDate '2024-01-31' -Users 'user1@contoso.com', 'user2@contoso.com'
+```
 
 Retrieves sign-in logs for specified users between January 1, 2024, and January 31, 2024.
 
 ### EXAMPLE 2
 
+```powershell
 Get-MgAuditLogSigninInfo -LastXSignIns 100 -FailureOnly
+```
 
 Retrieves the last 100 failed sign-in attempts.
 
 ### EXAMPLE 3
 
+```powershell
 Get-MgAuditLogSigninInfo -AnalyzeCAPInReportOnly
+```
 
 Retrieves sign-in logs with Conditional Access applied in ReportOnly mode.
 
 ### EXAMPLE 4
 
+```powershell
 Get-MgAuditLogSigninInfo -StartDate (Get-Date).AddHours(-1) -NonMFASignInsOnly
+```
 
 Retrieves non-MFA sign-ins from the last hour.
 
 ### EXAMPLE 5
 
+```powershell
 Get-MgAuditLogSigninInfo -TimeRange Maximum -SmsVoiceMFASignInsOnly -ExportToExcel
+```
 
 Exports the sign-ins where SMS or voice call MFA was actually used over the full log retention,
 to identify who still relies on the methods retired on February 1, 2027.
@@ -544,7 +554,7 @@ HelpMessage: ''
 
 ### -TimeRange
 
-Remplace plusieurs switches par un seul paramètre avec ValidateSet
+Remplace plusieurs switches par un seul paramÃ¨tre avec ValidateSet
 
 ```yaml
 Type: System.String

@@ -35,13 +35,17 @@ Default and anonymous entries are excluded.
 
 ### EXAMPLE 1
 
+```powershell
 Test-ExCalendarPermission -Mailbox "user@domain.com"
+```
 
 Tests all calendar permissions for the specified mailbox and returns a list of delegates with their existence status.
 
 ### EXAMPLE 2
 
+```powershell
 Test-ExCalendarPermission -Mailbox "user@domain.com" -DelegateStatus Missing
+```
 
 Tests calendar permissions for the specified mailbox and returns only delegates that no longer exist as recipients (orphaned permissions).
 

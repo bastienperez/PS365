@@ -40,52 +40,68 @@ the concatenated lists of member names and IDs, or -MemberReport to get one row 
 
 ### EXAMPLE 1
 
+```powershell
 Get-DynamicGroup
+```
 
 Retrieves all dynamic groups from both Exchange Online and Entra ID (members count only).
 
 ### EXAMPLE 2
 
+```powershell
 Get-DynamicGroup -ExchangeOnlineOnly
+```
 
 Retrieves only Exchange Online Dynamic Distribution Groups.
 
 ### EXAMPLE 3
 
+```powershell
 Get-DynamicGroup -EntraIDOnly
+```
 
 Retrieves only Entra ID Dynamic Groups.
 
 ### EXAMPLE 4
 
+```powershell
 Get-DynamicGroup -IncludeMembers
+```
 
 Retrieves all dynamic groups with MembersName and MembersId populated (pipe-separated).
 
 ### EXAMPLE 5
 
+```powershell
 Get-DynamicGroup -MemberReport
+```
 
 Returns one row per (group, member).
 Each row contains the group context and a single member.
 
 ### EXAMPLE 6
 
+```powershell
 Get-DynamicGroup -MemberReport -ExportToExcel
+```
 
 Exports both the per-group sheet ("DynamicGroups") and the per-member sheet ("Members") in the
 same Excel workbook.
 
 ### EXAMPLE 7
 
+```powershell
 Get-DynamicGroup -DeprecatedMemberOfRuleOnly
+```
 
 Returns only the dynamic groups using the deprecated MemberOf rule operator, whose
 memberships stop updating after November 3, 2026.
 
 ### EXAMPLE 8
 
+```powershell
 Get-DynamicGroup -DeprecatedMemberOfRuleOnly -ExportToExcel
+```
 
 Exports the groups using the deprecated MemberOf rule operator to an Excel file.
 

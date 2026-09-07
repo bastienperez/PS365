@@ -41,13 +41,17 @@ by using Invoke-MgGraphRequest to set AccountEnabled to true or false.
 
 ### EXAMPLE 1
 
+```powershell
 Set-MgEnterpriseAppStatus -ApplicationID "12345678-1234-1234-1234-123456789012" -Status "Disabled"
+```
 
 This command disables the enterprise application with the specified App ID.
 
 ### EXAMPLE 2
 
+```powershell
 Set-MgEnterpriseAppStatus -DisplayName "MyApp" -Status "Enabled"
+```
 
 This command enables the enterprise application with the specified display name.
 

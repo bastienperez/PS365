@@ -41,13 +41,17 @@ by using Invoke-MgGraphRequest to set isDisabled to true or false/null.
 
 ### EXAMPLE 1
 
+```powershell
 Set-MgRegisteredAppStatus -ApplicationID "your-application-id" -Status "Disabled"
+```
 
 This command disables the registered application with the specified Application ID.
 
 ### EXAMPLE 2
 
+```powershell
 Set-MgRegisteredAppStatus -DisplayName "MyApp" -Status "Enabled"
+```
 
 This command enables the registered application with the specified display name.
 

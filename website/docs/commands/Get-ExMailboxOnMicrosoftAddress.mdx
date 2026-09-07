@@ -34,29 +34,39 @@ Returns an object for each mailbox with relevant details.
 
 ### EXAMPLE 1
 
+```powershell
 Get-ExMailboxOnMicrosoftAddress
+```
 
 Returns objects containing mailbox details for those with @onmicrosoft.com addresses.
 
 ### EXAMPLE 2
 
+```powershell
 Get-ExMailboxOnMicrosoftAddress -ByDomain "contoso.com"
+```
 
 Returns mailboxes with @onmicrosoft.com addresses filtered by the specified domain.
 
 ### EXAMPLE 3
 
+```powershell
 Get-ExMailboxOnMicrosoftAddress -Identity "user@contoso.com"
+```
 
 Returns the @onmicrosoft.com address for the specified mailbox identity.
 
 ### EXAMPLE 4
 
+```powershell
 $mailboxes | Get-ExMailboxOnMicrosoftAddress
+```
 
 ### EXAMPLE 5
 
+```powershell
 Get-ExMailboxOnMicrosoftAddress -ExportToExcel
+```
 
 Exports results to an Excel file.
 

@@ -36,17 +36,21 @@ an object with error information and null values for the SCP data.
 
 ### EXAMPLE 1
 
+```powershell
 Get-EntraIDHybridJoinSCP
+```
 
 Returns the SCP object with keywords containing AzureADName and azureADId when AD is accessible.
 
 ### EXAMPLE 2
 
+```powershell
 $result = Get-EntraIDHybridJoinSCP
 
 if (-not $result.ADAccessible) {
     Write-Warning "Cannot access Active Directory: $($result.ErrorMessage)"
 }
+```
 
 Tests if Active Directory is accessible and handles the error case.
 

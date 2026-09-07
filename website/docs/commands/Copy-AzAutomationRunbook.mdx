@@ -34,13 +34,17 @@ into a destination Azure Automation account within the same resource group.
 
 ### EXAMPLE 1
 
+```powershell
 Copy-AzAutomationRunbook -SourceAutomationAccount 'newauto' -DestinationAutomationAccount 'newauto1' -ResourceGroup 'my-rg'
+```
 
 Copies all runbooks from 'newauto' to 'newauto1'.
 
 ### EXAMPLE 2
 
+```powershell
 Copy-AzAutomationRunbook -SourceAutomationAccount 'newauto' -DestinationAutomationAccount 'newauto1' -ResourceGroup 'my-rg' -TempFolder 'C:\Temp\Runbooks'
+```
 
 Copies all runbooks using a custom temporary folder.
 

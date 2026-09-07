@@ -56,7 +56,7 @@ A mailbox that cannot be evaluated is flagged too, so an empty Issue always mean
 - QuotaAboveEntitlement: ProhibitSendReceiveQuota exceeds what the current licenses entitle the
   user to (backfill applied on top of an already raised quota, or a 100 GB license since removed).
   Informational: the mailbox has more than its entitlement, not less
-- EntitlementUnknown (`<plans>`): the user holds an Exchange service plan whose quota is not in the
+- EntitlementUnknown (&lt;plans&gt;): the user holds an Exchange service plan whose quota is not in the
   internal map: the row is NOT evaluated (report it so the map can be extended)
 - NoExchangeLicense: user mailbox without any Exchange service plan
 
@@ -71,32 +71,42 @@ only (no archive change).
 
 ### EXAMPLE 1
 
+```powershell
 Get-ExMailboxQuotaInfo
+```
 
 Quotas versus license entitlement for every user, shared, room and equipment mailbox of the tenant.
 
 ### EXAMPLE 2
 
+```powershell
 Get-ExMailboxQuotaInfo -OnlyIssues
+```
 
 Only the mailboxes whose quota does not match what the licenses entitle them to
 (Business suite without the +50 GB add-on, or quota still below the entitlement).
 
 ### EXAMPLE 3
 
+```powershell
 Get-ExMailboxQuotaInfo -Identity 'user@contoso.com'
+```
 
 The report for a single user.
 
 ### EXAMPLE 4
 
+```powershell
 Get-ExMailboxQuotaInfo -IncludeUsage
+```
 
 Same report with the current size of each mailbox and its usage percentage.
 
 ### EXAMPLE 5
 
+```powershell
 Get-ExMailboxQuotaInfo -ExportToExcel
+```
 
 Exports the report to an Excel file in the user's profile directory.
 
@@ -252,7 +262,7 @@ _Not documented._
 
 _Not documented._
 
-### System.Collections.Generic.List\`1[[System.Management.Automation.PSObject, System.Management.Automation, Version=7.6.0.500, Culture=neutral, PublicKeyToken=31bf3856ad364e35]]
+### System.Collections.Generic.List\`1[[System.Management.Automation.PSObject, System.Management.Automation, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35]]
 
 _Not documented._
 

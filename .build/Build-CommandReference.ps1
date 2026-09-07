@@ -84,6 +84,35 @@ foreach ($commandName in $publicCommands) {
     # Get-Help's own comment-based-help parser (OS help-engine locale), not by PlatyPS's -Locale.
     $content = $content -replace '(?m)^### EXEMPLE (\d+)\r?$', '### EXAMPLE $1'
 
+    # PlatyPS renders the example command as plain text, not inside a ```powershell fence (unlike
+    # SYNTAX/PARAMETERS) - and it can span several lines (if/foreach blocks). Any curly brace in
+    # that command (e.g. "Where-Object { $_.X }") is then read as raw prose and breaks Mintlify's
+    # MDX parser. Fencing it is also more correct (syntax highlighting) and makes it immune to any
+    # further prose-escaping below.
+    #
+    # The command/description split can't just be "stop at the first blank line": for a
+    # multi-line command, PlatyPS itself inserts a spurious blank line after the command's first
+    # line (a formatting quirk, not present in the original comment-based help), so the first
+    # blank line can land INSIDE the command. The description, on the other hand, is never
+    # observed with an internal blank line, so the LAST blank line before the next heading is the
+    # actual command/description boundary.
+    $fence = '```'
+    $content = [regex]::Replace($content, '(?ms)^(### EXAMPLE \d+)\r?\n\r?\n(.*?)(?=\r?\n\r?\n#|\z)', {
+            param($match)
+            $heading = $match.Groups[1].Value
+            $body = $match.Groups[2].Value
+            $blankLines = [regex]::Matches($body, '\r?\n\r?\n')
+            if ($blankLines.Count -eq 0) {
+                $fencedBlock = @(($fence + 'powershell'), $body, $fence) -join "`n"
+                return (@($heading, $fencedBlock) -join "`n`n")
+            }
+            $splitAt = $blankLines[$blankLines.Count - 1]
+            $command = $body.Substring(0, $splitAt.Index)
+            $description = $body.Substring($splitAt.Index + $splitAt.Length)
+            $fencedBlock = @(($fence + 'powershell'), $command, $fence) -join "`n"
+            return (@($heading, $fencedBlock, $description) -join "`n`n")
+        })
+
     # INPUTS/OUTPUTS headings can be a raw .NET generic type name (e.g. "List`1[[...]]"): the
     # backtick is .NET's generic-arity notation, but in Markdown/MDX an unmatched backtick opens
     # an inline code span that is never closed, corrupting the rest of the page (Mintlify then
@@ -102,8 +131,16 @@ foreach ($commandName in $publicCommands) {
     $content = Repair-MdxProseText -Content $content -Transform {
         param($text)
         $text = $text -replace '\{\{\s*Fill[^{}]*\}\}', '_Not documented._'
-        $text = $text -replace '\{\{([^{}]*)\}\}', '`{{$1}}`'
-        $text = $text -replace '<([A-Za-z][^<>\r\n]*)>', '`<$1>`'
+
+        # Single alternation pass (double-brace tried first) so a "{{...}}" group is never
+        # re-matched a second time as two nested "{...}" groups once the outer pair is handled.
+        $text = [regex]::Replace($text, '\{\{[^{}]*\}\}|\{[^{}]*\}', { param($m) '`' + $m.Value + '`' })
+
+        # HTML entities, not backticks: backtick-wrapping a "<placeholder>" glued directly to a
+        # URL (e.g. ".../ApplicationSso/`<service-principal-id>`/...") still gets read as an
+        # unclosed JSX tag by Mintlify's parser. Entities never trigger tag detection at all, and
+        # render back to "<...>" in the final page. Real autolinks ("<https://...>") are excluded.
+        $text = $text -replace '<(?!https?://)([A-Za-z][^<>\r\n]*)>', '&lt;$1&gt;'
         return $text
     }
 

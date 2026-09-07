@@ -50,31 +50,41 @@ isResolved = true); use -IncludeResolved to see them.
 
 ### EXAMPLE 1
 
+```powershell
 Get-MgUserProvisioningError
+```
 
 Returns every active provisioning error of the tenant, one row per error.
 
 ### EXAMPLE 2
 
+```powershell
 Get-MgUserProvisioningError -Identity 'user@contoso.com'
+```
 
 Returns the provisioning errors of a single user.
 
 ### EXAMPLE 3
 
+```powershell
 Get-MgUserProvisioningError -ErrorSource OnPremisesSync
+```
 
 Returns only the Entra Connect synchronization errors (attribute conflicts).
 
 ### EXAMPLE 4
 
+```powershell
 Get-MgUserProvisioningError -IncludeResolved
+```
 
 Also returns the service provisioning errors already resolved.
 
 ### EXAMPLE 5
 
+```powershell
 Get-MgUserProvisioningError -ExportToExcel
+```
 
 Exports the provisioning errors report to an Excel file in the user's profile directory.
 
@@ -212,7 +222,7 @@ _Not documented._
 
 _Not documented._
 
-### System.Collections.Generic.List\`1[[System.Management.Automation.PSObject, System.Management.Automation, Version=7.6.0.500, Culture=neutral, PublicKeyToken=31bf3856ad364e35]]
+### System.Collections.Generic.List\`1[[System.Management.Automation.PSObject, System.Management.Automation, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35]]
 
 _Not documented._
 

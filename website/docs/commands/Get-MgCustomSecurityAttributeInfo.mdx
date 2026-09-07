@@ -35,31 +35,41 @@ The output is one row per (entity, attribute set, attribute name, value) so it c
 
 ### EXAMPLE 1
 
+```powershell
 Get-MgCustomSecurityAttributeInfo
+```
 
 Auto-discovers all attribute sets and returns assignments across users, devices, and service principals.
 
 ### EXAMPLE 2
 
+```powershell
 Get-MgCustomSecurityAttributeInfo -AttributeSet 'ComplianceData'
+```
 
 Returns assignments only for the 'ComplianceData' attribute set.
 
 ### EXAMPLE 3
 
+```powershell
 Get-MgCustomSecurityAttributeInfo -EntityType User, ServicePrincipal
+```
 
 Returns assignments only for users and service principals (skips devices).
 
 ### EXAMPLE 4
 
+```powershell
 Get-MgCustomSecurityAttributeInfo -UnusedOnly
+```
 
 Returns only the attribute definitions assigned to nobody, with their set and their status.
 
 ### EXAMPLE 5
 
+```powershell
 Get-MgCustomSecurityAttributeInfo -ExportToExcel
+```
 
 Exports results to an Excel file in the user's profile directory, with one worksheet per entity type,
 plus an 'Unused' worksheet listing the definitions nobody uses.

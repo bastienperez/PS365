@@ -32,7 +32,7 @@ inventory is exhaustive.
 
 Two mechanisms are covered:
 - the 15 built-in extension attributes exposed through onPremisesExtensionAttributes (extensionAttribute1..15);
-- the directory extensions declared by an application, named extension_`<AppId without dashes>`_`<Name>`.
+- the directory extensions declared by an application, named extension_&lt;AppId without dashes&gt;_&lt;Name&gt;.
 
 Custom security attributes are deliberately out of scope: they cannot be used in dynamic membership rules.
 Use Get-MgCustomSecurityAttributeInfo for those.
@@ -51,26 +51,34 @@ The values remain in the
 
 ### EXAMPLE 1
 
+```powershell
 Get-MgExtensionAttributeInfo
+```
 
 Returns every built-in extension attribute and every directory extension, with their usage and their status.
 
 ### EXAMPLE 2
 
+```powershell
 Get-MgExtensionAttributeInfo -TargetObject User, Group, Device
+```
 
 Counts the objects carrying a value on users, groups and devices instead of users only.
 
 ### EXAMPLE 3
 
+```powershell
 Get-MgExtensionAttributeInfo -SkipUsageCount
+```
 
 Lists the attributes without counting values.
 Fast inventory on a large tenant.
 
 ### EXAMPLE 4
 
+```powershell
 Get-MgExtensionAttributeInfo -ExportToExcel
+```
 
 Exports the inventory to an Excel file in the user's profile directory.
 

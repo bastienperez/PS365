@@ -70,25 +70,33 @@ Additionally, it can configure SMTP Client Authentication settings at the mailbo
 
 ### EXAMPLE 1
 
+```powershell
 Set-ExMailboxProtocol -Identity "user@example.com" -ModernProtocolsOnly
+```
 
 Sets modern protocols only for the specified mailbox.
 
 ### EXAMPLE 2
 
+```powershell
 Set-ExMailboxProtocol -ByDomain "example.com" -GenerateCmdlets -OutputFile "C:\path\to\commands.ps1"
+```
 
 Generates the Set-EXOCasMailbox cmdlets for all mailboxes in the specified domain to enable modern protocols only and saves them to the specified file without executing them.
 
 ### EXAMPLE 3
 
+```powershell
 Set-ExMailboxProtocol -FromCSV "C:\path\to\file.csv"
+```
 
 Sets protocol settings for mailboxes listed in the specified CSV file.
 
 ### EXAMPLE 4
 
+```powershell
 Set-ExMailboxProtocol -AllMailboxes -ModernProtocolsAndEws
+```
 
 Sets modern protocols along with EWS for all mailboxes in the organization.
 

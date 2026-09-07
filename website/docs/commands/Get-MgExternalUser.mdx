@@ -69,39 +69,51 @@ filtering on identities/signInType.
 
 ### EXAMPLE 1
 
+```powershell
 Get-MgExternalUser
+```
 
 Returns every external account of the tenant, whatever its issuer, userType and invitation state.
 
 ### EXAMPLE 2
 
+```powershell
 Get-MgExternalUser | Where-Object { $_.AuthSource -eq 'LocalOTP' }
+```
 
 Returns the external accounts that have no external identity provider and exist only through
 this tenant (email one-time passcode).
 
 ### EXAMPLE 3
 
+```powershell
 Get-MgExternalUser | Where-Object { $_.AuthSource -eq 'PendingRedemption' }
+```
 
 Returns the invited accounts that never redeemed their invitation.
 
 ### EXAMPLE 4
 
+```powershell
 Get-MgExternalUser -Issuer 'ExternalAzureAD' -UserType Member
+```
 
 Returns external users from another tenant that are NOT flagged as guests, which is the
 typical footprint of cross-tenant synchronization.
 
 ### EXAMPLE 5
 
+```powershell
 Get-MgExternalUser -IncludeSignInActivity | Where-Object { $_.DaysSinceLastSignIn -gt 90 }
+```
 
 Returns external users that have not signed in interactively for more than 90 days.
 
 ### EXAMPLE 6
 
+```powershell
 Get-MgExternalUser -ExportToExcel
+```
 
 Exports the external users report to an Excel file in the user's profile directory.
 

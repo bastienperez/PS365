@@ -33,19 +33,25 @@ This function retrieves members of all distribution groups in Exchange Online th
 
 ### EXAMPLE 1
 
+```powershell
 Find-DistributionGroupMember -FilterByDomain "contoso.com"
+```
 
 Searches all distribution groups for members with email addresses containing "contoso.com" and exports the results to a CSV file.
 
 ### EXAMPLE 2
 
+```powershell
 Find-DistributionGroupMember -FilterByEmailAddresses "user@contoso.com"
+```
 
 Searches all distribution groups for members with the email address "user@contoso.com" and exports the results to a CSV file.
 
 ### EXAMPLE 3
 
+```powershell
 Find-DistributionGroupMember -FilterByExternalDomains -FilterRecipientTypeDetails "MailContact"
+```
 
 Searches all distribution groups for members whose email addresses belong to external domains and are of the type "MailContact", then exports the results to a CSV file.
 

@@ -45,50 +45,66 @@ Two authentication modes are available:
 
 ### EXAMPLE 1
 
+```powershell
 Restart-MgSynchronizationJob -ObjectID 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
+```
 
 Restarts all synchronization jobs for the application identified by its ObjectID.
 
 ### EXAMPLE 2
 
+```powershell
 Restart-MgSynchronizationJob -DisplayName 'Workday to Entra'
+```
 
 Restarts all synchronization jobs for the application named exactly 'Workday to Entra'.
 
 ### EXAMPLE 3
 
+```powershell
 Restart-MgSynchronizationJob -DisplayName '*Provisioning*'
+```
 
 Restarts all jobs for every application whose name contains 'Provisioning'.
 
 ### EXAMPLE 4
 
+```powershell
 Restart-MgSynchronizationJob -DisplayName 'Workday to Entra' -RunFromAzureAutomation
+```
 
 Restarts all jobs for the matching application using Managed Identity authentication.
 Suitable for use in Azure Automation runbooks.
 
 ### EXAMPLE 5
 
+```powershell
 Restart-MgSynchronizationJob -DisplayName 'Workday*' -ForceNewToken
+```
 
 Forces a new Graph token before resolving applications and restarting jobs.
 
 ### EXAMPLE 6
 
+```powershell
 Restart-MgSynchronizationJob -DisplayName 'Workday to Entra' -ResetScope 'Escrows'
+```
 
 Retries only the objects currently in escrow (errored), without reprocessing the full directory.
 
 ### EXAMPLE 7
 
+```powershell
 Restart-MgSynchronizationJob -DisplayName 'Workday to Entra' -ResetScope 'Watermark, Escrows'
+```
 
 Combines a full directory re-evaluation with an escrow retry.
 
 ### EXAMPLE 8
 
+```powershell
 Restart-MgSynchronizationJob -DisplayName 'Workday to Entra' -ResetScope ''
+```
 
 Emulates the "Restart provisioning" button in the Entra portal
 (equivalent to QuarantineState + Watermark + Escrows with no explicit criteria body).

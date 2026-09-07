@@ -51,37 +51,49 @@ If no ApplicationID, ObjectID, or DisplayName is provided, returns all applicati
 
 ### EXAMPLE 1
 
+```powershell
 Get-MgRegisteredApp -ApplicationID "your-application-id"
+```
 
 This command retrieves the registered application with the specified Application ID (AppId).
 
 ### EXAMPLE 2
 
+```powershell
 Get-MgRegisteredApp -ObjectID "xxx-xxx-xxx"
+```
 
 This command retrieves the registered application with the specified ObjectID.
 
 ### EXAMPLE 3
 
+```powershell
 Get-MgRegisteredApp -DisplayName "My Application"
+```
 
 This command retrieves the registered application with the specified DisplayName.
 
 ### EXAMPLE 4
 
+```powershell
 Get-MgRegisteredApp -DisplayName "Azure*"
+```
 
 This command retrieves all registered applications whose DisplayName starts with "Azure".
 
 ### EXAMPLE 5
 
+```powershell
 Get-MgRegisteredApp -DisplayName "*Portal*"
+```
 
 This command retrieves all registered applications whose DisplayName contains "Portal".
 
 ### EXAMPLE 6
 
+```powershell
 Get-MgRegisteredApp
+```
 
 This command retrieves all registered applications.
 

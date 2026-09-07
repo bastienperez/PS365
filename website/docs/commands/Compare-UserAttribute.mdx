@@ -36,14 +36,18 @@ whose attributes either match or do not match.
 
 ### EXAMPLE 1
 
+```powershell
 Compare-UserAttribute -Attribute1 "mail" -Attribute2 "proxyAddresses" -
+```
 
 Compares the 'mail' and 'proxyAddresses' attributes for users in Active Directory
 and returns those with matching values.
 
 ### EXAMPLE 2
 
+```powershell
 Compare-UserAttribute -Attribute1 "userPrincipalName" -Attribute2 "mail" -Source "EntraID" -Return "NotMatching"
+```
 
 Compares the 'userPrincipalName' and 'mail' attributes for users in Entra ID
 and returns those with non-matching values.

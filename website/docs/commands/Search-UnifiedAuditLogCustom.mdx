@@ -37,7 +37,9 @@ This is particularly useful for security investigations, compliance audits, and 
 
 ### EXAMPLE 1
 
+```powershell
 Search-UnifiedAuditLogCustom -StartDate (Get-Date).AddDays(-7) -EndDate (Get-Date) -Operations "UserLoggedIn", "FileAccessed" -SimpleView
+```
 
 This example searches the Unified Audit Log for "UserLoggedIn" and "FileAccessed" operations that occurred in the last 7 days, and returns the results in a simplified format.
 

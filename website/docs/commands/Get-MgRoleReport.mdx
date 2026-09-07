@@ -34,62 +34,82 @@ Reports all the Microsoft Entra ID (Azure AD) roles with their members, includin
 
 ### EXAMPLE 1
 
+```powershell
 Get-MgRoleReport
+```
 
 Get all the roles with members, including PIM eligible assignments but without empty roles
 
 ### EXAMPLE 2
 
+```powershell
 Get-MgRoleReport -Identity 'Global Administrator'
+```
 
 Returns only the assignments of the Global Administrator role (filter accepts both role name and roleDefinitionId).
 
 ### EXAMPLE 3
 
+```powershell
 Get-MgRoleReport -PrincipalID 'alice@contoso.com'
+```
 
 Returns only the role assignments of alice@contoso.com (direct or via group membership).
 
 ### EXAMPLE 4
 
+```powershell
 Get-MgRoleReport -PrincipalID '11111111-2222-3333-4444-555555555555'
+```
 
 Returns only the role assignments for the principal matching this ObjectId or AppId.
 
 ### EXAMPLE 5
 
+```powershell
 Get-MgRoleReport -PrincipalDisplayName 'Alice Doe'
+```
 
 Returns only the role assignments for the principal whose DisplayName is 'Alice Doe'.
 
 ### EXAMPLE 6
 
+```powershell
 Get-MgRoleReport -Scope '/'
+```
 
 Returns only the role assignments at tenant scope.
 
 ### EXAMPLE 7
 
+```powershell
 Get-MgRoleReport -TierLevel 0
+```
 
 Returns only the assignments of Tier 0 (control plane) roles.
 Each row carries a RoleTier property.
 
 ### EXAMPLE 8
 
+```powershell
 Get-MgRoleReport -IncludeEmptyRoles
+```
 
 Get all the roles, including the ones without members
 
 ### EXAMPLE 9
 
+```powershell
 Get-MgRoleReport -ExcludePIMEligibleAssignments
+```
 
 Get all the roles with members (without empty roles), but without PIM eligible assignments
 
 ### EXAMPLE 10
 
+```powershell
 Get-MgRoleReport | Export-CSV -NoTypeInformation "$(Get-Date -Format yyyyMMdd)_adminRoles.csv" -Encoding UTF8
+```
 
 ## PARAMETERS
 
@@ -268,7 +288,7 @@ HelpMessage: ''
 ### -Scope
 
 Filter the report on the assignment scope (AssignedRoleScope / directoryScopeId).
-Examples: '/' (tenant-wide), '/administrativeUnits/`<id>`' (AU-scoped), or any resource scope.
+Examples: '/' (tenant-wide), '/administrativeUnits/&lt;id&gt;' (AU-scoped), or any resource scope.
 
 ```yaml
 Type: System.String

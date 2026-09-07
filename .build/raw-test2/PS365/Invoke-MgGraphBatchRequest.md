@@ -1,11 +1,11 @@
 ---
-description: Sends multiple Microsoft Graph requests in a single HTTP call using JSON batching.
 document type: cmdlet
+external help file: PS365-Help.xml
 HelpUri: https://ps365.clidsys.com/docs/commands/Invoke-MgGraphBatchRequest
 Locale: en-US
 Module Name: PS365
 ms.date: 09/07/2026
-sidebarTitle: Invoke-MgGraphBatchRequest
+PlatyPS schema version: 2024-05-01
 title: Invoke-MgGraphBatchRequest
 ---
 
@@ -24,6 +24,10 @@ Invoke-MgGraphBatchRequest [-Requests] <List`1[hashtable]> [[-GraphVersion] <str
  [[-MaxRetries] <int>] [[-Activity] <string>]
 ```
 
+## ALIASES
+
+This cmdlet has the following aliases,
+  {{Insert list of aliases}}
 
 ## DESCRIPTION
 
@@ -37,7 +41,7 @@ Returns a hashtable of responses indexed by the request id, so callers can match
 
 Each request is a hashtable with the keys expected by the $batch endpoint: id (unique string), method (GET, POST...),
 url (relative to the Graph version, e.g.
-/users/&lt;id&gt;/authentication/methods) and optionally body and headers.
+/users/<id>/authentication/methods) and optionally body and headers.
 
 Note: this function performs no permission check because the required scopes depend entirely on the URLs of the
 requests passed by the caller.
@@ -45,25 +49,21 @@ The caller is responsible for connecting with the appropriate scopes beforehand.
 
 ## EXAMPLES
 
-### EXAMPLE 1
+### EXEMPLE 1
 
-```powershell
 [System.Collections.Generic.List[hashtable]]$requests = @()
 
 foreach ($user in $mgUsers) {
     $requests.Add(@{ id = "$($user.Id)"; method = 'GET'; url = "/users/$($user.Id)/authentication/methods" })
 }
 $responses = Invoke-MgGraphBatchRequest -Requests $requests -Activity 'Getting authentication methods'
-```
 
 Retrieves the authentication methods of every user in $mgUsers with 20x fewer HTTP calls, then reads each
 result with $responses["$($user.Id)"].body.value.
 
-### EXAMPLE 2
+### EXEMPLE 2
 
-```powershell
 $responses = Invoke-MgGraphBatchRequest -Requests $requests -GraphVersion 'v1.0'
-```
 
 Sends the requests against the v1.0 endpoint instead of beta.
 
@@ -167,7 +167,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ### System.Collections.Hashtable
 
-_Not documented._
+{{ Fill in the Description }}
 
 ## NOTES
 
@@ -178,4 +178,4 @@ _Not documented._
 
 ## RELATED LINKS
 
-- [https://ps365.clidsys.com/docs/commands/Invoke-MgGraphBatchRequest](https://ps365.clidsys.com/docs/commands/Invoke-MgGraphBatchRequest)
+- [](https://ps365.clidsys.com/docs/commands/Invoke-MgGraphBatchRequest)

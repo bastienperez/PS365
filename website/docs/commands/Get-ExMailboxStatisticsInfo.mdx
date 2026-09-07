@@ -39,19 +39,25 @@ This function retrieves comprehensive statistics for an Exchange Online mailbox,
 
 ### EXAMPLE 1
 
+```powershell
 Get-ExMailboxStatisticsInfo -Identity "user@domain.com"
+```
 
 Gets detailed statistics for the specified mailbox.
 
 ### EXAMPLE 2
 
+```powershell
 Get-ExMailboxStatisticsInfo -Identity "user@domain.com" -IncludeFolderDetails
+```
 
 Gets statistics with folder details included.
 
 ### EXAMPLE 3
 
+```powershell
 Get-ExMailboxStatisticsInfo -ExportToExcel
+```
 
 Exports results to an Excel file.
 

@@ -27,7 +27,7 @@ Get-MgDirectorySyncInfo [[-DaysUntilExpiry] <int>] [[-StaleAfterDays] <int>]
 
 ## DESCRIPTION
 
-Microsoft Entra Connect Sync used to authenticate with a directory synchronization account, the Sync_`<server>`_`<id>`
+Microsoft Entra Connect Sync used to authenticate with a directory synchronization account, the Sync_&lt;server&gt;_&lt;id&gt;
 user holding the Directory Synchronization Accounts role.
 It now authenticates with an application identity: a
 certificate on an application that carries the ADSynchronization.ReadWrite.All application role on the first-party
@@ -51,19 +51,25 @@ A tenant is limited to 20 synchronization accounts, and leftovers count against 
 
 ### EXAMPLE 1
 
+```powershell
 Get-MgDirectorySyncInfo
+```
 
 Lists the synchronization applications and the synchronization accounts, with their status.
 
 ### EXAMPLE 2
 
+```powershell
 Get-MgDirectorySyncInfo -DaysUntilExpiry 60
+```
 
 Widens the certificate warning to 60 days, to catch the next rollover before the maintenance window closes.
 
 ### EXAMPLE 3
 
+```powershell
 Get-MgDirectorySyncInfo -ExportToExcel
+```
 
 Exports the report to an Excel file in the user's profile directory.
 
