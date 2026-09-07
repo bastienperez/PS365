@@ -24,8 +24,8 @@ including the new 100 GB entitlement of the Microsoft 365 Business suites.
 ### __AllParameterSets
 
 ```
-Get-ExMailboxQuotaInfo [[-Identity] <string[]>] [-OnlyIssues] [-ForceNewToken] [-ExportToExcel]
- [-ExportPath <string>]
+Get-ExMailboxQuotaInfo [[-Identity] <string[]>] [-IncludeUsage] [-OnlyIssues] [-ForceNewToken]
+ [-ExportToExcel] [-ExportPath <string>]
 ```
 
 
@@ -43,13 +43,22 @@ This function crosses two sources, one row per mailbox:
 - Exchange Online: the effective quotas (IssueWarningQuota, ProhibitSendQuota, ProhibitSendReceiveQuota)
 - Microsoft Graph: the assigned SKUs and the enabled Exchange service plans of the user
 
-It computes the expected maximum quota from the licenses (100 GB for BPOS_S_ENTERPRISE or for a
-Business suite with the storage add-on, 50 GB for BPOS_S_STANDARD alone such as standalone
-Exchange Online Plan 1, 2 GB for EXCHANGE_S_DESKLESS) and flags the gaps in the Issue column:
+It computes the expected maximum quota of EVERY mailbox from the licenses (100 GB for
+Exchange Online Plan 2 or a Business suite with the storage add-on, 50 GB for Plan 1 alone or a
+license-free shared/room/equipment mailbox, 2 GB for Kiosk) and flags the gaps in the Issue
+column.
+A mailbox that cannot be evaluated is flagged too, so an empty Issue always means
+'evaluated and consistent':
 - StorageAddOnNotProvisioned: Business suite license but the EXCHANGE_STORAGE_50GB plan is not
   enabled (disabled in the license options, or provisioning not completed yet)
 - QuotaBelowEntitlement: the add-on is there but ProhibitSendReceiveQuota is still below the
   entitlement (custom quota set by an administrator, preserved by design, or provisioning pending)
+- QuotaAboveEntitlement: ProhibitSendReceiveQuota exceeds what the current licenses entitle the
+  user to (backfill applied on top of an already raised quota, or a 100 GB license since removed).
+  Informational: the mailbox has more than its entitlement, not less
+- EntitlementUnknown (<plans>): the user holds an Exchange service plan whose quota is not in the
+  internal map: the row is NOT evaluated (report it so the map can be extended)
+- NoExchangeLicense: user mailbox without any Exchange service plan
 
 Quotas are never additive across products: a user holding both a Business suite and an Enterprise
 plan is entitled to 100 GB, not 150.
@@ -64,7 +73,7 @@ only (no archive change).
 
 Get-ExMailboxQuotaInfo
 
-Quotas versus license entitlement for every user mailbox of the tenant.
+Quotas versus license entitlement for every user, shared, room and equipment mailbox of the tenant.
 
 ### EXAMPLE 2
 
@@ -80,6 +89,12 @@ Get-ExMailboxQuotaInfo -Identity 'user@contoso.com'
 The report for a single user.
 
 ### EXAMPLE 4
+
+Get-ExMailboxQuotaInfo -IncludeUsage
+
+Same report with the current size of each mailbox and its usage percentage.
+
+### EXAMPLE 5
 
 Get-ExMailboxQuotaInfo -ExportToExcel
 
@@ -154,7 +169,8 @@ HelpMessage: ''
 ### -Identity
 
 (Optional) One or more user principal names.
-When omitted, every user mailbox is evaluated.
+When omitted, every user, shared, room and
+equipment mailbox of the tenant is evaluated.
 
 ```yaml
 Type: System.String[]
@@ -167,6 +183,29 @@ ParameterSets:
   IsRequired: false
   ValueFromPipeline: true
   ValueFromPipelineByPropertyName: true
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -IncludeUsage
+
+(Optional) Also retrieves the current mailbox usage (Get-EXOMailboxStatistics): columns
+TotalItemSize, TotalItemSizeGB and UsagePercent (against ProhibitSendReceiveQuota).
+One extra call per mailbox: noticeably slower on large tenants.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
   ValueFromRemainingArguments: false
 DontShow: false
 AcceptedValues: []
@@ -227,18 +266,23 @@ OUTPUT PROPERTIES
 - ProhibitSendReceiveQuota : effective maximum size reported by Exchange
 - IssueWarningQuota        : warning threshold reported by Exchange
 - UseDatabaseQuotaDefaults : whether the database defaults apply
+- TotalItemSize            : current mailbox size (with -IncludeUsage, empty otherwise)
+- TotalItemSizeGB          : current mailbox size in GB (with -IncludeUsage)
+- UsagePercent             : TotalItemSizeGB / ProhibitSendReceiveQuota (with -IncludeUsage)
 - Licenses                 : SKU part numbers assigned to the user
 - ExchangeServicePlans     : enabled Exchange service plans (BPOS_S_STANDARD, EXCHANGE_STORAGE_50GB...)
 - HasBusinessSuite         : the user holds Business Basic, Business Standard or Business Premium
 - HasStorageAddOn          : the EXCHANGE_STORAGE_50GB service plan is enabled
 - ExpectedMaxQuotaGB       : maximum quota the licenses entitle the user to (empty when unknown)
-- Issue                    : StorageAddOnNotProvisioned, QuotaBelowEntitlement, or empty
+- Issue                    : StorageAddOnNotProvisioned, QuotaBelowEntitlement, QuotaAboveEntitlement,
+                             EntitlementUnknown, NoExchangeLicense, or empty (evaluated and consistent)
 
 Required Microsoft Graph permissions:
     - User.Read.All
     - Organization.Read.All
 
 Requires an Exchange Online connection (Connect-ExchangeOnline is called when none exists).
+Mailboxes are retrieved with Get-EXOMailbox (REST) for performance on large tenants.
 
 Reference: https://techcommunity.microsoft.com/blog/exchange/understanding-the-new-100-gb-mailbox-entitlement-for-microsoft-365-business-suit/4548243
 

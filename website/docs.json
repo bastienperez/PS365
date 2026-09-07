@@ -34,6 +34,18 @@
           {
             "group": "Application",
             "pages": [
+              {
+                "group": "Audit",
+                "pages": [
+                  "docs/commands/Get-MgApplicationExpiringCertAndKey"
+                ]
+              },
+              {
+                "group": "SCIM",
+                "pages": [
+                  "docs/commands/Restart-MgSynchronizationJob"
+                ]
+              },
               "docs/commands/Get-MgApplicationAssignment",
               "docs/commands/Get-MgApplicationCredential",
               "docs/commands/Get-MgApplicationSAML",
@@ -119,6 +131,37 @@
             "group": "Group",
             "pages": [
               "docs/commands/Find-DistributionGroupMember"
+            ]
+          },
+          {
+            "group": "Mailbox",
+            "pages": [
+              {
+                "group": "Get",
+                "pages": [
+                  "docs/commands/Get-ExMailboxByDomain",
+                  "docs/commands/Get-ExMailboxForwarding",
+                  "docs/commands/Get-ExMailboxFromAttribute",
+                  "docs/commands/Get-ExMailboxMaxSize",
+                  "docs/commands/Get-ExMailboxOnMicrosoftAddress",
+                  "docs/commands/Get-ExMailboxPermission",
+                  "docs/commands/Get-ExMailboxProtocol",
+                  "docs/commands/Get-ExMailboxQuotaInfo",
+                  "docs/commands/Get-ExMailboxRegionalConfiguration",
+                  "docs/commands/Get-ExMailboxStatisticsInfo",
+                  "docs/commands/Get-ExMailboxWorkingHours",
+                  "docs/commands/Get-ExResourceMailbox",
+                  "docs/commands/Test-ExMailboxProxyAddress"
+                ]
+              },
+              {
+                "group": "Set",
+                "pages": [
+                  "docs/commands/Set-ExMailboxMaxSize",
+                  "docs/commands/Set-ExMailboxProtocol",
+                  "docs/commands/Set-ExMailboxRegionalConfiguration"
+                ]
+              }
             ]
           },
           {

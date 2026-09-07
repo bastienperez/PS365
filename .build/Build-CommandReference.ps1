@@ -92,12 +92,44 @@ function ConvertTo-DisplayName {
     return $result.Trim()
 }
 
+# Recursively build the "pages" array for one Public folder, mixing nested groups (subfolders)
+# and flat page entries (.ps1 files directly in that folder) at any depth - the Public tree is
+# not always 2 levels deep (e.g. Exchange/Mailbox/Get, Exchange/Mailbox/Set).
+function Get-NavigationPages {
+    param([string]$FolderPath)
+
+    [System.Collections.Generic.List[object]]$pages = @()
+
+    $subFolders = Get-ChildItem -Path $FolderPath -Directory | Sort-Object Name
+    foreach ($subFolder in $subFolders) {
+        $subPages = Get-NavigationPages -FolderPath $subFolder.FullName
+        if ($subPages.Count -gt 0) {
+            $null = $pages.Add([PSCustomObject]@{
+                    group = ConvertTo-DisplayName -FolderName $subFolder.Name
+                    pages = $subPages.ToArray()
+                })
+        }
+    }
+
+    $ps1Files = Get-ChildItem -Path $FolderPath -Filter '*.ps1' -File | Sort-Object Name
+    foreach ($ps1File in $ps1Files) {
+        $mdxPath = "docs/commands/$($ps1File.BaseName)"
+        if (Test-Path "./website/$mdxPath.mdx") {
+            $null = $pages.Add($mdxPath)
+        }
+    }
+
+    # The unary comma prevents PowerShell from unrolling the List onto the output stream when it
+    # holds a single item, which would otherwise turn $subPages into a bare string/object upstream.
+    return , $pages
+}
+
 # Build navigation groups from PowerShell folder structure
 [System.Collections.Generic.List[PSCustomObject]]$newGroups = @()
 
 # Keep the "Getting started" group as is
 $gettingStartedGroup = $docsJson.navigation.groups | Where-Object { $_.group -eq 'Getting started' }
-if ($gettingStartedGroup) {
+if ($null -ne $gettingStartedGroup) {
     $null = $newGroups.Add($gettingStartedGroup)
 }
 
@@ -105,67 +137,12 @@ if ($gettingStartedGroup) {
 $mainFolders = Get-ChildItem -Path "./$powershellModuleFolder/Public" -Directory | Sort-Object Name
 
 foreach ($mainFolder in $mainFolders) {
-    $groupName = ConvertTo-DisplayName -FolderName $mainFolder.Name
-
-    # Check if folder has subfolders (like Entra, Exchange) or direct .ps1 files
-    $subFolders = Get-ChildItem -Path $mainFolder.FullName -Directory
-    $ps1Files = Get-ChildItem -Path $mainFolder.FullName -Filter '*.ps1' -File
-
-    if ($subFolders.Count -gt 0) {
-        # Has subfolders - create nested groups
-        [System.Collections.Generic.List[PSCustomObject]]$subPages = @()
-
-        foreach ($subFolder in ($subFolders | Sort-Object Name)) {
-            $subGroupName = ConvertTo-DisplayName -FolderName $subFolder.Name
-
-            # Get all .ps1 files in subfolder and map to mdx paths
-            $subPs1Files = Get-ChildItem -Path $subFolder.FullName -Filter '*.ps1' -File | Sort-Object Name
-            [System.Collections.Generic.List[string]]$subGroupPages = @()
-
-            foreach ($ps1File in $subPs1Files) {
-                $mdxPath = "docs/commands/$($ps1File.BaseName)"
-                # Only add if the mdx file exists
-                if (Test-Path "./website/$mdxPath.mdx") {
-                    $null = $subGroupPages.Add($mdxPath)
-                }
-            }
-
-            if ($subGroupPages.Count -gt 0) {
-                $subGroup = [PSCustomObject]@{
-                    group = $subGroupName
-                    pages = $subGroupPages.ToArray()
-                }
-                $null = $subPages.Add($subGroup)
-            }
-        }
-
-        if ($subPages.Count -gt 0) {
-            $group = [PSCustomObject]@{
-                group = $groupName
-                pages = $subPages.ToArray()
-            }
-            $null = $newGroups.Add($group)
-        }
-    }
-    elseif ($ps1Files.Count -gt 0) {
-        # Direct .ps1 files - create flat group
-        [System.Collections.Generic.List[string]]$pages = @()
-
-        foreach ($ps1File in ($ps1Files | Sort-Object Name)) {
-            $mdxPath = "docs/commands/$($ps1File.BaseName)"
-            # Only add if the mdx file exists
-            if (Test-Path "./website/$mdxPath.mdx") {
-                $null = $pages.Add($mdxPath)
-            }
-        }
-
-        if ($pages.Count -gt 0) {
-            $group = [PSCustomObject]@{
-                group = $groupName
+    $pages = Get-NavigationPages -FolderPath $mainFolder.FullName
+    if ($pages.Count -gt 0) {
+        $null = $newGroups.Add([PSCustomObject]@{
+                group = ConvertTo-DisplayName -FolderName $mainFolder.Name
                 pages = $pages.ToArray()
-            }
-            $null = $newGroups.Add($group)
-        }
+            })
     }
 }
 
