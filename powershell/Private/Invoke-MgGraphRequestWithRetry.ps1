@@ -19,6 +19,17 @@ function Invoke-MgGraphRequestWithRetry {
     .PARAMETER Body
     Optional request body.
 
+    .PARAMETER Headers
+    Optional request headers, for the calls that need one (ConsistencyLevel on advanced queries).
+
+    .PARAMETER ContentType
+    Optional request content type, for the calls that send a body.
+
+    .PARAMETER OutputType
+    Optional Invoke-MgGraphRequest output type. Left unset, the SDK default applies, so existing
+    callers are unaffected. Passing Text is what a $count endpoint needs, since it answers with a
+    bare number and not with JSON.
+
     .PARAMETER MaxRetries
     Maximum number of retry attempts on 429 (default 5).
     #>
@@ -34,6 +45,15 @@ function Invoke-MgGraphRequestWithRetry {
         $Body,
 
         [Parameter()]
+        [hashtable]$Headers,
+
+        [Parameter()]
+        [string]$ContentType,
+
+        [Parameter()]
+        [string]$OutputType,
+
+        [Parameter()]
         [int]$MaxRetries = 5
     )
 
@@ -41,8 +61,10 @@ function Invoke-MgGraphRequestWithRetry {
     while ($true) {
         try {
             $params = @{ Method = $Method; Uri = $Uri; ErrorAction = 'Stop' }
-            if ($PSBoundParameters.ContainsKey('Body')) {
-                $params['Body'] = $Body
+            foreach ($passthrough in @('Body', 'Headers', 'ContentType', 'OutputType')) {
+                if ($PSBoundParameters.ContainsKey($passthrough)) {
+                    $params[$passthrough] = $PSBoundParameters[$passthrough]
+                }
             }
             return Invoke-MgGraphRequest @params
         }
