@@ -17,17 +17,16 @@ Get Microsoft Entra ID Audit Log Sign-In Details
 
 ## SYNTAX
 
-### __AllParameterSets
-
-```
-Get-MgAuditLogSigninInfo [[-StartDate] <Object>] [[-EndDate] <Object>] [[-Users] <string[]>]
- [[-LastXSignIns] <int>] [[-IPAddresses] <int>] [[-ConditionalAccessPolicyName] <string>]
- [[-TimeRange] <string>] [-BasicAuthenticationOnly] [-SuccessOnly] [-FailureOnly]
- [-BadCredentialsOnly] [-LastLogonOnly] [-NonMFASignInsOnly] [-MFASignInsOnly]
+```powershell
+Get-MgAuditLogSigninInfo [[-StartDate] <Object>] [[-EndDate] <Object>]
+ [[-Users] <string[]>] [[-LastXSignIns] <int>] [[-IPAddresses] <int>]
+ [[-ConditionalAccessPolicyName] <string>] [[-TimeRange] <string>]
+ [-BasicAuthenticationOnly] [-SuccessOnly] [-FailureOnly] [-BadCredentialsOnly]
+ [-LastLogonOnly] [-NonMFASignInsOnly] [-MFASignInsOnly]
  [-SmsVoiceMFASignInsOnly] [-NonInteractiveSignIns] [-ServicePrincipalSignIns]
  [-ManagedIdentitySignIns] [-ConditionalAccessPolicyNotApplied]
- [-ConditionalAccessPolicySuccessOnly] [-ConditionalAccessPolicyFailedOnly] [-UseDatePicker]
- [-ForceNewToken] [-AnalyzeCAPInReportOnly] [-ExportToExcel]
+ [-ConditionalAccessPolicySuccessOnly] [-ConditionalAccessPolicyFailedOnly]
+ [-UseDatePicker] [-ForceNewToken] [-AnalyzeCAPInReportOnly] [-ExportToExcel]
 ```
 
 

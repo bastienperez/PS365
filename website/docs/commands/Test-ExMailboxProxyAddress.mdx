@@ -19,13 +19,14 @@ Test if a given proxy address exists in the proxy addresses of a mailbox.
 
 ### Single
 
-```
-Test-ExMailboxProxyAddress [-Mailbox <string>] [-ProxyAddress <string>] [-MatchOnly] [-NotMatchOnly]
+```powershell
+Test-ExMailboxProxyAddress [-Mailbox <string>] [-ProxyAddress <string>]
+ [-MatchOnly] [-NotMatchOnly]
 ```
 
 ### Csv
 
-```
+```powershell
 Test-ExMailboxProxyAddress [-CsvPath <string>] [-MailboxColumn <string>]
  [-ProxyAddressColumn <string>] [-MatchOnly] [-NotMatchOnly]
 ```

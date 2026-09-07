@@ -19,29 +19,32 @@ Retrieves all Entra ID applications configured for SAML SSO.
 
 ### All (Default)
 
-```
+```powershell
 Get-MgApplicationSAML [-ForceNewToken] [-ExportToExcel] [-ExportPath <string>]
- [-RunFromAzureAutomation] [-ExpirationThresholdDays <int>] [-NotificationRecipient <string>]
- [-NotificationSender <string>] [-IncludeSignInStats] [-DisableParallel] [-ThrottleLimit <int>]
+ [-RunFromAzureAutomation] [-ExpirationThresholdDays <int>]
+ [-NotificationRecipient <string>] [-NotificationSender <string>]
+ [-IncludeSignInStats] [-DisableParallel] [-ThrottleLimit <int>]
  [-UseBatchRequest]
 ```
 
 ### ByObjectId
 
-```
-Get-MgApplicationSAML [-ObjectID <string>] [-ForceNewToken] [-ExportToExcel] [-ExportPath <string>]
- [-RunFromAzureAutomation] [-ExpirationThresholdDays <int>] [-NotificationRecipient <string>]
- [-NotificationSender <string>] [-IncludeSignInStats] [-DisableParallel] [-ThrottleLimit <int>]
- [-UseBatchRequest]
+```powershell
+Get-MgApplicationSAML [-ObjectID <string>] [-ForceNewToken] [-ExportToExcel]
+ [-ExportPath <string>] [-RunFromAzureAutomation]
+ [-ExpirationThresholdDays <int>] [-NotificationRecipient <string>]
+ [-NotificationSender <string>] [-IncludeSignInStats] [-DisableParallel]
+ [-ThrottleLimit <int>] [-UseBatchRequest]
 ```
 
 ### ByDisplayName
 
-```
+```powershell
 Get-MgApplicationSAML [-DisplayName <string>] [-ForceNewToken] [-ExportToExcel]
- [-ExportPath <string>] [-RunFromAzureAutomation] [-ExpirationThresholdDays <int>]
- [-NotificationRecipient <string>] [-NotificationSender <string>] [-IncludeSignInStats]
- [-DisableParallel] [-ThrottleLimit <int>] [-UseBatchRequest]
+ [-ExportPath <string>] [-RunFromAzureAutomation]
+ [-ExpirationThresholdDays <int>] [-NotificationRecipient <string>]
+ [-NotificationSender <string>] [-IncludeSignInStats] [-DisableParallel]
+ [-ThrottleLimit <int>] [-UseBatchRequest]
 ```
 
 

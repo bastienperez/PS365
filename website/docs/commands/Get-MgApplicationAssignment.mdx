@@ -19,34 +19,35 @@ Retrieves all Entra ID applications and their assignment types.
 
 ### All (Default)
 
-```
-Get-MgApplicationAssignment [-AllApplications] [-AssignmentNotEnforced] [-AssignmentEmpty]
- [-ExportToExcel] [-ExportPath <string>] [-DisableParallel] [-ThrottleLimit <int>]
- [-UseBatchRequest]
-```
-
-### ByApplicationId
-
-```
-Get-MgApplicationAssignment [[-ApplicationId] <string[]>] [-AssignmentNotEnforced]
+```powershell
+Get-MgApplicationAssignment [-AllApplications] [-AssignmentNotEnforced]
  [-AssignmentEmpty] [-ExportToExcel] [-ExportPath <string>] [-DisableParallel]
  [-ThrottleLimit <int>] [-UseBatchRequest]
 ```
 
+### ByApplicationId
+
+```powershell
+Get-MgApplicationAssignment [[-ApplicationId] <string[]>]
+ [-AssignmentNotEnforced] [-AssignmentEmpty] [-ExportToExcel]
+ [-ExportPath <string>] [-DisableParallel] [-ThrottleLimit <int>]
+ [-UseBatchRequest]
+```
+
 ### ByObjectId
 
-```
-Get-MgApplicationAssignment [-ObjectID <string>] [-AssignmentNotEnforced] [-AssignmentEmpty]
- [-ExportToExcel] [-ExportPath <string>] [-DisableParallel] [-ThrottleLimit <int>]
- [-UseBatchRequest]
+```powershell
+Get-MgApplicationAssignment [-ObjectID <string>] [-AssignmentNotEnforced]
+ [-AssignmentEmpty] [-ExportToExcel] [-ExportPath <string>] [-DisableParallel]
+ [-ThrottleLimit <int>] [-UseBatchRequest]
 ```
 
 ### ByDisplayName
 
-```
-Get-MgApplicationAssignment [-DisplayName <string>] [-AssignmentNotEnforced] [-AssignmentEmpty]
- [-ExportToExcel] [-ExportPath <string>] [-DisableParallel] [-ThrottleLimit <int>]
- [-UseBatchRequest]
+```powershell
+Get-MgApplicationAssignment [-DisplayName <string>] [-AssignmentNotEnforced]
+ [-AssignmentEmpty] [-ExportToExcel] [-ExportPath <string>] [-DisableParallel]
+ [-ThrottleLimit <int>] [-UseBatchRequest]
 ```
 
 

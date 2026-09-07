@@ -19,29 +19,32 @@ Retrieves all Entra ID applications configured for SCIM provisioning.
 
 ### All (Default)
 
-```
-Get-MgApplicationSCIM [-ExcludeAttributeMappings] [-IncludeFailedObjects] [-ForceNewToken]
- [-ExportToExcel] [-ExportPath <string>] [-RunFromAzureAutomation] [-NotificationRecipient <string>]
- [-NotificationSender <string>] [-DisableParallel] [-ThrottleLimit <int>] [-UseBatchRequest]
- [-EntraCloudSync]
+```powershell
+Get-MgApplicationSCIM [-ExcludeAttributeMappings] [-IncludeFailedObjects]
+ [-ForceNewToken] [-ExportToExcel] [-ExportPath <string>]
+ [-RunFromAzureAutomation] [-NotificationRecipient <string>]
+ [-NotificationSender <string>] [-DisableParallel] [-ThrottleLimit <int>]
+ [-UseBatchRequest] [-EntraCloudSync]
 ```
 
 ### ByObjectId
 
-```
-Get-MgApplicationSCIM [-ObjectID <string>] [-ExcludeAttributeMappings] [-IncludeFailedObjects]
- [-ForceNewToken] [-ExportToExcel] [-ExportPath <string>] [-RunFromAzureAutomation]
- [-NotificationRecipient <string>] [-NotificationSender <string>] [-DisableParallel]
- [-ThrottleLimit <int>] [-UseBatchRequest] [-EntraCloudSync]
+```powershell
+Get-MgApplicationSCIM [-ObjectID <string>] [-ExcludeAttributeMappings]
+ [-IncludeFailedObjects] [-ForceNewToken] [-ExportToExcel]
+ [-ExportPath <string>] [-RunFromAzureAutomation]
+ [-NotificationRecipient <string>] [-NotificationSender <string>]
+ [-DisableParallel] [-ThrottleLimit <int>] [-UseBatchRequest] [-EntraCloudSync]
 ```
 
 ### ByDisplayName
 
-```
-Get-MgApplicationSCIM [-DisplayName <string>] [-ExcludeAttributeMappings] [-IncludeFailedObjects]
- [-ForceNewToken] [-ExportToExcel] [-ExportPath <string>] [-RunFromAzureAutomation]
- [-NotificationRecipient <string>] [-NotificationSender <string>] [-DisableParallel]
- [-ThrottleLimit <int>] [-UseBatchRequest] [-EntraCloudSync]
+```powershell
+Get-MgApplicationSCIM [-DisplayName <string>] [-ExcludeAttributeMappings]
+ [-IncludeFailedObjects] [-ForceNewToken] [-ExportToExcel]
+ [-ExportPath <string>] [-RunFromAzureAutomation]
+ [-NotificationRecipient <string>] [-NotificationSender <string>]
+ [-DisableParallel] [-ThrottleLimit <int>] [-UseBatchRequest] [-EntraCloudSync]
 ```
 
 

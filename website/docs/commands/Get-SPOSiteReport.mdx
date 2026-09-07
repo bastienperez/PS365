@@ -17,16 +17,16 @@ Builds an inventory report of every SharePoint Online site of the tenant using P
 
 ## SYNTAX
 
-### __AllParameterSets
-
-```
-Get-SPOSiteReport [-ClientId] <string> [-Tenant] <string> [[-CertificateThumbprint] <string>]
- [[-CertificatePath] <string>] [[-CertificatePassword] <securestring>]
- [[-CertificateBase64Encoded] <string>] [[-AdminUrl] <string>] [[-SiteUrl] <string>]
- [[-ExcludeGeo] <string[]>] [[-ThrottleLimit] <int>] [[-ExcelTemplatePath] <string>]
- [[-ExportPath] <string>] [-ExcludeOneDrive] [-OnlyOneDrive] [-IncludeAllDetails]
- [-IncludeSiteAdmins] [-IncludeSiteMembers] [-IncludeSiteVisitors] [-IncludeSharingLinks]
- [-IncludeSharingLinksDetails] [-RegionalSettingsDetails] [-M365GroupsDetails] [-ExportToExcel]
+```powershell
+Get-SPOSiteReport [-ClientId] <string> [-Tenant] <string>
+ [[-CertificateThumbprint] <string>] [[-CertificatePath] <string>]
+ [[-CertificatePassword] <securestring>] [[-CertificateBase64Encoded] <string>]
+ [[-AdminUrl] <string>] [[-SiteUrl] <string>] [[-ExcludeGeo] <string[]>]
+ [[-ThrottleLimit] <int>] [[-ExcelTemplatePath] <string>]
+ [[-ExportPath] <string>] [-ExcludeOneDrive] [-OnlyOneDrive]
+ [-IncludeAllDetails] [-IncludeSiteAdmins] [-IncludeSiteMembers]
+ [-IncludeSiteVisitors] [-IncludeSharingLinks] [-IncludeSharingLinksDetails]
+ [-RegionalSettingsDetails] [-M365GroupsDetails] [-ExportToExcel]
  [-ExportToHtml] [-MultiGeoStats]
 ```
 

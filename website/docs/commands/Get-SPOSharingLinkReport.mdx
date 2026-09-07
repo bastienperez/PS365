@@ -17,14 +17,13 @@ Lists every sharing link of one or more SharePoint Online sites, one row per lin
 
 ## SYNTAX
 
-### __AllParameterSets
-
-```
-Get-SPOSharingLinkReport [-SiteUrl] <string[]> -ClientId <string> -Tenant <string>
- [-CertificateThumbprint <string>] [-CertificatePath <string>] [-CertificatePassword <securestring>]
- [-CertificateBase64Encoded <string>] [-IncludeGraphDetails] [-LinkType <string[]>] [-ExpiredOnly]
- [-NeverExpiringOnly] [-ExpiringInDays <int>] [-ThrottleLimit <int>] [-ExportToExcel]
- [-ExportPath <string>]
+```powershell
+Get-SPOSharingLinkReport [-SiteUrl] <string[]> -ClientId <string> -Tenant
+ <string> [-CertificateThumbprint <string>] [-CertificatePath <string>]
+ [-CertificatePassword <securestring>] [-CertificateBase64Encoded <string>]
+ [-IncludeGraphDetails] [-LinkType <string[]>] [-ExpiredOnly]
+ [-NeverExpiringOnly] [-ExpiringInDays <int>] [-ThrottleLimit <int>]
+ [-ExportToExcel] [-ExportPath <string>]
 ```
 
 

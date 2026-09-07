@@ -59,6 +59,54 @@ function Repair-MdxProseText {
     return ($parts -join '')
 }
 
+# Greedily re-wraps a syntax line into "[-Param <type>]"-sized tokens, never breaking inside one.
+# PlatyPS wraps at the generating console's buffer width (120 on a default powershell.exe host),
+# producing lines too wide for Mintlify's narrower content pane, where they get clipped instead of
+# wrapping. Continuation lines get a single leading space, matching PlatyPS's own convention.
+function Format-SyntaxLine {
+    param([string]$Line, [int]$Width = 80)
+
+    $tokens = [System.Collections.Generic.List[string]]::new()
+    $firstSpace = $Line.IndexOf(' ')
+    if ($firstSpace -lt 0) { return $Line }
+    $null = $tokens.Add($Line.Substring(0, $firstSpace))
+
+    $i = $firstSpace
+    $len = $Line.Length
+    while ($i -lt $len) {
+        while ($i -lt $len -and $Line[$i] -eq ' ') { $i++ }
+        if ($i -ge $len) { break }
+        $start = $i
+        if ($Line[$i] -eq '[') {
+            $depth = 0
+            do {
+                if ($Line[$i] -eq '[') { $depth++ }
+                elseif ($Line[$i] -eq ']') { $depth-- }
+                $i++
+            } while ($i -lt $len -and $depth -gt 0)
+        }
+        else {
+            while ($i -lt $len -and $Line[$i] -ne ' ') { $i++ }
+        }
+        $null = $tokens.Add($Line.Substring($start, $i - $start))
+    }
+
+    $lines = [System.Collections.Generic.List[string]]::new()
+    $current = $tokens[0]
+    for ($j = 1; $j -lt $tokens.Count; $j++) {
+        $candidate = $current + ' ' + $tokens[$j]
+        if ($candidate.Length -le $Width) {
+            $current = $candidate
+        }
+        else {
+            $null = $lines.Add($current)
+            $current = ' ' + $tokens[$j]
+        }
+    }
+    $null = $lines.Add($current)
+    return ($lines -join "`n")
+}
+
 foreach ($commandName in $publicCommands) {
     $cmd = Get-Command -Module $module.Name -Name $commandName -ErrorAction SilentlyContinue
     if ($null -eq $cmd) { Write-Warning "Command $commandName not found in module, skipped"; continue }
@@ -82,6 +130,27 @@ foreach ($commandName in $publicCommands) {
     if (-not (Test-Path $generated)) { Write-Warning "No markdown generated for $commandName"; continue }
 
     $content = Get-Content $generated -Raw
+
+    # SYNTAX section: drop the "### __AllParameterSets" heading (PlatyPS's internal label for
+    # "this command has only one parameter set" - meaningless to a reader, and Mintlify renders it
+    # as a confusing standalone tab). A command with several real parameter sets keeps one
+    # "### <SetName>" heading per syntax variant (e.g. Default/ByObjectId/ByDisplayName) - those
+    # stay, since they're genuinely informative.
+    $content = $content -replace '(?s)### __AllParameterSets\r?\n\r?\n', ''
+
+    # Every syntax variant is its own plain ``` fence whose content starts with the command name.
+    # Tag it as powershell for syntax highlighting (PlatyPS leaves it unlabeled) and re-wrap its
+    # line to a narrower width, so it doesn't get clipped in the doc site's content pane.
+    # Pattern built by concatenation, not embedded literally, to avoid PowerShell's backtick
+    # escaping rules ("```" typed directly inside a string is ambiguous to count correctly).
+    $syntaxFence = '```'
+    $syntaxPattern = '(?ms)^' + $syntaxFence + '\r?\n(' + [regex]::Escape($commandName) + '\b.*?)\r?\n' + $syntaxFence + '\r?$'
+    $content = [regex]::Replace($content, $syntaxPattern, {
+            param($match)
+            $rawLine = ($match.Groups[1].Value -replace '\r?\n ?', ' ').Trim()
+            $wrapped = Format-SyntaxLine -Line $rawLine
+            @(($syntaxFence + 'powershell'), $wrapped, $syntaxFence) -join "`n"
+        })
 
     # Drop the "external help file:"/"schema:" lines: internal PlatyPS bookkeeping, not useful in the docs
     $content = $content -replace '(?m)^(external help file|PlatyPS schema version):.*\r?\n', ''

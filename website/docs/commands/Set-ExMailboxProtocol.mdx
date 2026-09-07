@@ -19,40 +19,44 @@ Set Exchange mailbox protocol settings.
 
 ### Identity
 
-```
-Set-ExMailboxProtocol [-Identity] <string[]> [-GenerateCmdlets] [-OutputFile <string>]
- [-ModernProtocolsOnly] [-ModernProtocolsAndEws] [-MAPIEnabled <bool>] [-OWAEnabled <bool>]
- [-PopEnabled <bool>] [-ImapEnabled <bool>] [-ActiveSyncEnabled <bool>] [-EwsEnabled <bool>]
+```powershell
+Set-ExMailboxProtocol [-Identity] <string[]> [-GenerateCmdlets]
+ [-OutputFile <string>] [-ModernProtocolsOnly] [-ModernProtocolsAndEws]
+ [-MAPIEnabled <bool>] [-OWAEnabled <bool>] [-PopEnabled <bool>]
+ [-ImapEnabled <bool>] [-ActiveSyncEnabled <bool>] [-EwsEnabled <bool>]
  [-SmtpClientAuthenticationDisabled <bool>] [-UniversalOutlookEnabled <bool>]
  [-OutlookMobileEnabled <bool>] [-WhatIf] [-Confirm]
 ```
 
 ### ByDomain
 
-```
-Set-ExMailboxProtocol -ByDomain <string> [-GenerateCmdlets] [-OutputFile <string>]
- [-ModernProtocolsOnly] [-ModernProtocolsAndEws] [-MAPIEnabled <bool>] [-OWAEnabled <bool>]
- [-PopEnabled <bool>] [-ImapEnabled <bool>] [-ActiveSyncEnabled <bool>] [-EwsEnabled <bool>]
+```powershell
+Set-ExMailboxProtocol -ByDomain <string> [-GenerateCmdlets]
+ [-OutputFile <string>] [-ModernProtocolsOnly] [-ModernProtocolsAndEws]
+ [-MAPIEnabled <bool>] [-OWAEnabled <bool>] [-PopEnabled <bool>]
+ [-ImapEnabled <bool>] [-ActiveSyncEnabled <bool>] [-EwsEnabled <bool>]
  [-SmtpClientAuthenticationDisabled <bool>] [-UniversalOutlookEnabled <bool>]
  [-OutlookMobileEnabled <bool>] [-WhatIf] [-Confirm]
 ```
 
 ### FromCSV
 
-```
-Set-ExMailboxProtocol -FromCSV <string> [-GenerateCmdlets] [-OutputFile <string>]
- [-ModernProtocolsOnly] [-ModernProtocolsAndEws] [-MAPIEnabled <bool>] [-OWAEnabled <bool>]
- [-PopEnabled <bool>] [-ImapEnabled <bool>] [-ActiveSyncEnabled <bool>] [-EwsEnabled <bool>]
+```powershell
+Set-ExMailboxProtocol -FromCSV <string> [-GenerateCmdlets]
+ [-OutputFile <string>] [-ModernProtocolsOnly] [-ModernProtocolsAndEws]
+ [-MAPIEnabled <bool>] [-OWAEnabled <bool>] [-PopEnabled <bool>]
+ [-ImapEnabled <bool>] [-ActiveSyncEnabled <bool>] [-EwsEnabled <bool>]
  [-SmtpClientAuthenticationDisabled <bool>] [-UniversalOutlookEnabled <bool>]
  [-OutlookMobileEnabled <bool>] [-WhatIf] [-Confirm]
 ```
 
 ### AllMailboxes
 
-```
-Set-ExMailboxProtocol -AllMailboxes [-GenerateCmdlets] [-OutputFile <string>] [-ModernProtocolsOnly]
- [-ModernProtocolsAndEws] [-MAPIEnabled <bool>] [-OWAEnabled <bool>] [-PopEnabled <bool>]
- [-ImapEnabled <bool>] [-ActiveSyncEnabled <bool>] [-EwsEnabled <bool>]
+```powershell
+Set-ExMailboxProtocol -AllMailboxes [-GenerateCmdlets] [-OutputFile <string>]
+ [-ModernProtocolsOnly] [-ModernProtocolsAndEws] [-MAPIEnabled <bool>]
+ [-OWAEnabled <bool>] [-PopEnabled <bool>] [-ImapEnabled <bool>]
+ [-ActiveSyncEnabled <bool>] [-EwsEnabled <bool>]
  [-SmtpClientAuthenticationDisabled <bool>] [-UniversalOutlookEnabled <bool>]
  [-OutlookMobileEnabled <bool>] [-WhatIf] [-Confirm]
 ```

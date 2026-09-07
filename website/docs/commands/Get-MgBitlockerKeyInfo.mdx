@@ -19,18 +19,19 @@ Invokes the backup of BitLocker recovery keys to Intune for all Intune managed d
 
 ### Default (Default)
 
-```
-Get-MgBitlockerKeyInfo [-IncludeDeviceInfo] [-IncludeDeviceOwner] [-ExportToExcel]
- [-ExportPath <string>] [-ShowKeyInPlainText] [-RunFromAzureAutomation] [-DeviceName <string>]
- [-DeviceID <string>]
+```powershell
+Get-MgBitlockerKeyInfo [-IncludeDeviceInfo] [-IncludeDeviceOwner]
+ [-ExportToExcel] [-ExportPath <string>] [-ShowKeyInPlainText]
+ [-RunFromAzureAutomation] [-DeviceName <string>] [-DeviceID <string>]
 ```
 
 ### KeyVault
 
-```
-Get-MgBitlockerKeyInfo -BackupToKeyVault -KeyVaultName <string> [-IncludeDeviceInfo]
- [-IncludeDeviceOwner] [-ExportToExcel] [-ExportPath <string>] [-ShowKeyInPlainText]
- [-RunFromAzureAutomation] [-DeviceName <string>] [-DeviceID <string>]
+```powershell
+Get-MgBitlockerKeyInfo -BackupToKeyVault -KeyVaultName <string>
+ [-IncludeDeviceInfo] [-IncludeDeviceOwner] [-ExportToExcel]
+ [-ExportPath <string>] [-ShowKeyInPlainText] [-RunFromAzureAutomation]
+ [-DeviceName <string>] [-DeviceID <string>]
 ```
 
 

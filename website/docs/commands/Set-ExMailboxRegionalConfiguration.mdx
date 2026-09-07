@@ -19,33 +19,37 @@ Sets the regional configuration for Exchange mailboxes, including language, time
 
 ### Identity
 
-```
-Set-ExMailboxRegionalConfiguration [-Identity] <string[]> [-Language <string>] [-TimeZone <string>]
- [-DateFormat <string>] [-TimeFormat <string>] [-OnlyIfLanguageEmpty] [-GenerateCmdlets]
- [-OutputFile <string>] [-WhatIf] [-Confirm]
+```powershell
+Set-ExMailboxRegionalConfiguration [-Identity] <string[]> [-Language <string>]
+ [-TimeZone <string>] [-DateFormat <string>] [-TimeFormat <string>]
+ [-OnlyIfLanguageEmpty] [-GenerateCmdlets] [-OutputFile <string>] [-WhatIf]
+ [-Confirm]
 ```
 
 ### ByDomain
 
-```
-Set-ExMailboxRegionalConfiguration -ByDomain <string> [-Language <string>] [-TimeZone <string>]
- [-DateFormat <string>] [-TimeFormat <string>] [-OnlyIfLanguageEmpty] [-GenerateCmdlets]
- [-OutputFile <string>] [-WhatIf] [-Confirm]
+```powershell
+Set-ExMailboxRegionalConfiguration -ByDomain <string> [-Language <string>]
+ [-TimeZone <string>] [-DateFormat <string>] [-TimeFormat <string>]
+ [-OnlyIfLanguageEmpty] [-GenerateCmdlets] [-OutputFile <string>] [-WhatIf]
+ [-Confirm]
 ```
 
 ### FromCSV
 
-```
-Set-ExMailboxRegionalConfiguration -FromCSV <string> [-DateFormat <string>] [-TimeFormat <string>]
- [-OnlyIfLanguageEmpty] [-GenerateCmdlets] [-OutputFile <string>] [-WhatIf] [-Confirm]
+```powershell
+Set-ExMailboxRegionalConfiguration -FromCSV <string> [-DateFormat <string>]
+ [-TimeFormat <string>] [-OnlyIfLanguageEmpty] [-GenerateCmdlets]
+ [-OutputFile <string>] [-WhatIf] [-Confirm]
 ```
 
 ### AllMailboxes
 
-```
-Set-ExMailboxRegionalConfiguration -AllMailboxes [-Language <string>] [-TimeZone <string>]
- [-DateFormat <string>] [-TimeFormat <string>] [-OnlyIfLanguageEmpty] [-GenerateCmdlets]
- [-OutputFile <string>] [-WhatIf] [-Confirm]
+```powershell
+Set-ExMailboxRegionalConfiguration -AllMailboxes [-Language <string>]
+ [-TimeZone <string>] [-DateFormat <string>] [-TimeFormat <string>]
+ [-OnlyIfLanguageEmpty] [-GenerateCmdlets] [-OutputFile <string>] [-WhatIf]
+ [-Confirm]
 ```
 
 
