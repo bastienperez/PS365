@@ -6,6 +6,18 @@
 # afterwards with regex (title/sidebarTitle injection, ProgressAction removal, description injection).
 # PlatyPS's own -Metadata and -Locale parameters produce the right frontmatter directly.
 
+# Windows PowerShell 5.1 (Desktop edition) reads a BOM-less .ps1 with the system ANSI codepage,
+# not UTF-8, so any non-ASCII character in comment-based help (e.g. "→") comes out double-encoded
+# ("â†’") in the generated docs. PowerShell 7 does not have this problem. Re-exec under pwsh
+# transparently rather than silently producing corrupted docs when launched from Windows PowerShell.
+if ($PSVersionTable.PSEdition -eq 'Desktop') {
+    if (-not (Get-Command pwsh -ErrorAction SilentlyContinue)) {
+        throw "This script must run under PowerShell 7+ (pwsh) to avoid encoding corruption in the generated docs; pwsh was not found on PATH."
+    }
+    & pwsh -NoProfile -File $PSCommandPath @args
+    exit $LASTEXITCODE
+}
+
 $powershellModuleFolder = './powershell'
 $powershellModuleName = 'PS365.psm1'
 $commandsFolder = './website/docs/commands'
@@ -244,5 +256,8 @@ if ($privatePs1Files.Count -gt 0) {
 # Update the navigation groups in docs.json
 $docsJson.navigation.groups = $newGroups.ToArray()
 
-# Save the updated docs.json with proper formatting
-$docsJson | ConvertTo-Json -Depth 10 | Set-Content $docsJsonPath -Encoding UTF8
+# Save the updated docs.json with proper formatting. Windows PowerShell 5.1's "-Encoding UTF8"
+# always writes a byte-order mark; Mintlify's JSON parser chokes on it ("Unexpected token '﻿'").
+# [System.Text.UTF8Encoding]::new($false) writes UTF-8 without one.
+$docsJsonText = $docsJson | ConvertTo-Json -Depth 10
+[System.IO.File]::WriteAllText((Resolve-Path $docsJsonPath).Path, $docsJsonText, [System.Text.UTF8Encoding]::new($false))
