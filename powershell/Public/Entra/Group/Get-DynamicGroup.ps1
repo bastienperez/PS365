@@ -526,7 +526,9 @@ function Get-DynamicGroup {
                 else {
                     # Single lightweight $count call instead of paging through every member
                     $countUri = "v1.0/groups/$($group.Id)/members/`$count"
-                    $rawCount = Invoke-MgGraphRequest -Method GET -Uri $countUri -Headers @{ ConsistencyLevel = 'eventual' } -OutputType Text -ErrorAction Stop
+                    # Json, not Text: Text is not a value of the SDK OutputType enum, so the call
+                    # failed parameter binding and the member count was silently lost to the catch.
+                    $rawCount = Invoke-MgGraphRequest -Method GET -Uri $countUri -Headers @{ ConsistencyLevel = 'eventual' } -OutputType Json -ErrorAction Stop
                     $object.MembersCount = [int]($rawCount -replace '[^\d]', '')
                 }
             }

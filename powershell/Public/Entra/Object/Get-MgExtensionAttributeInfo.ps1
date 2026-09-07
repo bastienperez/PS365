@@ -288,8 +288,17 @@ function Get-MgExtensionAttributeInfo {
         $uri = "https://graph.microsoft.com/v1.0/$Collection/`$count?`$filter=$([uri]::EscapeDataString($Filter))"
         # One count per attribute and per collection is where throttling actually bites on a large
         # tenant, so this is the call that most needs the backoff.
-        $raw = Invoke-MgGraphRequestWithRetry -Method GET -Uri $uri -Headers @{ ConsistencyLevel = 'eventual' } -OutputType Text
-        return [int]$raw
+        #
+        # Json, not Text: the SDK OutputType enum only accepts HashTable, PSObject,
+        # HttpResponseMessage and Json, so Text fails parameter binding before the request is even
+        # sent. A count endpoint answers with a bare number, which is valid Json, so the raw string
+        # comes back untouched.
+        $raw = Invoke-MgGraphRequestWithRetry -Method GET -Uri $uri -Headers @{ ConsistencyLevel = 'eventual' } -OutputType Json
+        $parsed = 0
+        if (-not [int]::TryParse(([string]$raw -replace '[^\d]', ''), [ref]$parsed)) {
+            throw "Graph returned a count that is not a number: $raw"
+        }
+        return $parsed
     }
 
     [System.Collections.Generic.List[PSCustomObject]]$resultsArray = @()
