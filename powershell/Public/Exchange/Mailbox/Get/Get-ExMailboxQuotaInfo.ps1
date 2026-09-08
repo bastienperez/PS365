@@ -389,7 +389,9 @@ function Get-ExMailboxQuotaInfo {
                     $totalItemSize = "$($mailboxStatistics.TotalItemSize)"
                     $totalItemSizeGB = ConvertTo-QuotaGB -Quota $totalItemSize
 
-                    if ($totalItemSizeGB -and $prohibitSendReceiveQuotaGB) {
+                    # Zero is a valid result for very small mailboxes after rounding to GB.
+                    # Test for missing values explicitly so UsagePercent becomes 0 instead of $null.
+                    if ($null -ne $totalItemSizeGB -and $null -ne $prohibitSendReceiveQuotaGB -and $prohibitSendReceiveQuotaGB -gt 0) {
                         $usagePercent = [math]::Round(($totalItemSizeGB / $prohibitSendReceiveQuotaGB) * 100, 1)
                     }
                 }

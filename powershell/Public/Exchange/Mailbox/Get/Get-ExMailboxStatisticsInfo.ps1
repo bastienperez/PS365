@@ -12,7 +12,12 @@
 	- Number of notes
 
 	.PARAMETER Identity
-	Mailbox identity (email address, username, etc.)
+	Mailbox identity (email address, username, etc.). If omitted, statistics are retrieved for all Exchange Online mailboxes.
+
+	.EXAMPLE
+	Get-ExMailboxStatisticsInfo
+
+	Gets detailed statistics for all Exchange Online mailboxes.
 
 	.PARAMETER IncludeFolderDetails
 	Include folder details in the results
@@ -61,9 +66,11 @@ function Get-ExMailboxStatisticsInfo {
 	)
 
 	begin {
-		# Check if Exchange Online module is available
-		if (-not (Get-Command 'Get-MailboxStatistics' -ErrorAction SilentlyContinue)) {
-			throw 'Exchange Online PowerShell module is not available. Please connect using Connect-ExchangeOnline.'
+		# Check if the commands used for statistics collection are available.
+		foreach ($requiredCommand in @('Get-MailboxStatistics', 'Get-MailboxFolderStatistics')) {
+			if (-not (Get-Command $requiredCommand -ErrorAction SilentlyContinue)) {
+				throw "Required Exchange command '$requiredCommand' is not available. Please connect using Connect-ExchangeOnline."
+			}
 		}
 
 		$resultsArray = [System.Collections.Generic.List[PSCustomObject]]::new()
@@ -72,14 +79,42 @@ function Get-ExMailboxStatisticsInfo {
 	}
 
 	process {
+		if ([string]::IsNullOrWhiteSpace($Identity)) {
+			if (-not (Get-Command 'Get-EXOMailbox' -ErrorAction SilentlyContinue)) {
+				throw "Required Exchange command 'Get-EXOMailbox' is not available to enumerate mailboxes."
+			}
+
+			Write-Host -ForegroundColor Cyan 'Retrieving all Exchange Online mailboxes'
+			$requestedIdentities = @(Get-EXOMailbox -ResultSize Unlimited | ForEach-Object {
+					$mailbox = $_
+					$resolvedIdentity = @(
+						$mailbox.UserPrincipalName
+						$mailbox.PrimarySmtpAddress
+						$mailbox.ExternalDirectoryObjectId
+						$mailbox.Identity
+					) | Where-Object { -not [string]::IsNullOrWhiteSpace("$_") } | Select-Object -First 1
+
+					if ($null -ne $resolvedIdentity) {
+						[string]$resolvedIdentity
+					}
+					else {
+						Write-Warning "Skipping a mailbox because none of UserPrincipalName, PrimarySmtpAddress, ExternalDirectoryObjectId or Identity is populated. DisplayName: '$($mailbox.DisplayName)'."
+					}
+				})
+		}
+		else {
+			$requestedIdentities = @($Identity)
+		}
+
+		foreach ($mailboxIdentity in $requestedIdentities) {
 		try {
 			# Get general mailbox statistics
-			Write-Verbose 'Retrieving general statistics...'
-			$mailboxStats = Get-MailboxStatistics -Identity $Identity -ErrorAction Stop
+			Write-Verbose "Retrieving general statistics for mailbox $mailboxIdentity..."
+			$mailboxStats = Get-MailboxStatistics -Identity $mailboxIdentity -ErrorAction Stop
             
 			# Get folder statistics
-			Write-Verbose "Retrieving folder statistic for mailbox $Identity..."
-			$folderStats = Get-MailboxFolderStatistics -Identity $Identity -ErrorAction Stop
+			Write-Verbose "Retrieving folder statistic for mailbox $mailboxIdentity..."
+			$folderStats = Get-MailboxFolderStatistics -Identity $mailboxIdentity -ErrorAction Stop
             
 			# Calculate statistics by item type
 			$inboxItems = ($folderStats | Where-Object { $_.FolderType -eq 'Inbox' } | Measure-Object ItemsInFolder -Sum).Sum
@@ -103,7 +138,7 @@ function Get-ExMailboxStatisticsInfo {
             
 			# Create result object
 			$result = [PSCustomObject]@{
-				Identity             = $Identity
+				Identity             = $mailboxIdentity
 				DisplayName          = $mailboxStats.DisplayName
 				TotalItemSize        = $mailboxStats.TotalItemSize
 				TotalDeletedItemSize = $mailboxStats.TotalDeletedItemSize
@@ -147,7 +182,8 @@ function Get-ExMailboxStatisticsInfo {
             
 		}
 		catch {
-			Write-Error "Error retrieving statistics for mailbox $Identity : $($_.Exception.Message)"
+			Write-Error "Error retrieving statistics for mailbox $mailboxIdentity : $($_.Exception.Message)"
+		}
 		}
 	}
 

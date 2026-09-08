@@ -17,10 +17,10 @@ Set maximum mailbox size for specified mailboxes.
 
 ## SYNTAX
 
-### Identity
+### Identity (Default)
 
 ```powershell
-Set-ExMailboxMaxSize [-Identity] <string[]> [-GenerateCmdlets]
+Set-ExMailboxMaxSize [[-Identity] <string[]>] [-GenerateCmdlets]
  [-OutputFile <string>] [-WhatIf] [-Confirm]
 ```
 
@@ -216,7 +216,7 @@ Aliases: []
 ParameterSets:
 - Name: Identity
   Position: 0
-  IsRequired: true
+  IsRequired: false
   ValueFromPipeline: true
   ValueFromPipelineByPropertyName: true
   ValueFromRemainingArguments: false

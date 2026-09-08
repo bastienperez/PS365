@@ -17,10 +17,10 @@ Sets the regional configuration for Exchange mailboxes, including language, time
 
 ## SYNTAX
 
-### Identity
+### Identity (Default)
 
 ```powershell
-Set-ExMailboxRegionalConfiguration [-Identity] <string[]> [-Language <string>]
+Set-ExMailboxRegionalConfiguration [[-Identity] <string[]>] [-Language <string>]
  [-TimeZone <string>] [-DateFormat <string>] [-TimeFormat <string>]
  [-OnlyIfLanguageEmpty] [-GenerateCmdlets] [-OutputFile <string>] [-WhatIf]
  [-Confirm]
@@ -256,7 +256,7 @@ Aliases: []
 ParameterSets:
 - Name: Identity
   Position: 0
-  IsRequired: true
+  IsRequired: false
   ValueFromPipeline: true
   ValueFromPipelineByPropertyName: true
   ValueFromRemainingArguments: false

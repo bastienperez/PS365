@@ -53,9 +53,9 @@
 	https://ps365.clidsys.com/docs/commands/Set-ExMailboxMaxSize
 #>
 function Set-ExMailboxMaxSize {
-    [CmdletBinding(SupportsShouldProcess)]
+    [CmdletBinding(SupportsShouldProcess, DefaultParameterSetName = 'Identity')]
     param(
-        [Parameter(Mandatory = $true, ParameterSetName = 'Identity', Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Identity', Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
         [string[]]$Identity,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'ByDomain')]
@@ -79,7 +79,7 @@ function Set-ExMailboxMaxSize {
         foreach ($pipelineIdentity in $Identity) { $pipelineIdentities.Add($pipelineIdentity) }
     }
     end {
-        $Identity = $pipelineIdentities.ToArray()
+        $requestedIdentities = $pipelineIdentities.ToArray()
         $Mailboxes = @()
         if ($PSCmdlet.ParameterSetName -eq 'ByDomain') {
             # we can't filter PrimarySmtpAddress with `-like '*domain'` so we first find mailboxes with emailaddresses matching the domain then filter primarySMTPAddress
@@ -109,9 +109,13 @@ function Set-ExMailboxMaxSize {
             }
         }
         elseif ($PSCmdlet.ParameterSetName -eq 'Identity') {
+            if ($requestedIdentities.Count -eq 0) {
+                throw 'No mailbox target was specified. Use -Identity, -ByDomain, -FromCSV or -AllMailboxes.'
+            }
+
             $Mailboxes = [System.Collections.Generic.List[PSCustomObject]]::new()
 
-            foreach ($id in $Identity) {
+            foreach ($id in $requestedIdentities) {
                 try {
                     $mbx = Get-Mailbox -Identity $id -ErrorAction Stop
                     $Mailboxes.Add($mbx)

@@ -70,14 +70,15 @@ function Get-ExResourceMailbox {
         foreach ($pipelineIdentity in $PrimarySmtpAddress) { $pipelineIdentities.Add($pipelineIdentity) }
     }
     end {
-        $PrimarySmtpAddress = $pipelineIdentities.ToArray()
+        # Do not assign an empty array back to the validated parameter when no address was supplied.
+        $requestedPrimarySmtpAddresses = $pipelineIdentities.ToArray()
         $Mailboxes = @()
         $ResourceMailboxes = [System.Collections.Generic.List[PSCustomObject]]::new()
         $resourceMailboxesResults = [System.Collections.Generic.List[PSCustomObject]]::new()
         if ($UseExchangeDNHash) {
             $MailboxLegacyExchangeDNHash = Get-Mailbox -ResultSize Unlimited | Get-MailboxLegacyExchangeDNHash
         }
-        if (-not $PrimarySmtpAddress) {
+        if ($requestedPrimarySmtpAddresses.Count -eq 0) {
 
             if ($Filter) {
                 foreach ($CurFilter in $Filter) {
@@ -94,7 +95,7 @@ function Get-ExResourceMailbox {
             }
         }
         else {
-            foreach ($smtpAddress in $PrimarySmtpAddress) {
+            foreach ($smtpAddress in $requestedPrimarySmtpAddresses) {
                 $mbx = Get-Mailbox -Identity $smtpAddress -ErrorAction SilentlyContinue
                 if ($mbx) {
                     $ResourceMailboxes.Add($mbx)

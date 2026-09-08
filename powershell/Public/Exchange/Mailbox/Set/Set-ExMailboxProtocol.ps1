@@ -85,9 +85,9 @@
     https://ps365.clidsys.com/docs/commands/Set-ExMailboxProtocol
 #>
 function Set-ExMailboxProtocol {
-    [CmdletBinding(SupportsShouldProcess)]
+    [CmdletBinding(SupportsShouldProcess, DefaultParameterSetName = 'Identity')]
     param(
-        [Parameter(Mandatory = $true, ParameterSetName = 'Identity', Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Identity', Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
         [string[]]$Identity,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'ByDomain')]
@@ -150,7 +150,7 @@ function Set-ExMailboxProtocol {
         foreach ($pipelineIdentity in $Identity) { $pipelineIdentities.Add($pipelineIdentity) }
     }
     end {
-        $Identity = $pipelineIdentities.ToArray()
+        $requestedIdentities = $pipelineIdentities.ToArray()
         $Mailboxes = @()
         $individualProtocolParams = @('ECPEnabled', 'MAPIEnabled', 'OWAEnabled', 'PopEnabled', 'ImapEnabled', 'ActiveSyncEnabled', 'EwsEnabled', 'SmtpClientAuthenticationDisabled', 'UniversalOutlookEnabled', 'OutlookMobileEnabled')
         $providedIndividualParams = $individualProtocolParams | Where-Object { $PSBoundParameters.ContainsKey($_) }
@@ -236,9 +236,13 @@ function Set-ExMailboxProtocol {
             }
         }
         elseif ($PSCmdlet.ParameterSetName -eq 'Identity') {
+            if ($requestedIdentities.Count -eq 0) {
+                throw 'No mailbox target was specified. Use -Identity, -ByDomain, -FromCSV or -AllMailboxes.'
+            }
+
             $Mailboxes = [System.Collections.Generic.List[PSCustomObject]]::new()
 
-            foreach ($id in $Identity) {
+            foreach ($id in $requestedIdentities) {
                 try {
                     $mbx = Get-EXOCasMailbox -Identity $id -ErrorAction Stop
                     $Mailboxes.Add($mbx)

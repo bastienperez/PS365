@@ -72,7 +72,8 @@ function Get-ExMailboxForwarding {
         foreach ($pipelineIdentity in $Identity) { $pipelineIdentities.Add($pipelineIdentity) }
     }
     end {
-        $Identity = $pipelineIdentities.ToArray()
+        # Do not assign an empty array back to the validated parameter when no identity was supplied.
+        $requestedIdentities = $pipelineIdentities.ToArray()
         $Mailboxes = @()
         function ConvertFrom-Recipient {
             param (
@@ -181,7 +182,7 @@ function Get-ExMailboxForwarding {
                 $hashRecipients.Add($_.LegacyExchangeDN, $_.PrimarySmtpAddress)
             }
         }
-        if ($null -ne $Identity -and $Identity.Count -gt 0) {
+        if ($requestedIdentities.Count -gt 0) {
             # Build a hashtable keyed on PrimarySMTPAddress for O(1) lookups instead of O(N*M)
             # linear scans when the caller passes multiple identities against a large mailbox list.
             $mailboxByPrimarySmtp = @{}
@@ -190,7 +191,7 @@ function Get-ExMailboxForwarding {
             }
 
             $tempMailboxesList = [System.Collections.Generic.List[PSCustomObject]]::new()
-            foreach ($mbx in $Identity) {
+            foreach ($mbx in $requestedIdentities) {
                 $mailbox = $mailboxByPrimarySmtp[$mbx]
                 if ($mailbox) {
                     $tempMailboxesList.Add($mailbox)

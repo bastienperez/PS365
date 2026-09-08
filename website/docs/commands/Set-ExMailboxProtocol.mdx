@@ -17,10 +17,10 @@ Set Exchange mailbox protocol settings.
 
 ## SYNTAX
 
-### Identity
+### Identity (Default)
 
 ```powershell
-Set-ExMailboxProtocol [-Identity] <string[]> [-GenerateCmdlets]
+Set-ExMailboxProtocol [[-Identity] <string[]>] [-GenerateCmdlets]
  [-OutputFile <string>] [-ModernProtocolsOnly] [-ModernProtocolsAndEws]
  [-MAPIEnabled <bool>] [-OWAEnabled <bool>] [-PopEnabled <bool>]
  [-ImapEnabled <bool>] [-ActiveSyncEnabled <bool>] [-EwsEnabled <bool>]
@@ -268,7 +268,7 @@ Aliases: []
 ParameterSets:
 - Name: Identity
   Position: 0
-  IsRequired: true
+  IsRequired: false
   ValueFromPipeline: true
   ValueFromPipelineByPropertyName: true
   ValueFromRemainingArguments: false

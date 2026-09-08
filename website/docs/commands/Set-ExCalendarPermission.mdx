@@ -17,9 +17,18 @@ Sets calendar folder permissions for a mailbox in Exchange Online.
 
 ## SYNTAX
 
+### Identity (Default)
+
 ```powershell
-Set-ExCalendarPermission [-Identity] <string> -AccessRights <string>
+Set-ExCalendarPermission [[-Identity] <string[]>] -AccessRights <string>
  -DelegateUser <string> [-WhatIf] [-Confirm]
+```
+
+### AllMailboxes
+
+```powershell
+Set-ExCalendarPermission -AllMailboxes -AccessRights <string> -DelegateUser
+ <string> [-WhatIf] [-Confirm]
 ```
 
 
@@ -41,10 +50,18 @@ Grants read-only access to Jane on John's calendar.
 ### EXAMPLE 2
 
 ```powershell
-Set-ExCalendarPermission -Identity "john.doe@contoso.com" -AccessRights AvailabilityOnly -DelegateUser "jane.doe@contoso.com"
+Set-ExCalendarPermission -Identity "john.doe@contoso.com" -AccessRights FreeBusyTimeOnly -DelegateUser "jane.doe@contoso.com"
 ```
 
 Grants free/busy visibility only to Jane on John's calendar.
+
+### EXAMPLE 3
+
+```powershell
+Set-ExCalendarPermission -AllMailboxes -AccessRights Reviewer -DelegateUser "auditor@contoso.com" -WhatIf
+```
+
+Previews granting Reviewer access to the delegate on every mailbox calendar.
 
 ## PARAMETERS
 
@@ -75,6 +92,27 @@ SupportsWildcards: false
 Aliases: []
 ParameterSets:
 - Name: (All)
+  Position: Named
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -AllMailboxes
+
+Apply the calendar permission to all mailboxes in the organization.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: AllMailboxes
   Position: Named
   IsRequired: true
   ValueFromPipeline: false
@@ -130,19 +168,19 @@ HelpMessage: ''
 
 ### -Identity
 
-The identity of the mailbox whose calendar permissions will be modified (email address, username, or display name).
+The identity of one or more mailboxes whose calendar permissions will be modified (email address, username, or display name).
 
 ```yaml
-Type: System.String
+Type: System.String[]
 DefaultValue: ''
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
-- Name: (All)
+- Name: Identity
   Position: 0
-  IsRequired: true
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
+  IsRequired: false
+  ValueFromPipeline: true
+  ValueFromPipelineByPropertyName: true
   ValueFromRemainingArguments: false
 DontShow: false
 AcceptedValues: []
@@ -179,6 +217,10 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 [about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
+
+### System.String[]
+
+_Not documented._
 
 ## OUTPUTS
 
