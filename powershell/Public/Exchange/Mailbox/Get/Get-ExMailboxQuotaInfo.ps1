@@ -97,8 +97,9 @@
     - TotalItemSize            : current mailbox size (with -IncludeUsage, empty otherwise)
     - TotalItemSizeGB          : current mailbox size in GB (with -IncludeUsage)
     - UsagePercent             : TotalItemSizeGB / ProhibitSendReceiveQuota (with -IncludeUsage)
-    - Licenses                 : SKU part numbers assigned to the user
-    - ExchangeServicePlans     : enabled Exchange service plans (BPOS_S_STANDARD, EXCHANGE_STORAGE_50GB...)
+    - LicenseLookupStatus      : Success or UserNotFoundInGraph
+    - Licenses                 : SKU part numbers assigned to the user, or None
+    - ExchangeServicePlans     : enabled Exchange service plans (BPOS_S_STANDARD, EXCHANGE_STORAGE_50GB...), or None
     - HasBusinessSuite         : the user holds Business Basic, Business Standard or Business Premium
     - HasStorageAddOn          : the EXCHANGE_STORAGE_50GB service plan is enabled
     - ExpectedMaxQuotaGB       : maximum quota the licenses entitle the user to (empty when unknown)
@@ -203,22 +204,73 @@ function Get-ExMailboxQuotaInfo {
 
         $permissionsNeeded = @('User.Read.All', 'Organization.Read.All')
 
-        $isConnected = $null -ne (Get-MgContext -ErrorAction SilentlyContinue)
-        if ($ForceNewToken.IsPresent) {
-            $null = Disconnect-MgGraph -ErrorAction SilentlyContinue
-            $isConnected = $false
+        try {
+            $exchangeConnections = @(Get-ConnectionInformation -ErrorAction SilentlyContinue |
+                Where-Object { $_.ConnectionUri -eq 'https://outlook.office365.com' -and $_.State -ne 'Disconnected' })
+
+            if ($exchangeConnections.Count -eq 0) {
+                Connect-ExchangeOnline -ErrorAction Stop
+                $exchangeConnections = @(Get-ConnectionInformation -ErrorAction Stop |
+                    Where-Object { $_.ConnectionUri -eq 'https://outlook.office365.com' -and $_.State -ne 'Disconnected' })
+            }
         }
-        if (-not $isConnected) {
-            Write-Host -ForegroundColor Cyan 'Connecting to Microsoft Graph'
-            $null = Connect-MgGraph -Scopes $permissionsNeeded -NoWelcome
+        catch {
+            Write-Warning "Unable to connect to Exchange Online. $($_.Exception.Message)"
+            return
+        }
+
+        $exchangeTenantIds = @($exchangeConnections.TenantID |
+            Where-Object { -not [string]::IsNullOrWhiteSpace("$_") } |
+            Sort-Object -Unique)
+
+        if ($exchangeTenantIds.Count -eq 0) {
+            Write-Warning 'The Exchange Online connection does not expose a TenantID. The Microsoft Graph tenant cannot be verified.'
+            return
+        }
+        if ($exchangeTenantIds.Count -gt 1) {
+            Write-Warning "Several Exchange Online tenants are connected ($($exchangeTenantIds -join ', ')). Disconnect the sessions that are not required, then run the command again."
+            return
+        }
+
+        $exchangeTenantId = [string]$exchangeTenantIds[0]
+        $graphContext = Get-MgContext -ErrorAction SilentlyContinue
+        $isConnected = $null -ne $graphContext
+        $graphTenantMatchesExchange = $isConnected -and "$($graphContext.TenantId)" -eq $exchangeTenantId
+
+        if ($ForceNewToken.IsPresent) {
+            $graphTenantMatchesExchange = $false
+        }
+        elseif ($isConnected -and -not $graphTenantMatchesExchange) {
+            Write-Host -ForegroundColor Yellow "The current Microsoft Graph tenant '$($graphContext.TenantId)' differs from the Exchange Online tenant '$exchangeTenantId'. Reconnecting Microsoft Graph."
+        }
+
+        if (-not $graphTenantMatchesExchange) {
+            if ($isConnected) {
+                $null = Disconnect-MgGraph -ErrorAction SilentlyContinue
+            }
+
+            Write-Host -ForegroundColor Cyan "Connecting to Microsoft Graph tenant '$exchangeTenantId'"
+            try {
+                $null = Connect-MgGraph -TenantId $exchangeTenantId -Scopes $permissionsNeeded -NoWelcome -ErrorAction Stop
+                $graphContext = Get-MgContext -ErrorAction Stop
+            }
+            catch {
+                Write-Warning "Unable to connect to Microsoft Graph. $($_.Exception.Message)"
+                return
+            }
+        }
+        else {
+            $graphIdentity = if ($graphContext.Account) { $graphContext.Account } elseif ($graphContext.AppName) { $graphContext.AppName } else { $graphContext.ClientId }
+            Write-Host -ForegroundColor Cyan "Using the existing Microsoft Graph connection for '$graphIdentity' (tenant '$($graphContext.TenantId)')"
+        }
+
+        if ("$($graphContext.TenantId)" -ne $exchangeTenantId) {
+            Write-Warning "Microsoft Graph is connected to tenant '$($graphContext.TenantId)', but Exchange Online is connected to '$exchangeTenantId'. The report was stopped to avoid mixing tenants."
+            return
         }
 
         if (-not (Test-MgGraphPermission -RequiredScopes $permissionsNeeded -CallerName $MyInvocation.MyCommand.Name)) {
             return
-        }
-
-        if (-not (Get-ConnectionInformation | Where-Object { $_.ConnectionUri -eq 'https://outlook.office365.com' })) {
-            Connect-ExchangeOnline
         }
 
         # subscribedSkus gives both maps: skuId -> SkuPartNumber and servicePlanId -> ServicePlanName
@@ -309,7 +361,7 @@ function Get-ExMailboxQuotaInfo {
 
         # Get-EXOMailbox (REST) is much faster than Get-Mailbox on large tenants, but only returns
         # a minimal property set by default: the quotas must be requested explicitly
-        $mailboxProperties = @('DisplayName', 'RecipientTypeDetails', 'ProhibitSendQuota', 'ProhibitSendReceiveQuota', 'IssueWarningQuota', 'UseDatabaseQuotaDefaults')
+        $mailboxProperties = @('UserPrincipalName', 'DisplayName', 'RecipientTypeDetails', 'ProhibitSendQuota', 'ProhibitSendReceiveQuota', 'IssueWarningQuota', 'UseDatabaseQuotaDefaults')
 
         try {
             if ($identityList.Count -gt 0) {
@@ -347,6 +399,9 @@ function Get-ExMailboxQuotaInfo {
             $userLicenses = $licensesByUpn["$($mailbox.UserPrincipalName)"]
             $skuNames = @(if ($userLicenses) { $userLicenses.SkuNames })
             $exchangePlanNames = @(if ($userLicenses) { $userLicenses.ExchangePlanNames })
+            $licenseLookupStatus = if ($userLicenses) { 'Success' } else { 'UserNotFoundInGraph' }
+            $licenseDisplay = if ($skuNames.Count -gt 0) { ($skuNames | Sort-Object) -join '|' } elseif ($userLicenses) { 'None' } else { '' }
+            $exchangePlanDisplay = if ($exchangePlanNames.Count -gt 0) { ($exchangePlanNames | Sort-Object) -join '|' } elseif ($userLicenses) { 'None' } else { '' }
 
             $hasBusinessSuite = @($skuNames | Where-Object { $_ -in $businessSuiteSkus }).Count -gt 0
             $hasStorageAddOn = $exchangePlanNames -contains 'EXCHANGE_STORAGE_50GB'
@@ -435,8 +490,9 @@ function Get-ExMailboxQuotaInfo {
                 TotalItemSize            = $totalItemSize
                 TotalItemSizeGB          = $totalItemSizeGB
                 UsagePercent             = $usagePercent
-                Licenses                 = ($skuNames | Sort-Object) -join '|'
-                ExchangeServicePlans     = ($exchangePlanNames | Sort-Object) -join '|'
+                LicenseLookupStatus      = $licenseLookupStatus
+                Licenses                 = $licenseDisplay
+                ExchangeServicePlans     = $exchangePlanDisplay
                 HasBusinessSuite         = $hasBusinessSuite
                 HasStorageAddOn          = $hasStorageAddOn
                 ExpectedMaxQuotaGB       = $expectedMaxQuotaGB

@@ -277,8 +277,9 @@ OUTPUT PROPERTIES
 - TotalItemSize            : current mailbox size (with -IncludeUsage, empty otherwise)
 - TotalItemSizeGB          : current mailbox size in GB (with -IncludeUsage)
 - UsagePercent             : TotalItemSizeGB / ProhibitSendReceiveQuota (with -IncludeUsage)
-- Licenses                 : SKU part numbers assigned to the user
-- ExchangeServicePlans     : enabled Exchange service plans (BPOS_S_STANDARD, EXCHANGE_STORAGE_50GB...)
+- LicenseLookupStatus      : Success or UserNotFoundInGraph
+- Licenses                 : SKU part numbers assigned to the user, or None
+- ExchangeServicePlans     : enabled Exchange service plans (BPOS_S_STANDARD, EXCHANGE_STORAGE_50GB...), or None
 - HasBusinessSuite         : the user holds Business Basic, Business Standard or Business Premium
 - HasStorageAddOn          : the EXCHANGE_STORAGE_50GB service plan is enabled
 - ExpectedMaxQuotaGB       : maximum quota the licenses entitle the user to (empty when unknown)
