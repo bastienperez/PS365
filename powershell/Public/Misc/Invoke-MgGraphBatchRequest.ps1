@@ -8,6 +8,7 @@ up to 20 requests per HTTP call, drastically reducing round-trips for bulk read 
 Requests are automatically chunked into batches of 20. Sub-requests throttled by Graph (HTTP 429) are retried
 automatically, honoring the Retry-After header announced by Graph (exponential backoff when absent).
 Returns a hashtable of responses indexed by the request id, so callers can match each response back to its request.
+Each response also includes CollectionResult with Identity, Status, Data, Error, TimestampUTC and Source.
 
 Each request is a hashtable with the keys expected by the $batch endpoint: id (unique string), method (GET, POST...),
 url (relative to the Graph version, e.g. /users/<id>/authentication/methods) and optionally body and headers.
@@ -28,7 +29,7 @@ Maximum number of retry rounds for throttled sub-requests (default 5).
 Activity name displayed by Write-Progress while batches are being processed.
 
 .EXAMPLE
-[System.Collections.Generic.List[hashtable]]$requests = @()
+$requests = [System.Collections.Generic.List[hashtable]]::new()
 foreach ($user in $mgUsers) {
     $requests.Add(@{ id = "$($user.Id)"; method = 'GET'; url = "/users/$($user.Id)/authentication/methods" })
 }
@@ -62,6 +63,7 @@ function Invoke-MgGraphBatchRequest {
         [string]$GraphVersion = 'beta',
 
         [Parameter(Mandatory = $false)]
+        [ValidateRange(0, [int]::MaxValue)]
         [int]$MaxRetries = 5,
 
         [Parameter(Mandatory = $false)]
@@ -69,6 +71,15 @@ function Invoke-MgGraphBatchRequest {
     )
 
     $responsesById = @{}
+    $outcomeTimes = @{}
+    $requestIds = @{}
+    foreach ($request in $Requests) {
+        $id = [string]$request.id
+        if ([string]::IsNullOrWhiteSpace($id) -or $requestIds.ContainsKey($id)) {
+            throw 'Every batch request must have a nonempty, unique id.'
+        }
+        $requestIds[$id] = $true
+    }
     $batchSize = 20
     $totalBatches = [Math]::Ceiling($Requests.Count / $batchSize)
 
@@ -78,24 +89,40 @@ function Invoke-MgGraphBatchRequest {
         Write-Progress -Activity $Activity -Status "Batch $batchNumber / $totalBatches" -PercentComplete $percentComplete
 
         $endIndex = [Math]::Min($i + $batchSize - 1, $Requests.Count - 1)
-        [System.Collections.Generic.List[hashtable]]$pendingRequests = @($Requests[$i..$endIndex])
+        $pendingRequests = $Requests.GetRange($i, $endIndex - $i + 1)
         $retryCount = 0
 
         while ($pendingRequests.Count -gt 0) {
             $body = @{ requests = @($pendingRequests) } | ConvertTo-Json -Depth 5
+            foreach ($request in $pendingRequests) {
+                $responsesById[[string]$request.id] = [pscustomobject]@{
+                    id = [string]$request.id; status = 0
+                    body = @{ error = @{ code = 'MissingBatchResponse'; message = 'No sub-response returned for this request.' } }
+                }
+                $outcomeTimes[[string]$request.id] = [datetime]::UtcNow
+            }
 
             try {
                 $batchResult = Invoke-MgGraphRequest -Method POST -Uri "/$GraphVersion/`$batch" -Body $body -ContentType 'application/json' -OutputType PSObject -ErrorAction Stop
             }
             catch {
+                foreach ($request in $pendingRequests) {
+                    $responsesById[[string]$request.id] = [pscustomobject]@{
+                        id = [string]$request.id; status = 0
+                        body = @{ error = @{ code = 'BatchTransportError'; message = $_.Exception.Message } }
+                    }
+                    $outcomeTimes[[string]$request.id] = [datetime]::UtcNow
+                }
                 Write-Warning "Batch request failed. $($_.Exception.Message)"
                 break
             }
 
-            [System.Collections.Generic.List[hashtable]]$throttledRequests = @()
+            $throttledRequests = [System.Collections.Generic.List[hashtable]]::new()
             $maxRetryAfter = 0
 
             foreach ($response in $batchResult.responses) {
+                $responsesById[[string]$response.id] = $response
+                $outcomeTimes[[string]$response.id] = [datetime]::UtcNow
                 if ($response.status -eq 429) {
                     # Sub-request throttled, retry it after the delay announced by Graph
                     $retryAfter = 0
@@ -112,9 +139,6 @@ function Invoke-MgGraphBatchRequest {
                         $throttledRequests.Add($throttledRequest)
                     }
                 }
-                else {
-                    $responsesById[$response.id] = $response
-                }
             }
 
             if ($throttledRequests.Count -eq 0) {
@@ -123,7 +147,7 @@ function Invoke-MgGraphBatchRequest {
 
             $retryCount++
             if ($retryCount -gt $MaxRetries) {
-                Write-Warning "$($throttledRequests.Count) request(s) still throttled after $MaxRetries retries, skipping them"
+                Write-Warning "$($throttledRequests.Count) request(s) still throttled after $MaxRetries retries; retaining their failed responses"
                 break
             }
 
@@ -138,6 +162,35 @@ function Invoke-MgGraphBatchRequest {
     }
 
     Write-Progress -Activity $Activity -Completed
+
+    foreach ($request in $Requests) {
+        $response = $responsesById[[string]$request.id]
+        $httpSuccess = $response.status -ge 200 -and $response.status -lt 300
+        $resultData = @()
+        $resultError = $null
+        if ($httpSuccess) {
+            $hasValues = ($response.body -is [System.Collections.IDictionary] -and $response.body.Contains('value')) -or
+                ($null -ne $response.body -and $null -ne $response.body.PSObject.Properties['value'])
+            if ($hasValues) { $resultData = @($response.body.value) }
+            elseif ($null -ne $response.body) { $resultData = @($response.body) }
+            $resultStatus = if ($request.method -eq 'GET' -and $resultData.Count -eq 0) { 'Empty' } else { 'Success' }
+        }
+        else {
+            $resultStatus = 'Failed'
+            $resultError = [string]$response.body.error.message
+            if (-not $resultError) { $resultError = "Request failed (status $($response.status))" }
+        }
+        $collectionResult = [pscustomobject][ordered]@{
+            Identity = [string]$request.id
+            Status = $resultStatus
+            Data = $resultData
+            Error = $resultError
+            TimestampUTC = $outcomeTimes[[string]$request.id]
+            Source = "MicrosoftGraph/$GraphVersion$($request.url)"
+        }
+        if ($response -is [System.Collections.IDictionary]) { $response['CollectionResult'] = $collectionResult }
+        else { $response | Add-Member -NotePropertyName CollectionResult -NotePropertyValue $collectionResult -Force }
+    }
 
     return $responsesById
 }

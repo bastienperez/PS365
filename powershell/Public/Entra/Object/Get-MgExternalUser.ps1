@@ -189,7 +189,7 @@ function Get-MgExternalUser {
     # Tenant domains: an issuer matching one of them means the account has no external identity
     # provider (email one-time passcode), so it depends entirely on this tenant.
     Write-Host -ForegroundColor Cyan 'Retrieving tenant domains'
-    [System.Collections.Generic.List[string]]$tenantDomains = @()
+    $tenantDomains = [System.Collections.Generic.List[string]]::new()
     $domainsUri = 'https://graph.microsoft.com/v1.0/domains?$select=id&$top=999'
     try {
         do {
@@ -225,7 +225,7 @@ function Get-MgExternalUser {
 
     Write-Host -ForegroundColor Cyan 'Retrieving users from Microsoft Entra ID'
 
-    [System.Collections.Generic.List[PSCustomObject]]$externalUsersArray = @()
+    $externalUsersArray = [System.Collections.Generic.List[PSCustomObject]]::new()
     $processedCount = 0
     $referenceDate = Get-Date
 

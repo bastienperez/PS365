@@ -168,7 +168,7 @@ function Get-MgCustomSecurityAttributeInfo {
 
     # Definitions are needed to report the attributes that carry no assignment.
     Write-Host -ForegroundColor Cyan 'Retrieving attribute definitions'
-    [System.Collections.Generic.List[PSCustomObject]]$definitionsArray = @()
+    $definitionsArray = [System.Collections.Generic.List[PSCustomObject]]::new()
     $definitionsRetrieved = $true
     try {
         $definitionsUri = 'https://graph.microsoft.com/v1.0/directory/customSecurityAttributeDefinitions'
@@ -192,7 +192,7 @@ function Get-MgCustomSecurityAttributeInfo {
     # than tenant-wide, and reporting it as unused would invite a wrong deletion.
     $scanIsComplete = -not @('User', 'Device', 'ServicePrincipal').Where({ $EntityType -notcontains $_ })
 
-    [System.Collections.Generic.List[PSCustomObject]]$assignmentsArray = @()
+    $assignmentsArray = [System.Collections.Generic.List[PSCustomObject]]::new()
 
     function Convert-CustomSecurityAttributesToRows {
         param(
@@ -201,7 +201,7 @@ function Get-MgCustomSecurityAttributeInfo {
             [Parameter(Mandatory = $true)] [hashtable]$AllowedSets
         )
 
-        $rows = [System.Collections.Generic.List[PSCustomObject]]@()
+        $rows = [System.Collections.Generic.List[PSCustomObject]]::new()
         $csa = $Entity.customSecurityAttributes
 
         if ($null -eq $csa) {
@@ -313,7 +313,7 @@ function Get-MgCustomSecurityAttributeInfo {
 
     # Computed before the early return on an empty scan: zero assignment means
     # every definition is unused.
-    [System.Collections.Generic.List[PSCustomObject]]$unusedArray = @()
+    $unusedArray = [System.Collections.Generic.List[PSCustomObject]]::new()
     if ($definitionsArray.Count -gt 0) {
         $assignedKeys = @{}
         foreach ($assignment in $assignmentsArray) {

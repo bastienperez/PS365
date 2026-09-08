@@ -174,7 +174,7 @@ function Get-DynamicGroup {
 
     if ($MemberReport.IsPresent) {
         Write-Verbose 'MemberReport mode: returning one row per (group, member). MembersCount/MembersName/MembersId columns are not produced.'
-        [System.Collections.Generic.List[Object]]$memberReportArray = @()
+        $memberReportArray = [System.Collections.Generic.List[Object]]::new()
     }
     elseif (-not $IncludeMembers.IsPresent) {
         Write-Warning 'Members enumeration is disabled by default (only MembersCount is populated). Use -IncludeMembers to also retrieve MembersName and MembersId, or -MemberReport to get one row per member. This can be slow on large groups.'
@@ -244,7 +244,7 @@ function Get-DynamicGroup {
     }
 
     # Initialize an array list for better performance
-    [System.Collections.Generic.List[Object]]$dynGroupArray = @()
+    $dynGroupArray = [System.Collections.Generic.List[Object]]::new()
 
     # Check Exchange Online for Dynamic Distribution Groups
     # The deprecated MemberOf rule operator only exists in Entra ID membership rules,
@@ -566,7 +566,7 @@ function Get-DynamicGroup {
     }
 
     if ($DeprecatedMemberOfRuleOnly.IsPresent) {
-        [System.Collections.Generic.List[Object]]$filteredGroupArray = @()
+        $filteredGroupArray = [System.Collections.Generic.List[Object]]::new()
         foreach ($group in $dynGroupArray) {
             if ($group.DeprecatedMemberOfRule) {
                 $filteredGroupArray.Add($group)
@@ -580,7 +580,7 @@ function Get-DynamicGroup {
             foreach ($group in $dynGroupArray) {
                 [void]$deprecatedGroupIds.Add([string]$group.GroupId)
             }
-            [System.Collections.Generic.List[Object]]$filteredMemberArray = @()
+            $filteredMemberArray = [System.Collections.Generic.List[Object]]::new()
             foreach ($row in $memberReportArray) {
                 if ($deprecatedGroupIds.Contains([string]$row.GroupId)) {
                     $filteredMemberArray.Add($row)

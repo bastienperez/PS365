@@ -259,7 +259,7 @@ function Get-MgApplicationCredential {
         }
     }
 
-    [System.Collections.Generic.List[PSCustomObject]]$credentialsArray = @()
+    $credentialsArray = [System.Collections.Generic.List[PSCustomObject]]::new()
 
     # When running from Azure Automation, verify that all required permissions are granted to the managed identity
     if ($RunFromAzureAutomation.IsPresent) {
@@ -418,7 +418,7 @@ function Get-MgApplicationCredential {
 
     if ($useBatch) {
         Write-Verbose 'Retrieving application owners with the Graph $batch endpoint (20 requests per HTTP call)...'
-        [System.Collections.Generic.List[hashtable]]$ownersRequests = @()
+        $ownersRequests = [System.Collections.Generic.List[hashtable]]::new()
         foreach ($mgApp in $mgApps) {
             $ownersRequests.Add(@{
                     id     = "$($mgApp.Id)"

@@ -15,7 +15,7 @@
 
     .EXAMPLE
     Get-ExMailboxFromAttribute -Attribute "CustomAttribute" -CheckAttributes @("Attribute1", "Attribute2")
-    
+
     This example retrieves mailboxes with the custom attribute "CustomAttribute" and compares the values of "Attribute1" and "Attribute2".
 
     .EXAMPLE
@@ -55,45 +55,49 @@ function Get-ExMailboxFromAttribute {
         [string]$ExportPath
     )
 
-    [System.Collections.Generic.List[PSCustomObject]] $mailboxesFound = @()
-
-    # Attribute allows to get PrimarySMTPAddress and this specific attribute (for example forwardingSMTPAddress) and compare
-    try {
-        $allmbx = Get-EXOMailbox -ResultSize unlimited -Properties $Attribute -ErrorAction Stop -Properties WhenCreated, WhenModified | Where-Object { $null -ne $_.$Attribute }
+    begin {
+        $mailboxesFound = [System.Collections.Generic.List[PSCustomObject]]::new()
     }
-    catch {
-        Write-Warning $_.Exception.Message
-        return
-    }
-    
-    $allmbx | ForEach-Object {
-        $object = [PSCustomObject][ordered]@{
-            Name               = $_.Name
-            PrimarySmtpAddress = $_.PrimarySmtpAddress
-            $Attribute         = $_.$Attribute
+    process {
+        try {
+            $requestedProperties = @($Attribute, 'WhenCreated', 'WhenChanged') + @($CheckAttributes) | Where-Object { $_ } | Select-Object -Unique
+            $allmbx = Get-EXOMailbox -ResultSize unlimited -Properties $requestedProperties -ErrorAction Stop | Where-Object { $null -ne $_.$Attribute }
         }
-
-        if ($CheckAttributes -and $CheckAttributes.Count -eq 2) {
-            $firstAttribute = $_.($CheckAttributes[0])
-            $secondAttribute = $_.($CheckAttributes[1])
-            $attributesMatch = $firstAttribute -eq $secondAttribute
+        catch {
+            Write-Warning $_.Exception.Message
+            return
         }
+        $allmbx | ForEach-Object {
+            $object = [PSCustomObject][ordered]@{
+                Name               = $_.Name
+                PrimarySmtpAddress = $_.PrimarySmtpAddress
+                $Attribute         = $_.$Attribute
+            }
 
-        $object | Add-Member -MemberType NoteProperty -Name 'Match' -Value $attributesMatch
-        $object | Add-Member -MemberType NoteProperty -Name 'MailboxWhenCreated' -Value $_.WhenCreated
-        $object | Add-Member -MemberType NoteProperty -Name 'MailboxWhenModified' -Value $_.WhenChanged
+            $attributesMatch = $null
+            if ($CheckAttributes -and $CheckAttributes.Count -eq 2) {
+                $firstAttribute = $_.($CheckAttributes[0])
+                $secondAttribute = $_.($CheckAttributes[1])
+                $attributesMatch = $firstAttribute -eq $secondAttribute
+            }
 
-        $mailboxesFound.Add($object)
+            $object | Add-Member -MemberType NoteProperty -Name 'Match' -Value $attributesMatch
+            $object | Add-Member -MemberType NoteProperty -Name 'MailboxWhenCreated' -Value $_.WhenCreated
+            $object | Add-Member -MemberType NoteProperty -Name 'MailboxWhenModified' -Value $_.WhenChanged
+
+            $mailboxesFound.Add($object)
+        }
     }
-
-    if ($ExportToExcel.IsPresent) {
-        $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
-        $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-ExMailboxFromAttribute.xlsx"
-        Write-Host -ForegroundColor Cyan "Exporting to Excel file: $excelFilePath"
-        $mailboxesFound | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'ExMailboxFromAttribute' -TableStyle Light9
-        Write-Host -ForegroundColor Green 'Export completed successfully!'
-    }
-    else {
-        return $mailboxesFound
+    end {
+        if ($ExportToExcel.IsPresent) {
+            $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
+            $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-ExMailboxFromAttribute.xlsx"
+            Write-Host -ForegroundColor Cyan "Exporting to Excel file: $excelFilePath"
+            $mailboxesFound | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'ExMailboxFromAttribute' -TableStyle Light9
+            Write-Host -ForegroundColor Green 'Export completed successfully!'
+        }
+        else {
+            return $mailboxesFound
+        }
     }
 }

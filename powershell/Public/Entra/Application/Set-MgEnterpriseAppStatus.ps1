@@ -113,7 +113,7 @@ function Set-MgEnterpriseAppStatus {
     }
 
     if ($GenerateCmdlets) {
-        [System.Collections.Generic.List[string]]$commands = @()
+        $commands = [System.Collections.Generic.List[string]]::new()
         $bodyJson = ConvertTo-Json -InputObject $body -Depth 10 -Compress
         $command = "Invoke-MgGraphRequest -Uri `"$statusUri`" -Method PATCH -Body '$bodyJson'"
         $commands.Add($command)

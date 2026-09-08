@@ -57,7 +57,7 @@ function Get-UnifiedAuditLogOperationCatalog {
     $normalize = {
         param($Items)
 
-        [System.Collections.Generic.List[PSCustomObject]]$list = @()
+        $list = [System.Collections.Generic.List[PSCustomObject]]::new()
         foreach ($item in @($Items)) {
             if ($null -eq $item) {
                 continue
@@ -84,7 +84,7 @@ function Get-UnifiedAuditLogOperationCatalog {
         param($Rows)
 
         $seen = @{}
-        [System.Collections.Generic.List[PSCustomObject]]$list = @()
+        $list = [System.Collections.Generic.List[PSCustomObject]]::new()
 
         foreach ($row in ($Rows | Where-Object { -not [string]::IsNullOrWhiteSpace($_.Operation) })) {
             $operationName = ([string]$row.Operation).Trim().TrimEnd('.')
@@ -195,5 +195,5 @@ function Get-UnifiedAuditLogOperationCatalog {
     }
 
     Write-Verbose 'No operations catalog could be loaded (live, cache and seed all unavailable).'
-    return [PSCustomObject]@{ Operations = ([System.Collections.Generic.List[PSCustomObject]]@()); Source = 'None' }
+    return [PSCustomObject]@{ Operations = ([System.Collections.Generic.List[PSCustomObject]]::new()); Source = 'None' }
 }

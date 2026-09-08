@@ -63,8 +63,8 @@ function Get-MessageTraceInfo {
         [Switch] $UsingConnector
     )
 
-    [System.Collections.Generic.List[PSObject]]$messagesInfo = @()
-    [System.Collections.Generic.List[PSObject]]$messagesList = @()
+    $messagesInfo = [System.Collections.Generic.List[PSObject]]::new()
+    $messagesList = [System.Collections.Generic.List[PSObject]]::new()
 
     # PageSize maximum default = 1000; Max PageSize = 5000
     # There isn't really a reason to decrease this in this instance.

@@ -70,7 +70,7 @@ function Get-IntuneODJConnectorServiceEventLog {
     }
 
     # Parse the event messages and return structured objects
-    $parsedEvents = [System.Collections.Generic.List[PSCustomObject]]@()
+    $parsedEvents = [System.Collections.Generic.List[PSCustomObject]]::new()
     Write-Host -ForegroundColor Cyan "Parsing $($events.Count) events..."
 
     foreach ($event in $events) {

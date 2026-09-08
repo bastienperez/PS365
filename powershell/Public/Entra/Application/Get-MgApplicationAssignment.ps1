@@ -215,7 +215,7 @@ function Get-MgApplicationAssignment {
     }
     
     # Initialize results array
-    [System.Collections.Generic.List[PSCustomObject]]$applicationAssignmentsArray = @()
+    $applicationAssignmentsArray = [System.Collections.Generic.List[PSCustomObject]]::new()
     
     Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] Starting analysis of $($servicePrincipals.Count) applications..." -ForegroundColor Cyan
 
@@ -456,7 +456,7 @@ function Get-MgApplicationAssignment {
 
     if ($useBatch) {
         Write-Verbose 'Retrieving app role assignments with the Graph $batch endpoint (20 requests per HTTP call)...'
-        [System.Collections.Generic.List[hashtable]]$assignmentsRequests = @()
+        $assignmentsRequests = [System.Collections.Generic.List[hashtable]]::new()
         foreach ($sp in $servicePrincipals) {
             $assignmentsRequests.Add(@{
                     id     = "$($sp.Id)"

@@ -56,62 +56,54 @@ function Get-ExMailboxRegionalConfiguration {
         [string]$ExportPath
     )
 
-    [System.Collections.Generic.List[PSCustomObject]]$exoMbxRegionalConfigArray = @()
-
-    # PropertySets All because by default SMTPClientAuthenticationDisabled is not returned
-    if ($ByDomain) {
-        $mailboxes = Get-EXOMailbox -ResultSize Unlimited -Filter "EmailAddresses -like '*@$ByDomain'" -Properties WhenCreated, WhenChanged | Where-Object { $_.PrimarySmtpAddress -like "*@$ByDomain" }
+    begin {
+        $exoMbxRegionalConfigArray = [System.Collections.Generic.List[PSCustomObject]]::new()
     }
-    elseif ($Identity) {
-        [System.Collections.Generic.List[PSCustomObject]]$mailboxes = @()
-        try {
-            $mbx = Get-EXOMailbox -Identity $Identity
-            $mailboxes.Add($mbx)
+    process {
+        if ($ByDomain) {
+            $mailboxes = Get-EXOMailbox -ResultSize Unlimited -Filter "EmailAddresses -like '*@$ByDomain'" -Properties WhenCreated, WhenChanged | Where-Object { $_.PrimarySmtpAddress -like "*@$ByDomain" }
         }
-        catch {
-            Write-Warning "Mailbox not found: $Identity"
+        elseif ($Identity) {
+            $mailboxes = [System.Collections.Generic.List[PSCustomObject]]::new()
+            try {
+                $mbx = Get-EXOMailbox -Identity $Identity
+                $mailboxes.Add($mbx)
+            }
+            catch {
+                Write-Warning "Mailbox not found: $Identity"
+            }
+        }
+        else {
+            $mailboxes = Get-EXOMailbox -ResultSize Unlimited -Properties WhenCreated, WhenChanged
+        }
+        foreach ($mbx in $mailboxes) {
+            $regionalConfig = Get-MailboxRegionalConfiguration -Identity $mbx.PrimarySmtpAddress
+
+            $object = [PSCustomObject][ordered]@{
+                DisplayName         = $mbx.DisplayName
+                PrimarySmtpAddress  = $mbx.PrimarySmtpAddress
+                ExchangeObjectId    = $regionalConfig.Identity
+                Language            = $regionalConfig.Language
+                TimeZone            = $regionalConfig.TimeZone
+                DateFormat          = $regionalConfig.DateFormat
+                TimeFormat          = $regionalConfig.TimeFormat
+                MailboxWhenCreated  = $mbx.WhenCreated
+                MailboxWhenModified = $mbx.WhenChanged
+            }
+
+            $exoMbxRegionalConfigArray.Add($object)
         }
     }
-    else {
-        $mailboxes = Get-EXOMailbox -ResultSize Unlimited -Properties WhenCreated, WhenChanged
-    }
-
-    <#
-    ECPEnabled        : True
-    OWAEnabled        : True
-    ImapEnabled       : True
-    PopEnabled        : True
-    MAPIEnabled       : True
-    EwsEnabled        : True
-    ActiveSyncEnabled : True
-    #>
-
-    foreach ($mbx in $mailboxes) {
-        $regionalConfig = Get-MailboxRegionalConfiguration -Identity $mbx.PrimarySmtpAddress
-
-        $object = [PSCustomObject][ordered]@{ 
-            DisplayName         = $mbx.DisplayName
-            PrimarySmtpAddress  = $mbx.PrimarySmtpAddress
-            ExchangeObjectId    = $regionalConfig.Identity
-            Language            = $regionalConfig.Language
-            TimeZone            = $regionalConfig.TimeZone
-            DateFormat          = $regionalConfig.DateFormat
-            TimeFormat          = $regionalConfig.TimeFormat
-            MailboxWhenCreated  = $mbx.WhenCreated
-            MailboxWhenModified = $mbx.WhenChanged
+    end {
+        if ($ExportToExcel.IsPresent) {
+            $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
+            $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-ExMailboxRegionalConfiguration.xlsx"
+            Write-Host -ForegroundColor Cyan "Exporting to Excel file: $excelFilePath"
+            $exoMbxRegionalConfigArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'ExMailboxRegionalConfiguration' -TableStyle Light9
+            Write-Host -ForegroundColor Green 'Export completed successfully!'
         }
-
-        $exoMbxRegionalConfigArray.Add($object)
-    }
-
-    if ($ExportToExcel.IsPresent) {
-        $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
-        $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-ExMailboxRegionalConfiguration.xlsx"
-        Write-Host -ForegroundColor Cyan "Exporting to Excel file: $excelFilePath"
-        $exoMbxRegionalConfigArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'ExMailboxRegionalConfiguration' -TableStyle Light9
-        Write-Host -ForegroundColor Green 'Export completed successfully!'
-    }
-    else {
-        return $exoMbxRegionalConfigArray
+        else {
+            return $exoMbxRegionalConfigArray
+        }
     }
 }

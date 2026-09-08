@@ -286,7 +286,7 @@ function Get-MgBitlockerKeyInfo {
     # Retrieve device information - always needed for filtering, name resolution, or detailed info
     Write-Verbose 'Retrieving device information from Microsoft Graph...'
     try {
-        [System.Collections.Generic.List[Object]]$devices = @()
+        $devices = [System.Collections.Generic.List[Object]]::new()
 
         if ($PSBoundParameters.ContainsKey('DeviceName')) {
             Write-Verbose "Filtering devices by name: $DeviceName"
@@ -368,7 +368,7 @@ function Get-MgBitlockerKeyInfo {
 
     # Get BitLocker keys with plain text values if needed
     Write-Verbose 'Retrieving BitLocker recovery keys...'
-    [System.Collections.Generic.List[Object]]$keys = @()
+    $keys = [System.Collections.Generic.List[Object]]::new()
     
     if ($PSBoundParameters.ContainsKey('DeviceName') -or $PSBoundParameters.ContainsKey('DeviceID')) {
         Write-Verbose 'Filtering BitLocker keys for specified devices only...'

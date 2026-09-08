@@ -373,7 +373,7 @@ function Get-MgApplicationSAML {
 
     Write-Host "$($samlApplications.Count) SAML application(s) found" -ForegroundColor Green
 
-    [System.Collections.Generic.List[PSCustomObject]]$samlApplicationsArray = @()
+    $samlApplicationsArray = [System.Collections.Generic.List[PSCustomObject]]::new()
 
     # Calculate date for 30 days ago for sign-in statistics
     $signInStartDate = (Get-Date).AddDays(-30).ToString('yyyy-MM-ddTHH:mm:ssZ')
@@ -442,7 +442,7 @@ function Get-MgApplicationSAML {
                 if ($null -ne $signInResponse.'@odata.count') {
                     $signInCount = [int]$signInResponse.'@odata.count'
                 } else {
-                    $allSignIns = [System.Collections.Generic.List[object]]@()
+                    $allSignIns = [System.Collections.Generic.List[object]]::new()
                     $signInResponse.value | Where-Object { $_.isInteractive -eq $true } | ForEach-Object { $null = $allSignIns.Add($_) }
                     $nextLink = $signInResponse.'@odata.nextLink'
                     while ($nextLink) {
@@ -538,7 +538,7 @@ function Get-MgApplicationSAML {
 
     if ($useBatch) {
         Write-Verbose 'Retrieving service principal owners with the Graph $batch endpoint (20 requests per HTTP call)...'
-        [System.Collections.Generic.List[hashtable]]$ownersRequests = @()
+        $ownersRequests = [System.Collections.Generic.List[hashtable]]::new()
         foreach ($samlApp in $samlApplications) {
             $ownersRequests.Add(@{
                     id     = "$($samlApp.Id)"

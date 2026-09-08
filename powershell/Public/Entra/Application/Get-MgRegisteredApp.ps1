@@ -71,7 +71,7 @@ function Get-MgRegisteredApp {
         return
     }
 
-    [System.Collections.Generic.List[PSCustomObject]]$registeredAppsArray = @()
+    $registeredAppsArray = [System.Collections.Generic.List[PSCustomObject]]::new()
 
     # Determine how to search for the Application(s): by ApplicationID (AppId), by ObjectID (GUID), by DisplayName, or all
     if ($ApplicationID) {

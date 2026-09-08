@@ -66,7 +66,7 @@ function Get-EmptyGroup {
     Write-Verbose 'Fetching all groups...'
 
     # Fetch all groups with pagination
-    [System.Collections.Generic.List[Object]]$allGroups = @()
+    $allGroups = [System.Collections.Generic.List[Object]]::new()
     $uri = "https://graph.microsoft.com/v1.0/groups?`$select=id,displayName,groupTypes,securityEnabled,mailEnabled,mail,createdDateTime,description&`$top=999&`$count=true"
     $headers = @{ ConsistencyLevel = 'eventual' }
 
@@ -83,7 +83,7 @@ function Get-EmptyGroup {
     Write-Host -ForegroundColor Cyan "Found $totalCount groups. Scanning for empty groups..."
 
     # Check member count for each group
-    [System.Collections.Generic.List[Object]]$emptyGroups = @()
+    $emptyGroups = [System.Collections.Generic.List[Object]]::new()
     $processed = 0
 
     foreach ($group in $allGroups) {

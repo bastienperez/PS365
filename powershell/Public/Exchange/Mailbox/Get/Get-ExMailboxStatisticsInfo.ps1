@@ -66,7 +66,7 @@ function Get-ExMailboxStatisticsInfo {
 			throw 'Exchange Online PowerShell module is not available. Please connect using Connect-ExchangeOnline.'
 		}
 
-		$resultsArray = [System.Collections.Generic.List[PSCustomObject]]@()
+		$resultsArray = [System.Collections.Generic.List[PSCustomObject]]::new()
 
 		Write-Verbose "Starting statistics retrieval for mailbox $Identity"
 	}

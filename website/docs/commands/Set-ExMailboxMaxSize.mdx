@@ -4,7 +4,7 @@ document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Set-ExMailboxMaxSize
 Locale: en-US
 Module Name: PS365
-ms.date: 09/07/2026
+ms.date: 09/08/2026
 sidebarTitle: Set-ExMailboxMaxSize
 title: Set-ExMailboxMaxSize
 ---
@@ -56,7 +56,7 @@ It can target mailboxes by identity, by domain, from a CSV file, or all mailboxe
 ### EXAMPLE 1
 
 ```powershell
-Set-ExMailboxMaxSize -Identity "user@example.com" -MaxReceiveSize 150MB -MaxSendSize 150MB
+Set-ExMailboxMaxSize -Identity "user@example.com"
 ```
 
 Sets the maximum mailbox size for the specified mailbox.
@@ -162,7 +162,8 @@ HelpMessage: ''
 
 ### -FromCSV
 
-The path to a CSV file containing mailbox identities to process.
+The path to a CSV file with a PrimarySmtpAddress column.
+All rows are validated and resolved before any change.
 
 ```yaml
 Type: System.String

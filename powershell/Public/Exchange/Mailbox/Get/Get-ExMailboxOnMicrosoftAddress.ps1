@@ -54,9 +54,9 @@ function Get-ExMailboxOnMicrosoftAddress {
 
     begin {
         Write-Verbose 'Starting Get-ExMailboxOnMicrosoftAddress'
-        [System.Collections.Generic.List[PSCustomObject]]$mailboxes = @()
-        [System.Collections.Generic.List[PSCustomObject]]$results = @()
-        [System.Collections.Generic.List[string]]$orderedIdentities = @()
+        $mailboxes = [System.Collections.Generic.List[PSCustomObject]]::new()
+        $results = [System.Collections.Generic.List[PSCustomObject]]::new()
+        $orderedIdentities = [System.Collections.Generic.List[string]]::new()
     }
 
     process {

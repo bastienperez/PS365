@@ -136,9 +136,9 @@ function Get-MgRoleReport {
         [switch]$ExportToExcel
     )
 
-    [System.Collections.Generic.List[PSObject]]$rolesMembersArray = @()
+    $rolesMembersArray = [System.Collections.Generic.List[PSObject]]::new()
     $objectsCache = @{}
-    [System.Collections.Generic.List[Object]]$mgRolesArrayAssignment = @()
+    $mgRolesArrayAssignment = [System.Collections.Generic.List[Object]]::new()
     $scopeTypeCache = @{}
 
     # Privileged role tiering, inspired by Sean Metcalf's (PyroTek3) Get-EntraIDAdmins.ps1

@@ -219,7 +219,7 @@ function Get-MgLAPSPassword {
     }
 
     # Build the list of device credential IDs to process
-    $deviceCredentialIds = [System.Collections.Generic.List[string]]@()
+    $deviceCredentialIds = [System.Collections.Generic.List[string]]::new()
 
     if ($PSBoundParameters.ContainsKey('DeviceName')) {
         Write-Verbose "Resolving device name '$DeviceName' to Entra ID object ID..."

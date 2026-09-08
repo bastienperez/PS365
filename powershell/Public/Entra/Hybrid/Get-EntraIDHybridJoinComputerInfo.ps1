@@ -59,7 +59,7 @@ function Get-EntraIDHybridJoinComputerInfo {
 
     Write-Host -ForegroundColor Cyan 'Testing connectivity to Microsoft Entra ID'
     
-    [System.Collections.Generic.List[Object]]$connectivityResults = @()
+    $connectivityResults = [System.Collections.Generic.List[Object]]::new()
     
     foreach ($url in $urls) {
         $result = Test-NetConnection $url -Port 443
@@ -115,7 +115,7 @@ function Get-EntraIDHybridJoinComputerInfo {
 
     $search = [adsisearcher]"(&(ObjectClass=Computer)(cn=$env:computername))"
 
-    [System.Collections.Generic.List[Object]]$adCertificates = @()
+    $adCertificates = [System.Collections.Generic.List[Object]]::new()
     try {
         $computer = $search.FindAll()
     
@@ -150,7 +150,7 @@ function Get-EntraIDHybridJoinComputerInfo {
 
     Write-Host -ForegroundColor Cyan 'Get computer certificates in Personal store'
     
-    [System.Collections.Generic.List[Object]]$localEntraCertificates = @()
+    $localEntraCertificates = [System.Collections.Generic.List[Object]]::new()
     
     $entraCertificates = Get-ChildItem -Path cert:\LocalMachine\My | Where-Object { $_.Issuer -like '*MS-Organization-Access*' -or $_.Issuer -like '*MS-Organization-P2P-Access*' }
     
@@ -182,7 +182,7 @@ function Get-EntraIDHybridJoinComputerInfo {
     }
 
     Write-Host -ForegroundColor Cyan 'Get Hybrid Join details'
-    [System.Collections.Generic.List[Object]]$DeviceRegistrationEvent = @()
+    $DeviceRegistrationEvent = [System.Collections.Generic.List[Object]]::new()
 
     $eventObject = [PSCustomObject][ordered]@{
         TimeCreated = $null
@@ -325,7 +325,7 @@ function Get-EntraIDHybridJoinComputerInfo {
         }
         if ($results.DsRegCmd) {
             # Convert dsregcmd object to array for Excel export
-            [System.Collections.Generic.List[Object]]$dsregArray = @()
+            $dsregArray = [System.Collections.Generic.List[Object]]::new()
             foreach ($property in $results.DsRegCmd.PSObject.Properties) {
                 $dsregProperty = [PSCustomObject]@{
                     Property = $property.Name

@@ -210,7 +210,7 @@ function Get-SPOSharingLinkReport {
     )
 
     begin {
-        [System.Collections.Generic.List[string]]$siteUrlsList = @()
+        $siteUrlsList = [System.Collections.Generic.List[string]]::new()
 
         # Exactly one certificate method is required for the app-only connection
         $certMethods = @($CertificateThumbprint, $CertificatePath, $CertificateBase64Encoded | Where-Object { $_ })
@@ -329,7 +329,7 @@ function Get-SPOSharingLinkReport {
 
             # One entry per sharing link group, kept whole: the item ID says what to resolve, the link type
             # and the members are already the answer in the default (Graph-free) mode.
-            [System.Collections.Generic.List[PSCustomObject]]$linkGroups = @()
+            $linkGroups = [System.Collections.Generic.List[PSCustomObject]]::new()
             $itemUniqueIds = [System.Collections.Generic.HashSet[string]]::new()
 
             foreach ($siteGroup in $siteGroups) {
@@ -359,8 +359,8 @@ function Get-SPOSharingLinkReport {
                     })
             }
 
-            [System.Collections.Generic.List[PSCustomObject]]$siteLinks = @()
-            [System.Collections.Generic.List[string]]$itemErrors = @()
+            $siteLinks = [System.Collections.Generic.List[PSCustomObject]]::new()
+            $itemErrors = [System.Collections.Generic.List[string]]::new()
             $resolvedItems = @{}
 
             foreach ($itemUniqueId in $itemUniqueIds) {
@@ -491,7 +491,7 @@ function Get-SPOSharingLinkReport {
             }
         }
 
-        [System.Collections.Generic.List[PSCustomObject]]$sharingLinksArray = @()
+        $sharingLinksArray = [System.Collections.Generic.List[PSCustomObject]]::new()
         $siteErrorCount = 0
         $sitePartialErrorCount = 0
         $currentDate = (Get-Date).Date

@@ -4,7 +4,7 @@ document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Invoke-MgGraphBatchRequest
 Locale: en-US
 Module Name: PS365
-ms.date: 09/07/2026
+ms.date: 09/08/2026
 sidebarTitle: Invoke-MgGraphBatchRequest
 title: Invoke-MgGraphBatchRequest
 ---
@@ -32,6 +32,7 @@ Requests are automatically chunked into batches of 20.
 Sub-requests throttled by Graph (HTTP 429) are retried
 automatically, honoring the Retry-After header announced by Graph (exponential backoff when absent).
 Returns a hashtable of responses indexed by the request id, so callers can match each response back to its request.
+Each response also includes CollectionResult with Identity, Status, Data, Error, TimestampUTC and Source.
 
 Each request is a hashtable with the keys expected by the $batch endpoint: id (unique string), method (GET, POST...),
 url (relative to the Graph version, e.g.
@@ -46,7 +47,7 @@ The caller is responsible for connecting with the appropriate scopes beforehand.
 ### EXAMPLE 1
 
 ```powershell
-[System.Collections.Generic.List[hashtable]]$requests = @()
+$requests = [System.Collections.Generic.List[hashtable]]::new()
 foreach ($user in $mgUsers) {
     $requests.Add(@{ id = "$($user.Id)"; method = 'GET'; url = "/users/$($user.Id)/authentication/methods" })
 }

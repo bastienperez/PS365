@@ -179,7 +179,7 @@ function Get-PurviewRoleReport {
         return
     }
 
-    [System.Collections.Generic.List[Object]]$purviewRolesMembership = @()
+    $purviewRolesMembership = [System.Collections.Generic.List[Object]]::new()
 
     foreach ($purviewRole in $purviewRoles) {
         try {

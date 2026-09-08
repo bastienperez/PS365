@@ -75,11 +75,11 @@ function Get-MgGroupOwnerInfo {
         return
     }
 
-    [System.Collections.Generic.List[PSCustomObject]]$results = @()
+    $results = [System.Collections.Generic.List[PSCustomObject]]::new()
     $headers = @{ ConsistencyLevel = 'eventual' }
 
     # Fetch groups: all, by ID, or by display name
-    [System.Collections.Generic.List[Object]]$groups = @()
+    $groups = [System.Collections.Generic.List[Object]]::new()
 
     if ($GroupId) {
         Write-Host -ForegroundColor Cyan "Fetching group with ID: $GroupId"

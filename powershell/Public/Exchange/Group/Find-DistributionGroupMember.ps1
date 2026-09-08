@@ -63,7 +63,7 @@ function Find-DistributionGroupMember {
     # Ignore GroupMailbox type (Office 365 groups-unified groups)
     $distributionGroups = Get-DistributionGroup -ResultSize unlimited -RecipientTypeDetails MailUniversalDistributionGroup
 
-    [System.Collections.Generic.List[PSObject]]$foundMembers = @()
+    $foundMembers = [System.Collections.Generic.List[PSObject]]::new()
 
     # Fetch accepted domains once outside the loop (was a per-DG remote Exchange round-trip, 30-100 ms each).
     # Use a HashSet for O(1) -notcontains checks.

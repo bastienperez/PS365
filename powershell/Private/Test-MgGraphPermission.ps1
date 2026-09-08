@@ -49,7 +49,7 @@ function Test-MgGraphPermission {
     $grantedScopes = @($context.Scopes)
 
     $missingScopes = foreach ($requirement in $RequiredScopes) {
-        [System.Collections.Generic.List[string]]$acceptedScopes = @()
+        $acceptedScopes = [System.Collections.Generic.List[string]]::new()
         foreach ($alternative in ($requirement -split '\|')) {
             $alternative = $alternative.Trim()
             $acceptedScopes.Add($alternative)

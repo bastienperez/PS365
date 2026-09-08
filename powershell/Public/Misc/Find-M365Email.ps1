@@ -125,7 +125,7 @@ function Find-M365Email {
         }
     }
 
-    [System.Collections.Generic.List[PSCustomObject]]$allM365EmailObjects = @()
+    $allM365EmailObjects = [System.Collections.Generic.List[PSCustomObject]]::new()
     $allM365EmailIndex = @{}
 
     Write-Host 'Get All Exchange Online recipients...' -ForegroundColor Green

@@ -152,7 +152,7 @@ function Search-UnifiedAuditLogCustom {
         )
 
         begin {
-            [System.Collections.Generic.List[PSCustomObject]]$resultsArray = @()
+            $resultsArray = [System.Collections.Generic.List[PSCustomObject]]::new()
         }
 
         process {
@@ -284,7 +284,7 @@ function Search-UnifiedAuditLogCustom {
     # Chunk the date range to avoid the server-side 'Search duration too long' error on wide windows.
     # Within each chunk we use session pagination (-SessionId + -SessionCommand ReturnLargeSet) so we can
     # gather more than 5000 records per sub-window. The global -ResultSize is enforced as the overall cap.
-    [System.Collections.Generic.List[object]]$auditLogs = @()
+    $auditLogs = [System.Collections.Generic.List[object]]::new()
     $chunkSpan = New-TimeSpan -Days $ChunkDays
     $cursor    = $StartDate
     $chunkIdx  = 0
@@ -378,7 +378,7 @@ function Invoke-SearchUnifiedAuditLogCustomHelperGUI {
         -Version $moduleVersion `
         -LogoPath $splashLogoPath
 
-    [System.Collections.Generic.List[PSCustomObject]]$operationChoices = @()
+    $operationChoices = [System.Collections.Generic.List[PSCustomObject]]::new()
     $operationLookupByDisplay = @{}
 
     # Operations catalog is loaded from Microsoft Learn with a local cache and an offline fallback
@@ -1079,7 +1079,7 @@ function Invoke-SearchUnifiedAuditLogCustomHelperGUI {
         [void][int]::TryParse($resultSizeBox.Text, [ref]$sizeValue)
         if ($sizeValue -lt 1) { $sizeValue = 1 }
 
-        [System.Collections.Generic.List[string]]$selectedOperations = @()
+        $selectedOperations = [System.Collections.Generic.List[string]]::new()
         foreach ($selectedDisplay in $selectedOperationsListBox.Items) {
             if ($operationLookupByDisplay.ContainsKey([string]$selectedDisplay)) {
                 $selectedOperations.Add($operationLookupByDisplay[[string]$selectedDisplay])
@@ -1355,7 +1355,7 @@ function Invoke-SearchUnifiedAuditLogCustomHelperGUI {
             [void][int]::TryParse($resultSizeBox.Text, [ref]$sizeValue)
             if ($sizeValue -lt 1) { $sizeValue = 1 }
 
-            [System.Collections.Generic.List[string]]$selectedOperations = @()
+            $selectedOperations = [System.Collections.Generic.List[string]]::new()
             foreach ($selectedDisplay in $selectedOperationsListBox.Items) {
                 if ($operationLookupByDisplay.ContainsKey([string]$selectedDisplay)) {
                     $selectedOperations.Add($operationLookupByDisplay[[string]$selectedDisplay])

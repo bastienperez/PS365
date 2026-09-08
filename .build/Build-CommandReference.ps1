@@ -38,8 +38,13 @@ $privateCommands = @($module.ExportedCommands.Keys | Where-Object { $_ -notin $p
 
 Write-Host "Documenting $($publicCommands.Count) public commands, excluding $($privateCommands.Count) private ones"
 
-if (Test-Path $commandsFolder) { Remove-Item "$commandsFolder/*.mdx" -Force -ErrorAction SilentlyContinue }
-else { New-Item -ItemType Directory -Path $commandsFolder -Force | Out-Null }
+if (-not (Test-Path $commandsFolder)) { New-Item -ItemType Directory -Path $commandsFolder -Force | Out-Null }
+
+# Snapshot of what's on disk before this run, so stale pages (removed/renamed commands) can be
+# deleted afterwards without wiping every file upfront - that would touch "ms.date" (today's date,
+# stamped by PlatyPS on every page) on every single page even when nothing else changed, turning
+# every run into a full-repo diff noise.
+$existingMdxFiles = [System.Collections.Generic.HashSet[string]]::new([string[]](Get-ChildItem -Path $commandsFolder -Filter '*.mdx' -File | ForEach-Object { $_.Name }))
 
 $tempFolder = Join-Path ([System.IO.Path]::GetTempPath()) "ps365-docs-$([guid]::NewGuid())"
 New-Item -ItemType Directory -Path $tempFolder -Force | Out-Null
@@ -231,11 +236,30 @@ foreach ($commandName in $publicCommands) {
         return $text
     }
 
-    Set-Content -Path (Join-Path $commandsFolder "$commandName.mdx") -Value $content -NoNewline
+    $targetPath = Join-Path $commandsFolder "$commandName.mdx"
+    $dateLinePattern = '(?m)^ms\.date:.*$'
+
+    if (Test-Path $targetPath) {
+        $existingContent = Get-Content $targetPath -Raw
+        # Compare with "ms.date" blanked out on both sides: if that's the only difference, the
+        # page is otherwise unchanged and doesn't need touching (no diff, no re-stamped date).
+        if (($existingContent -replace $dateLinePattern, 'ms.date:') -eq ($content -replace $dateLinePattern, 'ms.date:')) {
+            $content = $existingContent
+        }
+    }
+
+    Set-Content -Path $targetPath -Value $content -NoNewline
+    $null = $existingMdxFiles.Remove("$commandName.mdx")
 }
 
 Remove-Module -ModuleInfo $module -Force
 Remove-Item $tempFolder -Recurse -Force -ErrorAction SilentlyContinue
+
+# Anything left in the snapshot is a page for a command that no longer exists (removed/renamed).
+foreach ($staleFile in $existingMdxFiles) {
+    Write-Host "Removing stale page: $staleFile"
+    Remove-Item (Join-Path $commandsFolder $staleFile) -Force
+}
 
 # Update docs.json navigation based on PowerShell module structure
 $docsJsonPath = './website/docs.json'

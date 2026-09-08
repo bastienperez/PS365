@@ -61,57 +61,60 @@ function Get-ExMailboxWorkingHours {
         [string]$ExportPath
     )
 
-    [System.Collections.Generic.List[PSCustomObject]]$exoMbxWorkingHoursArray = @()
-
-    if ($ByDomain) {
-        $mailboxes = Get-EXOMailbox -ResultSize Unlimited -Filter "EmailAddresses -like '*@$ByDomain'" -Properties WhenCreated, WhenChanged | Where-Object { $_.PrimarySmtpAddress -like "*@$ByDomain" }
+    begin {
+        $exoMbxWorkingHoursArray = [System.Collections.Generic.List[PSCustomObject]]::new()
     }
-    elseif ($Identity) {
-        [System.Collections.Generic.List[PSCustomObject]]$mailboxes = @()
-        try {
-            $mbx = Get-EXOMailbox -Identity $Identity
-            $mailboxes.Add($mbx)
+    process {
+        if ($ByDomain) {
+            $mailboxes = Get-EXOMailbox -ResultSize Unlimited -Filter "EmailAddresses -like '*@$ByDomain'" -Properties WhenCreated, WhenChanged | Where-Object { $_.PrimarySmtpAddress -like "*@$ByDomain" }
         }
-        catch {
-            Write-Warning "Mailbox not found: $Identity"
+        elseif ($Identity) {
+            $mailboxes = [System.Collections.Generic.List[PSCustomObject]]::new()
+            try {
+                $mbx = Get-EXOMailbox -Identity $Identity
+                $mailboxes.Add($mbx)
+            }
+            catch {
+                Write-Warning "Mailbox not found: $Identity"
+            }
+        }
+        else {
+            $mailboxes = Get-EXOMailbox -ResultSize Unlimited -Properties WhenCreated, WhenChanged
+        }
+        foreach ($mbx in $mailboxes) {
+            # This CMDlet returns warning "WARNING:[...] User Get-EventsFromEmailConfiguration [...]", but the CMDlet Get-MailboxCalendarConfiguration is the only way to get the working hours configuration, so we will ignore the warning for now.
+            $calendarConfig = Get-MailboxCalendarConfiguration -Identity $mbx.PrimarySmtpAddress -WarningAction SilentlyContinue
+
+            $object = [PSCustomObject][ordered]@{
+                DisplayName           = $mbx.DisplayName
+                PrimarySmtpAddress    = $mbx.PrimarySmtpAddress
+                WorkingHoursTimeZone  = $calendarConfig.WorkingHoursTimeZone
+                WorkingHoursStartTime = $calendarConfig.WorkingHoursStartTime
+                WorkingHoursEndTime   = $calendarConfig.WorkingHoursEndTime
+                WorkingHoursMonday    = $calendarConfig.WorkingHoursMonday
+                WorkingHoursTuesday   = $calendarConfig.WorkingHoursTuesday
+                WorkingHoursWednesday = $calendarConfig.WorkingHoursWednesday
+                WorkingHoursThursday  = $calendarConfig.WorkingHoursThursday
+                WorkingHoursFriday    = $calendarConfig.WorkingHoursFriday
+                WorkingHoursSaturday  = $calendarConfig.WorkingHoursSaturday
+                WorkingHoursSunday    = $calendarConfig.WorkingHoursSunday
+                MailboxWhenCreated    = $mbx.WhenCreated
+                MailboxWhenModified   = $mbx.WhenChanged
+            }
+
+            $exoMbxWorkingHoursArray.Add($object)
         }
     }
-    else {
-        $mailboxes = Get-EXOMailbox -ResultSize Unlimited -Properties WhenCreated, WhenChanged
-    }
-
-    foreach ($mbx in $mailboxes) {
-        # This CMDlet returns warning "WARNING:[...] User Get-EventsFromEmailConfiguration [...]", but the CMDlet Get-MailboxCalendarConfiguration is the only way to get the working hours configuration, so we will ignore the warning for now.
-        $calendarConfig = Get-MailboxCalendarConfiguration -Identity $mbx.PrimarySmtpAddress -WarningAction SilentlyContinue
-
-        $object = [PSCustomObject][ordered]@{ 
-            DisplayName           = $mbx.DisplayName
-            PrimarySmtpAddress    = $mbx.PrimarySmtpAddress
-            WorkingHoursTimeZone  = $calendarConfig.WorkingHoursTimeZone
-            WorkingHoursStartTime = $calendarConfig.WorkingHoursStartTime
-            WorkingHoursEndTime   = $calendarConfig.WorkingHoursEndTime
-            WorkingHoursMonday    = $calendarConfig.WorkingHoursMonday
-            WorkingHoursTuesday   = $calendarConfig.WorkingHoursTuesday
-            WorkingHoursWednesday = $calendarConfig.WorkingHoursWednesday
-            WorkingHoursThursday  = $calendarConfig.WorkingHoursThursday
-            WorkingHoursFriday    = $calendarConfig.WorkingHoursFriday
-            WorkingHoursSaturday  = $calendarConfig.WorkingHoursSaturday
-            WorkingHoursSunday    = $calendarConfig.WorkingHoursSunday
-            MailboxWhenCreated    = $mbx.WhenCreated
-            MailboxWhenModified   = $mbx.WhenChanged
+    end {
+        if ($ExportToExcel.IsPresent) {
+            $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
+            $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-ExMailboxWorkingHours.xlsx"
+            Write-Host -ForegroundColor Cyan "Exporting to Excel file: $excelFilePath"
+            $exoMbxWorkingHoursArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'ExMailboxWorkingHours' -TableStyle Light9
+            Write-Host -ForegroundColor Green 'Export completed successfully!'
         }
-
-        $exoMbxWorkingHoursArray.Add($object)
-    }
-
-    if ($ExportToExcel.IsPresent) {
-        $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
-        $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-ExMailboxWorkingHours.xlsx"
-        Write-Host -ForegroundColor Cyan "Exporting to Excel file: $excelFilePath"
-        $exoMbxWorkingHoursArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'ExMailboxWorkingHours' -TableStyle Light9
-        Write-Host -ForegroundColor Green 'Export completed successfully!'
-    }
-    else {
-        return $exoMbxWorkingHoursArray
+        else {
+            return $exoMbxWorkingHoursArray
+        }
     }
 }

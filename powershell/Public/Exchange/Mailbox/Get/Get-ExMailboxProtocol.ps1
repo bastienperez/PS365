@@ -46,7 +46,7 @@
 function Get-ExMailboxProtocol {
     param (
         [Parameter(Mandatory = $false, position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
-        [ValidateNotNullOrEmpty()] 
+        [ValidateNotNullOrEmpty()]
         [string]$Identity,
 
         [Parameter(Mandatory = $false)]
@@ -59,81 +59,71 @@ function Get-ExMailboxProtocol {
         [string]$ExportPath
     )
 
-    [System.Collections.Generic.List[PSCustomObject]]$exoCasMailboxesArray = @()
-
-    $tenantSmtpClientAuthenticationDisabled = (Get-TransportConfig).SmtpClientAuthenticationDisabled
-
-    if ($tenantSmtpClientAuthenticationDisabled) {
-        Write-Host 'SMTP Client Authentication is disabled' -ForegroundColor Green
-        $tenantSmtpClientAuthenticationEnabled = $false
+    begin {
+        $exoCasMailboxesArray = [System.Collections.Generic.List[PSCustomObject]]::new()
     }
-    else {
-        Write-Host 'SMTP Client Authentication is enabled' -ForegroundColor Yellow
-        $tenantSmtpClientAuthenticationEnabled = $true
-    }
-
-    # PropertySets All because by default SMTPClientAuthenticationDisabled is not returned
-    if ($ByDomain) {
-        $casMailboxes = Get-EXOCasMailbox -ResultSize Unlimited -Filter "EmailAddresses -like '*@$ByDomain'" -PropertySets All | Where-Object { $_.PrimarySmtpAddress -like "*@$ByDomain" }
-    }
-    elseif ($Identity) {
-        [System.Collections.Generic.List[PSCustomObject]]$casMailboxes = @()
-        try {
-            $mbx = Get-EXOCasMailbox -Identity $Identity -PropertySets All
-            $casMailboxes.Add($mbx)
+    process {
+        $tenantSmtpClientAuthenticationDisabled = (Get-TransportConfig).SmtpClientAuthenticationDisabled
+        if ($tenantSmtpClientAuthenticationDisabled) {
+            Write-Host 'SMTP Client Authentication is disabled' -ForegroundColor Green
+            $tenantSmtpClientAuthenticationEnabled = $false
         }
-        catch {
-            Write-Warning "Mailbox not found: $Identity"
+        else {
+            Write-Host 'SMTP Client Authentication is enabled' -ForegroundColor Yellow
+            $tenantSmtpClientAuthenticationEnabled = $true
+        }
+        if ($ByDomain) {
+            $casMailboxes = Get-EXOCasMailbox -ResultSize Unlimited -Filter "EmailAddresses -like '*@$ByDomain'" -PropertySets All | Where-Object { $_.PrimarySmtpAddress -like "*@$ByDomain" }
+        }
+        elseif ($Identity) {
+            $casMailboxes = [System.Collections.Generic.List[PSCustomObject]]::new()
+            try {
+                $mbx = Get-EXOCasMailbox -Identity $Identity -PropertySets All
+                $casMailboxes.Add($mbx)
+            }
+            catch {
+                Write-Warning "Mailbox not found: $Identity"
+            }
+        }
+        else {
+            $casMailboxes = Get-EXOCasMailbox -ResultSize Unlimited -PropertySets All
+        }
+        foreach ($casMailbox in $casMailboxes) {
+
+            $object = [PSCustomObject][ordered]@{
+                PrimarySmtpAddress                    = $casMailbox.PrimarySmtpAddress
+                DisplayName                           = $casMailbox.DisplayName
+                ExchangeObjectId                      = $casMailbox.ExchangeObjectId
+                MAPIEnabled                           = $casMailbox.MAPIEnabled
+                OWAEnabled                            = $casMailbox.OWAEnabled
+                UniversalOutlookEnabled               = $casMailbox.UniversalOutlookEnabled
+                OutlookMobileEnabled                  = $casMailbox.OutlookMobileEnabled
+                IMAPEnabled                           = $casMailbox.ImapEnabled
+                POPEnabled                            = $casMailbox.PopEnabled
+                EwsEnabled                            = $casMailbox.EwsEnabled
+                ActiveSyncEnabled                     = $casMailbox.ActiveSyncEnabled
+                # CMDlet returns SMTPClientAuthenticationDisabled but we want SMTPClientAuthenticationEnabled
+                ECPEnabled                            = $casMailbox.ECPEnabled
+                # we invert the value to provide SMTPClientAuthenticationEnabled because by default the cmdlet returns SMTPClientAuthentication*Disabled*
+                SMTPClientAuthenticationEnabled       = if ($null -ne $casMailbox.SMTPClientAuthenticationDisabled) { -not $casMailbox.SMTPClientAuthenticationDisabled }else { '-' }
+                TenantSmtpClientAuthenticationEnabled = $tenantSmtpClientAuthenticationEnabled
+                MailboxWhenCreated                    = $casMailbox.WhenCreated
+                MailboxWhenModified                   = $casMailbox.WhenChanged
+            }
+
+            $exoCasMailboxesArray.Add($object)
         }
     }
-    else {
-        $casMailboxes = Get-EXOCasMailbox -ResultSize Unlimited -PropertySets All
-    }
-
-    <#
-    ECPEnabled        : True
-    OWAEnabled        : True
-    ImapEnabled       : True
-    PopEnabled        : True
-    MAPIEnabled       : True
-    EwsEnabled        : True
-    ActiveSyncEnabled : True
-    #>
-
-    foreach ($casMailbox in $casMailboxes) {
-    
-        $object = [PSCustomObject][ordered]@{ 
-            PrimarySmtpAddress                    = $casMailbox.PrimarySmtpAddress
-            DisplayName                           = $casMailbox.DisplayName
-            ExchangeObjectId                      = $casMailbox.ExchangeObjectId
-            MAPIEnabled                           = $casMailbox.MAPIEnabled
-            OWAEnabled                            = $casMailbox.OWAEnabled
-            UniversalOutlookEnabled               = $casMailbox.UniversalOutlookEnabled
-            OutlookMobileEnabled                  = $casMailbox.OutlookMobileEnabled
-            IMAPEnabled                           = $casMailbox.ImapEnabled
-            POPEnabled                            = $casMailbox.PopEnabled
-            EwsEnabled                            = $casMailbox.EwsEnabled
-            ActiveSyncEnabled                     = $casMailbox.ActiveSyncEnabled
-            # CMDlet returns SMTPClientAuthenticationDisabled but we want SMTPClientAuthenticationEnabled
-            ECPEnabled                            = $casMailbox.ECPEnabled
-            # we invert the value to provide SMTPClientAuthenticationEnabled because by default the cmdlet returns SMTPClientAuthentication*Disabled*
-            SMTPClientAuthenticationEnabled       = if ($null -ne $casMailbox.SMTPClientAuthenticationDisabled) { -not $casMailbox.SMTPClientAuthenticationDisabled }else { '-' }
-            TenantSmtpClientAuthenticationEnabled = $tenantSmtpClientAuthenticationEnabled
-            MailboxWhenCreated                    = $casMailbox.WhenCreated
-            MailboxWhenModified                   = $casMailbox.WhenChanged
+    end {
+        if ($ExportToExcel.IsPresent) {
+            $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
+            $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-ExMailboxProtocol.xlsx"
+            Write-Host -ForegroundColor Cyan "Exporting mailbox protocols to Excel file: $excelFilePath"
+            $exoCasMailboxesArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'ExchangeMailboxProtocols' -TableStyle Light9
+            Write-Host -ForegroundColor Green 'Export completed successfully!'
         }
-
-        $exoCasMailboxesArray.Add($object)
-    }
-
-    if ($ExportToExcel.IsPresent) {
-        $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
-        $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-ExMailboxProtocol.xlsx"
-        Write-Host -ForegroundColor Cyan "Exporting mailbox protocols to Excel file: $excelFilePath"
-        $exoCasMailboxesArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'ExchangeMailboxProtocols' -TableStyle Light9
-        Write-Host -ForegroundColor Green 'Export completed successfully!'
-    }
-    else {
-        return $exoCasMailboxesArray
+        else {
+            return $exoCasMailboxesArray
+        }
     }
 }

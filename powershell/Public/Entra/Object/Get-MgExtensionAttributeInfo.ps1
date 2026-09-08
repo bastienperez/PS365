@@ -160,7 +160,7 @@ function Get-MgExtensionAttributeInfo {
             [Parameter(Mandatory = $true)] [string]$Uri
         )
 
-        $items = [System.Collections.Generic.List[PSCustomObject]]@()
+        $items = [System.Collections.Generic.List[PSCustomObject]]::new()
         $next = $Uri
 
         do {
@@ -213,7 +213,7 @@ function Get-MgExtensionAttributeInfo {
         Write-Warning "Unable to read deleted applications, deletion dates will be missing: $_"
     }
 
-    [System.Collections.Generic.List[PSCustomObject]]$extensionDefinitions = @()
+    $extensionDefinitions = [System.Collections.Generic.List[PSCustomObject]]::new()
 
     foreach ($property in $availableExtensions) {
         # extension_<AppId without dashes>_<Name>. An on-premises synced extension follows the same
@@ -301,7 +301,7 @@ function Get-MgExtensionAttributeInfo {
         return $parsed
     }
 
-    [System.Collections.Generic.List[PSCustomObject]]$resultsArray = @()
+    $resultsArray = [System.Collections.Generic.List[PSCustomObject]]::new()
 
     # Built-in extension attributes: they always exist, so the useful information is which of
     # the fifteen actually carry a value.

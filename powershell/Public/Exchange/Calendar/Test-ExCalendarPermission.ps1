@@ -51,7 +51,7 @@ function Test-ExCalendarPermission {
     $folder = "${Mailbox}:\$calendarFolder"
     Write-Verbose "Calendar folder resolved to '$folder'"
 
-    [System.Collections.Generic.List[PSCustomObject]]$calendarPermissions = @()
+    $calendarPermissions = [System.Collections.Generic.List[PSCustomObject]]::new()
 
     $permissions = Get-MailboxFolderPermission -Identity $folder |
     Where-Object { $_.User.DisplayName -notin $excluded }

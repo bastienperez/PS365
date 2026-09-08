@@ -144,7 +144,7 @@ function Get-MgUserPasswordInfo {
     function Get-DomainPasswordPolicies {
         Write-Host -ForegroundColor Cyan 'Retrieving password policies for all domains'
         $domains = Get-MgDomain -All
-        $domainPasswordPolicies = [System.Collections.Generic.List[PSCustomObject]]$domainPasswordPolicies = @()
+        $domainPasswordPolicies = $domainPasswordPolicies = [System.Collections.Generic.List[PSCustomObject]]::new()
 
         foreach ($domain in $domains) {
 	
@@ -245,7 +245,7 @@ function Get-MgUserPasswordInfo {
 
     if ($UserPrincipalName) {
         Write-Host -ForegroundColor Cyan "Retrieving password information for $($UserPrincipalName.Count) user(s)"
-        [System.Collections.Generic.List[PSCustomObject]]$mgUsersList = @()
+        $mgUsersList = [System.Collections.Generic.List[PSCustomObject]]::new()
         foreach ($upn in $UserPrincipalName) {		
             # If we use Get-MgUser -UserId <upn> -Property <properties>, we get the error "Get-MgUser_Get: Get By Key only supports UserId and the key has to be a valid Guid".
             # It seems to be a problem with one of the propertys we are requesting.
@@ -266,7 +266,7 @@ function Get-MgUserPasswordInfo {
         $mgUsersList = Get-MgUser -All -Property $userParams
     }
 
-    [System.Collections.Generic.List[PSCustomObject]]$passwordsInfoArray = @()
+    $passwordsInfoArray = [System.Collections.Generic.List[PSCustomObject]]::new()
 
     if (-not $IncludeGuestUsers) {
         $mgUsersList = $mgUsersList | Where-Object { $_.UserPrincipalName -notmatch '#EXT#' }

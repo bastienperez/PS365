@@ -653,7 +653,7 @@ function Get-SPOSiteReport {
             return $null
         }
 
-        [System.Collections.Generic.List[PSCustomObject]]$cleaned = @()
+        $cleaned = [System.Collections.Generic.List[PSCustomObject]]::new()
 
         foreach ($geoInstance in $geoInstances) {
             $geoAdminUrl = $null
@@ -762,7 +762,7 @@ function Get-SPOSiteReport {
             return $null
         }
 
-        [System.Collections.Generic.List[string]]$resolvedValues = @()
+        $resolvedValues = [System.Collections.Generic.List[string]]::new()
 
         foreach ($loginName in $LoginNames) {
             if ([string]::IsNullOrEmpty($loginName)) {
@@ -1045,7 +1045,7 @@ function Get-SPOSiteReport {
     $geoIsDefaultByName = @{}
     $geoEnumerationErrorCount = 0
 
-    [System.Collections.Generic.List[PSCustomObject]]$spoSites = @()
+    $spoSites = [System.Collections.Generic.List[PSCustomObject]]::new()
 
     if ($ExcludeGeo -and @($ExcludeGeo).Count -gt 0 -and ($SiteUrl -or $adminUrlWasExplicit)) {
         Write-Warning 'ExcludeGeo has no effect here: SiteUrl and an explicit AdminUrl both already restrict the report to a single geo.'
@@ -1186,7 +1186,7 @@ function Get-SPOSiteReport {
         # just an aggregation of what has already been fetched.
         Write-Host -ForegroundColor Cyan 'Building per-geo site counts from the sites already enumerated above...'
 
-        [System.Collections.Generic.List[PSCustomObject]]$statsArray = @()
+        $statsArray = [System.Collections.Generic.List[PSCustomObject]]::new()
 
         foreach ($geoGroup in ($spoSites | Group-Object -Property Geo)) {
             $geoOneDriveSites = @($geoGroup.Group | Where-Object { $_.Url -like '*-my.sharepoint.com/personal/*' })
@@ -1367,7 +1367,7 @@ function Get-SPOSiteReport {
             # plumbing) must not wipe out the other data points already collected for the same site.
             # $result.Status only reflects a connection failure; per-block failures are tracked via
             # $result.PartialErrors and reported, but do not blank the whole site.
-            [System.Collections.Generic.List[string]]$partialErrors = @()
+            $partialErrors = [System.Collections.Generic.List[string]]::new()
 
             if ($doAdmins) {
                 try {
@@ -1479,12 +1479,12 @@ function Get-SPOSiteReport {
         }
     }
 
-    [System.Collections.Generic.List[PSCustomObject]]$spoSitesInfosArray = @()
+    $spoSitesInfosArray = [System.Collections.Generic.List[PSCustomObject]]::new()
 
     # Access denied / claim resolution counters, reported once at the end instead of flooding the console
     $siteErrorCount = 0
     # Failing site URLs, listed in the final summary so identifying them does not require -Verbose
-    [System.Collections.Generic.List[string]]$siteErrorUrls = @()
+    $siteErrorUrls = [System.Collections.Generic.List[string]]::new()
     $sitePartialErrorCount = 0
     $claimResolutionErrorCount = 0
 
@@ -1791,7 +1791,7 @@ function Get-SPOSiteReport {
     # Drill-down: the per-site counts collected above already say which sites carry at least one link, so the
     # expensive file-level pass only visits those. Delegated to Get-SPOSharingLinkReport rather than
     # duplicated here - it owns the item resolution and the Graph calls, and stays usable on its own.
-    [System.Collections.Generic.List[PSCustomObject]]$sharingLinksDetailsArray = @()
+    $sharingLinksDetailsArray = [System.Collections.Generic.List[PSCustomObject]]::new()
 
     if ($IncludeSharingLinksDetails.IsPresent) {
         $sitesWithLinks = @($spoSitesInfosArray | Where-Object { $_.SharingLinksTotalCount -gt 0 })

@@ -236,7 +236,7 @@ function Restart-MgSynchronizationJob {
 
     # --- Resolve service principal(s) ---
     Write-Verbose "Parameter set: $($PSCmdlet.ParameterSetName)"
-    [System.Collections.Generic.List[PSCustomObject]]$servicePrincipals = @()
+    $servicePrincipals = [System.Collections.Generic.List[PSCustomObject]]::new()
 
     if ($PSCmdlet.ParameterSetName -eq 'ByObjectId') {
         Write-Verbose "Resolving service principal by ObjectID: $ObjectID"
@@ -306,7 +306,7 @@ function Restart-MgSynchronizationJob {
     Write-StatusMessage "[i] $($servicePrincipals.Count) service principal(s) resolved." 'Cyan'
 
     # --- Collect synchronization jobs ---
-    [System.Collections.Generic.List[PSCustomObject]]$allSyncJobs = @()
+    $allSyncJobs = [System.Collections.Generic.List[PSCustomObject]]::new()
 
     foreach ($sp in $servicePrincipals) {
         Write-StatusMessage "[...] Retrieving sync jobs for: $($sp.DisplayName)" 'Cyan'
@@ -339,7 +339,7 @@ function Restart-MgSynchronizationJob {
     }
 
     # --- Determine which jobs to restart ---
-    [System.Collections.Generic.List[PSCustomObject]]$jobsToRestart = @()
+    $jobsToRestart = [System.Collections.Generic.List[PSCustomObject]]::new()
 
     foreach ($job in $allSyncJobs) {
         $jobsToRestart.Add($job)

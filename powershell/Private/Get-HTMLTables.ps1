@@ -10,7 +10,7 @@ function Get-HTMLTables {
         [bool]$LocalFile
     )
 
-    [System.Collections.Generic.List[PSObject]]$tablesArray = @()
+    $tablesArray = [System.Collections.Generic.List[PSObject]]::new()
 
     if ($LocalFile) {
         $html = New-Object -ComObject 'HTMLFile'

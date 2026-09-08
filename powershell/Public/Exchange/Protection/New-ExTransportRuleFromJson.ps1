@@ -82,8 +82,8 @@ function New-ExTransportRuleFromJson {
 	)
 
 	begin {
-		[System.Collections.Generic.List[string]]$commands = @()
-		[System.Collections.Generic.List[PSCustomObject]]$resultsArray = @()
+		$commands = [System.Collections.Generic.List[string]]::new()
+		$resultsArray = [System.Collections.Generic.List[PSCustomObject]]::new()
 
 		if ($GenerateCmdlets.IsPresent) {
 			if ([string]::IsNullOrWhiteSpace($OutputFile)) {

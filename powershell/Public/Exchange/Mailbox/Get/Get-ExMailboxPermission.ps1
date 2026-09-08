@@ -37,7 +37,7 @@
 
     .EXAMPLE
     Get-ExMailboxPermission -UserPermission "john.doe@contoso.com"
-    
+
     Finds all mailbox permissions that john.doe@contoso.com has across all mailboxes
 
     .LINK
@@ -50,8 +50,8 @@
 
 function Get-ExMailboxPermission {
     param (
-		[Parameter(Mandatory = $false, position=0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
-		[ValidateNotNullOrEmpty()]
+        [Parameter(Mandatory = $false, position=0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
+        [ValidateNotNullOrEmpty()]
         [string]$Identity,
 
         [Parameter(Mandatory = $false)]
@@ -67,162 +67,162 @@ function Get-ExMailboxPermission {
         [string]$ExportPath
     )
 
-    [System.Collections.Generic.List[PSCustomObject]] $allPermissions = @()
+    begin {
+        $allPermissions = [System.Collections.Generic.List[PSCustomObject]]::new()
+    }
+    process {
+        if ($UserPermission) {
+            Write-Host "Finding all permissions for user: $UserPermission" -ForegroundColor Green
 
-    # Determine which mailboxes to process
-    if ($UserPermission) {
-        Write-Host "Finding all permissions for user: $UserPermission" -ForegroundColor Green
-        
-        # Get all mailboxes to check permissions against
-        $mailboxes = Get-EXOMailbox -ResultSize Unlimited -Properties WhenCreated, WhenChanged
-        Write-Host "Checking permissions across $($mailboxes.Count) mailbox(es)" -ForegroundColor Yellow
-        
-        # Set flag for reverse lookup mode
-        $isUserPermissionLookup = $true
-    }
-    elseif ($ByDomain) {
-        Write-Host "Retrieving permissions for all mailboxes in domain: $ByDomain" -ForegroundColor Green
-        $mailboxes = Get-EXOMailbox -ResultSize Unlimited -Filter "EmailAddresses -like '*@$ByDomain'" -Properties WhenCreated, WhenChanged | Where-Object { $_.PrimarySmtpAddress -like "*@$ByDomain" }
-        Write-Host "Found $($mailboxes.Count) mailbox(es) in domain $ByDomain" -ForegroundColor Yellow
-        $isUserPermissionLookup = $false
-    }
-    elseif ($Identity) {
-        Write-Host "Retrieving permissions for mailbox: $Identity" -ForegroundColor Green
-        try {
-            $mailboxes = @(Get-EXOMailbox -Identity $Identity -ErrorAction Stop -Properties WhenCreated, WhenChanged)
-            Write-Host "Mailbox found: $($mailboxes[0].DisplayName) ($($mailboxes[0].PrimarySmtpAddress))" -ForegroundColor Yellow
+            # Get all mailboxes to check permissions against
+            $mailboxes = Get-EXOMailbox -ResultSize Unlimited -Properties WhenCreated, WhenChanged
+            Write-Host "Checking permissions across $($mailboxes.Count) mailbox(es)" -ForegroundColor Yellow
+
+            # Set flag for reverse lookup mode
+            $isUserPermissionLookup = $true
         }
-        catch {
-            Write-Error "Error retrieving mailbox '$Identity': $($_.Exception.Message)"
-            return $null
+        elseif ($ByDomain) {
+            Write-Host "Retrieving permissions for all mailboxes in domain: $ByDomain" -ForegroundColor Green
+            $mailboxes = Get-EXOMailbox -ResultSize Unlimited -Filter "EmailAddresses -like '*@$ByDomain'" -Properties WhenCreated, WhenChanged | Where-Object { $_.PrimarySmtpAddress -like "*@$ByDomain" }
+            Write-Host "Found $($mailboxes.Count) mailbox(es) in domain $ByDomain" -ForegroundColor Yellow
+            $isUserPermissionLookup = $false
         }
-        $isUserPermissionLookup = $false
-    }
-    else {
-        Write-Host 'Retrieving permissions for all mailboxes' -ForegroundColor Green
-        $mailboxes = Get-EXOMailbox -ResultSize Unlimited -Properties WhenCreated, WhenChanged
-        Write-Host "Found $($mailboxes.Count) mailbox(es)" -ForegroundColor Yellow
-        $isUserPermissionLookup = $false
-    }
-
-    $totalMailboxes = $mailboxes.Count
-    $currentMailbox = 0
-
-    foreach ($mailbox in $mailboxes) {
-        $currentMailbox++
-        Write-Host "Processing mailbox $currentMailbox/$totalMailboxes : $($mailbox.DisplayName)" -ForegroundColor Cyan
-
-        try {
-            # 1. Get Full Access permissions
-            $fullAccessPerms = @(Get-EXOMailboxPermission -Identity $mailbox.PrimarySmtpAddress -Properties WhenCreated, WhenChanged | Where-Object {
-                    $_.AccessRights -contains 'FullAccess' -and 
-                    $_.User -notlike 'NT AUTHORITY\*' -and 
-                    $_.User -notlike 'S-1-*' -and
-                    $_.Deny -eq $false
-                })
-            
-            foreach ($perm in $fullAccessPerms) {
-                # If UserPermission mode, only add permissions for the specified user
-                if ($isUserPermissionLookup -and $perm.User -ne $UserPermission) {
-                    continue
-                }
-                
-                $allPermissions.Add([PSCustomObject]@{
-                        MailboxIdentity     = $mailbox.PrimarySmtpAddress
-                        MailboxDisplayName  = $mailbox.DisplayName
-                        MailboxEmail        = $mailbox.PrimarySmtpAddress
-                        PermissionType      = 'Full Access'
-                        User                = $perm.User
-                        AccessRights        = ($perm.AccessRights -join ', ')
-                        InheritanceType     = $perm.InheritanceType
-                        IsInherited         = $perm.IsInherited
-                        MailboxWhenCreated  = $mailbox.WhenCreated
-                        MailboxWhenModified = $mailbox.WhenChanged
-                    })
+        elseif ($Identity) {
+            Write-Host "Retrieving permissions for mailbox: $Identity" -ForegroundColor Green
+            try {
+                $mailboxes = @(Get-EXOMailbox -Identity $Identity -ErrorAction Stop -Properties WhenCreated, WhenChanged)
+                Write-Host "Mailbox found: $($mailboxes[0].DisplayName) ($($mailboxes[0].PrimarySmtpAddress))" -ForegroundColor Yellow
             }
-            
-            # 2. Get Send As permissions
-            $sendAsPerms = @(Get-EXORecipientPermission -Identity $mailbox.PrimarySmtpAddress | Where-Object {
-                    $_.AccessRights -contains 'SendAs' -and 
-                    $_.Trustee -notlike 'NT AUTHORITY\*' -and 
-                    $_.Trustee -notlike 'S-1-*'
-                })
-            
-            foreach ($perm in $sendAsPerms) {
-                # If UserPermission mode, only add permissions for the specified user
-                if ($isUserPermissionLookup -and $perm.Trustee -ne $UserPermission) {
-                    continue
-                }
-                
-                $allPermissions.Add([PSCustomObject]@{
-                        MailboxIdentity     = $mailbox.PrimarySmtpAddress
-                        MailboxDisplayName  = $mailbox.DisplayName
-                        MailboxEmail        = $mailbox.PrimarySmtpAddress
-                        PermissionType      = 'Send As'
-                        User                = $perm.Trustee
-                        AccessRights        = ($perm.AccessRights -join ', ')
-                        InheritanceType     = $perm.InheritanceType
-                        IsInherited         = $perm.IsInherited
-                        MailboxWhenCreated  = $mailbox.WhenCreated
-                        MailboxWhenModified = $mailbox.WhenChanged
-                    })
+            catch {
+                Write-Error "Error retrieving mailbox '$Identity': $($_.Exception.Message)"
+                return $null
             }
-            
-            # 3. Get Send on Behalf permissions
-            $sendOnBehalfUsers = @($mailbox.GrantSendOnBehalfTo)
-            if ($sendOnBehalfUsers -and $sendOnBehalfUsers.Count -gt 0) {
-                foreach ($user in $sendOnBehalfUsers) {
+            $isUserPermissionLookup = $false
+        }
+        else {
+            Write-Host 'Retrieving permissions for all mailboxes' -ForegroundColor Green
+            $mailboxes = Get-EXOMailbox -ResultSize Unlimited -Properties WhenCreated, WhenChanged
+            Write-Host "Found $($mailboxes.Count) mailbox(es)" -ForegroundColor Yellow
+            $isUserPermissionLookup = $false
+        }
+        $totalMailboxes = $mailboxes.Count
+        $currentMailbox = 0
+        foreach ($mailbox in $mailboxes) {
+            $currentMailbox++
+            Write-Host "Processing mailbox $currentMailbox/$totalMailboxes : $($mailbox.DisplayName)" -ForegroundColor Cyan
+
+            try {
+                # 1. Get Full Access permissions
+                $fullAccessPerms = @(Get-EXOMailboxPermission -Identity $mailbox.PrimarySmtpAddress -Properties WhenCreated, WhenChanged | Where-Object {
+                        $_.AccessRights -contains 'FullAccess' -and
+                        $_.User -notlike 'NT AUTHORITY\*' -and
+                        $_.User -notlike 'S-1-*' -and
+                        $_.Deny -eq $false
+                    })
+
+                foreach ($perm in $fullAccessPerms) {
                     # If UserPermission mode, only add permissions for the specified user
-                    if ($isUserPermissionLookup -and $user -ne $UserPermission) {
+                    if ($isUserPermissionLookup -and $perm.User -ne $UserPermission) {
                         continue
                     }
-                    
+
                     $allPermissions.Add([PSCustomObject]@{
                             MailboxIdentity     = $mailbox.PrimarySmtpAddress
                             MailboxDisplayName  = $mailbox.DisplayName
                             MailboxEmail        = $mailbox.PrimarySmtpAddress
-                            PermissionType      = 'Send on Behalf'
-                            User                = $user
-                            AccessRights        = 'SendOnBehalf'
-                            InheritanceType     = 'None'
-                            IsInherited         = $false
+                            PermissionType      = 'Full Access'
+                            User                = $perm.User
+                            AccessRights        = ($perm.AccessRights -join ', ')
+                            InheritanceType     = $perm.InheritanceType
+                            IsInherited         = $perm.IsInherited
                             MailboxWhenCreated  = $mailbox.WhenCreated
                             MailboxWhenModified = $mailbox.WhenChanged
                         })
                 }
+
+                # 2. Get Send As permissions
+                $sendAsPerms = @(Get-EXORecipientPermission -Identity $mailbox.PrimarySmtpAddress | Where-Object {
+                        $_.AccessRights -contains 'SendAs' -and
+                        $_.Trustee -notlike 'NT AUTHORITY\*' -and
+                        $_.Trustee -notlike 'S-1-*'
+                    })
+
+                foreach ($perm in $sendAsPerms) {
+                    # If UserPermission mode, only add permissions for the specified user
+                    if ($isUserPermissionLookup -and $perm.Trustee -ne $UserPermission) {
+                        continue
+                    }
+
+                    $allPermissions.Add([PSCustomObject]@{
+                            MailboxIdentity     = $mailbox.PrimarySmtpAddress
+                            MailboxDisplayName  = $mailbox.DisplayName
+                            MailboxEmail        = $mailbox.PrimarySmtpAddress
+                            PermissionType      = 'Send As'
+                            User                = $perm.Trustee
+                            AccessRights        = ($perm.AccessRights -join ', ')
+                            InheritanceType     = $perm.InheritanceType
+                            IsInherited         = $perm.IsInherited
+                            MailboxWhenCreated  = $mailbox.WhenCreated
+                            MailboxWhenModified = $mailbox.WhenChanged
+                        })
+                }
+
+                # 3. Get Send on Behalf permissions
+                $sendOnBehalfUsers = @($mailbox.GrantSendOnBehalfTo)
+                if ($sendOnBehalfUsers -and $sendOnBehalfUsers.Count -gt 0) {
+                    foreach ($user in $sendOnBehalfUsers) {
+                        # If UserPermission mode, only add permissions for the specified user
+                        if ($isUserPermissionLookup -and $user -ne $UserPermission) {
+                            continue
+                        }
+
+                        $allPermissions.Add([PSCustomObject]@{
+                                MailboxIdentity     = $mailbox.PrimarySmtpAddress
+                                MailboxDisplayName  = $mailbox.DisplayName
+                                MailboxEmail        = $mailbox.PrimarySmtpAddress
+                                PermissionType      = 'Send on Behalf'
+                                User                = $user
+                                AccessRights        = 'SendOnBehalf'
+                                InheritanceType     = 'None'
+                                IsInherited         = $false
+                                MailboxWhenCreated  = $mailbox.WhenCreated
+                                MailboxWhenModified = $mailbox.WhenChanged
+                            })
+                    }
+                }
+            }
+            catch {
+                Write-Warning "Error processing mailbox $($mailbox.PrimarySmtpAddress): $($_.Exception.Message)"
             }
         }
-        catch {
-            Write-Warning "Error processing mailbox $($mailbox.PrimarySmtpAddress): $($_.Exception.Message)"
-        }
     }
-    
-    # Display results or export to Excel
-    if ($allPermissions.Count -gt 0) {
-        if ($ExportToExcel.IsPresent) {
-            $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
-            $filenameSuffix = if ($UserPermission) { "User-$($UserPermission -replace '[<>:"/\\|?*]', '_')" } elseif ($ByDomain) { "Domain-$($ByDomain -replace '[<>:"/\\|?*]', '_')" } elseif ($Identity) { $Identity -replace '[<>:"/\\|?*]', '_' } else { 'AllMailboxes' }
-            $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-ExMailboxPermissions-$filenameSuffix.xlsx"
-            Write-Host -ForegroundColor Cyan "Exporting mailbox permissions to Excel file: $excelFilePath"
-            $allPermissions | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'ExchangeMailboxPermissions' -TableStyle Light9
-            Write-Host -ForegroundColor Green 'Export completed successfully!'
+    end {
+        if ($allPermissions.Count -gt 0) {
+            if ($ExportToExcel.IsPresent) {
+                $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
+                $filenameSuffix = if ($UserPermission) { "User-$($UserPermission -replace '[<>:"/\\|?*]', '_')" } elseif ($ByDomain) { "Domain-$($ByDomain -replace '[<>:"/\\|?*]', '_')" } elseif ($Identity) { $Identity -replace '[<>:"/\\|?*]', '_' } else { 'AllMailboxes' }
+                $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-ExMailboxPermissions-$filenameSuffix.xlsx"
+                Write-Host -ForegroundColor Cyan "Exporting mailbox permissions to Excel file: $excelFilePath"
+                $allPermissions | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'ExchangeMailboxPermissions' -TableStyle Light9
+                Write-Host -ForegroundColor Green 'Export completed successfully!'
+            }
+            else {
+                Write-Host "`n=== PERMISSIONS SUMMARY ===" -ForegroundColor Yellow
+                Write-Host "Total permissions found: $($allPermissions.Count)" -ForegroundColor Yellow
+
+                # Group by permission type
+                $groupedPerms = $allPermissions | Group-Object PermissionType
+                foreach ($group in $groupedPerms) {
+                    Write-Host "`n--- $($group.Name) ---" -ForegroundColor Cyan
+                    $group.Group | Format-Table User, AccessRights, IsInherited -AutoSize
+                }
+
+                return $allPermissions
+            }
         }
         else {
-            Write-Host "`n=== PERMISSIONS SUMMARY ===" -ForegroundColor Yellow
-            Write-Host "Total permissions found: $($allPermissions.Count)" -ForegroundColor Yellow
-            
-            # Group by permission type
-            $groupedPerms = $allPermissions | Group-Object PermissionType
-            foreach ($group in $groupedPerms) {
-                Write-Host "`n--- $($group.Name) ---" -ForegroundColor Cyan
-                $group.Group | Format-Table User, AccessRights, IsInherited -AutoSize
-            }
-            
-            return $allPermissions
+            Write-Host "`nNo permissions found." -ForegroundColor Yellow
+            return $null
         }
-    }
-    else {
-        Write-Host "`nNo permissions found." -ForegroundColor Yellow
-        return $null
     }
 }

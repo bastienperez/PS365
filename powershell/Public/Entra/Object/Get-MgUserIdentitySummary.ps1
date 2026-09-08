@@ -112,7 +112,7 @@ function Get-MgUserIdentitySummary {
 
     Write-Host -ForegroundColor Cyan 'Retrieving users from Microsoft Entra ID'
 
-    [System.Collections.Generic.List[PSCustomObject]]$identityRows = @()
+    $identityRows = [System.Collections.Generic.List[PSCustomObject]]::new()
     $processedCount = 0
     $externalCount = 0
 
@@ -169,7 +169,7 @@ function Get-MgUserIdentitySummary {
 
     Write-Host -ForegroundColor Green "Scanned $processedCount user(s): $externalCount external, $($processedCount - $externalCount) internal, for $($identityRows.Count) identity(ies) summarized."
 
-    [System.Collections.Generic.List[PSCustomObject]]$summaryArray = @()
+    $summaryArray = [System.Collections.Generic.List[PSCustomObject]]::new()
     $groups = $identityRows |
         Group-Object SignInType, Issuer, UserType, CreationType, InvitationState, IsExternal |
         Sort-Object Count -Descending

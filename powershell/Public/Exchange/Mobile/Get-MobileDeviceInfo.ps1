@@ -39,7 +39,7 @@ function Get-MobileDeviceInfo {
     )
     begin {
 
-        [System.Collections.Generic.List[PSCustomObject]]$mobileDetailsArray = @()
+        $mobileDetailsArray = [System.Collections.Generic.List[PSCustomObject]]::new()
 
         if ($null -eq $UserPrincipalName) {
             $UserPrincipalName = (Get-EXOMailbox -ResultSize Unlimited).UserPrincipalName

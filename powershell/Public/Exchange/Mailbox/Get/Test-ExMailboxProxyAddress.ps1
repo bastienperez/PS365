@@ -90,7 +90,7 @@ function Test-ExMailboxProxyAddress {
         }
     }
 
-    [System.Collections.Generic.List[PSCustomObject]]$results = @()
+    $results = [System.Collections.Generic.List[PSCustomObject]]::new()
     
     # Direct processing based on parameter type
     if ($PSCmdlet.ParameterSetName -eq 'Csv') {

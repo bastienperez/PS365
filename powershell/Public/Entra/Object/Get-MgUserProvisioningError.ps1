@@ -118,7 +118,7 @@ function Get-MgUserProvisioningError {
     )
 
     begin {
-        [System.Collections.Generic.List[PSCustomObject]]$provisioningErrorsArray = @()
+        $provisioningErrorsArray = [System.Collections.Generic.List[PSCustomObject]]::new()
 
         $permissionsNeeded = @('User.Read.All')
 

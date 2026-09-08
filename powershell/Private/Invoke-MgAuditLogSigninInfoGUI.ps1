@@ -29,7 +29,7 @@ function Invoke-MgAuditLogSigninInfoGUI {
         -InitialMessage 'Initializing...' `
         -Version $moduleVersion
 
-    [System.Collections.Generic.List[PSObject]]$capList = @()
+    $capList = [System.Collections.Generic.List[PSObject]]::new()
 
     try {
         $splash.Update('Connecting to Microsoft Graph (AuditLog.Read.All, Policy.Read.All)...')

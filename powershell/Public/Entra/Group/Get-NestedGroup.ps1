@@ -83,7 +83,7 @@ function Get-NestedGroup {
     Write-Host -ForegroundColor Cyan 'Fetching all groups...'
 
     # Fetch all groups with pagination
-    [System.Collections.Generic.List[Object]]$allGroups = @()
+    $allGroups = [System.Collections.Generic.List[Object]]::new()
     $uri = "https://graph.microsoft.com/v1.0/groups?`$select=id,displayName,groupTypes,securityEnabled,mailEnabled&`$top=999&`$count=true"
     $headers = @{ ConsistencyLevel = 'eventual' }
 
@@ -106,7 +106,7 @@ function Get-NestedGroup {
     Write-Host -ForegroundColor Cyan "Found $totalCount groups. Scanning for nested group memberships..."
 
     # Scan members of each group and find group-type members
-    [System.Collections.Generic.List[Object]]$dependencies = @()
+    $dependencies = [System.Collections.Generic.List[Object]]::new()
     $processed = 0
 
     foreach ($group in $allGroups) {

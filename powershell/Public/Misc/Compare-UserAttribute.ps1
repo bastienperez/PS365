@@ -7,6 +7,22 @@
     or Exchange. It can filter users based on email domain or specific user identities and returns users
     whose attributes either match or do not match.
 
+    PowerShell 7 and Active Directory:
+    PS365 requires PowerShell 7 or later. Source AD can still be used on Windows with the ActiveDirectory
+    module supplied by compatible RSAT tools. Calling Get-ADUser does not inherently require PowerShell 5.1.
+    For example, Microsoft lists the ActiveDirectory module on Windows Server 2019 with RSAT-AD-PowerShell
+    as natively compatible with PowerShell 7. Import-Module ActiveDirectory -ErrorAction Stop loads it.
+
+    If your installed AD module needs Windows PowerShell compatibility, run
+    Import-Module ActiveDirectory -UseWindowsPowerShell -ErrorAction Stop from PowerShell 7 on Windows.
+    This runs the module in a background Windows PowerShell 5.1 session and returns deserialized objects.
+    Simple property comparisons generally work, but live AD object methods are not preserved.
+    This does not provide ActiveDirectory support on Linux or macOS.
+
+    Only Source AD needs this module, domain connectivity and appropriate AD read permissions.
+    Source EntraID and Source Exchange do not depend on ActiveDirectory. The function does not install RSAT
+    or explicitly select a compatibility mode; prepare the required module/session before calling it.
+
     .PARAMETER Attribute1
     The first user attribute to compare.
 
@@ -27,10 +43,11 @@
     Specifies whether to return users with 'Matching' or 'NotMatching' attributes.
 
     .EXAMPLE
-    Compare-UserAttribute -Attribute1 "mail" -Attribute2 "proxyAddresses" -
+    Import-Module ActiveDirectory -ErrorAction Stop
+    Compare-UserAttribute -Source AD -Attribute1 mail -Attribute2 UserPrincipalName -Return NotMatching
 
-    Compares the 'mail' and 'proxyAddresses' attributes for users in Active Directory
-    and returns those with matching values.
+    From PowerShell 7 on Windows with compatible RSAT tools, compares the 'mail' and 'UserPrincipalName'
+    attributes in Active Directory and returns users whose values differ.
 
     .EXAMPLE
     Compare-UserAttribute -Attribute1 "userPrincipalName" -Attribute2 "mail" -Source "EntraID" -Return "NotMatching"
@@ -40,6 +57,12 @@
 
     .LINK
     https://ps365.clidsys.com/docs/commands/Compare-UserAttribute
+
+    .LINK
+    https://learn.microsoft.com/en-us/powershell/windows/module-compatibility?view=windowsserver2019-ps
+
+    .LINK
+    https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_windows_powershell_compatibility
 #>
 
 function Compare-UserAttribute {
@@ -80,7 +103,7 @@ function Compare-UserAttribute {
                 $users = Get-ADUser -LDAPFilter "(mail=*$ByDomain)" -Properties $Attribute1, $Attribute2
             }
             elseif ($User) {
-                [System.Collections.Generic.List[PSCustomObject]]$users = @()
+                $users = [System.Collections.Generic.List[PSCustomObject]]::new()
 
                 foreach ($u in $User) {
                     $adUser = Get-ADUser -Identity $u -Properties $Attribute1, $Attribute2
@@ -100,7 +123,7 @@ function Compare-UserAttribute {
                 $users = Get-MgUser -All | Where-Object { $_.mail -like "*$ByDomain" }
             }
             elseif ($User) {
-                [System.Collections.Generic.List[PSCustomObject]]$users = @()
+                $users = [System.Collections.Generic.List[PSCustomObject]]::new()
                 
                 foreach ($u in $User) {
                     $mgUser = Get-MgUser -UserId $u -Property $Attribute1, $Attribute2
@@ -129,7 +152,7 @@ function Compare-UserAttribute {
                 $users = Get-Recipient -Filter "EmailAddresses -like '*$ByDomain'" -Properties $Attribute1, $Attribute2 | Where-Object { $_.PrimarySmtpAddress -like "*@$ByDomain" }
             }
             elseif ($User) {
-                [System.Collections.Generic.List[PSCustomObject]]$users = @()
+                $users = [System.Collections.Generic.List[PSCustomObject]]::new()
                 
                 foreach ($u in $User) {
                     $exchUser = Get-Recipient -Identity $u -Properties $Attribute1, $Attribute2

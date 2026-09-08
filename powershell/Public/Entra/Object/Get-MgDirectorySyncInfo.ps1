@@ -135,7 +135,7 @@ function Get-MgDirectorySyncInfo {
             [Parameter(Mandatory = $true)] [string]$Uri
         )
 
-        $items = [System.Collections.Generic.List[PSCustomObject]]@()
+        $items = [System.Collections.Generic.List[PSCustomObject]]::new()
         $next = $Uri
 
         # Through the retry wrapper: a throttled page would otherwise land in a catch block that
@@ -149,7 +149,7 @@ function Get-MgDirectorySyncInfo {
         return $items
     }
 
-    [System.Collections.Generic.List[PSCustomObject]]$resultsArray = @()
+    $resultsArray = [System.Collections.Generic.List[PSCustomObject]]::new()
 
     # Tenant state first: without it the rest cannot be read. A tenant that no longer synchronizes
     # should have neither a synchronization application nor a synchronization account left.

@@ -4,7 +4,7 @@ document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Compare-UserAttribute
 Locale: en-US
 Module Name: PS365
-ms.date: 09/07/2026
+ms.date: 09/08/2026
 sidebarTitle: Compare-UserAttribute
 title: Compare-UserAttribute
 ---
@@ -30,16 +30,37 @@ or Exchange.
 It can filter users based on email domain or specific user identities and returns users
 whose attributes either match or do not match.
 
+PowerShell 7 and Active Directory:
+PS365 requires PowerShell 7 or later.
+Source AD can still be used on Windows with the ActiveDirectory
+module supplied by compatible RSAT tools.
+Calling Get-ADUser does not inherently require PowerShell 5.1.
+For example, Microsoft lists the ActiveDirectory module on Windows Server 2019 with RSAT-AD-PowerShell
+as natively compatible with PowerShell 7.
+Import-Module ActiveDirectory -ErrorAction Stop loads it.
+
+If your installed AD module needs Windows PowerShell compatibility, run
+Import-Module ActiveDirectory -UseWindowsPowerShell -ErrorAction Stop from PowerShell 7 on Windows.
+This runs the module in a background Windows PowerShell 5.1 session and returns deserialized objects.
+Simple property comparisons generally work, but live AD object methods are not preserved.
+This does not provide ActiveDirectory support on Linux or macOS.
+
+Only Source AD needs this module, domain connectivity and appropriate AD read permissions.
+Source EntraID and Source Exchange do not depend on ActiveDirectory.
+The function does not install RSAT
+or explicitly select a compatibility mode; prepare the required module/session before calling it.
+
 ## EXAMPLES
 
 ### EXAMPLE 1
 
 ```powershell
-Compare-UserAttribute -Attribute1 "mail" -Attribute2 "proxyAddresses" -
+Import-Module ActiveDirectory -ErrorAction Stop
+Compare-UserAttribute -Source AD -Attribute1 mail -Attribute2 UserPrincipalName -Return NotMatching
 ```
 
-Compares the 'mail' and 'proxyAddresses' attributes for users in Active Directory
-and returns those with matching values.
+From PowerShell 7 on Windows with compatible RSAT tools, compares the 'mail' and 'UserPrincipalName'
+attributes in Active Directory and returns users whose values differ.
 
 ### EXAMPLE 2
 
@@ -195,3 +216,5 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## RELATED LINKS
 
 - [https://ps365.clidsys.com/docs/commands/Compare-UserAttribute](https://ps365.clidsys.com/docs/commands/Compare-UserAttribute)
+- [https://learn.microsoft.com/en-us/powershell/windows/module-compatibility?view=windowsserver2019-ps](https://learn.microsoft.com/en-us/powershell/windows/module-compatibility?view=windowsserver2019-ps)
+- [https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_windows_powershell_compatibility](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_windows_powershell_compatibility)

@@ -266,7 +266,7 @@ function Get-MgAuditLogSigninInfo {
         }
     }
 
-    [System.Collections.Generic.List[PSObject]]$signsInList = @()
+    $signsInList = [System.Collections.Generic.List[PSObject]]::new()
 
     # Build StartDate/EndDate from TimeRange if provided (use full datetime when relevant)
     # A single reference time for every date computation: two Get-Date calls milliseconds apart made the

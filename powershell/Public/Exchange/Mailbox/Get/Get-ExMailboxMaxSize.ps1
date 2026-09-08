@@ -13,17 +13,17 @@
 
     .EXAMPLE
     Get-ExMailboxMaxSize
-        
+
     Retrieves the max send and receive size limits for all Exchange Online mailboxes.
 
     .EXAMPLE
     Get-ExMailboxMaxSize -ByDomain "contoso.com"
-    
+
     Retrieves the max send and receive size limits for mailboxes in the specified domain.
 
     .EXAMPLE
     Get-ExMailboxMaxSize -Identity "user@contoso.com"
-    
+
     Retrieves the max send and receive size limits for the specified mailbox.
 
     .PARAMETER ExportToExcel
@@ -53,48 +53,51 @@ function Get-ExMailboxMaxSize {
         [string]$ExportPath
     )
 
-    [System.Collections.Generic.List[PSCustomObject]]$exoMailboxesMaxSizeArray = @()
-
-    if ($ByDomain) {
-        $exoMailboxes = Get-Mailbox -ResultSize Unlimited -Filter "EmailAddresses -like '*@$ByDomain'" | Where-Object { $_.PrimarySmtpAddress -like "*@$ByDomain" }
+    begin {
+        $exoMailboxesMaxSizeArray = [System.Collections.Generic.List[PSCustomObject]]::new()
     }
-    elseif ($Identity) {
-        [System.Collections.Generic.List[PSCustomObject]]$exoMailboxes = @()
-        try {
-            $mbx = Get-Mailbox -Identity $Identity -ErrorAction Stop
-            $exoMailboxes.Add($mbx)
+    process {
+        if ($ByDomain) {
+            $exoMailboxes = Get-Mailbox -ResultSize Unlimited -Filter "EmailAddresses -like '*@$ByDomain'" | Where-Object { $_.PrimarySmtpAddress -like "*@$ByDomain" }
         }
-        catch {
-            Write-Warning "Mailbox not found: $Identity"
+        elseif ($Identity) {
+            $exoMailboxes = [System.Collections.Generic.List[PSCustomObject]]::new()
+            try {
+                $mbx = Get-Mailbox -Identity $Identity -ErrorAction Stop
+                $exoMailboxes.Add($mbx)
+            }
+            catch {
+                Write-Warning "Mailbox not found: $Identity"
+            }
+        }
+        else {
+            $exoMailboxes = Get-Mailbox -ResultSize Unlimited
+        }
+        foreach ($mbx in $exoMailboxes) {
+
+            $object = [PSCustomObject][ordered]@{
+                PrimarySmtpAddress  = $mbx.PrimarySmtpAddress
+                DisplayName         = $mbx.DisplayName
+                ExchangeObjectId    = $mbx.ExchangeObjectId
+                MaxReceiveSize      = $mbx.MaxReceiveSize
+                MaxSendSize         = $mbx.MaxSendSize
+                MailboxWhenCreated  = $mbx.WhenCreated
+                MailboxWhenModified = $mbx.WhenChanged
+            }
+
+            $exoMailboxesMaxSizeArray.Add($object)
         }
     }
-    else {
-        $exoMailboxes = Get-Mailbox -ResultSize Unlimited
-    }
-
-    foreach ($mbx in $exoMailboxes) {
-    
-        $object = [PSCustomObject][ordered]@{ 
-            PrimarySmtpAddress  = $mbx.PrimarySmtpAddress
-            DisplayName         = $mbx.DisplayName
-            ExchangeObjectId    = $mbx.ExchangeObjectId
-            MaxReceiveSize      = $mbx.MaxReceiveSize
-            MaxSendSize         = $mbx.MaxSendSize
-            MailboxWhenCreated  = $mbx.WhenCreated
-            MailboxWhenModified = $mbx.WhenChanged
+    end {
+        if ($ExportToExcel.IsPresent) {
+            $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
+            $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-ExMailboxMaxSize.xlsx"
+            Write-Host -ForegroundColor Cyan "Exporting to Excel file: $excelFilePath"
+            $exoMailboxesMaxSizeArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'ExMailboxMaxSize' -TableStyle Light9
+            Write-Host -ForegroundColor Green 'Export completed successfully!'
         }
-
-        $exoMailboxesMaxSizeArray.Add($object)
-    }
-
-    if ($ExportToExcel.IsPresent) {
-        $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
-        $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-ExMailboxMaxSize.xlsx"
-        Write-Host -ForegroundColor Cyan "Exporting to Excel file: $excelFilePath"
-        $exoMailboxesMaxSizeArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'ExMailboxMaxSize' -TableStyle Light9
-        Write-Host -ForegroundColor Green 'Export completed successfully!'
-    }
-    else {
-        return $exoMailboxesMaxSizeArray
+        else {
+            return $exoMailboxesMaxSizeArray
+        }
     }
 }

@@ -227,8 +227,8 @@ function Get-MgApplicationSCIM {
         }
     }
 
-    [System.Collections.Generic.List[PSCustomObject]]$synchronizationJobsArray = @()
-    [System.Collections.Generic.List[PSCustomObject]]$synchronizationJobsDetailsArray = @()
+    $synchronizationJobsArray = [System.Collections.Generic.List[PSCustomObject]]::new()
+    $synchronizationJobsDetailsArray = [System.Collections.Generic.List[PSCustomObject]]::new()
 
     if ($ForceNewToken.IsPresent) {
         if (Get-MgContext) {
@@ -400,7 +400,7 @@ function Get-MgApplicationSCIM {
 
     if ($useBatch) {
         Write-Verbose 'Scanning service principals with the Graph $batch endpoint (20 requests per HTTP call)...'
-        [System.Collections.Generic.List[hashtable]]$jobsRequests = @()
+        $jobsRequests = [System.Collections.Generic.List[hashtable]]::new()
         foreach ($servicePrincipal in $servicePrincipals) {
             $jobsRequests.Add(@{
                     id     = "$($servicePrincipal.Id)"
@@ -494,7 +494,7 @@ function Get-MgApplicationSCIM {
 
         if ($IncludeFailedObjects) {
             Write-Verbose "Fetching failed objects for $($job.DisplayName)..."
-            [System.Collections.Generic.List[PSCustomObject]]$escrowedObjectsList = @()
+            $escrowedObjectsList = [System.Collections.Generic.List[PSCustomObject]]::new()
             $dateFrom = (Get-Date).AddDays(-30).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffZ')
             $dateTo = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffZ')
             $spId = $job.ServicePrincipalId
@@ -570,7 +570,7 @@ function Get-MgApplicationSCIM {
             $job | Add-Member -MemberType NoteProperty -Name "SynchronizedEntryCountByType_$key" -Value $count
         }
 
-        [System.Collections.Generic.List[PSCustomObject]]$attributesArray = @()
+        $attributesArray = [System.Collections.Generic.List[PSCustomObject]]::new()
 
         if (-not $ExcludeAttributeMappings) {
             foreach ($objectMapping in $jobSchema.SynchronizationRules.ObjectMappings) {

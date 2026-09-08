@@ -150,7 +150,7 @@ function Get-ExMailboxQuotaInfo {
     )
 
     begin {
-        [System.Collections.Generic.List[string]]$identityList = @()
+        $identityList = [System.Collections.Generic.List[string]]::new()
 
         # Business suites eligible for the +50 GB storage add-on (standalone Exchange Online Plan 1
         # uses the same Exchange plan but stays at 50 GB, hence the SKU-level check)
@@ -250,14 +250,14 @@ function Get-ExMailboxQuotaInfo {
 
         try {
             if ($identityList.Count -gt 0) {
-                [System.Collections.Generic.List[PSObject]]$graphUsers = @()
+                $graphUsers = [System.Collections.Generic.List[PSObject]]::new()
                 foreach ($userPrincipalName in $identityList) {
                     $singleUserUri = "https://graph.microsoft.com/v1.0/users/$userPrincipalName`?`$select=$selectClause"
                     $graphUsers.Add((Invoke-MgGraphRequest -Method GET -Uri $singleUserUri -ErrorAction Stop))
                 }
             }
             else {
-                [System.Collections.Generic.List[PSObject]]$graphUsers = @()
+                $graphUsers = [System.Collections.Generic.List[PSObject]]::new()
                 $uri = "https://graph.microsoft.com/v1.0/users?`$select=$selectClause&`$top=999"
                 do {
                     $response = Invoke-MgGraphRequest -Method GET -Uri $uri -ErrorAction Stop
@@ -274,7 +274,7 @@ function Get-ExMailboxQuotaInfo {
         }
 
         foreach ($graphUser in $graphUsers) {
-            [System.Collections.Generic.List[string]]$skuNames = @()
+            $skuNames = [System.Collections.Generic.List[string]]::new()
             foreach ($assignedLicense in @($graphUser.assignedLicenses)) {
                 $skuName = $skuPartNumberById["$($assignedLicense.skuId)"]
                 if ($skuName) {
@@ -283,7 +283,7 @@ function Get-ExMailboxQuotaInfo {
             }
 
             # assignedPlans keeps the deleted plans too: only Enabled ones count
-            [System.Collections.Generic.List[string]]$exchangePlanNames = @()
+            $exchangePlanNames = [System.Collections.Generic.List[string]]::new()
             foreach ($assignedPlan in @($graphUser.assignedPlans)) {
                 if ("$($assignedPlan.capabilityStatus)" -ne 'Enabled') {
                     continue
@@ -313,7 +313,7 @@ function Get-ExMailboxQuotaInfo {
 
         try {
             if ($identityList.Count -gt 0) {
-                [System.Collections.Generic.List[PSObject]]$exoMailboxes = @()
+                $exoMailboxes = [System.Collections.Generic.List[PSObject]]::new()
                 foreach ($userPrincipalName in $identityList) {
                     try {
                         $exoMailboxes.Add((Get-EXOMailbox -Identity $userPrincipalName -Properties $mailboxProperties -ErrorAction Stop))
@@ -332,7 +332,7 @@ function Get-ExMailboxQuotaInfo {
             return
         }
 
-        [System.Collections.Generic.List[PSCustomObject]]$entitlementArray = @()
+        $entitlementArray = [System.Collections.Generic.List[PSCustomObject]]::new()
         $mailboxIndex = 0
 
         foreach ($mailbox in $exoMailboxes) {
@@ -354,7 +354,7 @@ function Get-ExMailboxQuotaInfo {
             # Quotas are not additive across products: the highest single entitlement wins.
             # Plans absent from the map are collected so the row is flagged instead of silently passing
             $baseQuotaGB = $null
-            [System.Collections.Generic.List[string]]$unknownPlanNames = @()
+            $unknownPlanNames = [System.Collections.Generic.List[string]]::new()
 
             foreach ($planName in $exchangePlanNames) {
                 if ($exchangePlanQuotaGB.ContainsKey($planName)) {

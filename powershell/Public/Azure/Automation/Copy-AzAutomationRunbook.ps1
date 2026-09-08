@@ -84,7 +84,7 @@ function Copy-AzAutomationRunbook {
     Write-Host "$($runbooks.Count) runbook(s) found in '$SourceAutomationAccount'" -ForegroundColor Cyan
 
     # Export runbooks from source
-    $exportedRunbooks = [System.Collections.Generic.List[PSCustomObject]]@()
+    $exportedRunbooks = [System.Collections.Generic.List[PSCustomObject]]::new()
 
     $i = 0
     foreach ($runbook in $runbooks) {

@@ -68,7 +68,7 @@ function Get-MgApplicationExpiringCertAndKey {
 
     Write-Verbose "Checking for credentials expiring within $DaysUntilExpiry days"
 
-    [System.Collections.Generic.List[PSCustomObject]]$expiringCredentialsArray = @()
+    $expiringCredentialsArray = [System.Collections.Generic.List[PSCustomObject]]::new()
 
     try {
         # Get application credentials

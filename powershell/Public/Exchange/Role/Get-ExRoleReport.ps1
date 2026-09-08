@@ -187,7 +187,7 @@ function Get-ExRoleReport {
         Write-Warning "Unable to retrieve Exchange RBAC roles. $($_.Exception.Message)"
     }
 
-    [System.Collections.Generic.List[Object]]$exchangeRolesMembership = @()
+    $exchangeRolesMembership = [System.Collections.Generic.List[Object]]::new()
     foreach ($exchangeRole in $exchangeRoles) {        
         try {
             $roleMembers = @(Get-RoleGroupMember -Identity $exchangeRole.ExchangeObjectId -ResultSize Unlimited)
