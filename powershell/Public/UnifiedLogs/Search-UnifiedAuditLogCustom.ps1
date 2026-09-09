@@ -311,12 +311,30 @@ function Search-UnifiedAuditLogCustom {
         $pageIndex = 0
         do {
             $pageIndex++
-            try {
-                $page = Search-UnifiedAuditLog @chunkParams -SessionId $sessionId -SessionCommand ReturnLargeSet -ErrorAction Stop
-            }
-            catch {
-                Write-Warning "Search-UnifiedAuditLog failed on chunk $chunkIdx page $pageIndex ($($cursor.ToString('yyyy-MM-dd HH:mm')) -> $($chunkEnd.ToString('yyyy-MM-dd HH:mm'))): $($_.Exception.Message). Try a smaller -ChunkDays value (current: $ChunkDays)."
-                $page = $null
+
+            # Transient backend failures are common on this cmdlet (e.g. 'Failed to process request via
+            # Sync Search mode ... Unauthorized', which is not a permission problem): retry the page with
+            # a backoff, the same SessionId resumes where the session left off
+            $maxAttempts = 3
+            $attempt = 0
+            $page = $null
+
+            while ($attempt -lt $maxAttempts) {
+                $attempt++
+                try {
+                    $page = Search-UnifiedAuditLog @chunkParams -SessionId $sessionId -SessionCommand ReturnLargeSet -ErrorAction Stop
+                    break
+                }
+                catch {
+                    if ($attempt -lt $maxAttempts) {
+                        $delaySeconds = 15 * $attempt
+                        Write-Host -ForegroundColor Yellow "Chunk $chunkIdx page $pageIndex failed (attempt $attempt/$maxAttempts), retrying in $delaySeconds second(s): $($_.Exception.Message)"
+                        Start-Sleep -Seconds $delaySeconds
+                    }
+                    else {
+                        Write-Warning "Search-UnifiedAuditLog failed on chunk $chunkIdx page $pageIndex after $maxAttempts attempts ($($cursor.ToString('yyyy-MM-dd HH:mm')) -> $($chunkEnd.ToString('yyyy-MM-dd HH:mm'))): $($_.Exception.Message). This window is incomplete; try a smaller -ChunkDays value (current: $ChunkDays)."
+                    }
+                }
             }
 
             if ($page) {
