@@ -495,10 +495,10 @@ function Get-MgApplicationCredential {
         $expiredCredentials = $credentialsArray | Where-Object { 
             $null -ne $_.CredentialExpiresInDays -and $_.CredentialExpiresInDays -le 0 
         }
-        $credentialsExpiring15Days = $credentialsArray | Where-Object { 
+        $credentialsExpiringCritical =$credentialsArray | Where-Object { 
             $null -ne $_.CredentialExpiresInDays -and $_.CredentialExpiresInDays -le $halfThreshold -and $_.CredentialExpiresInDays -gt 0 
         }
-        $credentialsExpiring30Days = $credentialsArray | Where-Object { 
+        $credentialsExpiringWarning =$credentialsArray | Where-Object { 
             $null -ne $_.CredentialExpiresInDays -and $_.CredentialExpiresInDays -le $ExpirationThresholdDays -and $_.CredentialExpiresInDays -gt 0 
         }
         
@@ -620,7 +620,7 @@ function Get-MgApplicationCredential {
                             <table border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;border-collapse:collapse;margin-bottom:0;background:transparent;box-shadow:none;" role="presentation">
                                 <tr>
                                     <td width="50%" valign="top" style="width:50%;padding:2pt 0 2pt 0;text-align:right;border-bottom:none;">
-                                        <span style="font-size:18pt;font-family:'Segoe UI',sans-serif;color:#7A3A00;font-weight:bold;">$($credentialsExpiring15Days.Count)</span>
+                                        <span style="font-size:18pt;font-family:'Segoe UI',sans-serif;color:#7A3A00;font-weight:bold;">$($credentialsExpiringCritical.Count)</span>
                                     </td>
                                     <td width="50%" valign="middle" style="width:50%;padding:2pt 0 2pt 6pt;font-size:9pt;font-family:'Segoe UI',sans-serif;color:#7A3A00;border-bottom:none;vertical-align:middle;">
                                         secrets expire within $halfThreshold days
@@ -639,7 +639,7 @@ function Get-MgApplicationCredential {
                             <table border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;border-collapse:collapse;margin-bottom:0;background:transparent;box-shadow:none;" role="presentation">
                                 <tr>
                                     <td width="50%" valign="top" style="width:50%;padding:2pt 0 2pt 0;text-align:right;border-bottom:none;">
-                                        <span style="font-size:18pt;font-family:'Segoe UI',sans-serif;color:#003882;font-weight:bold;">$($credentialsExpiring30Days.Count)</span>
+                                        <span style="font-size:18pt;font-family:'Segoe UI',sans-serif;color:#003882;font-weight:bold;">$($credentialsExpiringWarning.Count)</span>
                                     </td>
                                     <td width="50%" valign="middle" style="width:50%;padding:2pt 0 2pt 6pt;font-size:9pt;font-family:'Segoe UI',sans-serif;color:#003882;border-bottom:none;vertical-align:middle;">
                                         secrets expire within $ExpirationThresholdDays days

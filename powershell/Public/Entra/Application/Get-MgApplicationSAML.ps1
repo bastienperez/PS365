@@ -616,10 +616,10 @@ function Get-MgApplicationSAML {
         $expiredCertificates = $samlApplicationsArray | Where-Object {
             $null -ne $_.SamlSigningCertificateExpiresInDays -and $_.SamlSigningCertificateExpiresInDays -le 0
         }
-        $certificatesExpiring15Days = $samlApplicationsArray | Where-Object {
+        $certificatesExpiringCritical = $samlApplicationsArray | Where-Object {
             $null -ne $_.SamlSigningCertificateExpiresInDays -and $_.SamlSigningCertificateExpiresInDays -le $halfThreshold -and $_.SamlSigningCertificateExpiresInDays -gt 0
         }
-        $certificatesExpiring30Days = $samlApplicationsArray | Where-Object {
+        $certificatesExpiringWarning = $samlApplicationsArray | Where-Object {
             $null -ne $_.SamlSigningCertificateExpiresInDays -and $_.SamlSigningCertificateExpiresInDays -le $ExpirationThresholdDays -and $_.SamlSigningCertificateExpiresInDays -gt 0
         }
 
@@ -741,7 +741,7 @@ function Get-MgApplicationSAML {
                             <table border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;border-collapse:collapse;margin-bottom:0;background:transparent;box-shadow:none;" role="presentation">
                                 <tr>
                                     <td width="50%" valign="top" style="width:50%;padding:2pt 0 2pt 0;text-align:right;border-bottom:none;">
-                                        <span style="font-size:18pt;font-family:'Segoe UI',sans-serif;color:#7A3A00;font-weight:bold;">$($certificatesExpiring15Days.Count)</span>
+                                        <span style="font-size:18pt;font-family:'Segoe UI',sans-serif;color:#7A3A00;font-weight:bold;">$($certificatesExpiringCritical.Count)</span>
                                     </td>
                                     <td width="50%" valign="middle" style="width:50%;padding:2pt 0 2pt 6pt;font-size:9pt;font-family:'Segoe UI',sans-serif;color:#7A3A00;border-bottom:none;vertical-align:middle;">
                                         certificates expire within $halfThreshold days
@@ -760,7 +760,7 @@ function Get-MgApplicationSAML {
                             <table border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;border-collapse:collapse;margin-bottom:0;background:transparent;box-shadow:none;" role="presentation">
                                 <tr>
                                     <td width="50%" valign="top" style="width:50%;padding:2pt 0 2pt 0;text-align:right;border-bottom:none;">
-                                        <span style="font-size:18pt;font-family:'Segoe UI',sans-serif;color:#003882;font-weight:bold;">$($certificatesExpiring30Days.Count)</span>
+                                        <span style="font-size:18pt;font-family:'Segoe UI',sans-serif;color:#003882;font-weight:bold;">$($certificatesExpiringWarning.Count)</span>
                                     </td>
                                     <td width="50%" valign="middle" style="width:50%;padding:2pt 0 2pt 6pt;font-size:9pt;font-family:'Segoe UI',sans-serif;color:#003882;border-bottom:none;vertical-align:middle;">
                                         certificates expire within $ExpirationThresholdDays days
