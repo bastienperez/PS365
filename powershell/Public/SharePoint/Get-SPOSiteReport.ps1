@@ -627,6 +627,35 @@ function Get-SPOSiteReport {
         return $null
     }
 
+    # Turns a version policy (auto-trim flag + manual limits) into one readable label, e.g. 'Automatic' or
+    # 'Manual (max 500 versions, expiry: never)'. ExpireVersionsAfterDays = 0 means versions never expire.
+    # Returns $null when the policy could not be read, so an unreadable value never looks like a real one.
+    function Get-SPOVersionPolicyLabel {
+        [CmdletBinding()]
+        param (
+            [Parameter(Mandatory = $false)]
+            $AutoTrim,
+
+            [Parameter(Mandatory = $false)]
+            $MajorVersionLimit,
+
+            [Parameter(Mandatory = $false)]
+            $ExpireVersionsAfterDays
+        )
+
+        if ($null -eq $AutoTrim) {
+            return $null
+        }
+
+        if ($AutoTrim) {
+            return 'Automatic'
+        }
+
+        $expiry = if ($ExpireVersionsAfterDays -gt 0) { "expiry: $ExpireVersionsAfterDays days" } else { 'expiry: never' }
+
+        return "Manual (max $MajorVersionLimit versions, $expiry)"
+    }
+
     # Detects a Multi-Geo tenant via Get-PnPTenantInstance and normalizes its output into a small,
     # predictable shape (GeoName, AdminUrl, IsDefault). Get-PnPTenantInstance is a recently added PnP
     # cmdlet: its output schema was confirmed against a real Multi-Geo tenant (DataLocation, TenantAdminUrl,
@@ -1032,6 +1061,21 @@ function Get-SPOSiteReport {
     catch {
         Write-Warning "Unable to connect to the SharePoint admin center: $_"
         return
+    }
+
+    # Tenant-wide version history policy, read once: it is the default applied to new sites and to every
+    # site that inherits it, so it feeds the VersionPolicyEffective and VersionPolicyTenantDefault columns.
+    # A failed read (limited app permissions) leaves them empty rather than aborting the report.
+    $tenantVersionPolicyLabel = $null
+    $tenantVersionPolicy = $null
+
+    try {
+        $tenantVersionPolicy = Get-PnPTenant -Connection $adminConnection -ErrorAction Stop
+        $tenantVersionPolicyLabel = Get-SPOVersionPolicyLabel -AutoTrim $tenantVersionPolicy.EnableAutoExpirationVersionTrim -MajorVersionLimit $tenantVersionPolicy.MajorVersionLimit -ExpireVersionsAfterDays $tenantVersionPolicy.ExpireVersionsAfterDays
+        Write-Host -ForegroundColor Cyan "Tenant version history policy (default for new sites): $tenantVersionPolicyLabel"
+    }
+    catch {
+        Write-Warning "Unable to read the tenant version history policy: $($_.Exception.Message.Trim()). The VersionPolicyEffective and VersionPolicyTenantDefault columns will be empty."
     }
 
     Write-Host -ForegroundColor Cyan 'Retrieving SharePoint Online sites...'
@@ -1740,6 +1784,31 @@ function Get-SPOSiteReport {
         $properties['ExternalUserExpirationInDays'] = $spoSite.ExternalUserExpirationInDays
         $properties['OverrideTenantExternalUserExpirationPolicy'] = $spoSite.OverrideTenantExternalUserExpirationPolicy
         $properties['IsHubSite'] = $spoSite.IsHubSite
+
+        # Version history: the site's own settings, the tenant default, and what really applies. A site that
+        # inherits the tenant policy follows the tenant value, otherwise its own values win. Empty (not
+        # 'Automatic') when the tenant-level read failed, so a missing value never reads as a real one
+        $siteVersionPolicyLabel = Get-SPOVersionPolicyLabel -AutoTrim $spoSite.EnableAutoExpirationVersionTrim -MajorVersionLimit $spoSite.MajorVersionLimit -ExpireVersionsAfterDays $spoSite.ExpireVersionsAfterDays
+        $versionPolicyEffective = if ($spoSite.TenantDataError) {
+            $null
+        }
+        elseif ($spoSite.InheritVersionPolicyFromTenant -and $tenantVersionPolicyLabel) {
+            "Tenant: $tenantVersionPolicyLabel"
+        }
+        elseif ($siteVersionPolicyLabel) {
+            "Site: $siteVersionPolicyLabel"
+        }
+        else {
+            $null
+        }
+
+        $properties['VersionPolicyEffective'] = $versionPolicyEffective
+        $properties['VersionPolicyInheritsTenant'] = $spoSite.InheritVersionPolicyFromTenant
+        $properties['VersionPolicyTenantDefault'] = $tenantVersionPolicyLabel
+        $properties['VersionPolicySite'] = $siteVersionPolicyLabel
+        $properties['VersionCount'] = $spoSite.VersionCount
+        # VersionSize is returned in bytes by SPO/PnP
+        $properties['VersionSizeGB'] = if ($null -ne $spoSite.VersionSize) { [math]::Round(($spoSite.VersionSize) / 1GB, 2) } else { $null }
 
         # If the team has been renamed, its DisplayName differs from the SharePoint site Title
         if ($M365GroupsDetails.IsPresent) {
