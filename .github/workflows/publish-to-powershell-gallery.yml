@@ -179,3 +179,23 @@ jobs:
         Write-Host "Release Type: Stable" -ForegroundColor Green
         
         Write-Host "✅ Module is now available at: https://www.powershellgallery.com/packages/PS365" -ForegroundColor Green
+
+    # Slack (secret SLACK_WEBHOOK_URL; nothing sent without it): one message
+    # per publish run, success or failure.
+    - name: 💬 Slack
+      if: always()
+      shell: pwsh
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        STATUS: ${{ job.status }}
+        RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      run: |
+        if (-not $env:SLACK_WEBHOOK_URL) { exit 0 }
+        $manifest = Get-ChildItem -Path .\publish -Filter *.psd1 -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+        $version = if ($manifest) { (Import-PowerShellDataFile $manifest.FullName).ModuleVersion } else { '?' }
+        if ($env:STATUS -eq 'success') {
+          $text = ":package: PS365 $version published on the PowerShell Gallery <https://www.powershellgallery.com/packages/PS365|gallery>"
+        } else {
+          $text = ":x: PS365 $version publish FAILED <$($env:RUN_URL)|run>"
+        }
+        Invoke-RestMethod -Method Post -Uri $env:SLACK_WEBHOOK_URL -ContentType 'application/json' -Body (@{ text = $text } | ConvertTo-Json) | Out-Null
