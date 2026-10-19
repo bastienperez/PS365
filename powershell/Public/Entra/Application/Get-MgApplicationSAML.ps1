@@ -36,7 +36,7 @@
     https://github.com/microsoftgraph/msgraph-sdk-powershell/issues/3166
 
     .PARAMETER ExpirationThresholdDays
-    (Required when RunFromAzureAutomation is enabled) Number of days threshold for expiration notification. Default is 30 days.
+    (Required when RunFromAzureAutomation is enabled) Number of days threshold for expiration notification. Default is 30 days. Only the active signing certificate of each application is counted.
 
     .PARAMETER NotificationRecipient
     (Required when RunFromAzureAutomation is enabled) Email address to receive expiration notifications.
@@ -606,20 +606,29 @@ function Get-MgApplicationSAML {
             '{0} s' -f [int][Math]::Ceiling($executionElapsed.TotalSeconds)
         }
 
-        $expiringCertificates = $samlApplicationsArray | Where-Object {
+        # Only the active signing certificates raise an alert. An inactive one
+        # (an old certificate left on the app, or a new one not yet switched to)
+        # signs nothing. An app with no certificate flagged as preferred keeps
+        # all its rows, so nothing is hidden when the preferred date is missing.
+        $appIdsWithPreferred = @($samlApplicationsArray | Where-Object { $_.SamlSigningCertificateIsPreferred -eq $true } | ForEach-Object { $_.Id })
+        $activeCertificates = @($samlApplicationsArray | Where-Object {
+                -not ($_.SamlSigningCertificateIsPreferred -eq $false -and $appIdsWithPreferred -contains $_.Id)
+            })
+
+        $expiringCertificates = $activeCertificates | Where-Object {
             $null -ne $_.SamlSigningCertificateExpiresInDays -and
             $_.SamlSigningCertificateExpiresInDays -le $ExpirationThresholdDays
         }
 
         # Calculate statistics for different expiration categories
         $halfThreshold = [int]($ExpirationThresholdDays / 2)
-        $expiredCertificates = $samlApplicationsArray | Where-Object {
+        $expiredCertificates = $activeCertificates | Where-Object {
             $null -ne $_.SamlSigningCertificateExpiresInDays -and $_.SamlSigningCertificateExpiresInDays -le 0
         }
-        $certificatesExpiringCritical = $samlApplicationsArray | Where-Object {
+        $certificatesExpiringCritical = $activeCertificates | Where-Object {
             $null -ne $_.SamlSigningCertificateExpiresInDays -and $_.SamlSigningCertificateExpiresInDays -le $halfThreshold -and $_.SamlSigningCertificateExpiresInDays -gt 0
         }
-        $certificatesExpiringWarning = $samlApplicationsArray | Where-Object {
+        $certificatesExpiringWarning = $activeCertificates | Where-Object {
             $null -ne $_.SamlSigningCertificateExpiresInDays -and $_.SamlSigningCertificateExpiresInDays -le $ExpirationThresholdDays -and $_.SamlSigningCertificateExpiresInDays -gt 0
         }
 
