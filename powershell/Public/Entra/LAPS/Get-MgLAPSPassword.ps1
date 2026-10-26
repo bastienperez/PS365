@@ -224,7 +224,13 @@ function Get-MgLAPSPassword {
     if ($PSBoundParameters.ContainsKey('DeviceName')) {
         Write-Verbose "Resolving device name '$DeviceName' to Entra ID object ID..."
         $deviceFilter = [System.Uri]::EscapeDataString("displayName eq '$(ConvertTo-ODataEscapedString -Value $DeviceName)'")
-        $mgDevice = (Invoke-MgGraphRequest -Method GET -Uri "/v1.0/devices?`$filter=$deviceFilter" -OutputType PSObject -ErrorAction Stop).value | Select-Object -First 1
+        $devicesUri = "/v1.0/devices?`$filter=$deviceFilter"
+        $mgDevice = $null
+        while ($devicesUri -and -not $mgDevice) {
+            $devicesPage = Invoke-MgGraphRequest -Method GET -Uri $devicesUri -OutputType PSObject -ErrorAction Stop
+            $mgDevice = $devicesPage.value | Select-Object -First 1
+            $devicesUri = $devicesPage.'@odata.nextLink'
+        }
         if (-not $mgDevice) {
             Write-Warning "No device found with display name '$DeviceName'"
             return
@@ -238,9 +244,12 @@ function Get-MgLAPSPassword {
     else {
         Write-Verbose 'No device filter specified - retrieving all device LAPS credentials...'
         $listUri = 'v1.0/directory/deviceLocalCredentials'
-        $listResponse = Invoke-MgGraphRequest -Method GET -Uri $listUri -Headers $headers -OutputType PSObject
-        foreach ($item in $listResponse.value) {
-            $deviceCredentialIds.Add($item.id)
+        while ($listUri) {
+            $listResponse = Invoke-MgGraphRequest -Method GET -Uri $listUri -Headers $headers -OutputType PSObject
+            foreach ($item in $listResponse.value) {
+                $deviceCredentialIds.Add($item.id)
+            }
+            $listUri = $listResponse.'@odata.nextLink'
         }
         Write-Verbose "Found $($deviceCredentialIds.Count) devices with LAPS credentials"
     }

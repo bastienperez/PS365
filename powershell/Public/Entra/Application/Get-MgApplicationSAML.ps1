@@ -349,7 +349,7 @@ function Get-MgApplicationSAML {
                 $result = Invoke-MgGraphRequest -Uri $uri -Method GET
             }
 
-            $candidateItems = if ($result.Value) { $result.Value } else { @() }
+            $candidateItems = @(& { $page = $result; while ($page) { $page.value; $nextPage = $page.'@odata.nextLink'; $page = if ($nextPage) { Invoke-MgGraphRequest -Uri $nextPage -Method GET -Headers @{ ConsistencyLevel = 'eventual' } -ErrorAction Stop } else { $null } } })
             # Post-filter: wildcard name match + SAML only
             $matchingIds = ($candidateItems | Where-Object { $_.displayName -like $DisplayName -and $_.preferredSingleSignOnMode -eq 'saml' }).id
 
@@ -420,7 +420,14 @@ function Get-MgApplicationSAML {
         }
         else {
             try {
-                $ownerObjects = @((Invoke-MgGraphRequest -Uri "/v1.0/servicePrincipals/$($samlApp.Id)/owners?`$select=id,displayName" -Method GET -OutputType PSObject -ErrorAction Stop).value)
+                $ownerObjects = @(& {
+                        $ownersUri = "/v1.0/servicePrincipals/$($samlApp.Id)/owners?`$select=id,displayName"
+                        while ($ownersUri) {
+                            $ownersPage = Invoke-MgGraphRequest -Uri $ownersUri -Method GET -OutputType PSObject -ErrorAction Stop
+                            $ownersPage.value
+                            $ownersUri = $ownersPage.'@odata.nextLink'
+                        }
+                    })
             }
             catch {
                 $ownerString = "Error: $($_.Exception.Message)"
@@ -592,7 +599,8 @@ function Get-MgApplicationSAML {
             $appCounter++
             # A failed/missing batch response passes $null: the scriptblock then reads the owners itself
             $ownersResponse = $ownersResponses["$($samlApp.Id)"]
-            $preFetchedOwners = if ($ownersResponse -and $ownersResponse.status -eq 200) { @($ownersResponse.body.value) } else { $null }
+            # A response with more pages (@odata.nextLink) is read again in full by the scriptblock
+            $preFetchedOwners = if ($ownersResponse -and $ownersResponse.status -eq 200 -and -not $ownersResponse.body.'@odata.nextLink') { @($ownersResponse.body.value) } else { $null }
 
             $results = & $processSamlApp $samlApp "Processing $appCounter/${samlApplicationsCount}: " $IncludeSignInStats.IsPresent $auditLogPermissionMissing $signInStartDate $preFetchedOwners
             foreach ($result in $results) {

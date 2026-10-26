@@ -450,8 +450,7 @@ function Get-DynamicGroup {
             $entraCounter++
             Write-Verbose "[$entraCounter/$entraTotal] Processing Entra ID group: $($group.DisplayName)"
             try { 
-                # First page only, as the SDK cmdlet without -All did
-                $memberOf = Invoke-MgGraphPagedRequest -Uri "/v1.0/groups/$($group.Id)/memberOf" -FirstPageOnly -ErrorAction Stop
+                $memberOf = Invoke-MgGraphPagedRequest -Uri "/v1.0/groups/$($group.Id)/memberOf" -ErrorAction Stop
 
                 $memberOf = ($memberOf | Where-Object { $_.'@odata.type' -eq '#microsoft.graph.group' } | 
                     ForEach-Object { $_.displayName }) -join '|'

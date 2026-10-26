@@ -319,7 +319,7 @@ function Get-MgApplicationSCIM {
                 $result = Invoke-MgGraphRequest -Uri $uri -Method GET
             }
 
-            $candidateItems = if ($result.Value) { $result.Value } else { @() }
+            $candidateItems = @(& { $page = $result; while ($page) { $page.value; $nextPage = $page.'@odata.nextLink'; $page = if ($nextPage) { Invoke-MgGraphRequest -Uri $nextPage -Method GET -Headers @{ ConsistencyLevel = 'eventual' } -ErrorAction Stop } else { $null } } })
             $matchingItems = $candidateItems | Where-Object { $_.displayName -like $DisplayName }
             $servicePrincipals = @($matchingItems | ForEach-Object {
                     [PSCustomObject]@{ DisplayName = $_.displayName; Id = $_.id }
@@ -520,7 +520,9 @@ function Get-MgApplicationSCIM {
                 continue
             }
 
-            $results = & $processServicePrincipal $servicePrincipal "($i/$servicePrincipalsCount) - " $templateFilter @($response.body.value)
+            # A response with more pages (@odata.nextLink) is read again in full by the scriptblock
+            $preFetchedJobs = if ($response.body.'@odata.nextLink') { $null } else { @($response.body.value) }
+            $results = & $processServicePrincipal $servicePrincipal "($i/$servicePrincipalsCount) - " $templateFilter $preFetchedJobs
             foreach ($result in $results) {
                 if ($result) { $synchronizationJobsArray.Add($result) }
             }

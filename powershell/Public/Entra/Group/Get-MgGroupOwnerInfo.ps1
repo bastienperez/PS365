@@ -136,9 +136,13 @@ function Get-MgGroupOwnerInfo {
         # Retrieve owners for the group
         try {
             $ownersUri = "https://graph.microsoft.com/v1.0/groups/$($group.id)/owners?`$select=id,displayName,userPrincipalName,mail"
-            $ownerResponse = Invoke-MgGraphRequest -Method GET -Uri $ownersUri -ErrorAction Stop
-
-            $owners = $ownerResponse.value
+            $owners = @(& {
+                    while ($ownersUri) {
+                        $ownerResponse = Invoke-MgGraphRequest -Method GET -Uri $ownersUri -ErrorAction Stop
+                        $ownerResponse.value
+                        $ownersUri = $ownerResponse.'@odata.nextLink'
+                    }
+                })
 
             if ($owners.Count -eq 0) {
                 $object = [PSCustomObject][ordered]@{

@@ -248,7 +248,7 @@ function Get-MgUserPasswordInfo {
             # signInActivity cannot be read with GET /users/<upn> (Graph wants the object ID for it),
             # so the user is found with a filter instead.										 
             $userFilter = [System.Uri]::EscapeDataString("userPrincipalName eq '$(ConvertTo-ODataEscapedString -Value $upn)'")
-            $mgUser = Invoke-MgGraphPagedRequest -Uri "/v1.0/users?`$filter=$userFilter&`$select=$userSelect" -FirstPageOnly
+            $mgUser = Invoke-MgGraphPagedRequest -Uri "/v1.0/users?`$filter=$userFilter&`$select=$userSelect"
 
             $mgUsersList.Add($mgUser)
         }

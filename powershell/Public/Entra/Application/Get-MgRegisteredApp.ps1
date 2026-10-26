@@ -78,7 +78,7 @@ function Get-MgRegisteredApp {
         # Get specific application by AppId
         $uri = "/beta/applications?`$filter=appId eq '$(ConvertTo-ODataEscapedString -Value $ApplicationID)'&`$select=uniqueName,id,createdByAppId,displayName,signInAudience,disabledByMicrosoftStatus,isDisabled,appId"
         $result = Invoke-MgGraphRequest -Uri $uri -Method GET
-        $apps = if ($result.Value) { $result.Value } else { @() }
+        $apps = @(& { $page = $result; while ($page) { $page.value; $nextPage = $page.'@odata.nextLink'; $page = if ($nextPage) { Invoke-MgGraphRequest -Uri $nextPage -Method GET -Headers @{ ConsistencyLevel = 'eventual' } -ErrorAction Stop } else { $null } } })
     }
     elseif ($ObjectID) {
         # Get specific application by ObjectID
@@ -103,7 +103,7 @@ function Get-MgRegisteredApp {
                 $result = Invoke-MgGraphRequest -Uri $uri -Method GET
             }
 
-            $candidateApps = if ($result.Value) { $result.Value } else { @() }
+            $candidateApps = @(& { $page = $result; while ($page) { $page.value; $nextPage = $page.'@odata.nextLink'; $page = if ($nextPage) { Invoke-MgGraphRequest -Uri $nextPage -Method GET -Headers @{ ConsistencyLevel = 'eventual' } -ErrorAction Stop } else { $null } } })
 
             # Apply precise wildcard matching client-side
             $apps = $candidateApps | Where-Object { $_.displayName -like $DisplayName }
@@ -118,14 +118,14 @@ function Get-MgRegisteredApp {
             $uri = "/beta/applications?`$filter=displayName eq '$escaped'&`$select=$selectFields"
             Write-Verbose "Filtering applications with: displayName eq '$escaped'"
             $result = Invoke-MgGraphRequest -Uri $uri -Method GET
-            $apps = if ($result.Value) { $result.Value } else { @() }
+            $apps = @(& { $page = $result; while ($page) { $page.value; $nextPage = $page.'@odata.nextLink'; $page = if ($nextPage) { Invoke-MgGraphRequest -Uri $nextPage -Method GET -Headers @{ ConsistencyLevel = 'eventual' } -ErrorAction Stop } else { $null } } })
 
             # If no exact match found, try to find apps where trimmed DisplayName matches
             if (-not $apps -or $apps.Count -eq 0) {
                 Write-Verbose "No exact match found. Searching for apps with trimmed DisplayName matching '$DisplayName'..."
                 $uri = "/beta/applications?`$filter=startswith(displayName,'$escaped')&`$select=$selectFields"
                 $result = Invoke-MgGraphRequest -Uri $uri -Method GET
-                $candidateApps = if ($result.Value) { $result.Value } else { @() }
+                $candidateApps = @(& { $page = $result; while ($page) { $page.value; $nextPage = $page.'@odata.nextLink'; $page = if ($nextPage) { Invoke-MgGraphRequest -Uri $nextPage -Method GET -Headers @{ ConsistencyLevel = 'eventual' } -ErrorAction Stop } else { $null } } })
 
                 # Filter in PowerShell to find apps where trimmed name matches
                 $apps = $candidateApps | Where-Object { $_.displayName.Trim() -eq $DisplayName }
@@ -140,7 +140,7 @@ function Get-MgRegisteredApp {
         # Get all applications with selected properties
         $uri = "/beta/applications?`$select=uniqueName,id,createdByAppId,displayName,signInAudience,disabledByMicrosoftStatus,isDisabled,appId"
         $result = Invoke-MgGraphRequest -Uri $uri -Method GET
-        $apps = if ($result.Value) { $result.Value } else { @() }
+        $apps = @(& { $page = $result; while ($page) { $page.value; $nextPage = $page.'@odata.nextLink'; $page = if ($nextPage) { Invoke-MgGraphRequest -Uri $nextPage -Method GET -Headers @{ ConsistencyLevel = 'eventual' } -ErrorAction Stop } else { $null } } })
     }
 
     if (-not $apps -or $apps.Count -eq 0) {

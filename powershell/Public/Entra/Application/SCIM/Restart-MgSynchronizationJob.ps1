@@ -307,7 +307,7 @@ function Restart-MgSynchronizationJob {
                 $result = Invoke-MgGraphRequest -Method GET -Uri 'https://graph.microsoft.com/v1.0/servicePrincipals?$select=displayName,id&$top=999' -OutputType PSObject
             }
 
-            $candidates = if ($result.Value) { $result.Value } else { @() }
+            $candidates = @(& { $page = $result; while ($page) { $page.value; $nextPage = $page.'@odata.nextLink'; $page = if ($nextPage) { Invoke-MgGraphRequest -Uri $nextPage -Method GET -Headers @{ ConsistencyLevel = 'eventual' } -OutputType PSObject -ErrorAction Stop } else { $null } } })
             Write-Verbose "Server-side pre-filter returned $($candidates.Count) candidate(s)."
             $matches_ = $candidates | Where-Object { $_.displayName -like $DisplayName }
             Write-Verbose "Client-side -like filter matched $($matches_.Count) service principal(s)."
@@ -352,7 +352,7 @@ function Restart-MgSynchronizationJob {
         Write-StatusMessage "[...] Retrieving sync jobs for: $($sp.DisplayName)" 'Cyan'
 
         $jobsResponse = Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/servicePrincipals/$($sp.Id)/synchronization/jobs" -OutputType PSObject
-        $syncJobs = if ($jobsResponse.Value) { $jobsResponse.Value } else { @() }
+        $syncJobs = @(& { $page = $jobsResponse; while ($page) { $page.value; $nextPage = $page.'@odata.nextLink'; $page = if ($nextPage) { Invoke-MgGraphRequest -Uri $nextPage -Method GET -Headers @{ ConsistencyLevel = 'eventual' } -OutputType PSObject -ErrorAction Stop } else { $null } } })
         Write-Verbose "Found $($syncJobs.Count) sync job(s) for '$($sp.DisplayName)'."
 
         if (-not $syncJobs -or $syncJobs.Count -eq 0) {

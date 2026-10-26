@@ -194,11 +194,11 @@ function Get-MgBitlockerKeyInfo {
     $requiredScopes = [System.Collections.Generic.List[string]]@($bitlockerScope, 'Device.Read.All')
     if ($PSBoundParameters['IncludeDeviceOwner']) { $requiredScopes.Add('User.ReadBasic.All') }
 
-    # Microsoft Graph GET through Invoke-MgGraphRequest, following @odata.nextLink unless FirstPageOnly.
+    # Microsoft Graph GET through Invoke-MgGraphRequest, following @odata.nextLink.
     # Self-contained (no PS365 private helper) so the script also runs standalone in an Azure Automation runbook.
     # Throws on error.
     $getGraphItems = {
-        param([string]$Uri, [switch]$FirstPageOnly)
+        param([string]$Uri)
         $nextLink = $Uri
         while ($nextLink) {
             try {
@@ -216,7 +216,7 @@ function Get-MgBitlockerKeyInfo {
             }
             if ($null -ne $page.PSObject.Properties['value'] -and [string]$page.'@odata.context' -notmatch '/\$entity$') {
                 foreach ($item in $page.value) { $item }
-                $nextLink = if ($FirstPageOnly) { $null } else { $page.'@odata.nextLink' }
+                $nextLink = $page.'@odata.nextLink'
             }
             else {
                 $page
@@ -420,9 +420,8 @@ function Get-MgBitlockerKeyInfo {
         foreach ($device in $devices) {
             try {
                 Write-Verbose "Retrieving BitLocker keys for device: $($device.DisplayName) (ID: $($device.DeviceId))..."
-                # First page only, as the SDK cmdlet without -All did
                 $keyFilter = [System.Uri]::EscapeDataString("deviceId eq '$(ConvertTo-ODataEscapedString -Value $device.DeviceId)'")
-                $deviceKeys = @(& $getGraphItems "/v1.0/informationProtection/bitlocker/recoveryKeys?`$filter=$keyFilter" -FirstPageOnly | ForEach-Object { & $toRecoveryKeyObject $_ })
+                $deviceKeys = @(& $getGraphItems "/v1.0/informationProtection/bitlocker/recoveryKeys?`$filter=$keyFilter" | ForEach-Object { & $toRecoveryKeyObject $_ })
                 
                 if ($deviceKeys -and $deviceKeys.Count -gt 0) {
                     foreach ($key in $deviceKeys) {

@@ -387,8 +387,7 @@ function Get-MgRoleReport {
 
             #$group = (Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/groups/$($object.Principal)" -OutputType PSObject)
 
-            # First page only, as the SDK cmdlet without -All did
-            $groupMembers = Invoke-MgGraphPagedRequest -Uri "/v1.0/groups/$($group.Id)/members?`$select=id,displayName,userPrincipalName" -FirstPageOnly
+            $groupMembers = Invoke-MgGraphPagedRequest -Uri "/v1.0/groups/$($group.Id)/members?`$select=id,displayName,userPrincipalName"
             #$groupMembers = (Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/groups/$($group.Id)/members" -OutputType PSObject).Value
 
             foreach ($member in $groupMembers) {
@@ -504,7 +503,7 @@ function Get-MgRoleReport {
                     # signInActivity cannot be read with GET /users/<upn> (Graph wants the object ID for it),
                     # so the user is found with a filter on its UserPrincipalName instead.
                     $userFilter = [System.Uri]::EscapeDataString("userPrincipalName eq '$(ConvertTo-ODataEscapedString -Value $member.Principal)'")
-                    $mgUser = Invoke-MgGraphPagedRequest -Uri "/v1.0/users?`$filter=$userFilter&`$select=accountEnabled,signInActivity,onPremisesSyncEnabled" -FirstPageOnly
+                    $mgUser = Invoke-MgGraphPagedRequest -Uri "/v1.0/users?`$filter=$userFilter&`$select=accountEnabled,signInActivity,onPremisesSyncEnabled"
                     $accountEnabled = $mgUser.AccountEnabled
                     $lastSignInDateTime = $mgUser.signInActivity.LastSignInDateTime
                     $lastNonInteractiveSignInDateTime = $mgUser.signInActivity.LastNonInteractiveSignInDateTime
@@ -525,7 +524,7 @@ function Get-MgRoleReport {
 
                 'servicePrincipal' {
                     $spSignInFilter = [System.Uri]::EscapeDataString("appId eq '$(ConvertTo-ODataEscapedString -Value $member.Principal)'")
-                    $lastSignInActivity = (Invoke-MgGraphPagedRequest -Uri "/beta/reports/servicePrincipalSignInActivities?`$filter=$spSignInFilter" -FirstPageOnly).LastSignInActivity
+                    $lastSignInActivity = (Invoke-MgGraphPagedRequest -Uri "/beta/reports/servicePrincipalSignInActivities?`$filter=$spSignInFilter").LastSignInActivity
                     $accountEnabled = 'Not applicable'
                     $lastSignInDateTime = $lastSignInActivity.LastSignInDateTime
                     $lastNonInteractiveSignInDateTime = $lastSignInActivity.LastNonInteractiveSignInDateTime

@@ -242,13 +242,20 @@ function Get-MgApplicationAssignment {
             }
         }
 
-        # Get app role assignments for this service principal (first page, as the SDK cmdlet without -All did)
+        # Get app role assignments for this service principal (every page)
         $appRoleAssignments = if ($null -ne $PreFetchedAssignments) {
             $PreFetchedAssignments
         }
         else {
             try {
-                (Invoke-MgGraphRequest -Uri "/v1.0/servicePrincipals/$($sp.Id)/appRoleAssignedTo" -Method GET -OutputType PSObject -ErrorAction Stop).value
+                @(& {
+                        $assignmentsUri = "/v1.0/servicePrincipals/$($sp.Id)/appRoleAssignedTo"
+                        while ($assignmentsUri) {
+                            $assignmentsPage = Invoke-MgGraphRequest -Uri $assignmentsUri -Method GET -OutputType PSObject -ErrorAction Stop
+                            $assignmentsPage.value
+                            $assignmentsUri = $assignmentsPage.'@odata.nextLink'
+                        }
+                    })
             }
             catch {
                 Write-Warning "Could not read the app role assignments of '$($sp.DisplayName)': $($_.Exception.Message)"
@@ -492,7 +499,8 @@ function Get-MgApplicationAssignment {
             $counter++
             # A failed/missing batch response passes $null: the scriptblock then reads the assignments itself
             $assignmentsResponse = $assignmentsResponses["$($sp.Id)"]
-            $preFetchedAssignments = if ($assignmentsResponse -and $assignmentsResponse.status -eq 200) { @($assignmentsResponse.body.value) } else { $null }
+            # A response with more pages (@odata.nextLink) is read again in full by the scriptblock
+            $preFetchedAssignments = if ($assignmentsResponse -and $assignmentsResponse.status -eq 200 -and -not $assignmentsResponse.body.'@odata.nextLink') { @($assignmentsResponse.body.value) } else { $null }
 
             $results = & $processSp $sp "[$counter/$servicePrincipalsCount] " $preFetchedAssignments
             foreach ($result in $results) {

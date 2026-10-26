@@ -304,7 +304,7 @@ function Get-MgApplicationCredential {
                 $result = Invoke-MgGraphRequest -Uri $uri -Method GET
             }
 
-            $candidateItems = if ($result.Value) { $result.Value } else { @() }
+            $candidateItems = @(& { $page = $result; while ($page) { $page.value; $nextPage = $page.'@odata.nextLink'; $page = if ($nextPage) { Invoke-MgGraphRequest -Uri $nextPage -Method GET -Headers @{ ConsistencyLevel = 'eventual' } -ErrorAction Stop } else { $null } } })
             $matchingIds = ($candidateItems | Where-Object { $_.displayName -like $DisplayName }).id
 
             if ($matchingIds) {
@@ -370,9 +370,14 @@ function Get-MgApplicationCredential {
             $PreFetchedOwners
         }
         else {
-            # First page of owners. Self-contained call: this scriptblock also runs in parallel runspaces.
+            # Every page of owners. Self-contained calls: this scriptblock also runs in parallel runspaces.
             try {
-                (Invoke-MgGraphRequest -Uri "/v1.0/applications/$($mgApp.Id)/owners" -Method GET -OutputType PSObject -ErrorAction Stop).value
+                $ownersUri = "/v1.0/applications/$($mgApp.Id)/owners"
+                while ($ownersUri) {
+                    $ownersPage = Invoke-MgGraphRequest -Uri $ownersUri -Method GET -OutputType PSObject -ErrorAction Stop
+                    $ownersPage.value
+                    $ownersUri = $ownersPage.'@odata.nextLink'
+                }
             }
             catch {
                 Write-Warning "Could not read the owners of '$($mgApp.DisplayName)': $($_.Exception.Message)"
@@ -457,7 +462,8 @@ function Get-MgApplicationCredential {
             $i++
             # A failed/missing batch response passes $null: the scriptblock then reads the owners itself
             $ownersResponse = $ownersResponses["$($mgApp.Id)"]
-            $preFetchedOwners = if ($ownersResponse -and $ownersResponse.status -eq 200) { @($ownersResponse.body.value) } else { $null }
+            # A response with more pages (@odata.nextLink) is read again in full by the scriptblock
+            $preFetchedOwners = if ($ownersResponse -and $ownersResponse.status -eq 200 -and -not $ownersResponse.body.'@odata.nextLink') { @($ownersResponse.body.value) } else { $null }
 
             $results = & $processApp $mgApp "($i/$mgAppsCount) - " $preFetchedOwners
             foreach ($result in $results) {

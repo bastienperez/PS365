@@ -18,9 +18,6 @@ function Invoke-MgGraphPagedRequest {
 
     .PARAMETER Headers
     Optional request headers (e.g. ConsistencyLevel = 'eventual' for advanced queries).
-
-    .PARAMETER FirstPageOnly
-    Returns only the first page, like an SDK cmdlet called without -All.
     #>
     [CmdletBinding()]
     param(
@@ -28,10 +25,7 @@ function Invoke-MgGraphPagedRequest {
         [string]$Uri,
 
         [Parameter()]
-        [hashtable]$Headers,
-
-        [Parameter()]
-        [switch]$FirstPageOnly
+        [hashtable]$Headers
     )
 
     $nextLink = $Uri
@@ -76,7 +70,7 @@ function Invoke-MgGraphPagedRequest {
             foreach ($item in $page.value) {
                 $item
             }
-            $nextLink = if ($FirstPageOnly.IsPresent) { $null } else { $page.'@odata.nextLink' }
+            $nextLink = $page.'@odata.nextLink'
         }
         else {
             $page

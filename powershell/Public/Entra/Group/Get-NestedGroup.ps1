@@ -46,7 +46,7 @@
     - ParentGroupId: Unique identifier of the parent group
     - ParentGroupType: Type of the parent group
 
-    Requires Microsoft.Graph module: Connect-MgGraph -Scopes 'Group.Read.All'
+    Requires the Microsoft.Graph.Authentication module: Connect-MgGraph -Scopes 'Group.Read.All'
 
     .LINK
     https://ps365.clidsys.com/docs/commands/Get-NestedGroup

@@ -527,7 +527,9 @@ function Get-MgAuditLogSigninInfo {
     $signInsUri = "/beta/auditLogs/signIns?`$filter=$([System.Uri]::EscapeDataString($filter))"
     if ($LastXSignIns) {
         Write-Verbose "GET beta/auditLogs/signIns top $LastXSignIns, filter $filter"
-        $signsIn = Invoke-MgGraphPagedRequest -Uri "$signInsUri&`$top=$LastXSignIns" -FirstPageOnly
+        # The N most recent sign-ins: pages are followed until N are read (Graph caps a page at 1000),
+        # Select-Object -First stops the paging as soon as N are there
+        $signsIn = Invoke-MgGraphPagedRequest -Uri "$signInsUri&`$top=$([Math]::Min($LastXSignIns, 1000))" | Select-Object -First $LastXSignIns
     }
     else {
         Write-Verbose "GET beta/auditLogs/signIns (all pages), filter $filter"

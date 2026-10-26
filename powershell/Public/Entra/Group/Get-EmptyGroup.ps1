@@ -42,7 +42,7 @@
     - Created: Creation date of the group (yyyy-MM-dd)
     - Description: Description of the group
 
-    Requires Microsoft.Graph module: Connect-MgGraph -Scopes 'Group.Read.All'
+    Requires the Microsoft.Graph.Authentication module: Connect-MgGraph -Scopes 'Group.Read.All'
 
     .LINK
     https://ps365.clidsys.com/docs/commands/Get-EmptyGroup

@@ -145,9 +145,8 @@ function Compare-UserAttribute {
                 }
             }
             else {
-                # First page only, as the SDK cmdlet without -All did
                 $mailFilter = [System.Uri]::EscapeDataString('mail ne null')
-                $users = Invoke-MgGraphPagedRequest -Uri "/v1.0/users?`$filter=$mailFilter&`$select=$selectAttributes" -FirstPageOnly | ForEach-Object { & $toPascalCase $_ }
+                $users = Invoke-MgGraphPagedRequest -Uri "/v1.0/users?`$filter=$mailFilter&`$select=$selectAttributes" | ForEach-Object { & $toPascalCase $_ }
             }
 
             break
