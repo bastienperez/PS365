@@ -4,13 +4,23 @@
 
     .DESCRIPTION
     This function returns a list of all Entra ID applications configured for SAML Single Sign-On
-    along with their SAML-related properties. Each row represents one SAML signing certificate
-    (KeyCredential with Usage 'Sign'), so an application with multiple certificates will appear
-    on multiple rows.
+    along with their SAML-related properties. Each row represents one certificate, so an application
+    with several certificates appears on several rows. The `CertificateType` column says which:
+    - SAML signing      : the certificate Entra signs the SAML tokens with (service principal,
+                          KeyCredential with Usage 'Sign')
+    - SAML verification : the service provider's public key Entra checks signed SAML requests with
+                          (app registration, KeyCredential with Usage 'Verify')
+    - Token encryption  : the service provider's certificate Entra encrypts the SAML tokens with
+                          (app registration, KeyCredential with Usage 'Encrypt')
 
-    The `SamlSigningCertificateIsPreferred` column identifies the currently active certificate:
-    - True  : this is the active signing certificate
-    - False : this certificate exists on the application but is not currently active
+    The `CertificateIsActive` column says whether the certificate is in use:
+    - SAML signing      : True for the certificate of preferredTokenSigningKeyThumbprint (or, without
+                          it, of preferredTokenSigningKeyEndDateTime). With neither, every one is True.
+    - SAML verification : True while signed requests are required (requestSignatureVerification)
+    - Token encryption  : True for the certificate named by tokenEncryptionKeyId
+
+    Every Graph call goes through Invoke-MgGraphRequest: only the Microsoft.Graph.Authentication
+    module is needed. An owner lookup that fails says so in the Owners column (it is never left empty).
 
     .PARAMETER ObjectID
     (Optional) Retrieves the SAML configuration for a specific application by its ObjectID.
@@ -126,7 +136,7 @@
     .NOTES
     More information on: https://itpro-tips.com/get-azure-ad-saml-certificate-details/
 
-    This function requires the Microsoft.Graph.Beta.Applications module to be installed.
+    This function requires only the Microsoft.Graph.Authentication module (Invoke-MgGraphRequest).
 
     .NOTES
     Limitations:
@@ -224,15 +234,37 @@ function Get-MgApplicationSAML {
     }
 
     try {
-        # At the date of writing (december 2023), PreferredTokenSigningKeyEndDateTime parameter is only on Beta profile
-        Import-Module 'Microsoft.Graph.Beta.Applications' -ErrorAction Stop -ErrorVariable mgGraphAppsMissing
+        # Only Invoke-MgGraphRequest and Connect-MgGraph: no other Microsoft.Graph module is loaded
+        Import-Module 'Microsoft.Graph.Authentication' -ErrorAction Stop -ErrorVariable mgGraphAuthMissing
     }
     catch {
-        if ($mgGraphAppsMissing) {
-            Write-Warning "Please install the Microsoft.Graph.Beta.Applications module: $($mgGraphAppsMissing.Exception.Message)"
+        if ($mgGraphAuthMissing) {
+            Write-Warning "Please install the Microsoft.Graph.Authentication module: $($mgGraphAuthMissing.Exception.Message)"
         }
 
         return
+    }
+
+    # The SAML properties of a service principal. preferredTokenSigningKeyEndDateTime is only on the beta endpoint.
+    $spSelect = 'id,appId,displayName,loginUrl,logoutUrl,notificationEmailAddresses,appRoleAssignmentRequired,preferredSingleSignOnMode,preferredTokenSigningKeyThumbprint,preferredTokenSigningKeyEndDateTime,keyCredentials,replyUrls,signInAudience'
+
+    # GET with paging, the results as PSCustomObject (property names are then case-insensitive)
+    $getGraphItems = {
+        param([string]$Uri, [hashtable]$Headers = @{})
+        $items = [System.Collections.Generic.List[object]]::new()
+        $nextLink = $Uri
+        while ($nextLink) {
+            $page = Invoke-MgGraphRequest -Uri $nextLink -Method GET -Headers $Headers -OutputType PSObject -ErrorAction Stop
+            if ($null -ne $page.PSObject.Properties['value']) {
+                foreach ($item in $page.value) { $items.Add($item) }
+                $nextLink = $page.'@odata.nextLink'
+            }
+            else {
+                $items.Add($page)
+                $nextLink = $null
+            }
+        }
+        return , $items
     }
 
     $isConnected = $false
@@ -305,7 +337,7 @@ function Get-MgApplicationSAML {
     
     # Determine how to search for the Service Principal(s): by ObjectID (GUID), by DisplayName, or all
     if ($ObjectID) {
-        $samlApplications = Get-MgBetaServicePrincipal -ServicePrincipalId $ObjectID
+        $samlApplications = & $getGraphItems "/beta/servicePrincipals/$($ObjectID)?`$select=$spSelect"
         # Verify it's a SAML application
         if ($samlApplications.PreferredSingleSignOnMode -ne 'saml') {
             Write-Warning "The application with ObjectID '$ObjectID' is not configured for SAML SSO (PreferredSingleSignOnMode: $($samlApplications.PreferredSingleSignOnMode))"
@@ -333,7 +365,7 @@ function Get-MgApplicationSAML {
             $matchingIds = ($candidateItems | Where-Object { $_.displayName -like $DisplayName -and $_.preferredSingleSignOnMode -eq 'saml' }).id
 
             if ($matchingIds) {
-                $samlApplications = @($matchingIds | ForEach-Object { Get-MgBetaServicePrincipal -ServicePrincipalId $_ })
+                $samlApplications = @($matchingIds | ForEach-Object { & $getGraphItems "/beta/servicePrincipals/$($_)?`$select=$spSelect" })
                 Write-Verbose "Found $($samlApplications.Count) SAML application(s) matching wildcard pattern '$DisplayName'"
             }
             else {
@@ -345,13 +377,13 @@ function Get-MgApplicationSAML {
             $escaped = $DisplayName -replace "'", "''"
             $filter = "DisplayName eq '$escaped' and PreferredSingleSignOnMode eq 'saml'"
             Write-Verbose "Filtering service principals with: $filter"
-            $samlApplications = Get-MgBetaServicePrincipal -Filter $filter -All
+            $samlApplications = & $getGraphItems "/beta/servicePrincipals?`$filter=$([uri]::EscapeDataString($filter))&`$select=$spSelect"
 
             # If no exact match found, try to find apps where trimmed DisplayName matches
             if (-not $samlApplications) {
                 Write-Verbose "No exact match found. Searching for apps with trimmed DisplayName matching '$DisplayName'..."
                 $filter = "startswith(DisplayName, '$escaped') and PreferredSingleSignOnMode eq 'saml'"
-                $candidateApps = Get-MgBetaServicePrincipal -Filter $filter -All
+                $candidateApps = & $getGraphItems "/beta/servicePrincipals?`$filter=$([uri]::EscapeDataString($filter))&`$select=$spSelect"
 
                 # Filter in PowerShell to find apps where trimmed name matches
                 $samlApplications = $candidateApps | Where-Object { $_.DisplayName.Trim() -eq $DisplayName }
@@ -363,15 +395,16 @@ function Get-MgApplicationSAML {
         }
     }
     else {
-        $samlApplications = Get-MgBetaServicePrincipal -Filter "PreferredSingleSignOnMode eq 'saml'"
+        $samlApplications = & $getGraphItems "/beta/servicePrincipals?`$filter=$([uri]::EscapeDataString("preferredSingleSignOnMode eq 'saml'"))&`$select=$spSelect"
     }
 
+    $samlApplications = @($samlApplications | Where-Object { $_ })
     if (-not $samlApplications) {
         Write-Host 'No SAML applications found' -ForegroundColor Yellow
         return
     }
 
-    Write-Host "$($samlApplications.Count) SAML application(s) found" -ForegroundColor Green
+    Write-Host "$(@($samlApplications).Count) SAML application(s) found" -ForegroundColor Green
 
     $samlApplicationsArray = [System.Collections.Generic.List[PSCustomObject]]::new()
 
@@ -392,25 +425,26 @@ function Get-MgApplicationSAML {
         # Reset to $null before each call: prevents previous iteration's value from bleeding through on silent errors
         $ownerObjects = $null
         $ownerString = $null
-        $ownerObjects = if ($null -ne $PreFetchedOwners) {
-            $PreFetchedOwners
+        # A failed lookup is written in the Owners column: an empty value must mean "no owner"
+        if ($null -ne $PreFetchedOwners) {
+            $ownerObjects = $PreFetchedOwners
         }
         else {
-            Get-MgServicePrincipalOwner -ServicePrincipalId $samlApp.Id -ErrorAction SilentlyContinue
+            try {
+                $ownerObjects = @((Invoke-MgGraphRequest -Uri "/v1.0/servicePrincipals/$($samlApp.Id)/owners?`$select=id,displayName" -Method GET -OutputType PSObject -ErrorAction Stop).value)
+            }
+            catch {
+                $ownerString = "Error: $($_.Exception.Message)"
+                Write-Warning "Could not read the owners of '$($samlApp.DisplayName)': $($_.Exception.Message)"
+            }
         }
 
-        # Build owners string: DisplayName for each owner, joined with '|'
-        # SDK objects expose properties via AdditionalProperties; raw $batch JSON exposes them directly
+        # Build owners string: DisplayName for each owner (Id when it has none), joined with '|'
         if ($ownerObjects) {
             $ownerString = ($ownerObjects | ForEach-Object {
-                    $ownerDisplayName = if ($_.PSObject.Properties['AdditionalProperties'] -and $_.AdditionalProperties.ContainsKey('displayName')) {
-                        $_.AdditionalProperties['displayName']
-                    }
-                    elseif ($_.PSObject.Properties['displayName']) {
-                        $_.displayName
-                    }
-
-                    if ([string]::IsNullOrEmpty($ownerDisplayName)) { $_.Id } else { $ownerDisplayName }
+                    $ownerDisplayName = if ($_ -is [System.Collections.IDictionary]) { $_['displayName'] } else { $_.displayName }
+                    $ownerId = if ($_ -is [System.Collections.IDictionary]) { $_['id'] } else { $_.id }
+                    if ([string]::IsNullOrEmpty($ownerDisplayName)) { $ownerId } else { $ownerDisplayName }
                 }) -join '|'
         }
         
@@ -461,78 +495,92 @@ function Get-MgApplicationSAML {
             }
         }
 
-        # Iterate over all signing certificates (KeyCredentials with Usage 'Sign')
-        $signingCerts = $samlApp.KeyCredentials | Where-Object { $_.Usage -eq 'Sign' }
+        # The service provider's certificates are on the app registration: verification (Usage 'Verify')
+        # and token encryption (Usage 'Encrypt'). Not found (404): the app registration lives in another
+        # tenant, there is nothing to read.
+        $appRegistration = $null
+        try {
+            $appRegistration = Invoke-MgGraphRequest -Uri "/v1.0/applications(appId='$($samlApp.AppId)')?`$select=id,keyCredentials,tokenEncryptionKeyId,requestSignatureVerification" -Method GET -OutputType PSObject -ErrorAction Stop
+        }
+        catch {
+            if ($_.Exception.Message -notmatch 'NotFound|404|does not exist') {
+                Write-Warning "Could not read the app registration of '$($samlApp.DisplayName)': $($_.Exception.Message)"
+                $recommendation = (@($recommendation, "App registration not read: $($_.Exception.Message)") | Where-Object { $_ }) -join ' | '
+            }
+        }
+        $signedRequestsRequired = if ($appRegistration) { $appRegistration.requestSignatureVerification.isSignedRequestRequired -eq $true } else { $null }
+
+        $now = Get-Date
+        $newCertificateRow = {
+            param($Type, $IsActive, $Certificate, $EndDate)
+            $endTime = if ($EndDate) { [datetime]$EndDate } else { $null }
+            $startTime = if ($Certificate -and $Certificate.startDateTime) { [datetime]$Certificate.startDateTime } else { $null }
+            $row = [PSCustomObject][ordered]@{
+                DisplayName                = $samlApp.DisplayName
+                Recommendation             = $recommendation
+                Id                         = $samlApp.Id
+                AppId                      = $samlApp.AppId
+                EntraUrl                   = "https://entra.microsoft.com/#view/Microsoft_AAD_IAM/ManagedAppMenuBlade/~/Overview/objectId/$($samlApp.Id)/appId/$($samlApp.AppId)"
+                LoginUrl                   = $samlApp.LoginUrl
+                LogoutUrl                  = $samlApp.LogoutUrl
+                NotificationEmailAddresses = $samlApp.NotificationEmailAddresses -join '|'
+                AppRoleAssignmentRequired  = $samlApp.AppRoleAssignmentRequired
+                PreferredSingleSignOnMode  = $samlApp.PreferredSingleSignOnMode
+                SignedRequestsRequired     = $signedRequestsRequired
+                CertificateType            = $Type
+                CertificateIsActive        = $IsActive
+                CertificateDisplayName     = if ($Certificate) { $Certificate.displayName } else { $null }
+                CertificateKeyId           = if ($Certificate) { $Certificate.keyId } else { $null }
+                CertificateStartTime       = $startTime
+                CertificateEndTime         = $endTime
+                CertificateValid           = if ($endTime) { $endTime -gt $now } else { $null }
+                CertificateExpiresInDays   = if ($endTime) { [int](New-TimeSpan -Start $now -End $endTime).TotalDays } else { $null }
+                ReplyUrls                  = $samlApp.ReplyUrls -join '|'
+                SignInAudience             = $samlApp.SignInAudience
+                Owners                     = $ownerString
+            }
+            if ($IncludeSignInStats -or $AuditLogPermissionMissing) {
+                $row | Add-Member -MemberType NoteProperty -Name InteractiveSignInsLast30Days -Value $signInCount
+            }
+            $row
+        }
+
+        # SAML signing certificates (service principal, Usage 'Sign'). The active one is the one of
+        # preferredTokenSigningKeyThumbprint (customKeyIdentifier is that thumbprint in base64), or else
+        # the one ending at preferredTokenSigningKeyEndDateTime. With neither, every one counts as active.
+        $signingCerts = @($samlApp.KeyCredentials | Where-Object { $_.Usage -eq 'Sign' })
+        $preferredThumbprint = "$($samlApp.PreferredTokenSigningKeyThumbprint)".ToUpperInvariant()
+        $preferredEnd = if ($samlApp.PreferredTokenSigningKeyEndDateTime) { [datetime]$samlApp.PreferredTokenSigningKeyEndDateTime } else { $null }
 
         if ($signingCerts) {
             foreach ($cert in $signingCerts) {
-                # Identify the currently active/preferred certificate by matching its expiry date
-                $isPreferred = $null -ne $cert.EndDateTime -and
-                               $null -ne $samlApp.PreferredTokenSigningKeyEndDateTime -and
-                               [datetime]$cert.EndDateTime -eq [datetime]$samlApp.PreferredTokenSigningKeyEndDateTime
-
-                $object = [PSCustomObject][ordered]@{
-                    DisplayName                         = $samlApp.DisplayName
-                    Recommendation                      = $recommendation
-                    Id                                  = $samlApp.Id
-                    AppId                               = $samlApp.AppId
-                    EntraUrl                            = "https://entra.microsoft.com/#view/Microsoft_AAD_IAM/ManagedAppMenuBlade/~/Overview/objectId/$($samlApp.Id)/appId/$($samlApp.AppId)"
-                    LoginUrl                            = $samlApp.LoginUrl
-                    LogoutUrl                           = $samlApp.LogoutUrl
-                    NotificationEmailAddresses          = $samlApp.NotificationEmailAddresses -join '|'
-                    AppRoleAssignmentRequired           = $samlApp.AppRoleAssignmentRequired
-                    PreferredSingleSignOnMode           = $samlApp.PreferredSingleSignOnMode
-                    SamlSigningCertificateIsPreferred   = $isPreferred
-                    SamlSigningCertificateDisplayName   = $cert.DisplayName
-                    SamlSigningCertificateKeyId         = $cert.KeyId
-                    SamlSigningCertificateStartTime     = $cert.StartDateTime
-                    SamlSigningCertificateEndTime       = $cert.EndDateTime
-                    # EndDateTime compared to now to check validity
-                    SamlSigningCertificateValid         = $cert.EndDateTime -gt (Get-Date)
-                    SamlSigningCertificateExpiresInDays = if ($cert.EndDateTime) { [int](New-TimeSpan -Start (Get-Date) -End $cert.EndDateTime).TotalDays } else { $null }
-                    ReplyUrls                           = $samlApp.ReplyUrls -join '|'
-                    SignInAudience                      = $samlApp.SignInAudience
-                    Owners                              = $ownerString
+                $certThumbprint = $null
+                try { $certThumbprint = [System.BitConverter]::ToString([Convert]::FromBase64String("$($cert.CustomKeyIdentifier)")).Replace('-', '') } catch { $certThumbprint = $null }
+                $isActive = if ($preferredThumbprint) {
+                    $certThumbprint -eq $preferredThumbprint
                 }
-
-                if ($IncludeSignInStats -or $AuditLogPermissionMissing) {
-                    $object | Add-Member -MemberType NoteProperty -Name InteractiveSignInsLast30Days -Value $signInCount
+                elseif ($preferredEnd) {
+                    $null -ne $cert.EndDateTime -and [datetime]$cert.EndDateTime -eq $preferredEnd
                 }
-
-                $object
+                else {
+                    $true
+                }
+                & $newCertificateRow 'SAML signing' $isActive $cert $cert.EndDateTime
             }
         }
         else {
             # No signing KeyCredentials found - fall back to PreferredTokenSigningKeyEndDateTime
-            $object = [PSCustomObject][ordered]@{
-                DisplayName                         = $samlApp.DisplayName
-                Recommendation                      = $recommendation
-                Id                                  = $samlApp.Id
-                AppId                               = $samlApp.AppId
-                EntraUrl                            = "https://entra.microsoft.com/#view/Microsoft_AAD_IAM/ManagedAppMenuBlade/~/Overview/objectId/$($samlApp.Id)/appId/$($samlApp.AppId)"
-                LoginUrl                            = $samlApp.LoginUrl
-                LogoutUrl                           = $samlApp.LogoutUrl
-                NotificationEmailAddresses          = $samlApp.NotificationEmailAddresses -join '|'
-                AppRoleAssignmentRequired           = $samlApp.AppRoleAssignmentRequired
-                PreferredSingleSignOnMode           = $samlApp.PreferredSingleSignOnMode
-                SamlSigningCertificateIsPreferred   = $null
-                SamlSigningCertificateDisplayName   = $null
-                SamlSigningCertificateKeyId         = $null
-                SamlSigningCertificateStartTime     = $null
-                SamlSigningCertificateEndTime       = $samlApp.PreferredTokenSigningKeyEndDateTime
-                # PreferredTokenSigningKeyEndDateTime compared to now to check validity
-                SamlSigningCertificateValid         = $samlApp.PreferredTokenSigningKeyEndDateTime -gt (Get-Date)
-                SamlSigningCertificateExpiresInDays = if ($samlApp.PreferredTokenSigningKeyEndDateTime) { [int](New-TimeSpan -Start (Get-Date) -End $samlApp.PreferredTokenSigningKeyEndDateTime).TotalDays } else { $null }
-                ReplyUrls                           = $samlApp.ReplyUrls -join '|'
-                SignInAudience                      = $samlApp.SignInAudience
-                Owners                              = $ownerString
-            }
+            & $newCertificateRow 'SAML signing' $null $null $samlApp.PreferredTokenSigningKeyEndDateTime
+        }
 
-            if ($IncludeSignInStats -or $AuditLogPermissionMissing) {
-                $object | Add-Member -MemberType NoteProperty -Name InteractiveSignInsLast30Days -Value $signInCount
+        if ($appRegistration) {
+            foreach ($cert in @($appRegistration.keyCredentials | Where-Object { $_.usage -eq 'Verify' })) {
+                & $newCertificateRow 'SAML verification' $signedRequestsRequired $cert $cert.endDateTime
             }
-
-            $object
+            foreach ($cert in @($appRegistration.keyCredentials | Where-Object { $_.usage -eq 'Encrypt' })) {
+                $isActive = -not [string]::IsNullOrEmpty($appRegistration.tokenEncryptionKeyId) -and $cert.keyId -eq $appRegistration.tokenEncryptionKeyId
+                & $newCertificateRow 'Token encryption' $isActive $cert $cert.endDateTime
+            }
         }
     }
 
@@ -553,7 +601,7 @@ function Get-MgApplicationSAML {
         $samlApplicationsCount = @($samlApplications).Count
         foreach ($samlApp in $samlApplications) {
             $appCounter++
-            # A failed/missing batch response passes $null: the scriptblock then falls back to Get-MgServicePrincipalOwner
+            # A failed/missing batch response passes $null: the scriptblock then reads the owners itself
             $ownersResponse = $ownersResponses["$($samlApp.Id)"]
             $preFetchedOwners = if ($ownersResponse -and $ownersResponse.status -eq 200) { @($ownersResponse.body.value) } else { $null }
 
@@ -569,7 +617,6 @@ function Get-MgApplicationSAML {
         $inclStats = $IncludeSignInStats.IsPresent
         $parallelResults = $samlApplications | ForEach-Object -ThrottleLimit $ThrottleLimit -Parallel {
             Import-Module Microsoft.Graph.Authentication -ErrorAction SilentlyContinue
-            Import-Module Microsoft.Graph.Beta.Applications -ErrorAction SilentlyContinue
             $sb = [scriptblock]::Create($using:processText)
             & $sb $_ '' $using:inclStats $using:auditLogPermissionMissing $using:signInStartDate
         }
@@ -594,7 +641,7 @@ function Get-MgApplicationSAML {
         # standalone deployments (e.g. Azure Automation runbook) where the module is not available.
         # Keep the fallback in sync with ModuleVersion in PS365.psd1.
         $ps365Module = Get-Module -Name 'PS365' -ErrorAction SilentlyContinue
-        $ps365Version = if ($ps365Module) { $ps365Module.Version } else { '0.4.3' }
+        $ps365Version = if ($ps365Module) { $ps365Module.Version } else { '0.5.5' }
         $ps365VersionDisplay = " (PS365 v$ps365Version)"
 
         # Human-readable execution duration for the report footer (e.g. '4 min 32 s' or '45 s')
@@ -606,35 +653,31 @@ function Get-MgApplicationSAML {
             '{0} s' -f [int][Math]::Ceiling($executionElapsed.TotalSeconds)
         }
 
-        # Only the active signing certificates raise an alert. An inactive one
-        # (an old certificate left on the app, or a new one not yet switched to)
-        # signs nothing. An app with no certificate flagged as preferred keeps
-        # all its rows, so nothing is hidden when the preferred date is missing.
-        $appIdsWithPreferred = @($samlApplicationsArray | Where-Object { $_.SamlSigningCertificateIsPreferred -eq $true } | ForEach-Object { $_.Id })
-        $activeCertificates = @($samlApplicationsArray | Where-Object {
-                -not ($_.SamlSigningCertificateIsPreferred -eq $false -and $appIdsWithPreferred -contains $_.Id)
-            })
+        # Only the certificates in use raise an alert. An inactive one (an old signing
+        # certificate left on the app, an encryption certificate not selected, a verification
+        # certificate while signed requests are not required) breaks nothing when it expires.
+        $activeCertificates = @($samlApplicationsArray | Where-Object { $_.CertificateIsActive -ne $false })
 
         $expiringCertificates = $activeCertificates | Where-Object {
-            $null -ne $_.SamlSigningCertificateExpiresInDays -and
-            $_.SamlSigningCertificateExpiresInDays -le $ExpirationThresholdDays
+            $null -ne $_.CertificateExpiresInDays -and
+            $_.CertificateExpiresInDays -le $ExpirationThresholdDays
         }
 
         # Calculate statistics for different expiration categories
         $halfThreshold = [int]($ExpirationThresholdDays / 2)
         $expiredCertificates = $activeCertificates | Where-Object {
-            $null -ne $_.SamlSigningCertificateExpiresInDays -and $_.SamlSigningCertificateExpiresInDays -le 0
+            $null -ne $_.CertificateExpiresInDays -and $_.CertificateExpiresInDays -le 0
         }
         $certificatesExpiringCritical = $activeCertificates | Where-Object {
-            $null -ne $_.SamlSigningCertificateExpiresInDays -and $_.SamlSigningCertificateExpiresInDays -le $halfThreshold -and $_.SamlSigningCertificateExpiresInDays -gt 0
+            $null -ne $_.CertificateExpiresInDays -and $_.CertificateExpiresInDays -le $halfThreshold -and $_.CertificateExpiresInDays -gt 0
         }
         $certificatesExpiringWarning = $activeCertificates | Where-Object {
-            $null -ne $_.SamlSigningCertificateExpiresInDays -and $_.SamlSigningCertificateExpiresInDays -le $ExpirationThresholdDays -and $_.SamlSigningCertificateExpiresInDays -gt 0
+            $null -ne $_.CertificateExpiresInDays -and $_.CertificateExpiresInDays -le $ExpirationThresholdDays -and $_.CertificateExpiresInDays -gt 0
         }
 
         Write-Verbose "Sending notification email. Found $($expiringCertificates.Count) SAML certificates expiring within $ExpirationThresholdDays days."
 
-        $expiringCertificates = $expiringCertificates | Sort-Object SamlSigningCertificateExpiresInDays
+        $expiringCertificates = $expiringCertificates | Sort-Object CertificateExpiresInDays
 
         $emailBody = @"
 <!DOCTYPE html>
@@ -788,6 +831,7 @@ function Get-MgApplicationSAML {
         <tr>
             <th>Application</th>
             <th>App ID</th>
+            <th>Certificate</th>
             <th>Expires In (Days)</th>
             <th>Expiry Date</th>
             <th>Login URL</th>
@@ -797,13 +841,13 @@ function Get-MgApplicationSAML {
 "@
 
         foreach ($cert in $expiringCertificates) {
-            $rowClass = if ($cert.SamlSigningCertificateExpiresInDays -le 0) { 'critical' } elseif ($cert.SamlSigningCertificateExpiresInDays -le $halfThreshold) { 'warning' } else { 'caution' }
-            $expiresInDaysDisplay = if ($cert.SamlSigningCertificateExpiresInDays -lt 0) { "$($cert.SamlSigningCertificateExpiresInDays) (already expired)" } else { $cert.SamlSigningCertificateExpiresInDays }
+            $rowClass = if ($cert.CertificateExpiresInDays -le 0) { 'critical' } elseif ($cert.CertificateExpiresInDays -le $halfThreshold) { 'warning' } else { 'caution' }
+            $expiresInDaysDisplay = if ($cert.CertificateExpiresInDays -lt 0) { "$($cert.CertificateExpiresInDays) (already expired)" } else { $cert.CertificateExpiresInDays }
             $appLink = "<strong style=`"color:#11100f;font-size:12px;line-height:16px;`">$($cert.DisplayName)</strong> <a href=`"$($cert.EntraUrl)`" style=`"text-decoration:none;font-size:14px;line-height:16px;`" title=`"Open in Entra`">&#x1F517;</a>"
             $ownersList = @($cert.Owners -split '\|' | Where-Object { $_ })
             $ownersHtml = if ($ownersList.Count -gt 1) { ($ownersList | ForEach-Object { "- $_" }) -join '<br>' } else { $ownersList -join '' }
             $signInsHtml = if ($IncludeSignInStats.IsPresent -or $auditLogPermissionMissing) { "<td>$($cert.InteractiveSignInsLast30Days)</td>" } else { '' }
-            $emailBody += "<tr class=`"$rowClass`"><td>$appLink</td><td>$($cert.AppId)</td><td><strong>$expiresInDaysDisplay</strong></td><td>$($cert.SamlSigningCertificateEndTime)</td><td>$($cert.LoginUrl)</td><td>$ownersHtml</td>$signInsHtml</tr>"
+            $emailBody += "<tr class=`"$rowClass`"><td>$appLink</td><td>$($cert.AppId)</td><td>$($cert.CertificateType)</td><td><strong>$expiresInDaysDisplay</strong></td><td>$($cert.CertificateEndTime)</td><td>$($cert.LoginUrl)</td><td>$ownersHtml</td>$signInsHtml</tr>"
         }
 
         if ($expiringCertificates.Count -eq 0) {
