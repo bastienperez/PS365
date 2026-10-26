@@ -223,7 +223,8 @@ function Get-MgLAPSPassword {
 
     if ($PSBoundParameters.ContainsKey('DeviceName')) {
         Write-Verbose "Resolving device name '$DeviceName' to Entra ID object ID..."
-        $mgDevice = Get-MgDevice -Filter "displayName eq '$(ConvertTo-ODataEscapedString -Value $DeviceName)'" -ErrorAction Stop | Select-Object -First 1
+        $deviceFilter = [System.Uri]::EscapeDataString("displayName eq '$(ConvertTo-ODataEscapedString -Value $DeviceName)'")
+        $mgDevice = (Invoke-MgGraphRequest -Method GET -Uri "/v1.0/devices?`$filter=$deviceFilter" -OutputType PSObject -ErrorAction Stop).value | Select-Object -First 1
         if (-not $mgDevice) {
             Write-Warning "No device found with display name '$DeviceName'"
             return

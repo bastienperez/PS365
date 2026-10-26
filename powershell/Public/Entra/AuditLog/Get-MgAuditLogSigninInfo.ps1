@@ -240,7 +240,7 @@ function Get-MgAuditLogSigninInfo {
 
     [System.Collections.Generic.List[string]]$requiredScopes = @('AuditLog.Read.All')
     if ($LastLogonOnly.IsPresent) {
-        # Get-MgUser -Property SignInActivity also requires User.Read.All
+        # Reading the users' signInActivity also requires User.Read.All
         $requiredScopes.Add('User.Read.All')
     }
 
@@ -257,13 +257,11 @@ function Get-MgAuditLogSigninInfo {
     }
 
     try {
-        $null = Get-MgBetaAuditLogSignIn -Top 1 -ErrorAction stop
+        $null = Invoke-MgGraphRequest -Method GET -Uri '/beta/auditLogs/signIns?$top=1' -OutputType PSObject -ErrorAction Stop
     }
     catch {
-        if ($_.Exception.ErrorContent.Code) {
-            Write-Warning "Unable to get MgBetaAuditLogSignIn: $($_.Exception.Message)"
-            return
-        }
+        Write-Warning "Unable to get the sign-in logs: $($_.Exception.Message)"
+        return
     }
 
     $signsInList = [System.Collections.Generic.List[PSObject]]::new()
@@ -440,7 +438,7 @@ function Get-MgAuditLogSigninInfo {
     }    
 
     if ($LastLogonOnly) {
-        $mgUsers = Get-MgUser -All -Property SignInActivity
+        $mgUsers = Invoke-MgGraphPagedRequest -Uri '/v1.0/users?$select=signInActivity'
 
         foreach ($mgUser in $mgUsers) {
             $mgUser.UserPrincipalName
@@ -526,14 +524,15 @@ function Get-MgAuditLogSigninInfo {
         $filter += " and (authenticationRequirement eq 'multiFactorAuthentication')"
     }
 
+    $signInsUri = "/beta/auditLogs/signIns?`$filter=$([System.Uri]::EscapeDataString($filter))"
     if ($LastXSignIns) {
-        Write-Verbose "Get-MgBetaAuditLogSignIn -Top: $LastXSignIns -Filter $filter"
-        $signsIn = Get-MgBetaAuditLogSignIn -Top $LastXSignIns -Filter $filter
+        Write-Verbose "GET beta/auditLogs/signIns top $LastXSignIns, filter $filter"
+        $signsIn = Invoke-MgGraphPagedRequest -Uri "$signInsUri&`$top=$LastXSignIns" -FirstPageOnly
     }
     else {
-        Write-Verbose "Get-MgBetaAuditLogSignIn -All:`$true -Filter $filter"
+        Write-Verbose "GET beta/auditLogs/signIns (all pages), filter $filter"
 
-        $signsIn = Get-MgBetaAuditLogSignIn -All:$true -Filter $filter
+        $signsIn = Invoke-MgGraphPagedRequest -Uri $signInsUri
     }
     
     Write-Verbose "Filter is $filter"
@@ -713,7 +712,7 @@ function Get-MgAuditLogSigninInfo {
 
 #to do - organize properties better
 <#
-    $mgUsers = Get-MgUser -ConsistencyLevel eventual -All -Property @(
+    $mgUsers = Invoke-MgGraphPagedRequest -Headers @{ ConsistencyLevel = 'eventual' } -Uri ('/v1.0/users?$select=' + (@(
         'UserPrincipalName',
         'AccountEnabled',
         'UserType'
@@ -732,7 +731,7 @@ function Get-MgAuditLogSigninInfo {
         'CreationType',
         'ExternalUserState',
         'ExternalUserStateChangeDateTime'
-    ) | Select-Object @(
+    ) -join ',')) | Select-Object @(
         'UserPrincipalName',
         'AccountEnabled',
         'UserType',

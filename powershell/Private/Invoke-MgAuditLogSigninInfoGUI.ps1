@@ -41,8 +41,8 @@ function Invoke-MgAuditLogSigninInfoGUI {
 
     try {
         $splash.Update('Loading Conditional Access Policies...')
-        $caps = Get-MgIdentityConditionalAccessPolicy -All -ErrorAction Stop |
-            Select-Object DisplayName, Id, State |
+        $caps = Invoke-MgGraphPagedRequest -Uri '/v1.0/identity/conditionalAccess/policies' -ErrorAction Stop |
+            Select-Object @{ Name = 'DisplayName'; Expression = { $_.displayName } }, @{ Name = 'Id'; Expression = { $_.id } }, @{ Name = 'State'; Expression = { $_.state } } |
             Sort-Object DisplayName
         if ($caps) { $caps | ForEach-Object { $capList.Add($_) } }
     }
@@ -396,8 +396,8 @@ function Invoke-MgAuditLogSigninInfoGUI {
     $capRefreshButton.Add_Click({
             $window.Cursor = [System.Windows.Input.Cursors]::Wait
             try {
-                $cps = Get-MgIdentityConditionalAccessPolicy -All -ErrorAction Stop |
-                    Select-Object DisplayName, Id, State |
+                $cps = Invoke-MgGraphPagedRequest -Uri '/v1.0/identity/conditionalAccess/policies' -ErrorAction Stop |
+                    Select-Object @{ Name = 'DisplayName'; Expression = { $_.displayName } }, @{ Name = 'Id'; Expression = { $_.id } }, @{ Name = 'State'; Expression = { $_.state } } |
                     Sort-Object DisplayName
                 $capList.Clear()
                 foreach ($c in $cps) { $capList.Add($c) }

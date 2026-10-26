@@ -384,7 +384,7 @@ function Get-DynamicGroup {
         Write-Verbose 'Retrieving Entra ID Dynamic Groups...'
         if ([string]::IsNullOrWhitespace($GroupId) -eq $false) {
             try {
-                $entraGroups = @(Get-MgGroup -GroupId $GroupId -ErrorAction Stop)
+                $entraGroups = @(Invoke-MgGraphPagedRequest -Uri "/v1.0/groups/$GroupId" -ErrorAction Stop)
                 if ($entraGroups.groupTypes -notcontains 'DynamicMembership') {
                     Write-Error "The specified GroupId $GroupId is not a dynamic group."
                     return
@@ -397,7 +397,8 @@ function Get-DynamicGroup {
         }
         else {
             try {
-                $entraGroups = Get-MgGroup -All -Filter "groupTypes/any(c:c eq 'DynamicMembership')" -ErrorAction Stop
+                $dynamicFilter = [System.Uri]::EscapeDataString("groupTypes/any(c:c eq 'DynamicMembership')")
+                $entraGroups = Invoke-MgGraphPagedRequest -Uri "/v1.0/groups?`$filter=$dynamicFilter" -ErrorAction Stop
                 Write-Verbose "Found $($entraGroups.Count) Entra ID Dynamic Groups"
             }
             catch {
@@ -449,12 +450,14 @@ function Get-DynamicGroup {
             $entraCounter++
             Write-Verbose "[$entraCounter/$entraTotal] Processing Entra ID group: $($group.DisplayName)"
             try { 
-                $memberOf = Get-MgGroupMemberOf -GroupId $group.Id -ErrorAction SilentlyContinue
+                # First page only, as the SDK cmdlet without -All did
+                $memberOf = Invoke-MgGraphPagedRequest -Uri "/v1.0/groups/$($group.Id)/memberOf" -FirstPageOnly -ErrorAction Stop
 
-                $memberOf = ($memberOf | Where-Object { $_.AdditionalProperties.'@odata.type' -eq '#microsoft.graph.group' } | 
-                    ForEach-Object { $_.AdditionalProperties.displayName }) -join '|'
+                $memberOf = ($memberOf | Where-Object { $_.'@odata.type' -eq '#microsoft.graph.group' } | 
+                    ForEach-Object { $_.displayName }) -join '|'
             }
             catch { 
+                Write-Warning "Could not read the groups that $($group.DisplayName) is a member of: $($_.Exception.Message)"
                 $memberOf = $null 
             }
 
@@ -502,7 +505,7 @@ function Get-DynamicGroup {
 
             try {
                 if ($MemberReport.IsPresent -or $IncludeMembers.IsPresent) {
-                    $mgMembers = @(Get-MgGroupMember -GroupId $group.Id -All -PageSize 999 -ErrorAction Stop)
+                    $mgMembers = @(Invoke-MgGraphPagedRequest -Uri "/v1.0/groups/$($group.Id)/members?`$top=999" -ErrorAction Stop)
                     $object.MembersCount = $mgMembers.Count
                     if ($MemberReport.IsPresent) {
                         foreach ($m in $mgMembers) {
@@ -512,14 +515,14 @@ function Get-DynamicGroup {
                                     GroupType         = $object.Type
                                     MembershipRule    = $object.MembershipRule
                                     MemberId          = $m.Id
-                                    MemberDisplayName = $m.AdditionalProperties['displayName']
-                                    MemberPrincipal   = $m.AdditionalProperties['userPrincipalName']
-                                    MemberType        = ($m.AdditionalProperties['@odata.type'] -replace '#microsoft\.graph\.', '')
+                                    MemberDisplayName = $m.displayName
+                                    MemberPrincipal   = $m.userPrincipalName
+                                    MemberType        = ($m.'@odata.type' -replace '#microsoft\.graph\.', '')
                                 })
                         }
                     }
                     else {
-                        $object.MembersName = ($mgMembers | ForEach-Object { $_.AdditionalProperties['displayName'] }) -join '|'
+                        $object.MembersName = ($mgMembers | ForEach-Object { $_.displayName }) -join '|'
                         $object.MembersId = ($mgMembers | ForEach-Object { $_.Id }) -join '|'
                     }
                 }
