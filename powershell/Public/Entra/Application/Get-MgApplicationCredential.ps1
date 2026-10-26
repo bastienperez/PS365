@@ -187,30 +187,37 @@ function Get-MgApplicationCredential {
             Write-Error 'ExpirationThresholdDays must be greater than 0 when RunFromAzureAutomation is enabled.'
             return
         }
+    }
 
-        try {
-            Import-Module 'Microsoft.Graph.Users.Actions' -ErrorAction Stop -ErrorVariable mgGraphMailMissing
-        }
-        catch {
-            if ($mgGraphMailMissing) {
-                Write-Warning "Failed to import Microsoft.Graph.Users.Actions module: $($mgGraphMailMissing.Exception.Message)"
+    # Microsoft Graph GET through Invoke-MgGraphRequest, following @odata.nextLink.
+    # Self-contained (no PS365 private helper) so the script also runs standalone in an Azure Automation runbook.
+    # Throws on error.
+    $getGraphItems = {
+        param([string]$Uri)
+        $nextLink = $Uri
+        while ($nextLink) {
+            try {
+                $page = Invoke-MgGraphRequest -Uri $nextLink -Method GET -OutputType PSObject -ErrorAction Stop
             }
-
-            return
+            catch {
+                # Same message as the SDK cmdlets: the Graph error code and message from the JSON body
+                if ([string]$_.ErrorDetails.Message -match '(?s)(\{"error".*\})\s*$') {
+                    $graphError = ($Matches[1] | ConvertFrom-Json -ErrorAction SilentlyContinue).error
+                    if ($graphError) {
+                        throw [System.Exception]::new("[$($graphError.code)] : $($graphError.message)", $_.Exception)
+                    }
+                }
+                throw
+            }
+            if ($null -ne $page.PSObject.Properties['value'] -and [string]$page.'@odata.context' -notmatch '/\$entity$') {
+                foreach ($item in $page.value) { $item }
+                $nextLink = $page.'@odata.nextLink'
+            }
+            else {
+                $page
+                $nextLink = $null
+            }
         }
-    }
-
-    try {
-        # for Get-MgApplication/Get-MgApplicationOwner
-        Import-Module 'Microsoft.Graph.Applications' -ErrorAction Stop -ErrorVariable mgGraphAppsMissing
-        # for Send-MgMail (when RunFromAzureAutomation is enabled)
-    }
-    catch {
-        if ($mgGraphAppsMissing) {
-            Write-Warning "Failed to import Microsoft.Graph.Applications module: $($mgGraphAppsMissing.Exception.Message)"
-        }
-
-        return
     }
 
     $isConnected = $false
@@ -273,7 +280,13 @@ function Get-MgApplicationCredential {
 
     # Determine how to search for the Application(s): by ObjectID (GUID), by DisplayName, or all
     if ($ObjectID) {
-        $mgApps = Get-MgApplication -ApplicationId $ObjectID
+        try {
+            $mgApps = & $getGraphItems "/v1.0/applications/$ObjectID"
+        }
+        catch {
+            Write-Error -ErrorRecord $_
+            $mgApps = $null
+        }
     }
     elseif ($DisplayName) {
         if ($DisplayName -match '[*?]') {
@@ -295,7 +308,14 @@ function Get-MgApplicationCredential {
             $matchingIds = ($candidateItems | Where-Object { $_.displayName -like $DisplayName }).id
 
             if ($matchingIds) {
-                $mgApps = @($matchingIds | ForEach-Object { Get-MgApplication -ApplicationId $_ })
+                $mgApps = @($matchingIds | ForEach-Object {
+                        try {
+                            & $getGraphItems "/v1.0/applications/$_"
+                        }
+                        catch {
+                            Write-Error -ErrorRecord $_
+                        }
+                    })
                 Write-Verbose "Found $($mgApps.Count) application(s) matching wildcard pattern '$DisplayName'"
             }
             else {
@@ -307,13 +327,13 @@ function Get-MgApplicationCredential {
             $escaped = $DisplayName -replace "'", "''"
             $filter = "DisplayName eq '$escaped'"
             Write-Verbose "Filtering applications with: $filter"
-            $mgApps = Get-MgApplication -Filter $filter -All
+            $mgApps = & $getGraphItems "/v1.0/applications?`$filter=$([System.Uri]::EscapeDataString($filter))"
 
             # If no exact match found, try to find apps where trimmed DisplayName matches
             if (-not $mgApps) {
                 Write-Verbose "No exact match found. Searching for apps with trimmed DisplayName matching '$DisplayName'..."
                 $filter = "startswith(DisplayName, '$escaped')"
-                $candidateApps = Get-MgApplication -Filter $filter -All
+                $candidateApps = & $getGraphItems "/v1.0/applications?`$filter=$([System.Uri]::EscapeDataString($filter))"
 
                 # Filter in PowerShell to find apps where trimmed name matches
                 $mgApps = $candidateApps | Where-Object { $_.DisplayName.Trim() -eq $DisplayName }
@@ -325,7 +345,7 @@ function Get-MgApplicationCredential {
         }
     }
     else {
-        $mgApps = Get-MgApplication -All
+        $mgApps = & $getGraphItems '/v1.0/applications'
     }
 
     if (-not $mgApps) {
@@ -350,17 +370,19 @@ function Get-MgApplicationCredential {
             $PreFetchedOwners
         }
         else {
-            Get-MgApplicationOwner -ApplicationId $mgApp.Id -ErrorAction SilentlyContinue
+            # First page of owners. Self-contained call: this scriptblock also runs in parallel runspaces.
+            try {
+                (Invoke-MgGraphRequest -Uri "/v1.0/applications/$($mgApp.Id)/owners" -Method GET -OutputType PSObject -ErrorAction Stop).value
+            }
+            catch {
+                Write-Warning "Could not read the owners of '$($mgApp.DisplayName)': $($_.Exception.Message)"
+            }
         }
 
         # Build owners string: DisplayName for each owner, joined with '|'
-        # SDK objects expose properties via AdditionalProperties; raw $batch JSON exposes them directly
         if ($ownerObjects) {
             $ownerString = ($ownerObjects | ForEach-Object {
-                    $ownerDisplayName = if ($_.PSObject.Properties['AdditionalProperties'] -and $_.AdditionalProperties.ContainsKey('displayName')) {
-                        $_.AdditionalProperties['displayName']
-                    }
-                    elseif ($_.PSObject.Properties['displayName']) {
+                    $ownerDisplayName = if ($_.PSObject.Properties['displayName']) {
                         $_.displayName
                     }
 
@@ -433,7 +455,7 @@ function Get-MgApplicationCredential {
         $mgAppsCount = @($mgApps).Count
         foreach ($mgApp in $mgApps) {
             $i++
-            # A failed/missing batch response passes $null: the scriptblock then falls back to Get-MgApplicationOwner
+            # A failed/missing batch response passes $null: the scriptblock then reads the owners itself
             $ownersResponse = $ownersResponses["$($mgApp.Id)"]
             $preFetchedOwners = if ($ownersResponse -and $ownersResponse.status -eq 200) { @($ownersResponse.body.value) } else { $null }
 
@@ -448,7 +470,6 @@ function Get-MgApplicationCredential {
         $processText = $processApp.ToString()
         $parallelResults = $mgApps | ForEach-Object -ThrottleLimit $ThrottleLimit -Parallel {
             Import-Module Microsoft.Graph.Authentication -ErrorAction SilentlyContinue
-            Import-Module Microsoft.Graph.Applications -ErrorAction SilentlyContinue
             $sb = [scriptblock]::Create($using:processText)
             & $sb $_
         }
@@ -706,24 +727,31 @@ function Get-MgApplicationCredential {
 
         try {
             $params = @{
-                Message         = @{
-                    Subject      = $emailSubject
-                    Body         = @{
-                        ContentType = 'HTML'
-                        Content     = $emailBody
+                message         = @{
+                    subject      = $emailSubject
+                    body         = @{
+                        contentType = 'HTML'
+                        content     = $emailBody
                     }
-                    ToRecipients = @(
+                    toRecipients = @(
                         @{
-                            EmailAddress = @{
-                                Address = $NotificationRecipient
+                            emailAddress = @{
+                                address = $NotificationRecipient
                             }
                         }
                     )
                 }
-                SaveToSentItems = 'false'
+                saveToSentItems = $false
             }
-                
-            Send-MgUserMail -UserId $NotificationSender -BodyParameter $params
+
+            $mailParams = @{
+                Method      = 'POST'
+                Uri         = "/v1.0/users/$NotificationSender/sendMail"
+                Body        = ($params | ConvertTo-Json -Depth 10)
+                ContentType = 'application/json'
+                ErrorAction = 'Stop'
+            }
+            $null = Invoke-MgGraphRequest @mailParams
             Write-Host -ForegroundColor Green "Expiration notification email sent successfully to $NotificationRecipient"
         }
         catch {

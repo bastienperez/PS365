@@ -220,17 +220,6 @@ function Get-MgApplicationSAML {
             Write-Error 'ExpirationThresholdDays must be greater than 0 when RunFromAzureAutomation is enabled.'
             return
         }
-
-        try {
-            Import-Module 'Microsoft.Graph.Users.Actions' -ErrorAction Stop -ErrorVariable mgGraphMailMissing
-        }
-        catch {
-            if ($mgGraphMailMissing) {
-                Write-Warning "Failed to import Microsoft.Graph.Users.Actions module: $($mgGraphMailMissing.Exception.Message)"
-            }
-
-            return
-        }
     }
 
     try {
@@ -883,24 +872,31 @@ function Get-MgApplicationSAML {
 
         try {
             $params = @{
-                Message         = @{
-                    Subject      = $emailSubject
-                    Body         = @{
-                        ContentType = 'HTML'
-                        Content     = $emailBody
+                message         = @{
+                    subject      = $emailSubject
+                    body         = @{
+                        contentType = 'HTML'
+                        content     = $emailBody
                     }
-                    ToRecipients = @(
+                    toRecipients = @(
                         @{
-                            EmailAddress = @{
-                                Address = $NotificationRecipient
+                            emailAddress = @{
+                                address = $NotificationRecipient
                             }
                         }
                     )
                 }
-                SaveToSentItems = $false
+                saveToSentItems = $false
             }
 
-            Send-MgUserMail -UserId $NotificationSender -BodyParameter $params
+            $mailParams = @{
+                Method      = 'POST'
+                Uri         = "/v1.0/users/$NotificationSender/sendMail"
+                Body        = ($params | ConvertTo-Json -Depth 10)
+                ContentType = 'application/json'
+                ErrorAction = 'Stop'
+            }
+            $null = Invoke-MgGraphRequest @mailParams
             Write-Host -ForegroundColor Green "Expiration notification email sent successfully to $NotificationRecipient"
         }
         catch {

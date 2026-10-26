@@ -125,7 +125,7 @@
     LIMITATIONS
     The groups assignments are not retrieved because based on https://main.iam.ad.ext.azure.com
 
-    This function requires the Microsoft.Graph.Applications and Microsoft.Graph.Authentication modules.
+    This function requires the Microsoft.Graph.Authentication module.
 #>
 
 function Get-MgApplicationSCIM {
@@ -206,17 +206,6 @@ function Get-MgApplicationSCIM {
             return
         }
 
-        try {
-            Import-Module 'Microsoft.Graph.Users.Actions' -ErrorAction Stop -ErrorVariable mgGraphMailMissing
-        }
-        catch {
-            if ($mgGraphMailMissing) {
-                Write-Warning "Failed to import Microsoft.Graph.Users.Actions module: $($mgGraphMailMissing.Exception.Message)"
-            }
-
-            return
-        }
-
         # Only check module version if PowerShell < 7.4 (Azure Automation limitation)
         if ($PSVersionTable.PSVersion -lt [version]'7.4.0') {
             $mgAuth = Get-Module 'Microsoft.Graph.Authentication' -ListAvailable | Sort-Object Version -Descending | Select-Object -First 1
@@ -273,9 +262,46 @@ function Get-MgApplicationSCIM {
         Write-Verbose 'AuditLog.Read.All permission verified.'
     }
 
+    # Microsoft Graph GET through Invoke-MgGraphRequest, following @odata.nextLink.
+    # Self-contained (no PS365 private helper) so the script also runs standalone in an Azure Automation runbook.
+    # Throws on error.
+    $getGraphItems = {
+        param([string]$Uri)
+        $nextLink = $Uri
+        while ($nextLink) {
+            try {
+                $page = Invoke-MgGraphRequest -Uri $nextLink -Method GET -OutputType PSObject -ErrorAction Stop
+            }
+            catch {
+                # Same message as the SDK cmdlets: the Graph error code and message from the JSON body
+                if ([string]$_.ErrorDetails.Message -match '(?s)(\{"error".*\})\s*$') {
+                    $graphError = ($Matches[1] | ConvertFrom-Json -ErrorAction SilentlyContinue).error
+                    if ($graphError) {
+                        throw [System.Exception]::new("[$($graphError.code)] : $($graphError.message)", $_.Exception)
+                    }
+                }
+                throw
+            }
+            if ($null -ne $page.PSObject.Properties['value'] -and [string]$page.'@odata.context' -notmatch '/\$entity$') {
+                foreach ($item in $page.value) { $item }
+                $nextLink = $page.'@odata.nextLink'
+            }
+            else {
+                $page
+                $nextLink = $null
+            }
+        }
+    }
+
     # Determine how to search for the Service Principal(s): by ObjectID (GUID), by DisplayName, or all
     if ($ObjectID) {
-        $servicePrincipals = Get-MgServicePrincipal -ServicePrincipalId $ObjectID
+        try {
+            $servicePrincipals = & $getGraphItems "/v1.0/servicePrincipals/$ObjectID"
+        }
+        catch {
+            Write-Error -ErrorRecord $_
+            $servicePrincipals = $null
+        }
     }
     elseif ($DisplayName) {
         if ($DisplayName -match '[*?]') {
@@ -305,13 +331,13 @@ function Get-MgApplicationSCIM {
             $escaped = $DisplayName -replace "'", "''"
             $filter = "DisplayName eq '$escaped'"
             Write-Verbose "Filtering service principals with: $filter"
-            $servicePrincipals = Get-MgServicePrincipal -Filter $filter -All -Property DisplayName, Id
+            $servicePrincipals = & $getGraphItems "/v1.0/servicePrincipals?`$filter=$([System.Uri]::EscapeDataString($filter))&`$select=displayName,id"
 
             # If no exact match found, try to find apps where trimmed DisplayName matches
             if (-not $servicePrincipals) {
                 Write-Verbose "No exact match found. Searching for service principals with trimmed DisplayName matching '$DisplayName'..."
                 $filter = "startswith(DisplayName, '$escaped')"
-                $candidateSPs = Get-MgServicePrincipal -Filter $filter -All -Property DisplayName, Id
+                $candidateSPs = & $getGraphItems "/v1.0/servicePrincipals?`$filter=$([System.Uri]::EscapeDataString($filter))&`$select=displayName,id"
                 $servicePrincipals = $candidateSPs | Where-Object { $_.DisplayName.Trim() -eq $DisplayName }
 
                 if ($servicePrincipals) {
@@ -321,17 +347,72 @@ function Get-MgApplicationSCIM {
         }
     }
     else {
-        $servicePrincipals = Get-MgServicePrincipal -All -Property DisplayName, Id
+        $servicePrincipals = & $getGraphItems '/v1.0/servicePrincipals?$select=displayName,id'
     }
 
     Write-Host "$($servicePrincipals.Count) service principals found"
 
     # Per-service-principal processing. Returns the enriched synchronization job object, or nothing
     # if the service principal has no synchronization job. Shared by the sequential, parallel and batch
-    # paths: the batch path fetches the jobs upfront via the $batch endpoint and passes them as PreFetchedJobs
-    # (PowerShell property access is case-insensitive, so raw camelCase JSON jobs work with the same code).
+    # paths: the batch path fetches the jobs upfront via the $batch endpoint and passes them as PreFetchedJobs.
+    # Every path reads the raw Graph JSON (camelCase); the emitted job keeps the PascalCase shape of the
+    # former Microsoft Graph SDK object (BulkUpload, Id, Status, TemplateId...) so the output does not change.
     $processServicePrincipal = {
         param($servicePrincipal, $Prefix = '', $TemplateFilter = $null, $PreFetchedJobs = $null)
+
+        # Copies $Source into an ordered object with the given PascalCase property names, in that order.
+        # $Nested maps a property name to the property list of its own nested object (null becomes an
+        # object of nulls, like the SDK models did).
+        $toSdkShape = {
+            param($Source, [string[]]$Names, [hashtable]$Nested = @{})
+            $shaped = [ordered]@{}
+            foreach ($name in $Names) {
+                $value = if ($null -ne $Source) { $Source.$name } else { $null }
+                if ($Nested.ContainsKey($name)) {
+                    $value = & $toSdkShape $value $Nested[$name]
+                }
+                $shaped[$name] = $value
+            }
+            [PSCustomObject]$shaped
+        }
+
+        $errorNames = @('Code', 'Message', 'TenantActionable')
+        $executionNames = @('ActivityIdentifier', 'CountEntitled', 'CountEntitledForProvisioning', 'CountEscrowed', 'CountEscrowedRaw', 'CountExported', 'CountExports', 'CountImported', 'CountImportedDeltas', 'CountImportedReferenceDeltas', 'Error', 'State', 'TimeBegan', 'TimeEnded')
+
+        $toSdkJob = {
+            param($rawJob)
+            $rawStatus = $rawJob.status
+            $status = [ordered]@{
+                Code                               = $rawStatus.code
+                CountSuccessiveCompleteFailures    = $rawStatus.countSuccessiveCompleteFailures
+                EscrowsPruned                      = $rawStatus.escrowsPruned
+                LastExecution                      = & $toSdkShape $rawStatus.lastExecution $executionNames @{ Error = $errorNames }
+                LastSuccessfulExecution            = & $toSdkShape $rawStatus.lastSuccessfulExecution $executionNames @{ Error = $errorNames }
+                LastSuccessfulExecutionWithExports = & $toSdkShape $rawStatus.lastSuccessfulExecutionWithExports $executionNames @{ Error = $errorNames }
+                Progress                           = @($rawStatus.progress | ForEach-Object { & $toSdkShape $_ @('CompletedUnits', 'ProgressObservationDateTime', 'TotalUnits', 'Units') })
+                Quarantine                         = & $toSdkShape $rawStatus.quarantine @('CurrentBegan', 'Error', 'NextAttempt', 'Reason', 'SeriesBegan', 'SeriesCount') @{ Error = $errorNames }
+                SteadyStateFirstAchievedTime       = $rawStatus.steadyStateFirstAchievedTime
+                SteadyStateLastAchievedTime        = $rawStatus.steadyStateLastAchievedTime
+                SynchronizedEntryCountByType       = @($rawStatus.synchronizedEntryCountByType | ForEach-Object { & $toSdkShape $_ @('Key', 'Value') })
+                TroubleshootingUrl                 = $rawStatus.troubleshootingUrl
+            }
+
+            # The schedule interval is an ISO 8601 duration ('PT40M'): a TimeSpan, as the SDK returned it
+            $interval = $rawJob.schedule.interval
+            if ($interval -is [string] -and $interval) {
+                $interval = [System.Xml.XmlConvert]::ToTimeSpan($interval)
+            }
+
+            [ordered]@{
+                BulkUpload           = [PSCustomObject]@{ Id = $rawJob.bulkUpload.id }
+                Id                   = $rawJob.id
+                Schedule             = [PSCustomObject][ordered]@{ Expiration = $rawJob.schedule.expiration; Interval = $interval; State = $rawJob.schedule.state }
+                Schema               = $null
+                Status               = [PSCustomObject]$status
+                TemplateId           = $rawJob.templateId
+                AdditionalProperties = @{}
+            }
+        }
 
         Write-Host "$Prefix$($servicePrincipal.DisplayName): check for synchronization jobs" -ForegroundColor Cyan
 
@@ -339,7 +420,13 @@ function Get-MgApplicationSCIM {
             $PreFetchedJobs
         }
         else {
-            Get-MgServicePrincipalSynchronizationJob -ServicePrincipalId $servicePrincipal.Id -All
+            # Self-contained call: this scriptblock also runs in parallel runspaces
+            $jobsUri = "/v1.0/servicePrincipals/$($servicePrincipal.Id)/synchronization/jobs"
+            while ($jobsUri) {
+                $jobsPage = Invoke-MgGraphRequest -Uri $jobsUri -Method GET -OutputType PSObject
+                $jobsPage.value
+                $jobsUri = $jobsPage.'@odata.nextLink'
+            }
         }
 
         # Optionally keep only jobs matching the requested synchronization template IDs (e.g. Entra Cloud Sync)
@@ -356,6 +443,7 @@ function Get-MgApplicationSCIM {
 
         # A service principal can hold more than one synchronization job: process each one individually.
         foreach ($job in $jobs) {
+            $rawJobPropertyNames = @($job.PSObject.Properties.Name)
             $job | Add-Member -MemberType NoteProperty -Name ServicePrincipalId -Value $servicePrincipal.Id
             $job | Add-Member -MemberType NoteProperty -Name DisplayName -Value $servicePrincipal.DisplayName
             $job | Add-Member -MemberType NoteProperty -Name EntraUrl -Value "https://entra.microsoft.com/#view/Microsoft_AAD_IAM/ManagedAppMenuBlade/~/ProvisioningActivity/objectId/$($servicePrincipal.Id)"
@@ -393,8 +481,19 @@ function Get-MgApplicationSCIM {
                 $job | Add-Member -MemberType NoteProperty -Name $property.Name -Value $property.Value -Force
             }
 
-            # Emit the enriched job (SynchronizationJobSettings dropped - not useful as a column)
-            $job | Select-Object -ExcludeProperty SynchronizationJobSettings
+            # Emit the enriched job (SynchronizationJobSettings dropped - not useful as a column): the columns
+            # added above first, then the job properties in the former SDK shape
+            $emittedJob = [ordered]@{}
+            foreach ($property in $job.PSObject.Properties) {
+                if ($property.Name -notin $rawJobPropertyNames) {
+                    $emittedJob[$property.Name] = $property.Value
+                }
+            }
+            $sdkJob = & $toSdkJob $job
+            foreach ($key in $sdkJob.Keys) {
+                $emittedJob[$key] = $sdkJob[$key]
+            }
+            [PSCustomObject]$emittedJob
         }
     }
 
@@ -435,7 +534,6 @@ function Get-MgApplicationSCIM {
         $processText = $processServicePrincipal.ToString()
         $parallelResults = $servicePrincipals | ForEach-Object -ThrottleLimit $ThrottleLimit -Parallel {
             Import-Module Microsoft.Graph.Authentication -ErrorAction SilentlyContinue
-            Import-Module Microsoft.Graph.Applications -ErrorAction SilentlyContinue
             $sb = [scriptblock]::Create($using:processText)
             & $sb $_ '' $using:templateFilter
         }
@@ -461,7 +559,7 @@ function Get-MgApplicationSCIM {
         Write-Host "Get synchronization settings $($job.DisplayName) ($j/$($synchronizationJobsArray.Count))"
 
         if (-not $ExcludeAttributeMappings) {
-            $jobSchema = Get-MgServicePrincipalSynchronizationJobSchema -ServicePrincipalId $job.ServicePrincipalId -SynchronizationJobId $job.Id
+            $jobSchema = Invoke-MgGraphRequest -Uri "/v1.0/servicePrincipals/$($job.ServicePrincipalId)/synchronization/jobs/$($job.Id)/schema" -Method GET -OutputType PSObject
         }
 
         $job | Add-Member -MemberType NoteProperty -Name Scheduling -Value $job.Schedule.Interval
@@ -940,24 +1038,31 @@ function Get-MgApplicationSCIM {
 
         try {
             $params = @{
-                Message         = @{
-                    Subject      = if ($unhealthyJobs.Count -gt 0) { "Microsoft Entra ID SCIM Provisioning Issues Detected ($($unhealthyJobs.Count) apps)" } else { "Microsoft Entra ID SCIM Provisioning Health Report - All Healthy ($($synchronizationJobsDetailsArray.Count) apps)" }
-                    Body         = @{
-                        ContentType = 'HTML'
-                        Content     = $emailBody
+                message         = @{
+                    subject      = $emailSubject
+                    body         = @{
+                        contentType = 'HTML'
+                        content     = $emailBody
                     }
-                    ToRecipients = @(
+                    toRecipients = @(
                         @{
-                            EmailAddress = @{
-                                Address = $NotificationRecipient
+                            emailAddress = @{
+                                address = $NotificationRecipient
                             }
                         }
                     )
                 }
-                SaveToSentItems = $false
+                saveToSentItems = $false
             }
 
-            Send-MgUserMail -UserId $NotificationSender -BodyParameter $params
+            $mailParams = @{
+                Method      = 'POST'
+                Uri         = "/v1.0/users/$NotificationSender/sendMail"
+                Body        = ($params | ConvertTo-Json -Depth 10)
+                ContentType = 'application/json'
+                ErrorAction = 'Stop'
+            }
+            $null = Invoke-MgGraphRequest @mailParams
             Write-Host -ForegroundColor Green "SCIM health notification email sent successfully to $NotificationRecipient"
         }
         catch {

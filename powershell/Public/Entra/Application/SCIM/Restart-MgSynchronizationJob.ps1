@@ -108,7 +108,6 @@
 
     Required PowerShell modules:
     - Microsoft.Graph.Authentication
-    - Microsoft.Graph.Applications
 
     API version used: v1.0
 
@@ -234,13 +233,53 @@ function Restart-MgSynchronizationJob {
         Write-Verbose 'All required permissions are present.'
     }
 
+    # Microsoft Graph GET through Invoke-MgGraphRequest, following @odata.nextLink.
+    # Self-contained (no PS365 private helper) so the script also runs standalone in an Azure Automation runbook.
+    # Throws on error.
+    $getGraphItems = {
+        param([string]$Uri)
+        $nextLink = $Uri
+        while ($nextLink) {
+            try {
+                $page = Invoke-MgGraphRequest -Uri $nextLink -Method GET -OutputType PSObject -ErrorAction Stop
+            }
+            catch {
+                # Same message as the SDK cmdlets: the Graph error code and message from the JSON body
+                if ([string]$_.ErrorDetails.Message -match '(?s)(\{"error".*\})\s*$') {
+                    $graphError = ($Matches[1] | ConvertFrom-Json -ErrorAction SilentlyContinue).error
+                    if ($graphError) {
+                        throw [System.Exception]::new("[$($graphError.code)] : $($graphError.message)", $_.Exception)
+                    }
+                }
+                throw
+            }
+            if ($null -ne $page.PSObject.Properties['value'] -and [string]$page.'@odata.context' -notmatch '/\$entity$') {
+                foreach ($item in $page.value) { $item }
+                $nextLink = $page.'@odata.nextLink'
+            }
+            else {
+                $page
+                $nextLink = $null
+            }
+        }
+    }
+
     # --- Resolve service principal(s) ---
     Write-Verbose "Parameter set: $($PSCmdlet.ParameterSetName)"
     $servicePrincipals = [System.Collections.Generic.List[PSCustomObject]]::new()
 
     if ($PSCmdlet.ParameterSetName -eq 'ByObjectId') {
         Write-Verbose "Resolving service principal by ObjectID: $ObjectID"
-        $sp = Get-MgServicePrincipal -ServicePrincipalId $ObjectID -Property DisplayName, Id -ErrorAction SilentlyContinue
+        $sp = $null
+        try {
+            $sp = & $getGraphItems "https://graph.microsoft.com/v1.0/servicePrincipals/$($ObjectID)?`$select=displayName,id"
+        }
+        catch {
+            # Not found ends with the error below; any other failure (permission, throttling) is shown
+            if ($_.Exception.Message -notmatch 'NotFound|404|does not exist') {
+                Write-Warning "Service principal lookup failed: $($_.Exception.Message)"
+            }
+        }
         if ($sp) {
             $servicePrincipals.Add([PSCustomObject]@{ DisplayName = $sp.DisplayName; Id = $sp.Id })
         }
@@ -281,13 +320,14 @@ function Restart-MgSynchronizationJob {
         else {
             # Exact match
             $escaped = $DisplayName -replace "'", "''"
-            $exactMatches = Get-MgServicePrincipal -Filter "displayName eq '$escaped'" -All -Property DisplayName, Id
+            $exactFilter = [System.Uri]::EscapeDataString("displayName eq '$escaped'")
+            $exactMatches = & $getGraphItems "https://graph.microsoft.com/v1.0/servicePrincipals?`$filter=$exactFilter&`$select=displayName,id"
             Write-Verbose "Exact filter returned $(@($exactMatches).Count) result(s) for '$DisplayName'."
 
             if (-not $exactMatches) {
                 # Fallback: trimmed display name comparison via client-side filter
                 Write-Verbose "No exact match for '$DisplayName'. Attempting trimmed client-side comparison."
-                $allSps = Get-MgServicePrincipal -All -Property DisplayName, Id
+                $allSps = & $getGraphItems 'https://graph.microsoft.com/v1.0/servicePrincipals?$select=displayName,id'
                 $exactMatches = $allSps | Where-Object { $_.DisplayName.Trim() -eq $DisplayName.Trim() }
                 Write-Verbose "Trimmed client-side comparison matched $(@($exactMatches).Count) result(s)."
             }
