@@ -148,19 +148,19 @@ function Get-MgApplicationAssignment {
     # Run in parallel by default on PowerShell 7+ (ForEach-Object -Parallel); always sequential on PowerShell 5.1.
     $useParallel = (-not $useBatch) -and ($PSVersionTable.PSVersion.Major -ge 7) -and -not $DisableParallel
 
-    $spProperty = 'Id,AppId,DisplayName,AppRoles,AppRoleAssignmentRequired,PublisherName,Tags,ServicePrincipalType,CreatedDateTime'
+    $spProperty = 'id,appId,displayName,appRoles,appRoleAssignmentRequired,publisherName,tags,servicePrincipalType,createdDateTime'
 
     # Get all service principals (enterprise applications)
     switch ($PSCmdlet.ParameterSetName) {
         'ByApplicationId' {
             # Resolve all AppIds in a single filtered query (was N+1: one
-            # Get-MgServicePrincipal call per AppId).
+            # service principal request per AppId).
             $servicePrincipals = @()
             if ($ApplicationId.Count -gt 0) {
                 $filterParts = $ApplicationId | ForEach-Object { "AppId eq '$(ConvertTo-ODataEscapedString -Value $_)'" }
                 $filter = $filterParts -join ' or '
                 try {
-                    $servicePrincipals = @(Get-MgServicePrincipal -Filter $filter -Property $spProperty -All -ErrorAction Stop)
+                    $servicePrincipals = @(Invoke-MgGraphPagedRequest -Uri "/v1.0/servicePrincipals?`$filter=$([System.Uri]::EscapeDataString($filter))&`$select=$spProperty" -ErrorAction Stop)
                 }
                 catch {
                     Write-Warning "Could not retrieve service principals: $($_.Exception.Message)"
@@ -176,7 +176,7 @@ function Get-MgApplicationAssignment {
         }
         'ByObjectId' {
             try {
-                $servicePrincipals = @(Get-MgServicePrincipal -ServicePrincipalId $ObjectID -Property $spProperty -ErrorAction Stop)
+                $servicePrincipals = @(Invoke-MgGraphPagedRequest -Uri "/v1.0/servicePrincipals/$($ObjectID)?`$select=$spProperty" -ErrorAction Stop)
             }
             catch {
                 Write-Warning "Could not find service principal with ObjectID: $ObjectID"
@@ -187,13 +187,13 @@ function Get-MgApplicationAssignment {
             $escaped = $DisplayName -replace "'", "''"
             $filter = "DisplayName eq '$escaped'"
             Write-Verbose "Filtering service principals with: $filter"
-            $servicePrincipals = @(Get-MgServicePrincipal -Filter $filter -All -Property $spProperty)
+            $servicePrincipals = @(Invoke-MgGraphPagedRequest -Uri "/v1.0/servicePrincipals?`$filter=$([System.Uri]::EscapeDataString($filter))&`$select=$spProperty")
 
             # Fallback: trimmed display name comparison if no exact match
             if (-not $servicePrincipals) {
                 Write-Verbose "No exact match for '$DisplayName'. Searching with startswith and trimmed client-side comparison."
                 $startsWithFilter = "startswith(DisplayName, '$escaped')"
-                $candidates = Get-MgServicePrincipal -Filter $startsWithFilter -All -Property $spProperty
+                $candidates = Invoke-MgGraphPagedRequest -Uri "/v1.0/servicePrincipals?`$filter=$([System.Uri]::EscapeDataString($startsWithFilter))&`$select=$spProperty"
                 $servicePrincipals = @($candidates | Where-Object { $_.DisplayName.Trim() -eq $DisplayName.Trim() })
             }
 
@@ -204,12 +204,12 @@ function Get-MgApplicationAssignment {
         }
         default {
             if ($AllApplications) {
-                $servicePrincipals = Get-MgServicePrincipal -All -Property $spProperty
+                $servicePrincipals = Invoke-MgGraphPagedRequest -Uri "/v1.0/servicePrincipals?`$select=$spProperty"
             }
             else {
                 # Default: Enterprise Applications only (tagged 'WindowsAzureActiveDirectoryIntegratedApp')
-                $servicePrincipals = Get-MgServicePrincipal -All -Property $spProperty `
-                    -Filter "tags/Any(x: x eq 'WindowsAzureActiveDirectoryIntegratedApp')"
+                $enterpriseAppFilter = [System.Uri]::EscapeDataString("tags/Any(x: x eq 'WindowsAzureActiveDirectoryIntegratedApp')")
+                $servicePrincipals = Invoke-MgGraphPagedRequest -Uri "/v1.0/servicePrincipals?`$filter=$enterpriseAppFilter&`$select=$spProperty"
             }
         }
     }
@@ -228,12 +228,38 @@ function Get-MgApplicationAssignment {
 
         Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] ${Prefix}Analyzing application: $($sp.DisplayName)" -ForegroundColor Cyan
 
-        # Get app role assignments for this service principal
+        # Single directory object read (user, group, service principal). Self-contained: this scriptblock
+        # also runs in parallel runspaces. Not found returns nothing; any other failure is shown.
+        $getDirectoryObject = {
+            param([string]$Path)
+            try {
+                Invoke-MgGraphRequest -Uri "/v1.0/$Path" -Method GET -OutputType PSObject -ErrorAction Stop
+            }
+            catch {
+                if ($_.Exception.Message -notmatch 'NotFound|404|does not exist') {
+                    Write-Warning "Could not read /v1.0/$($Path): $($_.Exception.Message)"
+                }
+            }
+        }
+
+        # Get app role assignments for this service principal (every page)
         $appRoleAssignments = if ($null -ne $PreFetchedAssignments) {
             $PreFetchedAssignments
         }
         else {
-            Get-MgServicePrincipalAppRoleAssignedTo -ServicePrincipalId $sp.Id
+            try {
+                @(& {
+                        $assignmentsUri = "/v1.0/servicePrincipals/$($sp.Id)/appRoleAssignedTo"
+                        while ($assignmentsUri) {
+                            $assignmentsPage = Invoke-MgGraphRequest -Uri $assignmentsUri -Method GET -OutputType PSObject -ErrorAction Stop
+                            $assignmentsPage.value
+                            $assignmentsUri = $assignmentsPage.'@odata.nextLink'
+                        }
+                    })
+            }
+            catch {
+                Write-Warning "Could not read the app role assignments of '$($sp.DisplayName)': $($_.Exception.Message)"
+            }
         }
 
         # Pre-hash AppRoles by Id for O(1) per-assignment lookup (instead of a Where-Object per assignment)
@@ -289,7 +315,7 @@ function Get-MgApplicationAssignment {
                     $assignmentProps.PrincipalType = 'User'
                     
                     try {
-                        $user = Get-MgUser -UserId $assignment.PrincipalId -ErrorAction SilentlyContinue
+                        $user = & $getDirectoryObject "users/$($assignment.PrincipalId)"
                         if ($user) {
                             Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')]   -> User found: $($user.DisplayName)" -ForegroundColor Green
                             
@@ -318,7 +344,7 @@ function Get-MgApplicationAssignment {
                     $assignmentProps.PrincipalType = 'Group'
                     
                     try {
-                        $group = Get-MgGroup -GroupId $assignment.PrincipalId -ErrorAction SilentlyContinue
+                        $group = & $getDirectoryObject "groups/$($assignment.PrincipalId)"
                         if ($group) {
                             $protectedStatus = if ($null -ne $group.IsAssignableToRole) { $group.IsAssignableToRole } else { 'N/A' }
                             Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')]   -> Group found: $($group.DisplayName) (Protected: $protectedStatus)" -ForegroundColor Green
@@ -357,7 +383,7 @@ function Get-MgApplicationAssignment {
                     $assignmentProps.PrincipalType = 'ServicePrincipal'
                     
                     try {
-                        $servicePrincipal = Get-MgServicePrincipal -ServicePrincipalId $assignment.PrincipalId -ErrorAction SilentlyContinue
+                        $servicePrincipal = & $getDirectoryObject "servicePrincipals/$($assignment.PrincipalId)"
                         if ($servicePrincipal) {
                             Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')]   -> Service Principal found: $($servicePrincipal.DisplayName)" -ForegroundColor Magenta
                             
@@ -471,9 +497,10 @@ function Get-MgApplicationAssignment {
         $servicePrincipalsCount = @($servicePrincipals).Count
         foreach ($sp in $servicePrincipals) {
             $counter++
-            # A failed/missing batch response passes $null: the scriptblock then falls back to Get-MgServicePrincipalAppRoleAssignedTo
+            # A failed/missing batch response passes $null: the scriptblock then reads the assignments itself
             $assignmentsResponse = $assignmentsResponses["$($sp.Id)"]
-            $preFetchedAssignments = if ($assignmentsResponse -and $assignmentsResponse.status -eq 200) { @($assignmentsResponse.body.value) } else { $null }
+            # A response with more pages (@odata.nextLink) is read again in full by the scriptblock
+            $preFetchedAssignments = if ($assignmentsResponse -and $assignmentsResponse.status -eq 200 -and -not $assignmentsResponse.body.'@odata.nextLink') { @($assignmentsResponse.body.value) } else { $null }
 
             $results = & $processSp $sp "[$counter/$servicePrincipalsCount] " $preFetchedAssignments
             foreach ($result in $results) {
@@ -486,9 +513,6 @@ function Get-MgApplicationAssignment {
         $processText = $processSp.ToString()
         $parallelResults = $servicePrincipals | ForEach-Object -ThrottleLimit $ThrottleLimit -Parallel {
             Import-Module Microsoft.Graph.Authentication -ErrorAction SilentlyContinue
-            Import-Module Microsoft.Graph.Applications -ErrorAction SilentlyContinue
-            Import-Module Microsoft.Graph.Users -ErrorAction SilentlyContinue
-            Import-Module Microsoft.Graph.Groups -ErrorAction SilentlyContinue
             $sb = [scriptblock]::Create($using:processText)
             & $sb $_
         }

@@ -84,7 +84,6 @@ function Find-M365Email {
     $modules = @(
         'ExchangeOnlineManagement'
         'Microsoft.Graph.Authentication'
-        'Microsoft.Graph.Users'
     )
 
     foreach ($module in $modules) {
@@ -136,14 +135,14 @@ function Find-M365Email {
 
 
     Write-Host 'Get All Microsoft 365 users...' -ForegroundColor Green
-    $entraIDUsers = Get-MgUser -All -Property UserPrincipalName, ID, UserType, ProxyAddresses, CreatedDateTime, DisplayName, OtherMails
+    $entraIDUsers = Invoke-MgGraphPagedRequest -Uri '/v1.0/users?$select=userPrincipalName,id,userType,proxyAddresses,createdDateTime,displayName,otherMails'
     
     $m365UPNUsers = $entraIDUsers | Select-Object DisplayName, @{Name = 'objectID'; Expression = { $_.ID } }, @{Name = 'EmailAddresses'; Expression = { $_.UserPrincipalName } }, @{Name = 'RecipientTypeDetails'; Expression = { if ($_.UserType -eq 'Member' -or $null -eq $_.UserType) { 'Microsoft365User' } else { 'GuestUser' } } }, @{Name = 'WhenCreated'; Expression = { $_.CreatedDateTime } }
     $m365Emails = $entraIDUsers | Select-Object DisplayName, @{Name = 'objectID'; Expression = { $_.ID } }, @{Name = 'EmailAddresses'; Expression = { $_.ProxyAddresses } }, @{Name = 'RecipientTypeDetails'; Expression = { if ($_.UserType -eq 'Member') { 'Microsoft365User' }else { 'GuestUser' } } }, @{Name = 'WhenCreated'; Expression = { $_.CreatedDateTime } }
     $m365AlternateEmails = $entraIDUsers | Select-Object DisplayName, @{Name = 'objectID'; Expression = { $_.ID } }, @{Name = 'EmailAddresses'; Expression = { $_.OtherMails } }, @{Name = 'RecipientTypeDetails'; Expression = { if ($_.UserType -eq 'Member' -or $null -eq $_.UserType) { 'O365UserAlternateEmailAddress' } else { 'GuestUserAlternateEmailAddress' } } }, @{Name = 'WhenCreated'; Expression = { $_.CreatedDateTime } }
 
     Write-Host 'Get All Microsoft 365 deleted users...' -ForegroundColor Green
-    $entraIDDeletedUsers = Get-MgDirectoryDeletedItemAsUser -All -Property UserPrincipalName, ID, UserType, ProxyAddresses, CreatedDateTime, DisplayName
+    $entraIDDeletedUsers = Invoke-MgGraphPagedRequest -Uri '/v1.0/directory/deletedItems/microsoft.graph.user?$select=userPrincipalName,id,userType,proxyAddresses,createdDateTime,displayName'
 
     $entraIDDeletedUsersUPN = $entraIDDeletedUsers | Select-Object DisplayName, @{Name = 'objectID'; Expression = { $_.ID } }, @{Name = 'EmailAddresses'; Expression = { $_.UserPrincipalName } }, @{Name = 'RecipientTypeDetails'; Expression = { if ($_.UserType -eq 'Member') { 'DeletedMicrosoft365User' }else { 'DeletedGuestUser' } } }, @{Name = 'WhenCreated'; Expression = { $_.CreatedDateTime } }
     $entraIDDeletedUsersEmails = $entraIDDeletedUsers | Select-Object DisplayName, @{Name = 'objectID'; Expression = { $_.ID } }, @{Name = 'EmailAddresses'; Expression = { $_.ProxyAddresses } }, @{Name = 'RecipientTypeDetails'; Expression = { if ($_.UserType -eq 'Member') { 'DeletedMicrosoft365User' }else { 'DeletedGuestUser' } } }, @{Name = 'WhenCreated'; Expression = { $_.CreatedDateTime } }

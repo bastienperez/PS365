@@ -13,7 +13,7 @@ function ConvertTo-ODataEscapedString {
 
     .EXAMPLE
     $escaped = ConvertTo-ODataEscapedString -Value $DeviceName
-    Get-MgDevice -Filter "displayName eq '$escaped'"
+    Invoke-MgGraphRequest -Uri "/v1.0/devices?`$filter=displayName eq '$escaped'"
     #>
     [CmdletBinding()]
     [OutputType([string])]

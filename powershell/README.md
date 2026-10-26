@@ -15,7 +15,7 @@ This module offers a collection of PowerShell functions designed to simplify com
 - PowerShell 5.1 or later
 - Required PowerShell modules:
   - `ExchangeOnlineManagement`
-  - `Microsoft.Graph.*` (various Graph modules)
+  - `Microsoft.Graph.Authentication` (the only Microsoft Graph module used: every call goes through `Invoke-MgGraphRequest`)
   - `ImportExcel`
 
 ## Installation

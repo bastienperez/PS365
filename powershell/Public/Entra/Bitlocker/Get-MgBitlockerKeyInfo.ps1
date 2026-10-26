@@ -4,7 +4,7 @@
 
     .DESCRIPTION
     This script connects to Microsoft Intune and retrieves BitLocker recovery keys from all
-    devices managed by Intune. It requires the Microsoft Graph PowerShell SDK to be installed and
+    devices managed by Intune. It requires the Microsoft.Graph.Authentication module and
     appropriate permissions to access device management and BitLocker key data.
 
     .PARAMETER IncludeDeviceInfo
@@ -184,7 +184,7 @@ function Get-MgBitlockerKeyInfo {
 
     # Determine the required scopes, based on the parameters passed to the script
     # BitLockerKey.ReadBasic.All is enough for metadata; BitLockerKey.Read.All is only needed when the key is read in plain text
-    # Device.Read.All is always required since Get-MgDevice is always called
+    # Device.Read.All is always required since the devices are always read
     $bitlockerScope = if ($PSBoundParameters['ShowKeyInPlainText'] -or $PSBoundParameters['BackupToKeyVault']) {
         'BitLockerKey.Read.All'
     }
@@ -194,13 +194,58 @@ function Get-MgBitlockerKeyInfo {
     $requiredScopes = [System.Collections.Generic.List[string]]@($bitlockerScope, 'Device.Read.All')
     if ($PSBoundParameters['IncludeDeviceOwner']) { $requiredScopes.Add('User.ReadBasic.All') }
 
-    Write-Verbose 'Importing required PowerShell modules...'
-    try {
-        Import-Module Microsoft.Graph.Identity.SignIns -Force -ErrorAction Stop
-        Write-Verbose 'Microsoft.Graph.Identity.SignIns module imported successfully'
+    # Microsoft Graph GET through Invoke-MgGraphRequest, following @odata.nextLink.
+    # Self-contained (no PS365 private helper) so the script also runs standalone in an Azure Automation runbook.
+    # Throws on error.
+    $getGraphItems = {
+        param([string]$Uri)
+        $nextLink = $Uri
+        while ($nextLink) {
+            try {
+                $page = Invoke-MgGraphRequest -Uri $nextLink -Method GET -OutputType PSObject -ErrorAction Stop
+            }
+            catch {
+                # Same message as the SDK cmdlets: the Graph error code and message from the JSON body
+                if ([string]$_.ErrorDetails.Message -match '(?s)(\{"error".*\})\s*$') {
+                    $graphError = ($Matches[1] | ConvertFrom-Json -ErrorAction SilentlyContinue).error
+                    if ($graphError) {
+                        throw [System.Exception]::new("[$($graphError.code)] : $($graphError.message)", $_.Exception)
+                    }
+                }
+                throw
+            }
+            if ($null -ne $page.PSObject.Properties['value'] -and [string]$page.'@odata.context' -notmatch '/\$entity$') {
+                foreach ($item in $page.value) { $item }
+                $nextLink = $page.'@odata.nextLink'
+            }
+            else {
+                $page
+                $nextLink = $null
+            }
+        }
     }
-    catch {
-        Write-Error "Failed to import Microsoft.Graph.Identity.SignIns module: $($_.Exception.Message)" -ErrorAction Stop
+
+    # Same shape as the SDK recovery key object (PascalCase), so the output columns do not change
+    $toRecoveryKeyObject = {
+        param($rawKey)
+        [PSCustomObject][ordered]@{
+            CreatedDateTime = $rawKey.createdDateTime
+            DeviceId        = $rawKey.deviceId
+            Id              = $rawKey.id
+            Key             = $rawKey.key
+            VolumeType      = $rawKey.volumeType
+        }
+    }
+
+    # Device objects keep the SDK's PascalCase property names (the -IncludeDeviceInfo output is the device itself)
+    $toDeviceObject = {
+        param($rawDevice)
+        $properties = [ordered]@{}
+        foreach ($property in $rawDevice.PSObject.Properties) {
+            if ($property.Name -like '@odata.*') { continue }
+            $properties[$property.Name.Substring(0, 1).ToUpperInvariant() + $property.Name.Substring(1)] = $property.Value
+        }
+        [PSCustomObject]$properties
     }
 
     # Version check for Azure Automation before connecting
@@ -300,13 +345,12 @@ function Get-MgBitlockerKeyInfo {
             $filter = "operatingSystem eq 'Windows'"
         }
 
+        $deviceUri = "/v1.0/devices?`$filter=$([System.Uri]::EscapeDataString($filter))"
         if ($PSBoundParameters['IncludeDeviceOwner']) {
             Write-Verbose 'Including device owner information...'
-            $deviceResults = Get-MgDevice -All -Filter $filter -ExpandProperty registeredOwners -ErrorAction Stop
+            $deviceUri += '&$expand=registeredOwners'
         }
-        else {
-            $deviceResults = Get-MgDevice -All -Filter $filter -ErrorAction Stop
-        }
+        $deviceResults = @(& $getGraphItems $deviceUri | ForEach-Object { & $toDeviceObject $_ })
 
         foreach ($deviceResult in $deviceResults) {
             if ($deviceResult.Id -ne '00000000-0000-0000-0000-000000000000' -and
@@ -352,7 +396,7 @@ function Get-MgBitlockerKeyInfo {
         }
         if ($PSBoundParameters['IncludeDeviceOwner']) {
             foreach ($device in $devices) {
-                $device | Add-Member -MemberType NoteProperty -Name 'DeviceOwner' -Value (& { if ($device.registeredOwners) { $device.registeredOwners[0].AdditionalProperties.userPrincipalName } else { '$null' } })
+                $device | Add-Member -MemberType NoteProperty -Name 'DeviceOwner' -Value (& { if ($device.registeredOwners) { $device.registeredOwners[0].userPrincipalName } else { '$null' } })
             }
         }
     }
@@ -376,7 +420,8 @@ function Get-MgBitlockerKeyInfo {
         foreach ($device in $devices) {
             try {
                 Write-Verbose "Retrieving BitLocker keys for device: $($device.DisplayName) (ID: $($device.DeviceId))..."
-                $deviceKeys = Get-MgInformationProtectionBitlockerRecoveryKey -Filter "deviceId eq '$(ConvertTo-ODataEscapedString -Value $device.DeviceId)'" -ErrorAction Stop -Verbose:$false
+                $keyFilter = [System.Uri]::EscapeDataString("deviceId eq '$(ConvertTo-ODataEscapedString -Value $device.DeviceId)'")
+                $deviceKeys = @(& $getGraphItems "/v1.0/informationProtection/bitlocker/recoveryKeys?`$filter=$keyFilter" | ForEach-Object { & $toRecoveryKeyObject $_ })
                 
                 if ($deviceKeys -and $deviceKeys.Count -gt 0) {
                     foreach ($key in $deviceKeys) {
@@ -411,7 +456,7 @@ function Get-MgBitlockerKeyInfo {
         Write-Verbose 'Retrieving all BitLocker keys...'
         # Get all BitLocker keys (metadata only)
         Write-Verbose 'Fetching all BitLocker keys metadata...'
-        $allKeys = Get-MgInformationProtectionBitlockerRecoveryKey -All -ErrorAction Stop -Verbose:$false
+        $allKeys = & $getGraphItems '/v1.0/informationProtection/bitlocker/recoveryKeys' | ForEach-Object { & $toRecoveryKeyObject $_ }
         
         foreach ($key in $allKeys) {
             $keys.Add($key)
@@ -448,7 +493,7 @@ function Get-MgBitlockerKeyInfo {
             if ($ShowKeyInPlainText -or $KeyVaultName) {
                 try {
                     Write-Verbose "[$keyCounter/$totalKeys] Retrieving plain text key for BitLocker key ID: $($key.Id)..."
-                    $keyDetails = Get-MgInformationProtectionBitlockerRecoveryKey -BitlockerRecoveryKeyId $key.Id -Property key -ErrorAction Stop -Verbose:$false
+                    $keyDetails = & $getGraphItems "/v1.0/informationProtection/bitlocker/recoveryKeys/$($key.Id)?`$select=key"
                     $actualKeyValue = $keyDetails.Key
                 }
                 catch {
@@ -554,14 +599,14 @@ function Get-MgBitlockerKeyInfo {
             $key | Add-Member -MemberType NoteProperty -Name 'DeviceGUID' -Value $device.Id # key actually used by the stupid module...
             $key | Add-Member -MemberType NoteProperty -Name 'DeviceOS' -Value $device.OperatingSystem
             $key | Add-Member -MemberType NoteProperty -Name 'DeviceTrustType' -Value $device.TrustType
-            $key | Add-Member -MemberType NoteProperty -Name 'DeviceMDM' -Value $device.AdditionalProperties.managementType # can be null! ALWAYS null when using a filter...
+            $key | Add-Member -MemberType NoteProperty -Name 'DeviceMDM' -Value $device.managementType # can be null! ALWAYS null when using a filter...
             $key | Add-Member -MemberType NoteProperty -Name 'DeviceCompliant' -Value $device.isCompliant # can be null!
             $key | Add-Member -MemberType NoteProperty -Name 'DeviceRegistered' -Value (& { if ($device.registrationDateTime) { Get-Date($device.registrationDateTime) -Format g } else { '$null' } })
             $key | Add-Member -MemberType NoteProperty -Name 'DeviceLastActivity' -Value (& { if ($device.approximateLastSignInDateTime) { Get-Date($device.approximateLastSignInDateTime) -Format g } else { '$null' } })
 
             # If requested, include the device owner
             if ($PSBoundParameters['IncludeDeviceOwner']) {
-                $key | Add-Member -MemberType NoteProperty -Name 'DeviceOwner' -Value (& { if ($device.registeredOwners) { $device.registeredOwners[0].AdditionalProperties.userPrincipalName } else { '$null' } })
+                $key | Add-Member -MemberType NoteProperty -Name 'DeviceOwner' -Value (& { if ($device.registeredOwners) { $device.registeredOwners[0].userPrincipalName } else { '$null' } })
             }
         }
         elseif ($PSBoundParameters.ContainsKey('DeviceName') -or $PSBoundParameters.ContainsKey('DeviceID')) {

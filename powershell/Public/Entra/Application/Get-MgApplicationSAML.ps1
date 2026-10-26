@@ -220,17 +220,6 @@ function Get-MgApplicationSAML {
             Write-Error 'ExpirationThresholdDays must be greater than 0 when RunFromAzureAutomation is enabled.'
             return
         }
-
-        try {
-            Import-Module 'Microsoft.Graph.Users.Actions' -ErrorAction Stop -ErrorVariable mgGraphMailMissing
-        }
-        catch {
-            if ($mgGraphMailMissing) {
-                Write-Warning "Failed to import Microsoft.Graph.Users.Actions module: $($mgGraphMailMissing.Exception.Message)"
-            }
-
-            return
-        }
     }
 
     try {
@@ -360,7 +349,7 @@ function Get-MgApplicationSAML {
                 $result = Invoke-MgGraphRequest -Uri $uri -Method GET
             }
 
-            $candidateItems = if ($result.Value) { $result.Value } else { @() }
+            $candidateItems = @(& { $page = $result; while ($page) { $page.value; $nextPage = $page.'@odata.nextLink'; $page = if ($nextPage) { Invoke-MgGraphRequest -Uri $nextPage -Method GET -Headers @{ ConsistencyLevel = 'eventual' } -ErrorAction Stop } else { $null } } })
             # Post-filter: wildcard name match + SAML only
             $matchingIds = ($candidateItems | Where-Object { $_.displayName -like $DisplayName -and $_.preferredSingleSignOnMode -eq 'saml' }).id
 
@@ -431,7 +420,14 @@ function Get-MgApplicationSAML {
         }
         else {
             try {
-                $ownerObjects = @((Invoke-MgGraphRequest -Uri "/v1.0/servicePrincipals/$($samlApp.Id)/owners?`$select=id,displayName" -Method GET -OutputType PSObject -ErrorAction Stop).value)
+                $ownerObjects = @(& {
+                        $ownersUri = "/v1.0/servicePrincipals/$($samlApp.Id)/owners?`$select=id,displayName"
+                        while ($ownersUri) {
+                            $ownersPage = Invoke-MgGraphRequest -Uri $ownersUri -Method GET -OutputType PSObject -ErrorAction Stop
+                            $ownersPage.value
+                            $ownersUri = $ownersPage.'@odata.nextLink'
+                        }
+                    })
             }
             catch {
                 $ownerString = "Error: $($_.Exception.Message)"
@@ -603,7 +599,8 @@ function Get-MgApplicationSAML {
             $appCounter++
             # A failed/missing batch response passes $null: the scriptblock then reads the owners itself
             $ownersResponse = $ownersResponses["$($samlApp.Id)"]
-            $preFetchedOwners = if ($ownersResponse -and $ownersResponse.status -eq 200) { @($ownersResponse.body.value) } else { $null }
+            # A response with more pages (@odata.nextLink) is read again in full by the scriptblock
+            $preFetchedOwners = if ($ownersResponse -and $ownersResponse.status -eq 200 -and -not $ownersResponse.body.'@odata.nextLink') { @($ownersResponse.body.value) } else { $null }
 
             $results = & $processSamlApp $samlApp "Processing $appCounter/${samlApplicationsCount}: " $IncludeSignInStats.IsPresent $auditLogPermissionMissing $signInStartDate $preFetchedOwners
             foreach ($result in $results) {
@@ -641,7 +638,7 @@ function Get-MgApplicationSAML {
         # standalone deployments (e.g. Azure Automation runbook) where the module is not available.
         # Keep the fallback in sync with ModuleVersion in PS365.psd1.
         $ps365Module = Get-Module -Name 'PS365' -ErrorAction SilentlyContinue
-        $ps365Version = if ($ps365Module) { $ps365Module.Version } else { '0.5.5' }
+        $ps365Version = if ($ps365Module) { $ps365Module.Version } else { '0.6.0' }
         $ps365VersionDisplay = " (PS365 v$ps365Version)"
 
         # Human-readable execution duration for the report footer (e.g. '4 min 32 s' or '45 s')
@@ -883,24 +880,31 @@ function Get-MgApplicationSAML {
 
         try {
             $params = @{
-                Message         = @{
-                    Subject      = $emailSubject
-                    Body         = @{
-                        ContentType = 'HTML'
-                        Content     = $emailBody
+                message         = @{
+                    subject      = $emailSubject
+                    body         = @{
+                        contentType = 'HTML'
+                        content     = $emailBody
                     }
-                    ToRecipients = @(
+                    toRecipients = @(
                         @{
-                            EmailAddress = @{
-                                Address = $NotificationRecipient
+                            emailAddress = @{
+                                address = $NotificationRecipient
                             }
                         }
                     )
                 }
-                SaveToSentItems = $false
+                saveToSentItems = $false
             }
 
-            Send-MgUserMail -UserId $NotificationSender -BodyParameter $params
+            $mailParams = @{
+                Method      = 'POST'
+                Uri         = "/v1.0/users/$NotificationSender/sendMail"
+                Body        = ($params | ConvertTo-Json -Depth 10)
+                ContentType = 'application/json'
+                ErrorAction = 'Stop'
+            }
+            $null = Invoke-MgGraphRequest @mailParams
             Write-Host -ForegroundColor Green "Expiration notification email sent successfully to $NotificationRecipient"
         }
         catch {

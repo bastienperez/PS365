@@ -126,9 +126,7 @@ function Get-MgUserPasswordInfo {
     
     # Import required modules
     $modules = @(
-        'Microsoft.Graph.Authentication',
-        'Microsoft.Graph.Users',
-        'Microsoft.Graph.Identity.DirectoryManagement'
+        'Microsoft.Graph.Authentication'
     )
     
     foreach ($module in $modules) {
@@ -143,7 +141,7 @@ function Get-MgUserPasswordInfo {
 
     function Get-DomainPasswordPolicies {
         Write-Host -ForegroundColor Cyan 'Retrieving password policies for all domains'
-        $domains = Get-MgDomain -All
+        $domains = Invoke-MgGraphPagedRequest -Uri '/v1.0/domains'
         $domainPasswordPolicies = $domainPasswordPolicies = [System.Collections.Generic.List[PSCustomObject]]::new()
 
         foreach ($domain in $domains) {
@@ -241,16 +239,16 @@ function Get-MgUserPasswordInfo {
         }
     }
 
-    $userParams = 'UserPrincipalName, LastPasswordChangeDateTime, OnPremisesLastSyncDateTime, OnPremisesSyncEnabled, PasswordProfile, PasswordPolicies, AccountEnabled, DisplayName, Id, SignInActivity, CreatedDateTime, OnPremisesDistinguishedName'
+    $userSelect = 'userPrincipalName,lastPasswordChangeDateTime,onPremisesLastSyncDateTime,onPremisesSyncEnabled,passwordProfile,passwordPolicies,accountEnabled,displayName,id,signInActivity,createdDateTime,onPremisesDistinguishedName'
 
     if ($UserPrincipalName) {
         Write-Host -ForegroundColor Cyan "Retrieving password information for $($UserPrincipalName.Count) user(s)"
         $mgUsersList = [System.Collections.Generic.List[PSCustomObject]]::new()
         foreach ($upn in $UserPrincipalName) {		
-            # If we use Get-MgUser -UserId <upn> -Property <properties>, we get the error "Get-MgUser_Get: Get By Key only supports UserId and the key has to be a valid Guid".
-            # It seems to be a problem with one of the propertys we are requesting.
-            # So we use a filter instead.										 
-            $mgUser = Get-MgUser -Filter "userPrincipalName eq '$(ConvertTo-ODataEscapedString -Value $upn)'" -Property $userParams
+            # signInActivity cannot be read with GET /users/<upn> (Graph wants the object ID for it),
+            # so the user is found with a filter instead.										 
+            $userFilter = [System.Uri]::EscapeDataString("userPrincipalName eq '$(ConvertTo-ODataEscapedString -Value $upn)'")
+            $mgUser = Invoke-MgGraphPagedRequest -Uri "/v1.0/users?`$filter=$userFilter&`$select=$userSelect"
 
             $mgUsersList.Add($mgUser)
         }
@@ -258,12 +256,14 @@ function Get-MgUserPasswordInfo {
     elseif ($FilterByDomain) {
         Write-Host -ForegroundColor Cyan "Retrieving password information for users in domain: $FilterByDomain (excluding guest users #EXT#@$FilterByDomain)"
 
-        $mgUsersList = Get-MgUser -Filter "endswith(userPrincipalName,'$(ConvertTo-ODataEscapedString -Value $FilterByDomain)') and not endswith(userPrincipalName,'#EXT#@$(ConvertTo-ODataEscapedString -Value $FilterByDomain)')" -All -ConsistencyLevel eventual
+        # Advanced query (endswith, not): ConsistencyLevel eventual and $count=true
+        $domainFilter = [System.Uri]::EscapeDataString("endswith(userPrincipalName,'$(ConvertTo-ODataEscapedString -Value $FilterByDomain)') and not endswith(userPrincipalName,'#EXT#@$(ConvertTo-ODataEscapedString -Value $FilterByDomain)')")
+        $mgUsersList = Invoke-MgGraphPagedRequest -Uri "/v1.0/users?`$filter=$domainFilter&`$count=true" -Headers @{ ConsistencyLevel = 'eventual' }
 
     }
     else {
         Write-Host -ForegroundColor Cyan 'Retrieving password information for all users'
-        $mgUsersList = Get-MgUser -All -Property $userParams
+        $mgUsersList = Invoke-MgGraphPagedRequest -Uri "/v1.0/users?`$select=$userSelect"
     }
 
     $passwordsInfoArray = [System.Collections.Generic.List[PSCustomObject]]::new()

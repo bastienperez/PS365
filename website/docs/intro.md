@@ -25,8 +25,10 @@ PS365 is a collection of PowerShell functions designed to simplify and automate 
 - **Microsoft 365 tenant** with appropriate permissions
 - **Required modules** (automatically installed with PS365):
   - ExchangeOnlineManagement
-  - Microsoft.Graph
-  - AzureAD (or Microsoft.Graph)
+  - ImportExcel
+  - Microsoft.Graph.Authentication
+
+PS365 does not use the Microsoft Graph PowerShell SDK modules (Microsoft.Graph, Microsoft.Graph.Beta, Microsoft.Graph.Users, Microsoft.Graph.Applications...). It only needs Microsoft.Graph.Authentication: `Connect-MgGraph` signs you in and every Graph call is a direct REST call through `Invoke-MgGraphRequest`. You do not need to install the other Microsoft.Graph modules.
 
 ### Install from PowerShell Gallery
 

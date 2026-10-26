@@ -119,19 +119,34 @@ function Compare-UserAttribute {
 
         'EntraID' {
             Write-Verbose "Using Microsoft Graph to compare attributes '$Attribute1' and '$Attribute2' in Entra ID."
+
+            # Graph returns camelCase properties: expose them in PascalCase (Mail, UserPrincipalName...)
+            $toPascalCase = {
+                param($rawUser)
+                if ($null -eq $rawUser) { return $null }
+                $properties = [ordered]@{}
+                foreach ($property in $rawUser.PSObject.Properties) {
+                    if ($property.Name -like '@odata.*') { continue }
+                    $properties[$property.Name.Substring(0, 1).ToUpperInvariant() + $property.Name.Substring(1)] = $property.Value
+                }
+                [PSCustomObject]$properties
+            }
+
+            $selectAttributes = "$Attribute1,$Attribute2"
             if ($ByDomain) {
-                $users = Get-MgUser -All | Where-Object { $_.mail -like "*$ByDomain" }
+                $users = Invoke-MgGraphPagedRequest -Uri '/v1.0/users' | Where-Object { $_.mail -like "*$ByDomain" } | ForEach-Object { & $toPascalCase $_ }
             }
             elseif ($User) {
                 $users = [System.Collections.Generic.List[PSCustomObject]]::new()
                 
                 foreach ($u in $User) {
-                    $mgUser = Get-MgUser -UserId $u -Property $Attribute1, $Attribute2
-                    $users.Add($mgUser)
+                    $mgUser = Invoke-MgGraphPagedRequest -Uri "/v1.0/users/$([System.Uri]::EscapeDataString($u))?`$select=$selectAttributes"
+                    $users.Add((& $toPascalCase $mgUser))
                 }
             }
             else {
-                $users = Get-MgUser -Filter 'mail ne null' -Property $Attribute1, $Attribute2
+                $mailFilter = [System.Uri]::EscapeDataString('mail ne null')
+                $users = Invoke-MgGraphPagedRequest -Uri "/v1.0/users?`$filter=$mailFilter&`$select=$selectAttributes" | ForEach-Object { & $toPascalCase $_ }
             }
 
             break

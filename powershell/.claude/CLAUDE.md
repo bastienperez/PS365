@@ -10,7 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Module Overview
 
-**PS365** is an alpha-stage PowerShell module for Microsoft 365 administration. It targets Exchange Online, Entra ID (Azure AD), Intune, and related services. It requires PowerShell 7.x and depends on `ImportExcel`, `ExchangeOnlineManagement`, and `Microsoft.Graph`.
+**PS365** is an alpha-stage PowerShell module for Microsoft 365 administration. It targets Exchange Online, Entra ID (Azure AD), Intune, and related services. It requires PowerShell 7.x and depends on `ImportExcel`, `ExchangeOnlineManagement`, and `Microsoft.Graph.Authentication` (the only Microsoft Graph module: no SDK data cmdlet such as `Get-MgUser` is used).
 
 ## Common Commands
 
@@ -251,12 +251,13 @@ if (-not $RunFromAzureAutomation.IsPresent) {
 
 ## Microsoft Graph API Patterns
 
-- Use `-ConsistencyLevel eventual` for advanced queries requiring `$count`
-- Batch API calls using `Get-Mg* -All` for large datasets
-- Use `-Property` parameter to specify required fields for better performance
-- Handle pagination automatically with `-All` switch
-- Use `Filter` parameter with OData syntax for server-side filtering
-- Prefer `Get-MgUser -Filter` over `Get-MgUser | Where-Object` for performance
+- Only `Microsoft.Graph.Authentication` is used (`Connect-MgGraph`, `Get-MgContext`, `Disconnect-MgGraph`, `Invoke-MgGraphRequest`). Never call an SDK data cmdlet (`Get-MgUser`, `Get-MgGroup`, `Update-Mg*`...) and never import another `Microsoft.Graph.*` module.
+- Read collections with the private helper `Invoke-MgGraphPagedRequest` (follows `@odata.nextLink`, retries 429, writes a non-terminating error that `-ErrorAction` controls); add `-FirstPageOnly` for a single page. Many requests at once: `Invoke-MgGraphBatchRequest`.
+- Functions with `-RunFromAzureAutomation` and scriptblocks run in `ForEach-Object -Parallel` cannot see private helpers: call `Invoke-MgGraphRequest` directly there (see the `$getGraphItems` scriptblock in `Get-MgApplicationCredential`).
+- Raw responses are camelCase PSCustomObjects with dates already converted to `[datetime]`; build output objects with explicit PascalCase properties.
+- Advanced queries (`endswith`, `ne null`, `$search`, `$count`): header `ConsistencyLevel = 'eventual'` and `$count=true`
+- Use `$select` to request only the needed fields, and URL-encode `$filter` values with `[System.Uri]::EscapeDataString()`
+- Prefer a server-side `$filter` over `Where-Object` for performance
 
 ## User Filtering Patterns
 
@@ -294,4 +295,4 @@ $items | ForEach-Object { $lookupTable.Add($_.Id, $_.Property) }
 |--------|---------|
 | `ImportExcel` | Required — used by every `Export-Excel` call |
 | `ExchangeOnlineManagement` | Exchange Online cmdlets (`Get-EXOMailbox`, `Get-MailboxStatistics`, etc.) |
-| `Microsoft.Graph.*` | Entra ID, sign-in logs, applications, roles |
+| `Microsoft.Graph.Authentication` | Connection and `Invoke-MgGraphRequest` for every Entra ID, sign-in log, application and role call |

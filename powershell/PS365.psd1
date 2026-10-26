@@ -12,7 +12,7 @@
 RootModule = 'PS365.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.5.5'
+ModuleVersion = '0.6.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -52,7 +52,8 @@ PowerShellVersion = '7.0'
 
 # Modules that must be imported into the global environment prior to importing this module
 RequiredModules = @('ImportExcel', 
-               'ExchangeOnlineManagement')
+               'ExchangeOnlineManagement', 
+               'Microsoft.Graph.Authentication')
 
 # Assemblies that must be loaded prior to importing this module
 # RequiredAssemblies = @()

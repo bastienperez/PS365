@@ -27,6 +27,14 @@ For Windows PowerShell 5.1, use `Install-Module`:
 Install-Module -Name PS365 -Scope CurrentUser
 ```
 
+### Requirements
+
+PS365 installs its dependencies with it: ExchangeOnlineManagement, ImportExcel and Microsoft.Graph.Authentication.
+
+<Note>
+  PS365 does not use the Microsoft Graph PowerShell SDK modules (Microsoft.Graph, Microsoft.Graph.Beta, Microsoft.Graph.Users, Microsoft.Graph.Applications...). It only needs Microsoft.Graph.Authentication: `Connect-MgGraph` signs you in and every Graph call is a direct REST call through `Invoke-MgGraphRequest`.
+</Note>
+
 ### Verify Installation
 
 **PowerShell 7+:**

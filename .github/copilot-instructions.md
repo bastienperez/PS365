@@ -10,7 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Module Overview
 
-**PS365** is an alpha-stage PowerShell module for Microsoft 365 administration. It targets Exchange Online, Entra ID (Azure AD), Intune, and related services. It requires PowerShell 7.x and depends on `ImportExcel`, `ExchangeOnlineManagement`, and `Microsoft.Graph`.
+**PS365** is an alpha-stage PowerShell module for Microsoft 365 administration. It targets Exchange Online, Entra ID (Azure AD), Intune, and related services. It requires PowerShell 7.x and depends on `ImportExcel`, `ExchangeOnlineManagement`, and `Microsoft.Graph.Authentication` (the only Microsoft Graph module: every Graph call goes through `Invoke-MgGraphRequest`).
 
 ## Common Commands
 
