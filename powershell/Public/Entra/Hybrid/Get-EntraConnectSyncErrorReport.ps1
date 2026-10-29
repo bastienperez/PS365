@@ -258,7 +258,19 @@ function Get-EntraConnectSyncErrorReport {
         }
 
         if (($ExportPath) -and ($result.Count -gt 0)) {
-            $result | Export-Csv -Path $ExportPath -NoTypeInformation -Encoding UTF8
+            # Object names and error texts come from the directory: neutralize values a spreadsheet would run as a formula
+            $exportRows = foreach ($row in $result) {
+                $safeRow = [ordered]@{}
+                foreach ($property in $row.PSObject.Properties) {
+                    $value = $property.Value
+                    if (($value -is [string]) -and ($value -match '^[=+\-@\t\r]')) {
+                        $value = "'" + $value
+                    }
+                    $safeRow[$property.Name] = $value
+                }
+                [PSCustomObject]$safeRow
+            }
+            $exportRows | Export-Csv -Path $ExportPath -NoTypeInformation -Encoding UTF8
             Write-Verbose "[OK] Report exported to $ExportPath"
         }
 
