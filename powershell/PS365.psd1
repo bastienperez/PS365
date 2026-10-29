@@ -77,7 +77,7 @@ FunctionsToExport = 'Copy-AzAutomationRunbook', 'Get-MgApplicationExpiringCertAn
                'Set-MgEnterpriseAppStatus', 'Set-MgRegisteredAppStatus', 
                'Get-MgAuditLogSigninInfo', 'Get-MgBitlockerKeyInfo', 
                'Get-DynamicGroup', 'Get-EmptyGroup', 'Get-MgGroupOwnerInfo', 
-               'Get-NestedGroup', 'Get-EntraConnectSyncErrorReport', 'Get-EntraIDHybridJoinComputerInfo', 
+               'Get-NestedGroup', 'Get-EntraConnectSyncObjectReport', 'Get-EntraIDHybridJoinComputerInfo', 
                'Get-EntraIDHybridJoinComputerRegistryKey', 
                'Get-EntraIDHybridJoinSCP', 'Get-EntraIDRegcmd', 'Get-MgLAPSPassword', 
                'Convert-EntraObjectIDAndSID', 'Get-MgCustomSecurityAttributeInfo', 

@@ -1,24 +1,24 @@
 ---
-description: Reports the synchronization and export errors of the Microsoft Entra Connect Sync connector spaces.
+description: Reports the objects of the Microsoft Entra Connect Sync connector spaces: sync rules applied, password sync status and sync or export errors.
 document type: cmdlet
-HelpUri: https://ps365.clidsys.com/docs/commands/Get-EntraConnectSyncErrorReport
+HelpUri: https://ps365.clidsys.com/docs/commands/Get-EntraConnectSyncObjectReport
 Locale: en-US
 Module Name: PS365
 ms.date: 10/29/2026
-sidebarTitle: Get-EntraConnectSyncErrorReport
-title: Get-EntraConnectSyncErrorReport
+sidebarTitle: Get-EntraConnectSyncObjectReport
+title: Get-EntraConnectSyncObjectReport
 ---
 
-# Get-EntraConnectSyncErrorReport
+# Get-EntraConnectSyncObjectReport
 
 ## SYNOPSIS
 
-Reports the synchronization and export errors of the Microsoft Entra Connect Sync connector spaces.
+Reports the objects of the Microsoft Entra Connect Sync connector spaces: sync rules applied, password sync status and sync or export errors.
 
 ## SYNTAX
 
 ```powershell
-Get-EntraConnectSyncErrorReport [[-ConnectorName] <string[]>] [[-DistinguishedName] <string>]
+Get-EntraConnectSyncObjectReport [[-ConnectorName] <string[]>] [[-DistinguishedName] <string>]
  [[-ObjectType] <string[]>] [-ErrorsOnly] [-IncludePasswordSync] [-GroupByErrorType] [[-Top] <int>]
  [[-ExportPath] <string>] [<CommonParameters>]
 ```
@@ -26,7 +26,7 @@ Get-EntraConnectSyncErrorReport [[-ConnectorName] <string[]>] [[-DistinguishedNa
 ## DESCRIPTION
 
 Reads the connector space objects with Get-ADSyncCSObject on the Entra Connect Sync server and returns one row per
-object: the sync rules applied, the HasSyncError and HasExportError flags and the error texts.
+object: the sync rules applied, the password sync status when asked, the HasSyncError and HasExportError flags and the error texts.
 
 By default every object of every Active Directory connector is returned. Use -ErrorsOnly to keep only the objects
 in error. The password sync status is read from the object log (Get-ADSyncCSObjectLog, one call per object, slow
@@ -42,7 +42,7 @@ Must be run on the Entra Connect Sync server (ADSync module) with a member of th
 ### EXAMPLE 1
 
 ```powershell
-Get-EntraConnectSyncErrorReport -ErrorsOnly
+Get-EntraConnectSyncObjectReport -ErrorsOnly
 ```
 
 Lists every object in synchronization or export error, on all AD connectors.
@@ -50,7 +50,7 @@ Lists every object in synchronization or export error, on all AD connectors.
 ### EXAMPLE 2
 
 ```powershell
-Get-EntraConnectSyncErrorReport -ErrorsOnly -GroupByErrorType
+Get-EntraConnectSyncObjectReport -ErrorsOnly -GroupByErrorType
 ```
 
 Shows how many objects fail for each error type.
@@ -58,7 +58,7 @@ Shows how many objects fail for each error type.
 ### EXAMPLE 3
 
 ```powershell
-Get-EntraConnectSyncErrorReport -DistinguishedName 'CN=John Doe,OU=Users,DC=contoso,DC=com' -IncludePasswordSync
+Get-EntraConnectSyncObjectReport -DistinguishedName 'CN=John Doe,OU=Users,DC=contoso,DC=com' -IncludePasswordSync
 ```
 
 Shows the rules applied to one user and its last password sync event.
@@ -66,7 +66,7 @@ Shows the rules applied to one user and its last password sync event.
 ### EXAMPLE 4
 
 ```powershell
-Get-EntraConnectSyncErrorReport -ErrorsOnly -ObjectType user -ExportPath 'C:\Temp\SyncErrors.csv'
+Get-EntraConnectSyncObjectReport -ErrorsOnly -ObjectType user -ExportPath 'C:\Temp\SyncErrors.csv'
 ```
 
 Exports the user objects in error to a CSV file.

@@ -1,10 +1,10 @@
 <#
     .SYNOPSIS
-    Reports the synchronization and export errors of the Microsoft Entra Connect Sync connector spaces.
+    Reports the objects of the Microsoft Entra Connect Sync connector spaces: sync rules applied, password sync status and sync or export errors.
 
     .DESCRIPTION
     Reads the connector space objects with Get-ADSyncCSObject on the Entra Connect Sync server and returns one row per
-    object: the sync rules applied, the HasSyncError and HasExportError flags and the error texts.
+    object: the sync rules applied, the password sync status when asked, the HasSyncError and HasExportError flags and the error texts.
 
     By default every object of every Active Directory connector is returned. Use -ErrorsOnly to keep only the objects
     in error. The password sync status is read from the object log (Get-ADSyncCSObjectLog, one call per object, slow
@@ -41,22 +41,22 @@
     Path of a CSV file to write the result to. The result is still returned.
 
     .EXAMPLE
-    Get-EntraConnectSyncErrorReport -ErrorsOnly
+    Get-EntraConnectSyncObjectReport -ErrorsOnly
 
     Lists every object in synchronization or export error, on all AD connectors.
 
     .EXAMPLE
-    Get-EntraConnectSyncErrorReport -ErrorsOnly -GroupByErrorType
+    Get-EntraConnectSyncObjectReport -ErrorsOnly -GroupByErrorType
 
     Shows how many objects fail for each error type.
 
     .EXAMPLE
-    Get-EntraConnectSyncErrorReport -DistinguishedName 'CN=John Doe,OU=Users,DC=contoso,DC=com' -IncludePasswordSync
+    Get-EntraConnectSyncObjectReport -DistinguishedName 'CN=John Doe,OU=Users,DC=contoso,DC=com' -IncludePasswordSync
 
     Shows the rules applied to one user and its last password sync event.
 
     .EXAMPLE
-    Get-EntraConnectSyncErrorReport -ErrorsOnly -ObjectType user -ExportPath 'C:\Temp\SyncErrors.csv'
+    Get-EntraConnectSyncObjectReport -ErrorsOnly -ObjectType user -ExportPath 'C:\Temp\SyncErrors.csv'
 
     Exports the user objects in error to a CSV file.
 
@@ -66,7 +66,7 @@
     example permission-issue, attribute-value-must-be-unique), the ...Error columns the full text.
 #>
 
-function Get-EntraConnectSyncErrorReport {
+function Get-EntraConnectSyncObjectReport {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $false)]
