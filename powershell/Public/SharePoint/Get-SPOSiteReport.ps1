@@ -24,8 +24,8 @@
     through CertificateThumbprint (Windows certificate store), CertificatePath (.pfx file) or
     CertificateBase64Encoded (base64 string, handy for Azure Automation or a pipeline variable).
 
-    The site-level collection runs in parallel (ForEach-Object -Parallel) with one PnP connection per site.
-    Tune the concurrency with ThrottleLimit. PowerShell 7 is required.
+    The site-level collection runs sequentially with one PnP connection per site, so the same code runs on
+    Windows PowerShell 5.1 and PowerShell 7.
 
     UNIFORM MEMBERS/OWNERS MODEL
     On a site connected to a Microsoft 365 group, the SharePoint site collection administrators and the
@@ -233,7 +233,7 @@
     This switch significantly increases the execution time on large tenants.
 
     .PARAMETER ThrottleLimit
-    (Optional) Maximum number of sites processed concurrently by the parallel site-level collection. Default is 8.
+    (Optional) Kept for compatibility. Sites are now processed sequentially, so this value has no effect.
 
     .PARAMETER ExportToExcel
     (Optional) If specified, exports the results to an Excel file in the user's profile directory.
@@ -1365,15 +1365,15 @@ function Get-SPOSiteReport {
     $needPerSite = $IncludeSiteAdmins.IsPresent -or $IncludeSiteMembers.IsPresent -or $IncludeSiteVisitors.IsPresent -or $IncludeSharingLinks.IsPresent -or $RegionalSettingsDetails.IsPresent
 
     if ($needPerSite) {
-        Write-Host -ForegroundColor Cyan "Collecting site-level data with $ThrottleLimit concurrent connection(s)..."
+        Write-Host -ForegroundColor Cyan "Collecting site-level data one connection at a time..."
 
-        $perSiteResults = $spoSites | ForEach-Object -ThrottleLimit $ThrottleLimit -Parallel {
-            $auth = $using:pnpAuthParams
-            $doAdmins = $using:IncludeSiteAdmins
-            $doMembers = $using:IncludeSiteMembers
-            $doVisitors = $using:IncludeSiteVisitors
-            $doSharingLinks = $using:IncludeSharingLinks
-            $doRegional = $using:RegionalSettingsDetails
+        $perSiteResults = $spoSites | ForEach-Object { & {
+            $auth = $pnpAuthParams
+            $doAdmins = $IncludeSiteAdmins
+            $doMembers = $IncludeSiteMembers
+            $doVisitors = $IncludeSiteVisitors
+            $doSharingLinks = $IncludeSharingLinks
+            $doRegional = $RegionalSettingsDetails
             $site = $_
 
             $result = [ordered]@{
@@ -1516,7 +1516,7 @@ function Get-SPOSiteReport {
             $siteConnection = $null
 
             [PSCustomObject]$result
-        }
+        } }
 
         foreach ($perSite in $perSiteResults) {
             $perSiteLookup[$perSite.Url] = $perSite

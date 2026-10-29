@@ -21,7 +21,7 @@ PS365 is a collection of PowerShell functions designed to simplify and automate 
 
 ### Prerequisites
 
-- **PowerShell 7.0** or later
+- **PowerShell 5.1** or later
 - **Microsoft 365 tenant** with appropriate permissions
 - **Required modules** (automatically installed with PS365):
   - ExchangeOnlineManagement

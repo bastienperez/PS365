@@ -106,10 +106,8 @@ Provide it
 through CertificateThumbprint (Windows certificate store), CertificatePath (.pfx file) or
 CertificateBase64Encoded (base64 string, handy for Azure Automation or a pipeline variable).
 
-Sites are processed in parallel (ForEach-Object -Parallel) with one PnP connection per site.
-Tune the
-concurrency with ThrottleLimit.
-PowerShell 7 is required.
+Sites are processed one after the other with one PnP connection per site, so the same code runs on
+Windows PowerShell 5.1 and PowerShell 7.
 
 ## EXAMPLES
 
@@ -471,10 +469,8 @@ HelpMessage: ''
 
 ### -ThrottleLimit
 
-(Optional) Number of sites processed concurrently.
-Defaults to 8.
-Lower it if SharePoint starts
-answering 429: past a certain rate, more concurrency means more throttling and a longer total run.
+(Optional) Kept for compatibility.
+Sites are now processed sequentially, so this value has no effect.
 
 ```yaml
 Type: System.Int32

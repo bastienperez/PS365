@@ -62,8 +62,8 @@ function Get-SPOSharingLinkReport {
     through CertificateThumbprint (Windows certificate store), CertificatePath (.pfx file) or
     CertificateBase64Encoded (base64 string, handy for Azure Automation or a pipeline variable).
 
-    Sites are processed in parallel (ForEach-Object -Parallel) with one PnP connection per site. Tune the
-    concurrency with ThrottleLimit. PowerShell 7 is required.
+    Sites are processed one after the other with one PnP connection per site, so the same code runs on
+    Windows PowerShell 5.1 and PowerShell 7.
 
     .PARAMETER ClientId
     (Mandatory) Application (client) ID of the Entra app registration used for the app-only connection.
@@ -123,8 +123,7 @@ function Get-SPOSharingLinkReport {
     expired. Requires IncludeGraphDetails. Mutually exclusive with ExpiredOnly and NeverExpiringOnly.
 
     .PARAMETER ThrottleLimit
-    (Optional) Number of sites processed concurrently. Defaults to 8. Lower it if SharePoint starts
-    answering 429: past a certain rate, more concurrency means more throttling and a longer total run.
+    (Optional) Kept for compatibility. Sites are now processed sequentially, so this value has no effect.
 
     .PARAMETER ExportToExcel
     (Optional) Exports the result to an .xlsx file instead of returning the objects to the pipeline.
@@ -291,11 +290,11 @@ function Get-SPOSharingLinkReport {
             return
         }
 
-        Write-Host -ForegroundColor Cyan "Scanning $($siteUrlsList.Count) site(s) for sharing links with $ThrottleLimit concurrent connection(s)..."
+        Write-Host -ForegroundColor Cyan "Scanning $($siteUrlsList.Count) site(s) for sharing links one connection at a time..."
 
-        $rawResults = $siteUrlsList | ForEach-Object -ThrottleLimit $ThrottleLimit -Parallel {
-            $auth = $using:pnpAuthParams
-            $useGraph = $using:IncludeGraphDetails
+        $rawResults = $siteUrlsList | ForEach-Object { & {
+            $auth = $pnpAuthParams
+            $useGraph = $IncludeGraphDetails
             $currentSiteUrl = $_
 
             $siteConnection = $null
@@ -489,7 +488,7 @@ function Get-SPOSharingLinkReport {
                 Links   = $siteLinks
                 Status  = $status
             }
-        }
+        } }
 
         $sharingLinksArray = [System.Collections.Generic.List[PSCustomObject]]::new()
         $siteErrorCount = 0
