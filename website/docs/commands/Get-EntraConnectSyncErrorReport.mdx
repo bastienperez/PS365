@@ -1,0 +1,121 @@
+---
+description: Reports the synchronization and export errors of the Microsoft Entra Connect Sync connector spaces.
+document type: cmdlet
+HelpUri: https://ps365.clidsys.com/docs/commands/Get-EntraConnectSyncErrorReport
+Locale: en-US
+Module Name: PS365
+ms.date: 10/29/2026
+sidebarTitle: Get-EntraConnectSyncErrorReport
+title: Get-EntraConnectSyncErrorReport
+---
+
+# Get-EntraConnectSyncErrorReport
+
+## SYNOPSIS
+
+Reports the synchronization and export errors of the Microsoft Entra Connect Sync connector spaces.
+
+## SYNTAX
+
+```powershell
+Get-EntraConnectSyncErrorReport [[-ConnectorName] <string[]>] [[-DistinguishedName] <string>]
+ [[-ObjectType] <string[]>] [-ErrorsOnly] [-IncludePasswordSync] [-GroupByErrorType] [[-Top] <int>]
+ [[-ExportPath] <string>] [<CommonParameters>]
+```
+
+## DESCRIPTION
+
+Reads the connector space objects with Get-ADSyncCSObject on the Entra Connect Sync server and returns one row per
+object: the sync rules applied, the HasSyncError and HasExportError flags and the error texts.
+
+By default every object of every Active Directory connector is returned. Use -ErrorsOnly to keep only the objects
+in error. The password sync status is read from the object log (Get-ADSyncCSObjectLog, one call per object, slow
+on a large directory) and is collected only with -IncludePasswordSync.
+
+With -GroupByErrorType, the function returns a summary instead: the number of objects per error type, per
+connector and per error kind (Synchronization or Export).
+
+Must be run on the Entra Connect Sync server (ADSync module) with a member of the ADSyncAdmins group.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Get-EntraConnectSyncErrorReport -ErrorsOnly
+```
+
+Lists every object in synchronization or export error, on all AD connectors.
+
+### EXAMPLE 2
+
+```powershell
+Get-EntraConnectSyncErrorReport -ErrorsOnly -GroupByErrorType
+```
+
+Shows how many objects fail for each error type.
+
+### EXAMPLE 3
+
+```powershell
+Get-EntraConnectSyncErrorReport -DistinguishedName 'CN=John Doe,OU=Users,DC=contoso,DC=com' -IncludePasswordSync
+```
+
+Shows the rules applied to one user and its last password sync event.
+
+### EXAMPLE 4
+
+```powershell
+Get-EntraConnectSyncErrorReport -ErrorsOnly -ObjectType user -ExportPath 'C:\Temp\SyncErrors.csv'
+```
+
+Exports the user objects in error to a CSV file.
+
+## PARAMETERS
+
+### -ConnectorName
+
+Name of one or more connectors to read. By default, all connectors of type AD.
+
+### -DistinguishedName
+
+Distinguished name of a single object to read.
+
+### -ObjectType
+
+Keeps only objects of these types, for example user, group, contact or computer.
+
+### -ErrorsOnly
+
+Keeps only the objects with a synchronization error or an export error.
+
+### -IncludePasswordSync
+
+Adds the last password sync status and timestamp of each object, and whether the password sync rule applies.
+One log query per object: combine with -ErrorsOnly or -DistinguishedName on a large directory.
+
+### -GroupByErrorType
+
+Returns the error count per error type instead of one row per object. Implies -ErrorsOnly.
+
+### -Top
+
+Stops after this number of returned objects.
+
+### -ExportPath
+
+Path of a CSV file to write the result to. The result is still returned.
+
+## INPUTS
+
+## OUTPUTS
+
+## NOTES
+
+Requires the ADSync module, installed with Microsoft Entra Connect Sync.
+The error text of the connector space is returned as is: the ...ErrorType columns hold its first line (for
+example permission-issue, attribute-value-must-be-unique), the ...Error columns the full text.
+
+## RELATED LINKS
+
+_Not documented._
