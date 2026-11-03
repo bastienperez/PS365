@@ -32,6 +32,12 @@
         "group": "Entra",
         "pages": [
           {
+            "group": "Administrative Unit",
+            "pages": [
+              "docs/commands/Get-MgDynamicAdminUnit"
+            ]
+          },
+          {
             "group": "Application",
             "pages": [
               {

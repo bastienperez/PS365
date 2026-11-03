@@ -1,0 +1,275 @@
+---
+description: Retrieves the dynamic administrative units from Entra ID with membership rule analysis.
+document type: cmdlet
+HelpUri: https://ps365.clidsys.com/docs/commands/Get-MgDynamicAdminUnit
+Locale: en-US
+Module Name: PS365
+ms.date: 11/03/2026
+sidebarTitle: Get-MgDynamicAdminUnit
+title: Get-MgDynamicAdminUnit
+---
+
+# Get-MgDynamicAdminUnit
+
+## SYNOPSIS
+
+Retrieves the dynamic administrative units from Entra ID with membership rule analysis.
+
+## SYNTAX
+
+```powershell
+Get-MgDynamicAdminUnit [[-AdminUnitId] <string>] [-DeprecatedMemberOfRuleOnly]
+ [-IncludeMembers] [-MemberReport] [-ExportToExcel] [-ExportPath <string>]
+```
+
+
+## DESCRIPTION
+
+The Get-MgDynamicAdminUnit function retrieves the Entra ID administrative units whose membership
+is dynamic, with their membership rule, the user and device attributes the rule reads and the
+member count.
+It flags the administrative units whose rule uses the deprecated MemberOf rule
+operator and lists the source groups that rule reads.
+
+By default, only the member count is returned (MembersCount).
+Use -IncludeMembers to also get
+the concatenated lists of member names and IDs, or -MemberReport to get one row per
+(administrative unit, member).
+
+Dynamic groups are covered by [Get-DynamicGroup](/docs/commands/Get-DynamicGroup).
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Get-MgDynamicAdminUnit
+```
+
+Retrieves all dynamic administrative units (members count only).
+
+### EXAMPLE 2
+
+```powershell
+Get-MgDynamicAdminUnit -DeprecatedMemberOfRuleOnly
+```
+
+Returns only the dynamic administrative units using the deprecated MemberOf rule operator, whose
+memberships stop updating after November 3, 2026.
+
+### EXAMPLE 3
+
+```powershell
+Get-MgDynamicAdminUnit -DeprecatedMemberOfRuleOnly -ExportToExcel
+```
+
+Exports the dynamic administrative units using the deprecated MemberOf rule operator to an Excel file.
+
+### EXAMPLE 4
+
+```powershell
+Get-MgDynamicAdminUnit -AdminUnitId '00000000-0000-0000-0000-000000000000' -IncludeMembers
+```
+
+Retrieves one dynamic administrative unit with MembersName and MembersId populated (pipe-separated).
+
+### EXAMPLE 5
+
+```powershell
+Get-MgDynamicAdminUnit -MemberReport -ExportToExcel
+```
+
+Exports both the per-administrative unit sheet ("DynamicAdminUnits") and the per-member sheet
+("Members") in the same Excel workbook.
+
+## PARAMETERS
+
+### -AdminUnitId
+
+When specified, retrieves only the dynamic administrative unit with this object ID.
+If not specified, retrieves all dynamic administrative units.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -DeprecatedMemberOfRuleOnly
+
+When specified, returns only the administrative units whose membership rule uses the deprecated
+MemberOf rule operator (e.g.
+user.memberof -any (group.objectId -in [...])).
+Microsoft ends this
+preview operator: after November 3, 2026, affected memberships stop updating and stay in their
+last known state.
+Without this switch, the DeprecatedMemberOfRule property still flags affected administrative units.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ExportPath
+
+Optional output directory for the Excel export (defaults to the user profile).
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ExportToExcel
+
+When specified, exports the result to an Excel file in the user's profile directory instead of
+returning it.
+When combined with -MemberReport, the member rows are written to a second worksheet
+named "Members" in the same workbook.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -IncludeMembers
+
+When specified, populates the MembersName (pipe-separated display names) and MembersId
+(pipe-separated object IDs) properties in addition to MembersCount.
+By default, only MembersCount is populated to avoid slow enumeration on large administrative units.
+Ignored when -MemberReport is used.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -MemberReport
+
+When specified, the function returns one row per (administrative unit, member) pair instead of
+the per-administrative unit objects.
+Output columns: AdminUnitId, AdminUnitName, MembershipRule, MemberId, MemberDisplayName,
+MemberPrincipal, MemberType.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+### System.Collections.Generic.List[PSCustomObject]
+
+_Not documented._
+
+## NOTES
+
+Required Microsoft Graph scopes: AdministrativeUnit.Read.All (or Directory.Read.All). With
+-IncludeMembers or -MemberReport, also User.ReadBasic.All and Device.Read.All (or Directory.Read.All).
+
+OUTPUT PROPERTIES (default / -IncludeMembers mode)
+- AdminUnitId: Unique identifier of the administrative unit
+- Name: Display name of the administrative unit
+- Type: Dynamic User or Dynamic Device, from the objects the membership rule reads
+- MembershipRule: The membership rule, on one line
+- MembershipRuleProcessingState: On or Paused
+- UserAttributes: Pipe-separated list of user attributes referenced in the membership rule
+- DeviceAttributes: Pipe-separated list of device attributes referenced in the membership rule
+- SourceGroupIds: Pipe-separated list of the group IDs a MemberOf rule reads (empty otherwise)
+- MembersCount: Number of current members of the administrative unit
+- MembersName: Pipe-separated list of member display names (only with -IncludeMembers)
+- MembersId: Pipe-separated list of member IDs (only with -IncludeMembers)
+- Description, Visibility, IsMemberManagementRestricted
+- DeprecatedMemberOfRule: True if the membership rule uses the deprecated MemberOf rule operator
+  (preview ending: memberships stop updating after November 3, 2026)
+- Warning: Deprecation warning if the administrative unit uses the MemberOf rule operator
+
+OUTPUT PROPERTIES (-MemberReport mode)
+- AdminUnitId, AdminUnitName, MembershipRule
+- MemberId, MemberDisplayName, MemberPrincipal, MemberType
+
+The members of an administrative unit with hidden membership (Visibility HiddenMembership) can
+only be listed with the Member.Read.Hidden scope.
+
+## RELATED LINKS
+
+- [https://ps365.clidsys.com/docs/commands/Get-MgDynamicAdminUnit](https://ps365.clidsys.com/docs/commands/Get-MgDynamicAdminUnit)

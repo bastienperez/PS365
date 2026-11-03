@@ -48,6 +48,7 @@
     This operator only exists in Entra ID membership rules, so this switch implies Entra ID only
     (Exchange Online is skipped, no need to add -EntraIDOnly).
     Without this switch, the DeprecatedMemberOfRule property still flags affected groups.
+    Dynamic administrative units can use the same operator: see Get-MgDynamicAdminUnit -DeprecatedMemberOfRuleOnly.
 
     .EXAMPLE
     Get-DynamicGroup
