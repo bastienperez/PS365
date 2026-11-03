@@ -45,6 +45,7 @@
     rule operator (e.g. user.memberof -any (group.objectId -in [...])). Microsoft ends this
     preview operator: after November 3, 2026, affected memberships stop updating and stay in
     their last known state.
+    Tenants with Microsoft Entra ID Governance keep it working until March 31, 2027 (MC1488839).
     This operator only exists in Entra ID membership rules, so this switch implies Entra ID only
     (Exchange Online is skipped, no need to add -EntraIDOnly).
     Without this switch, the DeprecatedMemberOfRule property still flags affected groups.
@@ -555,7 +556,7 @@ function Get-DynamicGroup {
         # (some resources may be quarantined from October 27, 2026 per the message center announcement)
         if ($group.MembershipRule -match $deprecatedMemberOfRulePattern) {
             $group.DeprecatedMemberOfRule = $true
-            $group.Warning = 'This group uses the deprecated MemberOf rule operator (preview ending). After November 3, 2026, membership stops updating and stays in its last known state. Migrate before that date. See https://learn.microsoft.com/entra/identity/users/groups-dynamic-rule-member-of'
+            $group.Warning = 'This group uses the deprecated MemberOf rule operator (preview ending). After November 3, 2026, membership stops updating and stays in its last known state. Migrate before that date. Tenants with Microsoft Entra ID Governance keep it working until March 31, 2027 (MC1488839). See https://learn.microsoft.com/entra/identity/users/groups-dynamic-rule-member-of'
         }
 
         if ([string]::IsNullOrWhiteSpace($group.UserAttributes)) { continue }

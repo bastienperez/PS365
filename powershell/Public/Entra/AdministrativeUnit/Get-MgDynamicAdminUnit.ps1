@@ -23,6 +23,7 @@
     MemberOf rule operator (e.g. user.memberof -any (group.objectId -in [...])). Microsoft ends this
     preview operator: after November 3, 2026, affected memberships stop updating and stay in their
     last known state.
+    Tenants with Microsoft Entra ID Governance keep it working until March 31, 2027 (MC1488839).
     Without this switch, the DeprecatedMemberOfRule property still flags affected administrative units.
 
     .PARAMETER IncludeMembers
@@ -222,7 +223,7 @@ function Get-MgDynamicAdminUnit {
 
         $warning = $null
         if ($usesMemberOf) {
-            $warning = 'This administrative unit uses the deprecated MemberOf rule operator (preview ending). After November 3, 2026, membership stops updating and stays in its last known state. Replace the rule or convert the administrative unit to assigned membership. See https://learn.microsoft.com/entra/identity/users/groups-dynamic-rule-member-of'
+            $warning = 'This administrative unit uses the deprecated MemberOf rule operator (preview ending). After November 3, 2026, membership stops updating and stays in its last known state. Replace the rule or convert the administrative unit to assigned membership. Tenants with Microsoft Entra ID Governance keep it working until March 31, 2027 (MC1488839). See https://learn.microsoft.com/entra/identity/users/groups-dynamic-rule-member-of'
         }
 
         $object = [PSCustomObject][ordered]@{
