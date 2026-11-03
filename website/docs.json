@@ -85,6 +85,7 @@
           {
             "group": "Hybrid",
             "pages": [
+              "docs/commands/Get-EntraConnectSyncObjectReport",
               "docs/commands/Get-EntraIDHybridJoinComputerInfo",
               "docs/commands/Get-EntraIDHybridJoinComputerRegistryKey",
               "docs/commands/Get-EntraIDHybridJoinSCP",

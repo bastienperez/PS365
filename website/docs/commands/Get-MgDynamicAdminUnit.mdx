@@ -36,7 +36,7 @@ Use -IncludeMembers to also get
 the concatenated lists of member names and IDs, or -MemberReport to get one row per
 (administrative unit, member).
 
-Dynamic groups are covered by [Get-DynamicGroup](/docs/commands/Get-DynamicGroup).
+Dynamic groups are covered by Get-DynamicGroup.
 
 ## EXAMPLES
 
@@ -244,9 +244,6 @@ _Not documented._
 
 ## NOTES
 
-Required Microsoft Graph scopes: AdministrativeUnit.Read.All (or Directory.Read.All). With
--IncludeMembers or -MemberReport, also User.ReadBasic.All and Device.Read.All (or Directory.Read.All).
-
 OUTPUT PROPERTIES (default / -IncludeMembers mode)
 - AdminUnitId: Unique identifier of the administrative unit
 - Name: Display name of the administrative unit
@@ -270,6 +267,7 @@ OUTPUT PROPERTIES (-MemberReport mode)
 
 The members of an administrative unit with hidden membership (Visibility HiddenMembership) can
 only be listed with the Member.Read.Hidden scope.
+
 
 ## RELATED LINKS
 

@@ -4,7 +4,7 @@ document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Get-MgApplicationSAML
 Locale: en-US
 Module Name: PS365
-ms.date: 09/08/2026
+ms.date: 11/03/2026
 sidebarTitle: Get-MgApplicationSAML
 title: Get-MgApplicationSAML
 ---
@@ -52,13 +52,26 @@ Get-MgApplicationSAML [-DisplayName <string>] [-ForceNewToken] [-ExportToExcel]
 
 This function returns a list of all Entra ID applications configured for SAML Single Sign-On
 along with their SAML-related properties.
-Each row represents one SAML signing certificate
-(KeyCredential with Usage 'Sign'), so an application with multiple certificates will appear
-on multiple rows.
+Each row represents one certificate, so an application
+with several certificates appears on several rows.
+The `CertificateType` column says which:
+- SAML signing      : the certificate Entra signs the SAML tokens with (service principal,
+                      KeyCredential with Usage 'Sign')
+- SAML verification : the service provider's public key Entra checks signed SAML requests with
+                      (app registration, KeyCredential with Usage 'Verify')
+- Token encryption  : the service provider's certificate Entra encrypts the SAML tokens with
+                      (app registration, KeyCredential with Usage 'Encrypt')
 
-The `SamlSigningCertificateIsPreferred` column identifies the currently active certificate:
-- True  : this is the active signing certificate
-- False : this certificate exists on the application but is not currently active
+The `CertificateIsActive` column says whether the certificate is in use:
+- SAML signing      : True for the certificate of preferredTokenSigningKeyThumbprint (or, without
+                      it, of preferredTokenSigningKeyEndDateTime).
+With neither, every one is True.
+- SAML verification : True while signed requests are required (requestSignatureVerification)
+- Token encryption  : True for the certificate named by tokenEncryptionKeyId
+
+Every Graph call goes through Invoke-MgGraphRequest: only the Microsoft.Graph.Authentication
+module is needed.
+An owner lookup that fails says so in the Owners column (it is never left empty).
 
 ## EXAMPLES
 
@@ -210,6 +223,7 @@ HelpMessage: ''
 
 (Required when RunFromAzureAutomation is enabled) Number of days threshold for expiration notification.
 Default is 30 days.
+Only the active signing certificate of each application is counted.
 
 ```yaml
 Type: System.Int32

@@ -1,0 +1,329 @@
+---
+description: 'Reports the objects of the Microsoft Entra Connect Sync connector spaces: sync rules applied, password sync status and sync or export errors.'
+document type: cmdlet
+HelpUri: https://ps365.clidsys.com/docs/commands/Get-EntraConnectSyncObjectReport
+Locale: en-US
+Module Name: PS365
+ms.date: 11/03/2026
+sidebarTitle: Get-EntraConnectSyncObjectReport
+title: Get-EntraConnectSyncObjectReport
+---
+
+# Get-EntraConnectSyncObjectReport
+
+## SYNOPSIS
+
+Reports the objects of the Microsoft Entra Connect Sync connector spaces: sync rules applied, password sync status and sync or export errors.
+
+## SYNTAX
+
+```powershell
+Get-EntraConnectSyncObjectReport [[-ConnectorName] <string[]>]
+ [[-DistinguishedName] <string>] [[-ObjectType] <string[]>]
+ [[-RunHistoryCount] <int>] [[-Top] <int>] [[-ExportPath] <string>]
+ [-ErrorsOnly] [-IncludePasswordSync] [-GroupByErrorType] [-LastRun]
+```
+
+
+## DESCRIPTION
+
+Reads the connector space objects with Get-ADSyncCSObject on the Entra Connect Sync server and returns one row per
+object: the sync rules applied, the password sync status when asked, the HasSyncError and HasExportError flags and the error texts.
+
+By default every object of every Active Directory connector is returned.
+Use -ErrorsOnly to keep only the objects
+in error.
+The password sync status is read from the object log (Get-ADSyncCSObjectLog, one call per object, slow
+on a large directory) and is collected only with -IncludePasswordSync.
+
+With -GroupByErrorType, the function returns a summary instead: the number of objects per error type, per
+connector and per error kind (Synchronization or Export).
+
+With -LastRun, the function returns the run history instead: for each connector, the last run of each run
+profile (Delta Import, Delta Synchronization, Export...), as shown in the Operations tab of the Synchronization
+Service Manager, with its result, duration, counters and errors.
+
+Must be run on the Entra Connect Sync server (ADSync module) with a member of the ADSyncAdmins group.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Get-EntraConnectSyncObjectReport -ErrorsOnly
+```
+
+Lists every object in synchronization or export error, on all AD connectors.
+
+### EXAMPLE 2
+
+```powershell
+Get-EntraConnectSyncObjectReport -ErrorsOnly -GroupByErrorType
+```
+
+Shows how many objects fail for each error type.
+
+### EXAMPLE 3
+
+```powershell
+Get-EntraConnectSyncObjectReport -DistinguishedName 'CN=John Doe,OU=Users,DC=contoso,DC=com' -IncludePasswordSync
+```
+
+Shows the rules applied to one user and its last password sync event.
+
+### EXAMPLE 4
+
+```powershell
+Get-EntraConnectSyncObjectReport -ErrorsOnly -ObjectType user -ExportPath 'C:\Temp\SyncErrors.csv'
+```
+
+Exports the user objects in error to a CSV file.
+
+### EXAMPLE 5
+
+```powershell
+Get-EntraConnectSyncObjectReport -LastRun | Format-Table ConnectorName, RunProfileName, Result, StartDate, DurationSeconds, TotalErrors
+```
+
+Shows the last run of each run profile on every connector, AD and Entra ID.
+
+## PARAMETERS
+
+### -ConnectorName
+
+Name of one or more connectors to read.
+By default, all connectors of type AD (all connectors with -LastRun).
+
+```yaml
+Type: System.String[]
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -DistinguishedName
+
+Distinguished name of a single object to read.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 1
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ErrorsOnly
+
+Keeps only the objects with a synchronization error or an export error.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ExportPath
+
+Path of a CSV file to write the result to.
+The result is still returned.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 5
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -GroupByErrorType
+
+Returns the error count per error type instead of one row per object.
+Implies -ErrorsOnly.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -IncludePasswordSync
+
+Adds the last password sync status and timestamp of each object, and whether the password sync rule applies.
+One log query per object: combine with -ErrorsOnly or -DistinguishedName on a large directory.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -LastRun
+
+Returns the last run of each run profile per connector instead of the connector space objects.
+Only -ConnectorName, -RunHistoryCount and -ExportPath apply with it.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ObjectType
+
+Keeps only objects of these types, for example user, group, contact or computer.
+
+```yaml
+Type: System.String[]
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 2
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -RunHistoryCount
+
+Number of recent runs read per connector to find the last run of each profile.
+Default 50.
+
+```yaml
+Type: System.Int32
+DefaultValue: 50
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 3
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Top
+
+Stops after this number of returned objects.
+
+```yaml
+Type: System.Int32
+DefaultValue: 0
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 4
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+## NOTES
+
+Requires the ADSync module, installed with Microsoft Entra Connect Sync.
+The error text of the connector space is returned as is: the ...ErrorType columns hold its first line (for
+example permission-issue, attribute-value-must-be-unique), the ...Error columns the full text.
+
+
+## RELATED LINKS
+
+_Not documented._
+
