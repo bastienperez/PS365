@@ -4,7 +4,7 @@ document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Get-ExMailboxForwarding
 Locale: en-US
 Module Name: PS365
-ms.date: 09/08/2026
+ms.date: 11/06/2026
 sidebarTitle: Get-ExMailboxForwarding
 title: Get-ExMailboxForwarding
 ---
@@ -215,9 +215,24 @@ _Not documented._
 
 ## NOTES
 
-Priority 1: ForwardingAddress
-Priority 2: ForwardingSMTPAddress
-Priority 3: Inbox Rules
+Which forwarding is applied when several are set (see the Precedence column in the output):
+1.
+ForwardingAddress: applied first.
+If it is set, ForwardingSMTPAddress and inbox rules are ignored.
+2.
+ForwardingSMTPAddress: used when ForwardingAddress is empty.
+If it is set, inbox rules are ignored.
+3.
+Inbox rules: only used when 1 and 2 are empty (or when DeliverToMailboxAndForward is set to $true).
+   See https://support.microsoft.com/en-us/help/3069075
+
+Who can configure forwarding:
+- ForwardingAddress and ForwardingSMTPAddress can be set by an administrator (Set-Mailbox) and, depending on the role assignment policy of the mailbox, by the user in OWA (Settings > Mail > Forwarding).
+  A user can therefore overwrite a value set by an administrator, and the reverse is true.
+- Inbox rules (forward or redirect) can be created by the user in Outlook or OWA.
+
+Whether a forwarding really works to an external address depends on the Remote Domain(s) (AutoForwardEnabled) and on the AutoForwardingMode of the outbound spam policy(ies).
+See ForwardingWorks in the output.
 
 
 ## RELATED LINKS

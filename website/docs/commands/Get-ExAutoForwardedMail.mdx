@@ -29,8 +29,9 @@ Checks the Remote Domain and outbound spam policy auto-forwarding settings, then
 (last 10 days max) for messages handled by an auto-forward or a recipient forward rule.
 
 Uses Get-MessageTraceV2 and Get-MessageTraceDetailV2 (ExchangeOnlineManagement 3.7.0 or later).
-With ResultSize capped at 5000 and no paging,
-a busy tenant can have more messages than returned: narrow the search with -SenderAddress or -Days.
+Get-MessageTraceV2 returns 5000 messages at most,
+so the period is split into smaller time windows until each one fits.
+On a busy tenant this can be long: narrow the search with -SenderAddress or -Days.
 
 Message trace data is only available for the last 10 days.
 For older data, use Start-HistoricalSearch and Get-HistoricalSearch.

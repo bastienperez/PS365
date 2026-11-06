@@ -38,9 +38,19 @@
 	https://ps365.clidsys.com/docs/commands/Get-ExMailboxForwarding
 
 	.NOTES
-	Priority 1: ForwardingAddress
-	Priority 2: ForwardingSMTPAddress
-	Priority 3: Inbox Rules
+	Which forwarding is applied when several are set (see the Precedence column in the output):
+	1. ForwardingAddress: applied first. If it is set, ForwardingSMTPAddress and inbox rules are ignored.
+	2. ForwardingSMTPAddress: used when ForwardingAddress is empty. If it is set, inbox rules are ignored.
+	3. Inbox rules: only used when 1 and 2 are empty (or when DeliverToMailboxAndForward is set to $true).
+	   See https://support.microsoft.com/en-us/help/3069075
+
+	Who can configure forwarding:
+	- ForwardingAddress and ForwardingSMTPAddress can be set by an administrator (Set-Mailbox) and, depending on the role assignment policy of the mailbox, by the user in OWA (Settings > Mail > Forwarding).
+	  A user can therefore overwrite a value set by an administrator, and the reverse is true.
+	- Inbox rules (forward or redirect) can be created by the user in Outlook or OWA.
+
+	Whether a forwarding really works to an external address depends on the Remote Domain(s) (AutoForwardEnabled) and on the AutoForwardingMode of the outbound spam policy(ies).
+	See ForwardingWorks in the output.
 #>
 
 function Get-ExMailboxForwarding {
@@ -272,7 +282,7 @@ function Get-ExMailboxForwarding {
                         $forwardingWorks = "False (Autoforward mode = $autoForwardMode)"
                     }
                     else {
-                        $forwardingWorks = "Yes (Autoforward mode = $autoForwardMode) and address used is an internal object (contact or mailbox)"
+                        $forwardingWorks = "True (Autoforward mode = $autoForwardMode) and address used is an internal object (contact or mailbox)"
                     }
 
                     $object = [PSCustomObject][ordered]@{
@@ -357,7 +367,7 @@ function Get-ExMailboxForwarding {
                             $forwardingWorks = "Maybe (RemoteDomain '$($matchedRemoteDomain.Name)' [$($matchedRemoteDomain.DomainName)] AutoForwardEnabled = True), check TransportRule(s) that may block external forwarding: $($blockingTransportRules.Name -join ', ')"
                         }
                         else {
-                            $forwardingWorks = "Yes (Autoforward mode = $autoForwardMode, RemoteDomain '$($matchedRemoteDomain.Name)' [$($matchedRemoteDomain.DomainName)] AutoForwardEnabled = True, no blocking TransportRule found)"
+                            $forwardingWorks = "True (Autoforward mode = $autoForwardMode, RemoteDomain '$($matchedRemoteDomain.Name)' [$($matchedRemoteDomain.DomainName)] AutoForwardEnabled = True, no blocking TransportRule found)"
                         }
                     }
 
@@ -598,6 +608,33 @@ function Get-ExMailboxForwarding {
             $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
             $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-ExMailboxForwarding.xlsx"
             Write-Host -ForegroundColor Cyan "Exporting to Excel file: $excelFilePath"
+
+            # First worksheet: notes to help read the results
+            [System.Collections.Generic.List[PSCustomObject]]$notesList = @()
+            $notesRows = @(
+                @('Which forwarding is applied (1)', '1 - ForwardingAddress: applied first. If it is set, ForwardingSMTPAddress and inbox rules are ignored.'),
+                @('Which forwarding is applied (2)', '2 - ForwardingSMTPAddress: used when ForwardingAddress is empty. If it is set, inbox rules are ignored.'),
+                @('Which forwarding is applied (3)', '3 - Inbox rules: only used when ForwardingAddress and ForwardingSMTPAddress are empty (or when DeliverToMailboxAndForward is True). The Precedence column of each row tells which one is ignored.'),
+                @('Who can configure forwarding', 'ForwardingAddress and ForwardingSMTPAddress can be set by an administrator (Set-Mailbox) and, depending on the role assignment policy of the mailbox, by the user in OWA (Settings > Mail > Forwarding). A user can overwrite a value set by an administrator, and the reverse is true. Inbox rules (forward or redirect) can be created by the user in Outlook or OWA.'),
+                @('ForwardingWorks', 'True, False or Maybe. For an external address, it depends on the Remote Domain(s) (AutoForwardEnabled), the AutoForwardingMode of the outbound spam policy(ies) and the transport rule(s) that may block external forwarding.'),
+                @('ForwardScope', 'External when the forward address domain is not one of the accepted domains of the tenant, otherwise Internal.')
+            )
+            foreach ($noteRow in $notesRows) {
+                $object = [PSCustomObject][ordered]@{
+                    Topic   = $noteRow[0]
+                    Details = $noteRow[1]
+                }
+                $notesList.Add($object)
+            }
+
+            $excelPackage = $notesList | Export-Excel -Path $excelFilePath -WorksheetName 'Notes' -TableStyle Light9 -PassThru
+            $notesSheet = $excelPackage.Workbook.Worksheets['Notes']
+            $notesSheet.Column(1).Width = 30
+            $notesSheet.Column(2).Width = 120
+            $notesSheet.Cells[$notesSheet.Dimension.Address].Style.WrapText = $true
+            $notesSheet.Cells[$notesSheet.Dimension.Address].Style.VerticalAlignment = [OfficeOpenXml.Style.ExcelVerticalAlignment]::Top
+            Close-ExcelPackage -ExcelPackage $excelPackage
+
             $forwardList | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'ExMailboxForwarding' -TableStyle Light9
             Write-Host -ForegroundColor Green 'Export completed successfully!'
         }
