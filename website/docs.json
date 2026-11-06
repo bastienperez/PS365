@@ -137,7 +137,7 @@
           {
             "group": "Group",
             "pages": [
-              "docs/commands/Find-DistributionGroupMember"
+              "docs/commands/Find-ExDistributionGroupMember"
             ]
           },
           {
@@ -172,15 +172,21 @@
             ]
           },
           {
+            "group": "Mail Flow",
+            "pages": [
+              "docs/commands/Get-ExAutoForwardedMail"
+            ]
+          },
+          {
             "group": "Message Trace",
             "pages": [
-              "docs/commands/Get-MessageTraceInfo"
+              "docs/commands/Get-ExMessageTraceInfo"
             ]
           },
           {
             "group": "Mobile",
             "pages": [
-              "docs/commands/Get-MobileDeviceInfo"
+              "docs/commands/Get-ExMobileDeviceInfo"
             ]
           },
           {

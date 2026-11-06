@@ -10,17 +10,17 @@
     If not provided, details for all mailboxes will be retrieved.
 
     .EXAMPLE
-    Get-MobileDeviceInfo
+    Get-ExMobileDeviceInfo
 
     Retrieves mobile device details for all user mailboxes.
 
     .EXAMPLE
-    Get-MobileDeviceInfo -UserPrincipalName "<UserPrincipalName>"
+    Get-ExMobileDeviceInfo -UserPrincipalName "<UserPrincipalName>"
 
     Retrieves mobile device details for the specified user.
 
     .LINK
-    https://ps365.clidsys.com/docs/commands/Get-MobileDeviceInfo
+    https://ps365.clidsys.com/docs/commands/Get-ExMobileDeviceInfo
 
     .NOTES
     Author: Bastien Perez
@@ -28,7 +28,7 @@
     Works with both Exchange Online and on-premises Exchange environments and uses the appropriate cmdlets based on the environment.
 #>
 
-function Get-MobileDeviceInfo {
+function Get-ExMobileDeviceInfo {
 
     [CmdletBinding()]
     param (
@@ -116,3 +116,5 @@ function Get-MobileDeviceInfo {
         return $mobileDetailsArray
     }
 }
+
+Set-Alias -Name Get-MobileDeviceInfo -Value Get-ExMobileDeviceInfo

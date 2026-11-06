@@ -111,6 +111,37 @@ function Get-ExMailboxForwarding {
         foreach ($remoteDomain in $remoteDomains) {
             Write-Host "Remote Domain '$remotedomain' AutoForwardEnabled: $($remoteDomain.AutoForwardEnabled)" -ForegroundColor Cyan
         }
+
+        # Enabled transport rules that look like they block external forwarding (heuristic, to be verified manually):
+        # condition on auto-forward messages or on external recipients + action reject/delete
+        $blockingTransportRules = @()
+        try {
+            $blockingTransportRules = @(Get-TransportRule -ResultSize Unlimited -ErrorAction Stop | Where-Object {
+                    $_.State -eq 'Enabled' -and
+                    ($_.MessageTypeMatches -eq 'AutoForward' -or $_.SentToScope -eq 'NotInOrganization') -and
+                    ($_.RejectMessageReasonText -or $_.RejectMessageEnhancedStatusCode -or $_.DeleteMessage)
+                })
+        }
+        catch {
+            Write-Warning "Unable to read transport rules: $($_.Exception.Message)"
+        }
+        foreach ($blockingTransportRule in $blockingTransportRules) {
+            Write-Host "Transport rule that may block external forwarding: '$($blockingTransportRule.Name)'" -ForegroundColor Yellow
+        }
+
+        function Get-ForwardingRemoteDomainMatch {
+            param (
+                [Parameter(Mandatory = $true)]
+                [string]$Domain
+            )
+
+            # The most specific remote domain wins ('*' is the default one). Longest matching DomainName = most specific.
+            $matchedRemoteDomain = $remoteDomains |
+                Where-Object { $Domain -like [string]$_.DomainName } |
+                Sort-Object { ([string]$_.DomainName).Length } -Descending |
+                Select-Object -First 1
+            return $matchedRemoteDomain
+        }
         if (-not $ExchangeOnPremise) {
             $outboundSpamPolicies = [array](Get-HostedOutboundSpamFilterPolicy)
 
@@ -257,7 +288,7 @@ function Get-ExMailboxForwarding {
                         ForwardingAddress                      = $forwardingAddress.ForwardingAddress
                         ForwardingSMTPAddress                  = '-'
                         ForwardingWorks                        = $forwardingWorks
-                        DeliverToMailboxAndForward             = '-'
+                        DeliverToMailboxAndForward             = $forwardingAddress.DeliverToMailboxAndForward
                         InboxRulePriority                      = '-'
                         InboxRuleEnabled                       = '-'
                         InboxRuleForwardAddressConverted       = '-'
@@ -315,7 +346,19 @@ function Get-ExMailboxForwarding {
                         $forwardingWorks = "False (Autoforward mode = $autoForwardMode)"
                     }
                     else {
-                        $forwardingWorks = "Maybe (Autoforward mode = $autoForwardMode), check if RemoteDomain(s) allows external forwarding and check if TransportRule(s) exist to prevent external forwarding"
+                        $matchedRemoteDomain = Get-ForwardingRemoteDomainMatch -Domain $recipientDomain
+                        if ($null -eq $matchedRemoteDomain) {
+                            $forwardingWorks = "Maybe (Autoforward mode = $autoForwardMode), no RemoteDomain matches '$recipientDomain', check RemoteDomain(s) and TransportRule(s)"
+                        }
+                        elseif (-not $matchedRemoteDomain.AutoForwardEnabled) {
+                            $forwardingWorks = "False (RemoteDomain '$($matchedRemoteDomain.Name)' [$($matchedRemoteDomain.DomainName)] AutoForwardEnabled = False)"
+                        }
+                        elseif ($blockingTransportRules.Count -gt 0) {
+                            $forwardingWorks = "Maybe (RemoteDomain '$($matchedRemoteDomain.Name)' [$($matchedRemoteDomain.DomainName)] AutoForwardEnabled = True), check TransportRule(s) that may block external forwarding: $($blockingTransportRules.Name -join ', ')"
+                        }
+                        else {
+                            $forwardingWorks = "Yes (Autoforward mode = $autoForwardMode, RemoteDomain '$($matchedRemoteDomain.Name)' [$($matchedRemoteDomain.DomainName)] AutoForwardEnabled = True, no blocking TransportRule found)"
+                        }
                     }
 
                     $object = [PSCustomObject][ordered]@{

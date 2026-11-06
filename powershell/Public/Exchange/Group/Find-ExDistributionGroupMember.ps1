@@ -18,24 +18,24 @@
     Specify a recipient type detail to further filter the members (e.g., MailContact, MailUser).
 
     .EXAMPLE
-    Find-DistributionGroupMember -FilterByDomain "contoso.com"
+    Find-ExDistributionGroupMember -FilterByDomain "contoso.com"
 
     Searches all distribution groups for members with email addresses containing "contoso.com" and exports the results to a CSV file.
     
     .EXAMPLE
-    Find-DistributionGroupMember -FilterByEmailAddresses "user@contoso.com"
+    Find-ExDistributionGroupMember -FilterByEmailAddresses "user@contoso.com"
 
     Searches all distribution groups for members with the email address "user@contoso.com" and exports the results to a CSV file.   
 
     .EXAMPLE
-    Find-DistributionGroupMember -FilterByExternalDomains -FilterRecipientTypeDetails "MailContact"
+    Find-ExDistributionGroupMember -FilterByExternalDomains -FilterRecipientTypeDetails "MailContact"
 
     Searches all distribution groups for members whose email addresses belong to external domains and are of the type "MailContact", then exports the results to a CSV file.
 
     .LINK
-    https://ps365.clidsys.com/docs/commands/Find-DistributionGroupMember
+    https://ps365.clidsys.com/docs/commands/Find-ExDistributionGroupMember
 #>
-function Find-DistributionGroupMember {
+function Find-ExDistributionGroupMember {
     param
     (
         [Parameter(Mandatory = $false)]
@@ -59,7 +59,7 @@ function Find-DistributionGroupMember {
 
     # Usage example :
     #	Connect-ExchangeOnline
-    #	Find-DistributionGroupMember Export-Csv "AllContactsMember.csv" -NoTypeInformation -Encoding utf8 -Delimiter ';'
+    #	Find-ExDistributionGroupMember Export-Csv "AllContactsMember.csv" -NoTypeInformation -Encoding utf8 -Delimiter ';'
     # Ignore GroupMailbox type (Office 365 groups-unified groups)
     $distributionGroups = Get-DistributionGroup -ResultSize unlimited -RecipientTypeDetails MailUniversalDistributionGroup
 
@@ -127,3 +127,5 @@ function Find-DistributionGroupMember {
 
     return $foundMembers
 }
+
+Set-Alias -Name Find-DistributionGroupMember -Value Find-ExDistributionGroupMember

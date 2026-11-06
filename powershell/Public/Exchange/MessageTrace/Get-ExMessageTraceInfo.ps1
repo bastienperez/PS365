@@ -27,17 +27,17 @@
     Specifies whether to filter the message trace using a connector. This parameter is a switch parameter.
 
     .EXAMPLE
-    Get-MessageTraceInfo -SenderAddress "john.doe@example.com" -RecipientAddress "jane.doe@example.com" -StartDate (Get-Date).AddDays(-7) -EndDate (Get-Date) -ByConnectorName "OutboundConnector" -UsingConnector
+    Get-ExMessageTraceInfo -SenderAddress "john.doe@example.com" -RecipientAddress "jane.doe@example.com" -StartDate (Get-Date).AddDays(-7) -EndDate (Get-Date) -ByConnectorName "OutboundConnector" -UsingConnector
     
     Retrieves message trace information for messages sent by "john.doe@example.com" to "jane.doe@example.com" within the last 7 days, using the "OutboundConnector" connector.
 
     .EXAMPLE
-    Get-MessageTraceInfo -RecipientAddress "jane.doe@example.com" -StartDate (Get-Date).AddDays(-30) -EndDate (Get-Date) -ByTransportRuleName "Confidential" -UsingConnector
+    Get-ExMessageTraceInfo -RecipientAddress "jane.doe@example.com" -StartDate (Get-Date).AddDays(-30) -EndDate (Get-Date) -ByTransportRuleName "Confidential" -UsingConnector
     
     Retrieves message trace information for messages received by "jane.doe@example.com" within the last 30 days, filtered by the "Confidential" transport rule, using a connector.
 
     .LINK
-    https://ps365.clidsys.com/docs/commands/Get-MessageTraceInfo
+    https://ps365.clidsys.com/docs/commands/Get-ExMessageTraceInfo
 
     .NOTES
     This function requires the Exchange Online PowerShell module to be installed and connected to an Exchange Online organization.
@@ -45,7 +45,7 @@
     For some event, it will fail to get messagetracedetail
 #>
 
-function Get-MessageTraceInfo {
+function Get-ExMessageTraceInfo {
     param(
         [Parameter(Mandatory = $false)]
         [String[]] $SenderAddress,
@@ -232,3 +232,5 @@ function Get-MessageTraceInfo {
     
     return $messagesInfo
 }
+
+Set-Alias -Name Get-MessageTraceInfo -Value Get-ExMessageTraceInfo

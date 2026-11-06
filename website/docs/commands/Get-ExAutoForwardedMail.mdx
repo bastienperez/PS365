@@ -1,0 +1,146 @@
+---
+description: Get messages that were automatically forwarded to external recipients
+document type: cmdlet
+HelpUri: https://ps365.clidsys.com/docs/commands/Get-ExAutoForwardedMail
+Locale: en-US
+Module Name: PS365
+ms.date: 11/06/2026
+sidebarTitle: Get-ExAutoForwardedMail
+title: Get-ExAutoForwardedMail
+---
+
+# Get-ExAutoForwardedMail
+
+## SYNOPSIS
+
+Get messages that were automatically forwarded to external recipients
+
+## SYNTAX
+
+```powershell
+Get-ExAutoForwardedMail [[-SenderAddress] <string>] [[-Days] <int>]
+ [-FailedOnly]
+```
+
+
+## DESCRIPTION
+
+Checks the Remote Domain and outbound spam policy auto-forwarding settings, then searches the message trace
+(last 10 days max) for messages handled by an auto-forward or a recipient forward rule.
+
+Uses Get-MessageTraceV2 and Get-MessageTraceDetailV2 (ExchangeOnlineManagement 3.7.0 or later).
+With ResultSize capped at 5000 and no paging,
+a busy tenant can have more messages than returned: narrow the search with -SenderAddress or -Days.
+
+Message trace data is only available for the last 10 days.
+For older data, use Start-HistoricalSearch and Get-HistoricalSearch.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Get-ExAutoForwardedMail
+```
+
+Returns auto-forwarded messages from the last 10 days.
+
+### EXAMPLE 2
+
+```powershell
+Get-ExAutoForwardedMail -SenderAddress user@example.com -Days 3 -FailedOnly
+```
+
+Returns failed auto-forwarded messages sent by user@example.com in the last 3 days.
+
+## PARAMETERS
+
+### -Days
+
+Number of days to search back (1 to 10).
+Default is 10.
+
+```yaml
+Type: System.Int32
+DefaultValue: 10
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 1
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -FailedOnly
+
+Only return messages with a Failed status.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -SenderAddress
+
+Only return messages sent by this address.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+## NOTES
+
+Sources:
+https://office365itpros.com/2020/11/12/microsoft-clamps-down-mail-forwarding-exchange-online/
+http://blog.icewolf.ch/archive/2020/10/06/how-to-control-the-many-ways-of-email-forwarding-in.aspx
+https://learn.microsoft.com/en-us/microsoft-365/security/office-365-security/external-email-forwarding
+https://techcommunity.microsoft.com/t5/exchange-team-blog/all-you-need-to-know-about-automatic-email-forwarding-in/ba-p/2074888
+https://misstech.co.uk/2020/07/27/new-controls-available-to-block-automatic-email-forwarding/
+Report: https://admin.cloud.microsoft/exchange?ref=/homepage#/reports/autoforwardedmessages
+
+
+## RELATED LINKS
+
+- [https://ps365.clidsys.com/docs/commands/Get-ExAutoForwardedMail](https://ps365.clidsys.com/docs/commands/Get-ExAutoForwardedMail)

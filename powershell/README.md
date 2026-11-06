@@ -72,7 +72,7 @@ Import-Module .\PS365\PS365.psd1
 
 #### Group Management
 
-- `Find-DistributionGroupMembers` - Find and analyze distribution group memberships
+- `Find-ExDistributionGroupMember` - Find and analyze distribution group memberships
 
 #### Mailbox Management
 
@@ -92,11 +92,11 @@ Import-Module .\PS365\PS365.psd1
 
 #### Message Trace
 
-- `Get-MessageTraceInfo` - Get detailed message trace information with filtering
+- `Get-ExMessageTraceInfo` - Get detailed message trace information with filtering
 
 #### Mobile Device Management
 
-- `Get-MobileDeviceInfo` - Get mobile device details
+- `Get-ExMobileDeviceInfo` - Get mobile device details
 
 #### Role Reporting
 

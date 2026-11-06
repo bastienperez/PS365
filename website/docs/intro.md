@@ -73,7 +73,7 @@ Get-Command -Module PS365
 Each function includes comprehensive help:
 
 ```powershell
-Get-Help Find-DistributionGroupMembers -Full
+Get-Help Find-ExDistributionGroupMember -Full
 ```
 
 ## What's Next?
