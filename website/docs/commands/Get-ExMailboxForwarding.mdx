@@ -41,7 +41,7 @@ Returns all mailboxes with forwarding configuration.
 ### EXAMPLE 2
 
 ```powershell
-Get-ExMailboxForwarding -Mailboxes "user1@example.com","user2@example.com"
+Get-ExMailboxForwarding -Identity "user1@example.com","user2@example.com"
 ```
 
 Returns forwarding configuration for specified mailboxes.
@@ -218,6 +218,8 @@ _Not documented._
 Priority 1: ForwardingAddress
 Priority 2: ForwardingSMTPAddress
 Priority 3: Inbox Rules
+
+ForwardingWorks uses the outbound spam policy that applies to each mailbox: the first enabled rule that matches, by priority, else the default policy.
 
 
 ## RELATED LINKS
