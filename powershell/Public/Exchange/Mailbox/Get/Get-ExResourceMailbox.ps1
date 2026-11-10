@@ -114,46 +114,72 @@ function Get-ExResourceMailbox {
                 $parameters = @('BookInPolicy', 'RequestInPolicy', 'RequestOutOfPolicy', 'ResourceDelegates')
 
                 foreach ($param in $parameters) {
-                    $applyToArray = [System.Collections.Generic.List[PSCustomObject]]::new()
-                    $applyToSplatted = [System.Collections.Generic.List[PSCustomObject]]::new()
+                    $applyToArray = [System.Collections.Generic.List[string]]::new()
+                    $applyToSplatted = [System.Collections.Generic.List[string]]::new()
 
+                    foreach ($object in @($calProc.$param)) {
+                        if ($null -eq $object -or "$object" -eq '') { continue }
+                        $objectName = "$object"
 
-                    if ($calProc.$param) {
-                        foreach ($object in $calProc.$param) {
-                            if ($UseExchangeDNHash) {
-                                $applyToArray.Add($MailboxLegacyExchangeDNHash[$object])
+                        # Resolve once per entry (never reuse the previous iteration value)
+                        $recipientObject = $null
+                        $resolvedSmtp = $null
+                        if ($UseExchangeDNHash -and $MailboxLegacyExchangeDNHash.ContainsKey($objectName)) {
+                            $resolvedSmtp = "$($MailboxLegacyExchangeDNHash[$objectName])"
+                        }
+                        if (-not $resolvedSmtp) {
+                            try {
+                                # ADObjectId: prefer the GUID/DN (a bare name like "Accueil pyramides" is not always resolvable)
+                                $lookupId = if ($object.ObjectGuid -and $object.ObjectGuid -ne [guid]::Empty) { $object.ObjectGuid.ToString() }
+                                elseif ($object.DistinguishedName) { $object.DistinguishedName }
+                                else { $objectName }
+                                $recipientObject = Get-Recipient -Identity $lookupId -ErrorAction SilentlyContinue
+                                if (-not $recipientObject) {
+                                    $escapedName = $objectName.Replace("'", "''")
+                                    $recipientObject = Get-Recipient -Filter "DisplayName -eq '$escapedName' -or Name -eq '$escapedName'" -ResultSize 2 -ErrorAction Stop | Select-Object -First 1
+                                }
+                                if (-not $recipientObject) { throw "Recipient $objectName not found" }
+                                $resolvedSmtp = if ($recipientObject.PrimarySmtpAddress) { "$($recipientObject.PrimarySmtpAddress)" } else { "$($recipientObject.Name)" }
                             }
-                            else {
-                                try {
-                                    $recipientObject = Get-Recipient $object -ErrorAction Stop
-                                }
-                                catch {
-                                    Write-Warning "$resource - $param - Recipient $object not found - You will see $object(NotFound) in the report"
-                                    $recipientObject = "$object(NotFound)"
-                                }
-
-                                $applyToArray.Add($recipientObject)
+                            catch {
+                                Write-Warning "Resource '$($resource.PrimarySmtpAddress)': recipient '$objectName' not found in property '$param' (deleted or orphaned object). Reported as '$objectName(NotFound)'."
+                                $resolvedSmtp = "$objectName(NotFound)"
                             }
+                        }
+                        $applyToArray.Add($resolvedSmtp)
 
-                            if ($recipientObject.RecipientType -like '*Group*') {
-                                (Get-DistributionGroupMember -Identity $object | Select-Object @{ Name = 'PrimarySmtpAddress'; Expression = { $_.PrimarySmtpAddress } }) | ForEach-Object {
-                                    $applyToSplatted.Add($_.PrimarySmtpAddress)
+                        $isGroup = $recipientObject -and ($recipientObject.RecipientTypeDetails -match 'Group|RoomList')
+                        if ($isGroup) {
+                            $groupIdentity = $recipientObject.Guid.ToString()
+                            $memberAddresses = @()
+                            try {
+                                switch -Regex ($recipientObject.RecipientTypeDetails) {
+                                    'GroupMailbox' {
+                                        $memberAddresses = @(Get-UnifiedGroupLinks -Identity $groupIdentity -LinkType Members -ResultSize Unlimited -ErrorAction Stop).PrimarySmtpAddress
+                                    }
+                                    'Dynamic' {
+                                        $dynamicGroup = Get-DynamicDistributionGroup -Identity $groupIdentity -ErrorAction Stop
+                                        $memberAddresses = @(Get-Recipient -RecipientPreviewFilter $dynamicGroup.RecipientFilter -OrganizationalUnit $dynamicGroup.RecipientContainer -ResultSize Unlimited -ErrorAction Stop).PrimarySmtpAddress
+                                    }
+                                    default {
+                                        $memberAddresses = @(Get-DistributionGroupMember -Identity $groupIdentity -ResultSize Unlimited -ErrorAction Stop).PrimarySmtpAddress
+                                    }
                                 }
-
                             }
-                            else {
-                                if ($UseExchangeDNHash) {
-                                    $applyToSplatted.Add($MailboxLegacyExchangeDNHash[$object])
-                                }
-                                else {
-                                    $applyToSplatted.Add($recipientObject.PrimarySmtpAddress)
-                                }
+                            catch {
+                                Write-Warning "Resource '$($resource.PrimarySmtpAddress)': cannot expand group '$objectName' (type $($recipientObject.RecipientTypeDetails)) in property '$param'. Error: $($_.Exception.Message)"
                             }
+                            foreach ($memberAddress in $memberAddresses) {
+                                if ($memberAddress) { $applyToSplatted.Add("$memberAddress") }
+                            }
+                        }
+                        else {
+                            $applyToSplatted.Add($resolvedSmtp)
                         }
                     }
 
-                    $calProc | Add-Member -MemberType NoteProperty -Name $param-applyTo -Value $($applyToArray -join '|')
-                    $calProc | Add-Member -MemberType NoteProperty -Name $param-applyToArraySplatted -Value $($applyToSplatted -join '|')
+                    $calProc | Add-Member -MemberType NoteProperty -Name "$param-applyTo" -Value ($applyToArray -join '|') -Force
+                    $calProc | Add-Member -MemberType NoteProperty -Name "$param-applyToArraySplatted" -Value ($applyToSplatted -join '|') -Force
                 }
             }
 
