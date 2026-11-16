@@ -310,10 +310,16 @@ function Get-DynamicGroup {
         foreach ($group in $exchangeGroups) {
             $exchangeCounter++
             Write-Verbose "[$exchangeCounter/$exchangeTotal] Processing Exchange group: $($group.Name)"
+            # A dynamic distribution group is not a distribution group:
+            # Get-DistributionGroup -Identity on it fails with "object not
+            # found". The groups that contain it are the ones whose Members
+            # holds its DistinguishedName.
             try {
-                $memberOf = Get-DistributionGroup -Identity $group.Identity | Select-Object -ExpandProperty MemberOfGroup -ErrorAction SilentlyContinue
+                $dn = $group.DistinguishedName -replace "'", "''"
+                $memberOf = @(Get-Recipient -Filter "Members -eq '$dn'" -ResultSize Unlimited -ErrorAction Stop | Select-Object -ExpandProperty Name)
             }
             catch {
+                Write-Verbose "MemberOf of $($group.Name) not read: $($_.Exception.Message)"
                 $memberOf = $null
             }
 
