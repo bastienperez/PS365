@@ -244,6 +244,12 @@
         ]
       },
       {
+        "group": "Service Health",
+        "pages": [
+          "docs/commands/Get-MgSlaCreditEstimate"
+        ]
+      },
+      {
         "group": "Share Point",
         "pages": [
           "docs/commands/Get-SPOSharingLinkReport",

@@ -1,0 +1,243 @@
+---
+description: Estimates the Microsoft 365 SLA service credit for one or more Service Health incidents and prepares the claim.
+document type: cmdlet
+HelpUri: https://ps365.clidsys.com/docs/commands/Get-MgSlaCreditEstimate
+Locale: en-US
+Module Name: PS365
+ms.date: 11/17/2026
+sidebarTitle: Get-MgSlaCreditEstimate
+title: Get-MgSlaCreditEstimate
+---
+
+# Get-MgSlaCreditEstimate
+
+## SYNOPSIS
+
+Estimates the Microsoft 365 SLA service credit for one or more Service Health incidents and prepares the claim.
+
+## SYNTAX
+
+```powershell
+Get-MgSlaCreditEstimate [-IncidentId] <string[]> [[-ServicePrice] <hashtable>]
+ [[-AffectedUserCount] <hashtable>] [[-Currency] <string>]
+ [[-OutputFolder] <string>] [-ExportToExcel]
+```
+
+
+## DESCRIPTION
+
+Reads the incidents from Microsoft 365 Service Health, merges the incident windows of each service (two
+overlapping incidents on the same service are counted once), splits them per calendar month (the SLA
+measures uptime per month) and returns, for each service and month, the downtime, the uptime percentage,
+the credit tier and the estimated credit.
+
+The credit tiers are the ones of the Microsoft Online Services SLA for the 99.9% services:
+below 99.9% uptime 25%, below 99% 50%, below 95% 100% of the monthly fee of the affected service.
+
+The affected users are the enabled users with an active service plan of the affected service
+(Exchange Online, SharePoint Online and OneDrive, Microsoft Teams).
+Use -AffectedUserCount when only part
+of the tenant was affected, or for a service the function cannot map to a service plan.
+
+The credit is computed on the price of the affected service, not on the whole licence: for a suite licence
+(Microsoft 365 E3, Business Premium...), pass the share of the price that Microsoft assigns to the service
+with -ServicePrice.
+Without a price for a service, the credit percentage is returned and EstimatedCredit
+stays empty.
+
+With -OutputFolder, the function also writes the incidents, the estimate, the affected users per country,
+the post-incident reports that are already published and a claim text to paste into the support request
+(Microsoft 365 admin center > Support > New service request).
+
+The function assumes every affected user was affected for the whole incident window: the estimate is a
+ceiling, Microsoft computes the final credit from its own user-minute measurements.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Get-MgSlaCreditEstimate -IncidentId 'EX1550543', 'MO1550821' -ServicePrice @{ 'Exchange Online' = 4 }
+```
+
+Returns the downtime, uptime, credit tier and estimated credit per service and month.
+
+### EXAMPLE 2
+
+```powershell
+Get-MgSlaCreditEstimate -IncidentId 'EX1550543' -ServicePrice @{ 'Exchange Online' = 4 } -OutputFolder 'C:\Temp\SLA-claim'
+```
+
+Same estimate, plus the CSV files, the post-incident report when published and claim-request.txt in C:\Temp\SLA-claim.
+
+### EXAMPLE 3
+
+```powershell
+Get-MgSlaCreditEstimate -IncidentId 'TM1551002' -ServicePrice @{ 'Microsoft Teams' = 3.2 } -AffectedUserCount @{ 'Microsoft Teams' = 120 }
+```
+
+Estimate for a Teams incident that affected 120 users only.
+
+### EXAMPLE 4
+
+```powershell
+Get-MgSlaCreditEstimate -IncidentId 'EX1550543' -ServicePrice @{ 'Exchange Online' = 4 } -ExportToExcel
+```
+
+Exports the estimate to an Excel file in the user profile.
+
+## PARAMETERS
+
+### -AffectedUserCount
+
+Number of affected users per service, keyed by the Service Health service name, when it differs from the
+licensed users (e.g.
+@`{ 'Exchange Online' = 250 }`).
+
+```yaml
+Type: System.Collections.Hashtable
+DefaultValue: '@{}'
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 2
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Currency
+
+Currency of the prices, shown in the output and in the claim text.
+Default: EUR.
+
+```yaml
+Type: System.String
+DefaultValue: EUR
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 3
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ExportToExcel
+
+Exports the estimate to an Excel file in the user profile instead of returning it.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -IncidentId
+
+One or more Service Health issue IDs (e.g.
+EX1550543, MO1550821).
+
+```yaml
+Type: System.String[]
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -OutputFolder
+
+Folder for the CSV files, the post-incident reports and the claim text.
+Created when missing.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 4
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ServicePrice
+
+Monthly price per user of each affected service, keyed by the Service Health service name
+(e.g.
+@`{ 'Exchange Online' = 4; 'Microsoft Teams' = 3.2 }`).
+
+```yaml
+Type: System.Collections.Hashtable
+DefaultValue: '@{}'
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 1
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+## NOTES
+
+Required Microsoft Graph scopes: ServiceHealth.Read.All, User.Read.All.
+Inspired by LazyAdmin (Rudy Mens): https://lazyadmin.nl/office-365/claim-microsoft-365-sla-credit-after-an-outage/
+
+
+## RELATED LINKS
+
+- [https://ps365.clidsys.com/docs/commands/Get-MgSlaCreditEstimate](https://ps365.clidsys.com/docs/commands/Get-MgSlaCreditEstimate)

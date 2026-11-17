@@ -12,7 +12,7 @@
 RootModule = 'PS365.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.7.6'
+ModuleVersion = '0.7.7'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -79,7 +79,7 @@ FunctionsToExport = 'Copy-AzAutomationRunbook', 'Get-MgDynamicAdminUnit',
                'Set-MgEnterpriseAppStatus', 'Set-MgRegisteredAppStatus', 
                'Get-MgAuditLogSigninInfo', 'Get-MgBitlockerKeyInfo', 
                'Get-DynamicGroup', 'Get-EmptyGroup', 'Get-MgGroupOwnerInfo', 
-               'Get-NestedGroup', 'Get-EntraConnectSyncObjectReport', 
+               'Get-NestedGroup', 'Get-EntraConnectSyncObjectReport', 'Get-MgSlaCreditEstimate', 
                'Get-EntraIDHybridJoinComputerInfo', 
                'Get-EntraIDHybridJoinComputerRegistryKey', 
                'Get-EntraIDHybridJoinSCP', 'Get-EntraIDRegcmd', 'Get-MgLAPSPassword', 
