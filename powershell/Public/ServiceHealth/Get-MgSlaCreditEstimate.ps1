@@ -30,6 +30,16 @@
     .PARAMETER IncidentId
     One or more Service Health issue IDs (e.g. EX1550543, MO1550821).
 
+    .PARAMETER ListIncidents
+    Lists the Service Health incidents that started since -Since, with their service and duration, to pick the
+    IDs to pass to -IncidentId. Advisories are left out unless -IncludeAdvisory is set.
+
+    .PARAMETER Since
+    With -ListIncidents, the date from which incidents are listed. Default: 30 days ago.
+
+    .PARAMETER IncludeAdvisory
+    With -ListIncidents, also lists the advisories (minor issues, usually not eligible for a credit).
+
     .PARAMETER ServicePrice
     Monthly price per user of each affected service, keyed by the Service Health service name
     (e.g. @{ 'Exchange Online' = 4; 'Microsoft Teams' = 3.2 }).
@@ -46,6 +56,11 @@
 
     .PARAMETER ExportToExcel
     Exports the estimate to an Excel file in the user profile instead of returning it.
+
+    .EXAMPLE
+    Get-MgSlaCreditEstimate -ListIncidents -Since '2026-11-01'
+
+    Lists the incidents that started since November 1, 2026, longest first.
 
     .EXAMPLE
     Get-MgSlaCreditEstimate -IncidentId 'EX1550543', 'MO1550821' -ServicePrice @{ 'Exchange Online' = 4 }
@@ -76,21 +91,30 @@
 #>
 
 function Get-MgSlaCreditEstimate {
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName = 'Estimate')]
     param (
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'Estimate')]
         [string[]]$IncidentId,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'List')]
+        [switch]$ListIncidents,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'List')]
+        [datetime]$Since = (Get-Date).AddDays(-30),
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'List')]
+        [switch]$IncludeAdvisory,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'Estimate')]
         [hashtable]$ServicePrice = @{},
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Estimate')]
         [hashtable]$AffectedUserCount = @{},
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Estimate')]
         [string]$Currency = 'EUR',
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Estimate')]
         [string]$OutputFolder,
 
         [Parameter(Mandatory = $false)]
@@ -102,14 +126,6 @@ function Get-MgSlaCreditEstimate {
         return
     }
 
-    # Service Health service name -> 'service' value of the users' assignedPlans
-    $servicePlanMap = @{
-        'Exchange Online'      = 'exchange'
-        'SharePoint Online'    = 'SharePoint'
-        'OneDrive for Business' = 'SharePoint'
-        'Microsoft Teams'      = 'TeamspaceAPI'
-    }
-
     # Dates come back as DateTime or string depending on the PowerShell version
     function ConvertTo-SlaUtcDate {
         param ($Value)
@@ -119,6 +135,57 @@ function Get-MgSlaCreditEstimate {
 
         $styles = [Globalization.DateTimeStyles]::AdjustToUniversal -bor [Globalization.DateTimeStyles]::AssumeUniversal
         return [datetime]::Parse([string]$Value, [Globalization.CultureInfo]::InvariantCulture, $styles)
+    }
+
+    #region List mode: the incidents to choose from
+    if ($ListIncidents.IsPresent) {
+        $sinceUtc = $Since.ToUniversalTime()
+        $nowUtc = (Get-Date).ToUniversalTime()
+        [System.Collections.Generic.List[PSCustomObject]]$candidates = @()
+
+        foreach ($issue in (Invoke-MgGraphPagedRequest -Uri '/v1.0/admin/serviceAnnouncement/issues?$select=id,title,service,classification,status,startDateTime,endDateTime')) {
+            if ((-not $IncludeAdvisory.IsPresent) -and ($issue.classification -ne 'incident')) { continue }
+
+            $start = ConvertTo-SlaUtcDate $issue.startDateTime
+            if ((-not $start) -or ($start -lt $sinceUtc)) { continue }
+
+            $end = ConvertTo-SlaUtcDate $issue.endDateTime
+            $isOngoing = -not $end
+            $durationEnd = if ($isOngoing) { $nowUtc } else { $end }
+
+            $candidates.Add([PSCustomObject][ordered]@{
+                    IncidentId     = $issue.id
+                    Service        = $issue.service
+                    Title          = $issue.title
+                    Classification = $issue.classification
+                    Status         = $issue.status
+                    StartUtc       = $start
+                    EndUtc         = $end
+                    Ongoing        = $isOngoing
+                    DurationHours  = [math]::Round(($durationEnd - $start).TotalHours, 1)
+                })
+        }
+
+        $candidates = [System.Collections.Generic.List[PSCustomObject]]@($candidates | Sort-Object DurationHours -Descending)
+
+        if ($ExportToExcel.IsPresent) {
+            $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
+            $excelFilePath = "$($env:userprofile)\$now-MgSlaIncidents.xlsx"
+            Write-Host -ForegroundColor Cyan "Exporting to Excel file: $excelFilePath"
+            $candidates | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'MgSlaIncidents'
+            Write-Host -ForegroundColor Green 'Export completed successfully!'
+            return
+        }
+        return $candidates
+    }
+    #endregion
+
+    # Service Health service name -> 'service' value of the users' assignedPlans
+    $servicePlanMap = @{
+        'Exchange Online'      = 'exchange'
+        'SharePoint Online'    = 'SharePoint'
+        'OneDrive for Business' = 'SharePoint'
+        'Microsoft Teams'      = 'TeamspaceAPI'
     }
 
     function Get-SlaCreditPercent {

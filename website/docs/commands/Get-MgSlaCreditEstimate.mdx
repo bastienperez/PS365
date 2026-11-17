@@ -17,10 +17,19 @@ Estimates the Microsoft 365 SLA service credit for one or more Service Health in
 
 ## SYNTAX
 
+### Estimate (Default)
+
 ```powershell
-Get-MgSlaCreditEstimate [-IncidentId] <string[]> [[-ServicePrice] <hashtable>]
- [[-AffectedUserCount] <hashtable>] [[-Currency] <string>]
- [[-OutputFolder] <string>] [-ExportToExcel]
+Get-MgSlaCreditEstimate -IncidentId <string[]> [-ServicePrice <hashtable>]
+ [-AffectedUserCount <hashtable>] [-Currency <string>] [-OutputFolder <string>]
+ [-ExportToExcel]
+```
+
+### List
+
+```powershell
+Get-MgSlaCreditEstimate -ListIncidents [-Since <datetime>] [-IncludeAdvisory]
+ [-ExportToExcel]
 ```
 
 
@@ -57,12 +66,20 @@ ceiling, Microsoft computes the final credit from its own user-minute measuremen
 ### EXAMPLE 1
 
 ```powershell
+Get-MgSlaCreditEstimate -ListIncidents -Since '2026-11-01'
+```
+
+Lists the incidents that started since November 1, 2026, longest first.
+
+### EXAMPLE 2
+
+```powershell
 Get-MgSlaCreditEstimate -IncidentId 'EX1550543', 'MO1550821' -ServicePrice @{ 'Exchange Online' = 4 }
 ```
 
 Returns the downtime, uptime, credit tier and estimated credit per service and month.
 
-### EXAMPLE 2
+### EXAMPLE 3
 
 ```powershell
 Get-MgSlaCreditEstimate -IncidentId 'EX1550543' -ServicePrice @{ 'Exchange Online' = 4 } -OutputFolder 'C:\Temp\SLA-claim'
@@ -70,7 +87,7 @@ Get-MgSlaCreditEstimate -IncidentId 'EX1550543' -ServicePrice @{ 'Exchange Onlin
 
 Same estimate, plus the CSV files, the post-incident report when published and claim-request.txt in C:\Temp\SLA-claim.
 
-### EXAMPLE 3
+### EXAMPLE 4
 
 ```powershell
 Get-MgSlaCreditEstimate -IncidentId 'TM1551002' -ServicePrice @{ 'Microsoft Teams' = 3.2 } -AffectedUserCount @{ 'Microsoft Teams' = 120 }
@@ -78,7 +95,7 @@ Get-MgSlaCreditEstimate -IncidentId 'TM1551002' -ServicePrice @{ 'Microsoft Team
 
 Estimate for a Teams incident that affected 120 users only.
 
-### EXAMPLE 4
+### EXAMPLE 5
 
 ```powershell
 Get-MgSlaCreditEstimate -IncidentId 'EX1550543' -ServicePrice @{ 'Exchange Online' = 4 } -ExportToExcel
@@ -100,8 +117,8 @@ DefaultValue: '@{}'
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
-- Name: (All)
-  Position: 2
+- Name: Estimate
+  Position: Named
   IsRequired: false
   ValueFromPipeline: false
   ValueFromPipelineByPropertyName: false
@@ -122,8 +139,8 @@ DefaultValue: EUR
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
-- Name: (All)
-  Position: 3
+- Name: Estimate
+  Position: Named
   IsRequired: false
   ValueFromPipeline: false
   ValueFromPipelineByPropertyName: false
@@ -165,8 +182,52 @@ DefaultValue: ''
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
-- Name: (All)
-  Position: 0
+- Name: Estimate
+  Position: Named
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -IncludeAdvisory
+
+With -ListIncidents, also lists the advisories (minor issues, usually not eligible for a credit).
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: List
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ListIncidents
+
+Lists the Service Health incidents that started since -Since, with their service and duration, to pick the
+IDs to pass to -IncidentId.
+Advisories are left out unless -IncludeAdvisory is set.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: List
+  Position: Named
   IsRequired: true
   ValueFromPipeline: false
   ValueFromPipelineByPropertyName: false
@@ -187,8 +248,8 @@ DefaultValue: ''
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
-- Name: (All)
-  Position: 4
+- Name: Estimate
+  Position: Named
   IsRequired: false
   ValueFromPipeline: false
   ValueFromPipelineByPropertyName: false
@@ -210,8 +271,30 @@ DefaultValue: '@{}'
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
-- Name: (All)
-  Position: 1
+- Name: Estimate
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Since
+
+With -ListIncidents, the date from which incidents are listed.
+Default: 30 days ago.
+
+```yaml
+Type: System.DateTime
+DefaultValue: (Get-Date).AddDays(-30)
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: List
+  Position: Named
   IsRequired: false
   ValueFromPipeline: false
   ValueFromPipelineByPropertyName: false
