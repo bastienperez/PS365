@@ -199,6 +199,16 @@ foreach ($commandName in $publicCommands) {
             return (@($heading, $fencedBlock, $description) -join "`n`n")
         })
 
+    # A generic type declared in [OutputType()] comes back assembly-qualified, e.g.
+    # "List`1[[System.Management.Automation.PSObject, System.Management.Automation, Version=7.6.0.500, ...]]".
+    # The embedded Version is the pwsh running this script, so every pwsh upgrade rewrote these
+    # pages. Collapse it to the readable "List[System.Management.Automation.PSObject]" form.
+    $content = [regex]::Replace($content, '(?m)^### .*$', {
+            param($match)
+            $heading = $match.Value -replace '\[([^\[\],]+), [^\[\]]*Version=[^\[\]]*\]', '$1'
+            $heading -replace '`\d+\[', '['
+        })
+
     # INPUTS/OUTPUTS headings can be a raw .NET generic type name (e.g. "List`1[[...]]"): the
     # backtick is .NET's generic-arity notation, but in Markdown/MDX an unmatched backtick opens
     # an inline code span that is never closed, corrupting the rest of the page (Mintlify then
