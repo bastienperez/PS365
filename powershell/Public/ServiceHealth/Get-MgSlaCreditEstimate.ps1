@@ -30,6 +30,11 @@
     .PARAMETER IncidentId
     One or more Service Health issue IDs (e.g. EX1550543, MO1550821).
 
+    .PARAMETER KnownIncident
+    Name of a major outage listed in the module (e.g. Exchange-2026-11-12): its Service Health IDs are used,
+    they are the same in every tenant. Press Tab after -KnownIncident to see the names. Can be combined with
+    -IncidentId.
+
     .PARAMETER ListIncidents
     Lists the Service Health incidents that started since -Since, with their service and duration, to pick the
     IDs to pass to -IncidentId. Advisories are left out unless -IncludeAdvisory is set.
@@ -56,6 +61,11 @@
 
     .PARAMETER ExportToExcel
     Exports the estimate to an Excel file in the user profile instead of returning it.
+
+    .EXAMPLE
+    Get-MgSlaCreditEstimate -KnownIncident 'Exchange-2026-11-12' -ServicePrice @{ 'Exchange Online' = 4 }
+
+    Estimate for the Exchange Online outage of November 12 to 13, 2026, without looking up its incident IDs.
 
     .EXAMPLE
     Get-MgSlaCreditEstimate -ListIncidents -Since '2026-11-01'
@@ -93,8 +103,22 @@
 function Get-MgSlaCreditEstimate {
     [CmdletBinding(DefaultParameterSetName = 'Estimate')]
     param (
-        [Parameter(Mandatory = $true, ParameterSetName = 'Estimate')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Estimate')]
         [string[]]$IncidentId,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'Estimate')]
+        [ArgumentCompleter({
+                param ($commandName, $parameterName, $wordToComplete)
+                $catalogPath = Join-Path (Get-Module PS365).ModuleBase 'Private' 'Assets' 'Get-MgSlaCreditEstimate-known-incidents.json'
+                if (Test-Path $catalogPath) {
+                    foreach ($entry in (Get-Content $catalogPath -Raw | ConvertFrom-Json)) {
+                        if ($entry.Name -like "$wordToComplete*") {
+                            [System.Management.Automation.CompletionResult]::new($entry.Name, $entry.Name, 'ParameterValue', $entry.Description)
+                        }
+                    }
+                }
+            })]
+        [string[]]$KnownIncident,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'List')]
         [switch]$ListIncidents,
@@ -180,6 +204,33 @@ function Get-MgSlaCreditEstimate {
     }
     #endregion
 
+    #region Known incidents: names resolved to their Service Health IDs
+    [System.Collections.Generic.List[String]]$allIncidentIds = @()
+    foreach ($id in $IncidentId) { $allIncidentIds.Add($id) }
+
+    if ($KnownIncident) {
+        $catalogPath = Join-Path $PSScriptRoot '..' '..' 'Private' 'Assets' 'Get-MgSlaCreditEstimate-known-incidents.json'
+        $catalog = @(Get-Content -Path $catalogPath -Raw | ConvertFrom-Json)
+
+        foreach ($name in $KnownIncident) {
+            $entry = $catalog | Where-Object { $_.Name -eq $name } | Select-Object -First 1
+            if (-not $entry) {
+                $knownNames = ($catalog.Name -join ', ')
+                Write-Warning "Unknown incident name '$name'. Known names: $knownNames"
+                continue
+            }
+            foreach ($id in $entry.IncidentIds) {
+                if (-not $allIncidentIds.Contains($id)) { $allIncidentIds.Add($id) }
+            }
+        }
+    }
+
+    if ($allIncidentIds.Count -eq 0) {
+        Write-Warning 'Pass -IncidentId, -KnownIncident or -ListIncidents'
+        return
+    }
+    #endregion
+
     # Service Health service name -> 'service' value of the users' assignedPlans
     $servicePlanMap = @{
         'Exchange Online'      = 'exchange'
@@ -205,7 +256,7 @@ function Get-MgSlaCreditEstimate {
     [System.Collections.Generic.List[PSCustomObject]]$incidents = @()
     $nowUtc = (Get-Date).ToUniversalTime()
 
-    foreach ($id in $IncidentId) {
+    foreach ($id in $allIncidentIds) {
         $issue = $null
         try {
             $issue = Invoke-MgGraphRequestWithRetry -Method GET -Uri "/v1.0/admin/serviceAnnouncement/issues/$id" -OutputType PSObject

@@ -20,9 +20,9 @@ Estimates the Microsoft 365 SLA service credit for one or more Service Health in
 ### Estimate (Default)
 
 ```powershell
-Get-MgSlaCreditEstimate -IncidentId <string[]> [-ServicePrice <hashtable>]
- [-AffectedUserCount <hashtable>] [-Currency <string>] [-OutputFolder <string>]
- [-ExportToExcel]
+Get-MgSlaCreditEstimate [-IncidentId <string[]>] [-KnownIncident <string[]>]
+ [-ServicePrice <hashtable>] [-AffectedUserCount <hashtable>]
+ [-Currency <string>] [-OutputFolder <string>] [-ExportToExcel]
 ```
 
 ### List
@@ -66,12 +66,20 @@ ceiling, Microsoft computes the final credit from its own user-minute measuremen
 ### EXAMPLE 1
 
 ```powershell
+Get-MgSlaCreditEstimate -KnownIncident 'Exchange-2026-11-12' -ServicePrice @{ 'Exchange Online' = 4 }
+```
+
+Estimate for the Exchange Online outage of November 12 to 13, 2026, without looking up its incident IDs.
+
+### EXAMPLE 2
+
+```powershell
 Get-MgSlaCreditEstimate -ListIncidents -Since '2026-11-01'
 ```
 
 Lists the incidents that started since November 1, 2026, longest first.
 
-### EXAMPLE 2
+### EXAMPLE 3
 
 ```powershell
 Get-MgSlaCreditEstimate -IncidentId 'EX1550543', 'MO1550821' -ServicePrice @{ 'Exchange Online' = 4 }
@@ -79,7 +87,7 @@ Get-MgSlaCreditEstimate -IncidentId 'EX1550543', 'MO1550821' -ServicePrice @{ 'E
 
 Returns the downtime, uptime, credit tier and estimated credit per service and month.
 
-### EXAMPLE 3
+### EXAMPLE 4
 
 ```powershell
 Get-MgSlaCreditEstimate -IncidentId 'EX1550543' -ServicePrice @{ 'Exchange Online' = 4 } -OutputFolder 'C:\Temp\SLA-claim'
@@ -87,7 +95,7 @@ Get-MgSlaCreditEstimate -IncidentId 'EX1550543' -ServicePrice @{ 'Exchange Onlin
 
 Same estimate, plus the CSV files, the post-incident report when published and claim-request.txt in C:\Temp\SLA-claim.
 
-### EXAMPLE 4
+### EXAMPLE 5
 
 ```powershell
 Get-MgSlaCreditEstimate -IncidentId 'TM1551002' -ServicePrice @{ 'Microsoft Teams' = 3.2 } -AffectedUserCount @{ 'Microsoft Teams' = 120 }
@@ -95,7 +103,7 @@ Get-MgSlaCreditEstimate -IncidentId 'TM1551002' -ServicePrice @{ 'Microsoft Team
 
 Estimate for a Teams incident that affected 120 users only.
 
-### EXAMPLE 5
+### EXAMPLE 6
 
 ```powershell
 Get-MgSlaCreditEstimate -IncidentId 'EX1550543' -ServicePrice @{ 'Exchange Online' = 4 } -ExportToExcel
@@ -184,7 +192,7 @@ Aliases: []
 ParameterSets:
 - Name: Estimate
   Position: Named
-  IsRequired: true
+  IsRequired: false
   ValueFromPipeline: false
   ValueFromPipelineByPropertyName: false
   ValueFromRemainingArguments: false
@@ -204,6 +212,32 @@ SupportsWildcards: false
 Aliases: []
 ParameterSets:
 - Name: List
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -KnownIncident
+
+Name of a major outage listed in the module (e.g.
+Exchange-2026-11-12): its Service Health IDs are used,
+they are the same in every tenant.
+Press Tab after -KnownIncident to see the names.
+Can be combined with
+-IncidentId.
+
+```yaml
+Type: System.String[]
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: Estimate
   Position: Named
   IsRequired: false
   ValueFromPipeline: false
