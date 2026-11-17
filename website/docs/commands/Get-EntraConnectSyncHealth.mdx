@@ -1,0 +1,260 @@
+---
+description: 'Checks the health of Microsoft Entra Connect Sync on the sync server: service, scheduler, last runs, objects in error, pending exports, password hash sync and event log.'
+document type: cmdlet
+HelpUri: https://ps365.clidsys.com/docs/commands/Get-EntraConnectSyncHealth
+Locale: en-US
+Module Name: PS365
+ms.date: 11/17/2026
+sidebarTitle: Get-EntraConnectSyncHealth
+title: Get-EntraConnectSyncHealth
+---
+
+# Get-EntraConnectSyncHealth
+
+## SYNOPSIS
+
+Checks the health of Microsoft Entra Connect Sync on the sync server: service, scheduler, last runs, objects in error, pending exports, password hash sync and event log.
+
+## SYNTAX
+
+```powershell
+Get-EntraConnectSyncHealth [[-ConnectorName] <string[]>]
+ [[-RunHistoryCount] <int>] [[-MaxRunAgeHours] <int>]
+ [[-PendingExportThreshold] <int>] [[-EventLogHours] <int>] [-LastRun]
+ [-ExportToExcel]
+```
+
+
+## DESCRIPTION
+
+Runs a set of local checks on the Entra Connect Sync server and returns one row per check, with a status
+(OK, Info, Warning or Error), the observed value and a detail.
+Nothing is read from Microsoft Entra ID: every
+check uses the ADSync module, csexport.exe and the local event log.
+
+Checks:
+- Service: ADSync service state, Entra Connect version, auto-upgrade state.
+- Scheduler: sync cycle enabled, staging mode, maintenance, cycle in progress, next cycle overdue.
+- Run: result of the last run of each run profile per connector (Delta Import, Delta Synchronization,
+  Export...) and age of the last run of each connector.
+A failing import (connector unreachable, expired
+  service account password) shows up here: it is a run result, not an object error.
+- Objects: number of objects in import/synchronization error and in export error per connector, with the
+  most frequent error types.
+Get-EntraConnectSyncObjectReport -ErrorsOnly lists them one by one.
+- Pending export: number of objects waiting to be exported per connector.
+- Password hash sync: enabled on the tenant and per AD connector, sync failures (event 611).
+- Event log: errors of the ADSync and Directory Synchronization sources.
+
+With -LastRun, the function returns the run history instead: for each connector, the last run of each run
+profile, as shown in the Operations tab of the Synchronization Service Manager, with its counters.
+
+Must be run on the Entra Connect Sync server (ADSync module) with a member of the ADSyncAdmins group.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Get-EntraConnectSyncHealth
+```
+
+Runs every check on all connectors.
+
+### EXAMPLE 2
+
+```powershell
+Get-EntraConnectSyncHealth | Where-Object { $_.Status -in 'Warning', 'Error' }
+```
+
+Shows only the checks that need attention.
+
+### EXAMPLE 3
+
+```powershell
+Get-EntraConnectSyncHealth -LastRun | Format-Table ConnectorName, RunProfileName, Result, StartDate, DurationSeconds, TotalErrors
+```
+
+Shows the last run of each run profile on every connector.
+
+### EXAMPLE 4
+
+```powershell
+Get-EntraConnectSyncHealth -ExportToExcel
+```
+
+Exports the health checks to an Excel file.
+
+## PARAMETERS
+
+### -ConnectorName
+
+Name of one or more connectors to check.
+By default, all connectors.
+
+```yaml
+Type: System.String[]
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -EventLogHours
+
+Number of hours of event log read for the event log and password hash sync checks.
+Default 24.
+
+```yaml
+Type: System.Int32
+DefaultValue: 24
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 4
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ExportToExcel
+
+Exports the result to an Excel file in the user profile instead of returning it.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -LastRun
+
+Returns the last run of each run profile per connector, with its result, duration and counters, instead of the health checks.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -MaxRunAgeHours
+
+A connector whose last run is older than this number of hours is reported as Warning.
+Default 3.
+
+```yaml
+Type: System.Int32
+DefaultValue: 3
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 2
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -PendingExportThreshold
+
+A connector with at least this number of pending exports is reported as Warning.
+Default 500.
+
+```yaml
+Type: System.Int32
+DefaultValue: 500
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 3
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -RunHistoryCount
+
+Number of recent runs read per connector to find the last run of each profile.
+Default 50.
+
+```yaml
+Type: System.Int32
+DefaultValue: 50
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 1
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+## NOTES
+
+Requires the ADSync module, installed with Microsoft Entra Connect Sync.
+
+
+## RELATED LINKS
+
+- [https://ps365.clidsys.com/docs/commands/Get-EntraConnectSyncHealth](https://ps365.clidsys.com/docs/commands/Get-EntraConnectSyncHealth)
