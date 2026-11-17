@@ -1,11 +1,11 @@
 <#
     .SYNOPSIS
-    Checks the health of Microsoft Entra Connect Sync on the sync server: service, scheduler, last runs, objects in error, pending exports, password hash sync and event log.
+    Checks the health of Microsoft Entra Connect Sync on the sync server: service, scheduler, last runs, objects in error, pending exports and event log.
 
     .DESCRIPTION
     Runs a set of local checks on the Entra Connect Sync server and returns one row per check, with a status
-    (OK, Info, Warning or Error), the observed value and a detail. Nothing is read from Microsoft Entra ID: every
-    check uses the ADSync module, csexport.exe and the local event log.
+    (OK, Info, Warning or Error), the observed value and a detail. Nothing is read from Microsoft Entra ID and no
+    credential is asked: every check uses the local ADSync cmdlets, csexport.exe and the local event log.
 
     Checks:
     - Service: ADSync service state, Entra Connect version, auto-upgrade state.
@@ -16,7 +16,6 @@
     - Objects: number of objects in import/synchronization error and in export error per connector, with the
       most frequent error types. Get-EntraConnectSyncObjectReport -ErrorsOnly lists them one by one.
     - Pending export: number of objects waiting to be exported per connector.
-    - Password hash sync: enabled on the tenant and per AD connector, sync failures (event 611).
     - Event log: errors of the ADSync and Directory Synchronization sources.
 
     With -LastRun, the function returns the run history instead: for each connector, the last run of each run
@@ -40,7 +39,7 @@
     A connector with at least this number of pending exports is reported as Warning. Default 500.
 
     .PARAMETER EventLogHours
-    Number of hours of event log read for the event log and password hash sync checks. Default 24.
+    Number of hours of event log read for the event log check. Default 24.
 
     .PARAMETER ExportToExcel
     Exports the result to an Excel file in the user profile instead of returning it.
@@ -415,31 +414,6 @@ function Get-EntraConnectSyncHealth {
             foreach ($providerEvent in $providerEvents) {
                 $syncEvents.Add($providerEvent)
             }
-        }
-        #endregion
-
-        #region Password hash sync
-        try {
-            $passwordHashSyncCloud = [bool](Get-ADSyncAADCompanyFeature -ErrorAction Stop).PasswordHashSync
-            $phsStatus = if ($passwordHashSyncCloud) { 'OK' } else { 'Info' }
-            Add-HealthCheck -Category 'Password hash sync' -Check 'Password hash sync enabled' -Status $phsStatus -Value $passwordHashSyncCloud
-
-            if ($passwordHashSyncCloud) {
-                foreach ($connector in ($connectors | Where-Object { $_.Type -eq 'AD' })) {
-                    $connectorPhs = [bool](Get-ADSyncAADPasswordSyncConfiguration -SourceConnector $connector.Name -ErrorAction Stop).Enabled
-                    $connectorPhsStatus = if ($connectorPhs) { 'OK' } else { 'Warning' }
-                    Add-HealthCheck -Category 'Password hash sync' -Check 'Password hash sync on connector' -Target $connector.Name -Status $connectorPhsStatus -Value $connectorPhs
-                }
-
-                # Event 611: password hash synchronization failed for a domain
-                $phsFailures = @($syncEvents | Where-Object { ($_.ProviderName -eq 'Directory Synchronization') -and ($_.Id -eq 611) })
-                $phsFailureStatus = if ($phsFailures.Count -gt 0) { 'Error' } else { 'OK' }
-                $phsFailureDetail = if ($phsFailures.Count -gt 0) { "Last on $($phsFailures[0].TimeCreated): $((($phsFailures[0].Message) -split '\r?\n')[0])" } else { $null }
-                Add-HealthCheck -Category 'Password hash sync' -Check "Sync failures (event 611, last $EventLogHours h)" -Status $phsFailureStatus -Value $phsFailures.Count -Detail $phsFailureDetail
-            }
-        }
-        catch {
-            Add-HealthCheck -Category 'Password hash sync' -Check 'Password hash sync' -Status 'Warning' -Value 'Not readable' -Detail $_.Exception.Message
         }
         #endregion
 

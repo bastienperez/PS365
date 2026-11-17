@@ -133,11 +133,9 @@ function Get-EntraConnectSyncObjectReport {
         }
 
         $passwordSyncRuleNames = @()
-        $passwordHashSyncCloudEnabled = $null
 
         if ($IncludePasswordSync) {
             $passwordSyncRuleNames = @((Get-ADSyncRule | Where-Object { ($_.EnablePasswordSync) -and (-not $_.Disabled) -and ($_.Direction -eq 'Inbound') }).Name)
-            $passwordHashSyncCloudEnabled = (Get-ADSyncAADCompanyFeature).PasswordHashSync
         }
     }
 
@@ -283,7 +281,6 @@ function Get-EntraConnectSyncObjectReport {
 
                             $row.PasswordSyncStatus = $passwordEvent.Status
                             $row.PasswordSyncTimestamp = $passwordEvent.TimeStamp
-                            $row.PasswordHashSyncCloudEnabled = $passwordHashSyncCloudEnabled
                         }
 
                         $report.Add([PSCustomObject]$row)
@@ -371,7 +368,6 @@ function Get-EntraConnectSyncObjectReport {
                     $row.PasswordSyncTimestamp = $passwordEvent.TimeStamp
                     $row.HasPasswordSyncRule = ($syncRules | Where-Object { $_ -in $passwordSyncRuleNames }).Count -gt 0
                     $row.PasswordHashSyncConnectorEnabled = $passwordHashSyncConnectorEnabled
-                    $row.PasswordHashSyncCloudEnabled = $passwordHashSyncCloudEnabled
                 }
 
                 $report.Add([PSCustomObject]$row)

@@ -1,5 +1,5 @@
 ---
-description: 'Checks the health of Microsoft Entra Connect Sync on the sync server: service, scheduler, last runs, objects in error, pending exports, password hash sync and event log.'
+description: 'Checks the health of Microsoft Entra Connect Sync on the sync server: service, scheduler, last runs, objects in error, pending exports and event log.'
 document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Get-EntraConnectSyncHealth
 Locale: en-US
@@ -13,7 +13,7 @@ title: Get-EntraConnectSyncHealth
 
 ## SYNOPSIS
 
-Checks the health of Microsoft Entra Connect Sync on the sync server: service, scheduler, last runs, objects in error, pending exports, password hash sync and event log.
+Checks the health of Microsoft Entra Connect Sync on the sync server: service, scheduler, last runs, objects in error, pending exports and event log.
 
 ## SYNTAX
 
@@ -29,8 +29,8 @@ Get-EntraConnectSyncHealth [[-ConnectorName] <string[]>]
 
 Runs a set of local checks on the Entra Connect Sync server and returns one row per check, with a status
 (OK, Info, Warning or Error), the observed value and a detail.
-Nothing is read from Microsoft Entra ID: every
-check uses the ADSync module, csexport.exe and the local event log.
+Nothing is read from Microsoft Entra ID and no
+credential is asked: every check uses the local ADSync cmdlets, csexport.exe and the local event log.
 
 Checks:
 - Service: ADSync service state, Entra Connect version, auto-upgrade state.
@@ -43,7 +43,6 @@ A failing import (connector unreachable, expired
   most frequent error types.
 Get-EntraConnectSyncObjectReport -ErrorsOnly lists them one by one.
 - Pending export: number of objects waiting to be exported per connector.
-- Password hash sync: enabled on the tenant and per AD connector, sync failures (event 611).
 - Event log: errors of the ADSync and Directory Synchronization sources.
 
 With -LastRun, the function returns the run history instead: for each connector, the last run of each run
@@ -111,7 +110,7 @@ HelpMessage: ''
 
 ### -EventLogHours
 
-Number of hours of event log read for the event log and password hash sync checks.
+Number of hours of event log read for the event log check.
 Default 24.
 
 ```yaml
