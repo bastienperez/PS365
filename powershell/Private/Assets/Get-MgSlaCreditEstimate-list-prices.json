@@ -1,0 +1,62 @@
+[
+    {
+        "Service": "Exchange Online",
+        "Plan": "Exchange Online (Plan 1)",
+        "ServicePlanName": "EXCHANGE_S_STANDARD",
+        "ServicePlanId": "9aaf7827-d63c-4b61-89c3-182f06f82e5c",
+        "Default": true,
+        "Price": 3.5,
+        "Currency": "EUR",
+        "Market": "fr-FR",
+        "CheckedOn": "2026-11-17",
+        "Source": "https://www.microsoft.com/fr-fr/microsoft-365/exchange/compare-microsoft-exchange-online-plans"
+    },
+    {
+        "Service": "Exchange Online",
+        "Plan": "Exchange Online (Plan 2)",
+        "ServicePlanName": "EXCHANGE_S_ENTERPRISE",
+        "ServicePlanId": "efb87545-963c-4e0d-99df-69c6916d9eb0",
+        "Default": false,
+        "Price": 6.9,
+        "Currency": "EUR",
+        "Market": "fr-FR",
+        "CheckedOn": "2026-11-17",
+        "Source": "https://www.microsoft.com/fr-fr/microsoft-365/exchange/compare-microsoft-exchange-online-plans"
+    },
+    {
+        "Service": "Exchange Online",
+        "Plan": "Exchange Online (Plan 1)",
+        "ServicePlanName": "EXCHANGE_S_STANDARD",
+        "ServicePlanId": "9aaf7827-d63c-4b61-89c3-182f06f82e5c",
+        "Default": true,
+        "Price": 4.0,
+        "Currency": "USD",
+        "Market": "en-US",
+        "CheckedOn": "2026-11-17",
+        "Source": "https://www.microsoft.com/en-us/microsoft-365/exchange/compare-microsoft-exchange-online-plans"
+    },
+    {
+        "Service": "Exchange Online",
+        "Plan": "Exchange Online (Plan 2)",
+        "ServicePlanName": "EXCHANGE_S_ENTERPRISE",
+        "ServicePlanId": "efb87545-963c-4e0d-99df-69c6916d9eb0",
+        "Default": false,
+        "Price": 8.0,
+        "Currency": "USD",
+        "Market": "en-US",
+        "CheckedOn": "2026-11-17",
+        "Source": "https://www.microsoft.com/en-us/microsoft-365/exchange/compare-microsoft-exchange-online-plans"
+    },
+    {
+        "Service": "Microsoft Teams",
+        "Plan": "Microsoft Teams Essentials",
+        "ServicePlanName": null,
+        "ServicePlanId": null,
+        "Default": true,
+        "Price": 3.5,
+        "Currency": "EUR",
+        "Market": "fr-FR",
+        "CheckedOn": "2026-11-17",
+        "Source": "https://www.microsoft.com/fr-fr/microsoft-teams/compare-microsoft-teams-business-options"
+    }
+]

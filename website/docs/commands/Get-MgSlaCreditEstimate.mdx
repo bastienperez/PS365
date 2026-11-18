@@ -4,7 +4,7 @@ document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Get-MgSlaCreditEstimate
 Locale: en-US
 Module Name: PS365
-ms.date: 11/17/2026
+ms.date: 11/18/2026
 sidebarTitle: Get-MgSlaCreditEstimate
 title: Get-MgSlaCreditEstimate
 ---
@@ -51,12 +51,22 @@ of the tenant was affected, or for a service the function cannot map to a servic
 The credit is computed on the price of the affected service, not on the whole licence: for a suite licence
 (Microsoft 365 E3, Business Premium...), pass the share of the price that Microsoft assigns to the service
 with -ServicePrice.
-Without a price for a service, the credit percentage is returned and EstimatedCredit
-stays empty.
+Without -ServicePrice for a service, the public list price of its standalone plan is used
+(Private/Assets/Get-MgSlaCreditEstimate-list-prices.json, excluding VAT, annual commitment: Exchange Online
+Plan 1 and Plan 2 in EUR and USD, Teams Essentials and SharePoint Plan 1 in EUR) when its currency matches
+-Currency.
+For Exchange Online, each licensed user is priced at the plan of their service plan
+(EXCHANGE_S_STANDARD = Plan 1, EXCHANGE_S_ENTERPRISE = Plan 2, also held by suites such as Microsoft 365 E3),
+one row per plan; other Exchange plans (Kiosk, F3...) are priced as Plan 1.
+The Plan and PriceSource columns
+say which price was used.
+Without any price, the credit percentage is returned and
+EstimatedCredit stays empty.
 
 With -OutputFolder, the function also writes the incidents, the estimate, the affected users per country,
-the post-incident reports that are already published and a claim text to paste into the support request
-(Microsoft 365 admin center > Support > New service request).
+the post-incident reports that are already published, an incident report in Markdown (incident-report.md:
+timeline, impact, Microsoft updates and estimate) and a claim text to paste into the support request
+(claim-request.txt, Microsoft 365 admin center > Support > New service request).
 
 The function assumes every affected user was affected for the whole incident window: the estimate is a
 ceiling, Microsoft computes the final credit from its own user-minute measurements.
@@ -93,7 +103,7 @@ Returns the downtime, uptime, credit tier and estimated credit per service and m
 Get-MgSlaCreditEstimate -IncidentId 'EX1550543' -ServicePrice @{ 'Exchange Online' = 4 } -OutputFolder 'C:\Temp\SLA-claim'
 ```
 
-Same estimate, plus the CSV files, the post-incident report when published and claim-request.txt in C:\Temp\SLA-claim.
+Same estimate, plus the CSV files, the post-incident report when published, incident-report.md and claim-request.txt in C:\Temp\SLA-claim.
 
 ### EXAMPLE 5
 
@@ -160,7 +170,8 @@ HelpMessage: ''
 
 ### -ExportToExcel
 
-Exports the estimate to an Excel file in the user profile instead of returning it.
+Exports the estimate to an Excel file in the user profile instead of returning it, with a second worksheet
+for the licensed users per country (when the users are counted from the tenant, not from -AffectedUserCount).
 
 ```yaml
 Type: System.Management.Automation.SwitchParameter
@@ -298,6 +309,7 @@ HelpMessage: ''
 Monthly price per user of each affected service, keyed by the Service Health service name
 (e.g.
 @`{ 'Exchange Online' = 4; 'Microsoft Teams' = 3.2 }`).
+Overrides the public list price of the service.
 
 ```yaml
 Type: System.Collections.Hashtable
