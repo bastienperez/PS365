@@ -4,7 +4,7 @@ document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Get-DynamicGroup
 Locale: en-US
 Module Name: PS365
-ms.date: 11/03/2026
+ms.date: 11/20/2026
 sidebarTitle: Get-DynamicGroup
 title: Get-DynamicGroup
 ---
@@ -20,7 +20,7 @@ Retrieves dynamic groups from Microsoft 365, Exchange Online, and Entra ID with 
 ```powershell
 Get-DynamicGroup [[-GroupId] <string>] [-ExchangeOnlineOnly] [-EntraIDOnly]
  [-ExportToExcel] [-ExportPath <string>] [-IncludeMembers] [-MemberReport]
- [-DeprecatedMemberOfRuleOnly]
+ [-NoMemberCount] [-DeprecatedMemberOfRuleOnly]
 ```
 
 
@@ -297,6 +297,31 @@ AcceptedValues: []
 HelpMessage: ''
 ```
 
+### -NoMemberCount
+
+When specified, the members are not counted (MembersCount stays empty).
+Counting the members of an
+Exchange Online dynamic distribution group reads every member, which is slow on large groups:
+use it when only the rules and their attributes matter (an audit of the rules).
+Ignored when -IncludeMembers or -MemberReport is used.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
 ### CommonParameters
 
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
@@ -332,6 +357,9 @@ Returns a collection of custom objects with the following properties:
   CreatedDateTime, RenewedDateTime, OnPremisesSyncEnabled, SecurityIdentifier, Classification, Visibility
 - DeprecatedMemberOfRule: True if the membership rule uses the deprecated MemberOf rule operator
   (preview ending: memberships stop updating after November 3, 2026)
+- UserEditableAttributes: Pipe-separated list of the user attributes of the rule that are in the
+  "Personal-Information" property set (Entra ID names, or the Active Directory LDAP names of an
+  Exchange dynamic distribution group filter), empty when none
 - Warning: Security warning if any attribute is in the "Personal-Information" property set,
   and/or deprecation warning if the group uses the MemberOf rule operator
 
