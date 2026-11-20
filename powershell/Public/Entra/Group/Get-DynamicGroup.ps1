@@ -40,6 +40,12 @@
     Output columns: GroupId, GroupName, GroupType, MembershipRule, MemberId, MemberDisplayName,
     MemberPrincipal, MemberType.
 
+    .PARAMETER NoMemberCount
+    When specified, the members are not counted (MembersCount stays empty). Counting the members of an
+    Exchange Online dynamic distribution group reads every member, which is slow on large groups:
+    use it when only the rules and their attributes matter (an audit of the rules).
+    Ignored when -IncludeMembers or -MemberReport is used.
+
     .PARAMETER DeprecatedMemberOfRuleOnly
     When specified, returns only the groups whose membership rule uses the deprecated MemberOf
     rule operator (e.g. user.memberof -any (group.objectId -in [...])). Microsoft ends this
@@ -115,6 +121,9 @@
       CreatedDateTime, RenewedDateTime, OnPremisesSyncEnabled, SecurityIdentifier, Classification, Visibility
     - DeprecatedMemberOfRule: True if the membership rule uses the deprecated MemberOf rule operator
       (preview ending: memberships stop updating after November 3, 2026)
+    - UserEditableAttributes: Pipe-separated list of the user attributes of the rule that are in the
+      "Personal-Information" property set (Entra ID names, or the Active Directory LDAP names of an
+      Exchange dynamic distribution group filter), empty when none
     - Warning: Security warning if any attribute is in the "Personal-Information" property set,
       and/or deprecation warning if the group uses the MemberOf rule operator
 
@@ -158,6 +167,9 @@ function Get-DynamicGroup {
         [switch]$MemberReport,
 
         [Parameter(Mandatory = $false)]
+        [switch]$NoMemberCount,
+
+        [Parameter(Mandatory = $false)]
         [switch]$DeprecatedMemberOfRuleOnly
     )
 
@@ -178,7 +190,7 @@ function Get-DynamicGroup {
         Write-Verbose 'MemberReport mode: returning one row per (group, member). MembersCount/MembersName/MembersId columns are not produced.'
         $memberReportArray = [System.Collections.Generic.List[Object]]::new()
     }
-    elseif (-not $IncludeMembers.IsPresent) {
+    elseif (-not $IncludeMembers.IsPresent -and -not $NoMemberCount.IsPresent) {
         Write-Warning 'Members enumeration is disabled by default (only MembersCount is populated). Use -IncludeMembers to also retrieve MembersName and MembersId, or -MemberReport to get one row per member. This can be slow on large groups.'
     }
 
@@ -240,7 +252,17 @@ function Get-DynamicGroup {
             'ipPhone', 'city', 'mobile', 'MobilePhone', 'otherFaxNumbers', 'otherHomePhones',
             'otherIpPhones', 'otherMobiles', 'otherPagers', 'otherPhones', 'pager',
             'personalTitle', 'officeLocation', 'streetAddress', 'postalCode', 'postOfficeBox',
-            'state', 'telephoneNumber', 'thumbnailPhoto', 'userCertificate'
+            'state', 'telephoneNumber', 'thumbnailPhoto', 'userCertificate',
+            # The Active Directory LDAP names of the same set, as an Exchange Online
+            # dynamic distribution group filter (LdapRecipientFilter) writes them
+            'c', 'facsimileTelephoneNumber', 'info', 'l', 'otherFacsimileTelephoneNumber',
+            'otherHomePhone', 'otherIpPhone', 'otherMobile', 'otherPager', 'otherTelephone',
+            'physicalDeliveryOfficeName', 'postalAddress', 'st', 'street',
+            'msDS-cloudExtensionAttribute1', 'msDS-cloudExtensionAttribute2', 'msDS-cloudExtensionAttribute3',
+            'msDS-cloudExtensionAttribute4', 'msDS-cloudExtensionAttribute5', 'msDS-cloudExtensionAttribute6',
+            'msDS-cloudExtensionAttribute7', 'msDS-cloudExtensionAttribute8', 'msDS-cloudExtensionAttribute9',
+            'msDS-cloudExtensionAttribute10', 'msDS-cloudExtensionAttribute11', 'msDS-cloudExtensionAttribute12',
+            'msDS-cloudExtensionAttribute13', 'msDS-cloudExtensionAttribute14', 'msDS-cloudExtensionAttribute15'
         )) {
         [void]$propertySetsAttribute.Add($attr)
     }
@@ -268,7 +290,8 @@ function Get-DynamicGroup {
         }
         else {
             try {
-                $exchangeGroups = Get-DynamicDistributionGroup -ErrorAction Stop
+                # Without -ResultSize, Exchange returns the first 1000 groups only
+                $exchangeGroups = Get-DynamicDistributionGroup -ResultSize Unlimited -ErrorAction Stop
                 Write-Verbose "Found $($exchangeGroups.Count) Exchange Online Dynamic Distribution Groups"
             }
             catch {
@@ -330,7 +353,7 @@ function Get-DynamicGroup {
                 MembershipRule                = (($group.LdapRecipientFilter.Replace("`r`n", '').Replace("`n", '').Replace("`r", '') -replace '\s+', ' ') -replace '(\))(\w)', '$1 $2' -replace '(\w)(\()', '$1 $2' -replace '\(\s+', '(').Trim()
                 MembershipRuleProcessingState = $null
                 UserAttributes                = (($group.LdapRecipientFilter | 
-                        Select-String -Pattern '\(([a-zA-Z][a-zA-Z0-9]*)' -AllMatches).Matches | Select-Object -ExpandProperty Value -Unique).Replace('(', '') -join ' | '
+                        Select-String -Pattern '\(([a-zA-Z][a-zA-Z0-9-]*)' -AllMatches).Matches | Select-Object -ExpandProperty Value -Unique).Replace('(', '') -join ' | '
                 GroupAttributes               = $null
                 DeviceAttributes              = $null
                 MemberOf                      = $memberOf -join '|'
@@ -374,6 +397,9 @@ function Get-DynamicGroup {
                     $object.MembersCount = $ddgMembers.Count
                     $object.MembersName = ($ddgMembers | ForEach-Object { $_.DisplayName }) -join '|'
                     $object.MembersId = ($ddgMembers | ForEach-Object { $_.Guid }) -join '|'
+                }
+                elseif ($NoMemberCount.IsPresent) {
+                    $object.MembersCount = $null
                 }
                 else {
                     $object.MembersCount = @(Get-DynamicDistributionGroupMember -Identity $group.Identity -ResultSize Unlimited -ErrorAction Stop).Count
@@ -533,6 +559,9 @@ function Get-DynamicGroup {
                         $object.MembersId = ($mgMembers | ForEach-Object { $_.Id }) -join '|'
                     }
                 }
+                elseif ($NoMemberCount.IsPresent) {
+                    $object.MembersCount = $null
+                }
                 else {
                     # Single lightweight $count call instead of paging through every member
                     $countUri = "v1.0/groups/$($group.Id)/members/`$count"
@@ -555,6 +584,7 @@ function Get-DynamicGroup {
     Write-Verbose "Analyzing security attributes for $($dynGroupArray.Count) groups..."
     foreach ($group in $dynGroupArray) {
         $group | Add-Member -MemberType NoteProperty -Name DeprecatedMemberOfRule -Value $false
+        $group | Add-Member -MemberType NoteProperty -Name UserEditableAttributes -Value $null
         $group | Add-Member -MemberType NoteProperty -Name Warning -Value $null
 
         # Microsoft ends the MemberOf rule operator preview in Entra ID dynamic membership rules:
@@ -566,12 +596,17 @@ function Get-DynamicGroup {
         }
 
         if ([string]::IsNullOrWhiteSpace($group.UserAttributes)) { continue }
+        $editableAttributes = [System.Collections.Generic.List[string]]::new()
         foreach ($rawAttribute in $group.UserAttributes.Split('|')) {
             $attribute = $rawAttribute.Trim()
             if ($propertySetsAttribute.Contains($attribute)) {
+                $editableAttributes.Add($attribute)
                 $personalInfoWarning = "'$attribute' is in the 'Personal-Information' property set, the user can modify it and add himself to the group. See https://itpro-tips.com/property-set-personal-information-and-active-directory-security-and-governance/"
                 $group.Warning = if ($group.Warning) { "$($group.Warning) | $personalInfoWarning" } else { $personalInfoWarning }
             }
+        }
+        if ($editableAttributes.Count) {
+            $group.UserEditableAttributes = $editableAttributes -join '|'
         }
     }
 
