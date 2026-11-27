@@ -26,8 +26,8 @@ Get-SPOStorageReport [-ClientId] <string> [-Tenant] <string>
  [[-CertificateThumbprint] <string>] [[-CertificatePath] <string>]
  [[-CertificatePassword] <securestring>] [[-CertificateBase64Encoded] <string>]
  [[-AdminUrl] <string>] [[-DormantDays] <int>] [[-PricePerGBMonth] <double>]
- [[-Currency] <string>] [[-ExportPath] <string>] [-IncludeExchange]
- [-ExportToExcel] [-ExportToHtml]
+ [[-Currency] <string>] [[-ExportPath] <string>] [-ExportToExcel]
+ [-ExportToHtml]
 ```
 
 
@@ -35,7 +35,7 @@ Get-SPOStorageReport [-ClientId] <string> [-Tenant] <string>
 
 Get-SPOStorageReport answers "how full is the tenant storage quota, and how much could be freed":
 - the tenant SharePoint storage quota and the share of it used by the SharePoint sites;
-- the volume per service: SharePoint, OneDrive and, with IncludeExchange, Exchange Online;
+- the volume per service: SharePoint and OneDrive;
 - the reclaimable volume, without double counting: version history (upper bound) and dormant sites
   (no content change for DormantDays, current content only);
 - with PricePerGBMonth, the estimated yearly gain of freeing that volume.
@@ -46,10 +46,12 @@ to each site, so the report stays fast even on a large tenant.
 ONLY SHAREPOINT COUNTS AGAINST THE QUOTA
 The tenant storage quota (1 TB plus 10 GB per licensed user, plus purchased extra storage) is consumed by
 the SharePoint sites only.
-OneDrive has its own per-user storage and Exchange its own per-mailbox quota:
-they are reported for the volume picture, never added to the quota percentage nor to the reclaimable
-volume.
-Freeing OneDrive or Exchange space does not lower the SharePoint storage bill.
+OneDrive has its own per-user storage: it is reported for the volume picture,
+never added to the quota percentage nor to the reclaimable volume.
+Freeing OneDrive space does not lower
+the SharePoint storage bill.
+Exchange Online mailboxes are out of scope here: see
+Get-ExMailboxStatisticsInfo and Get-ExMailboxQuotaInfo.
 
 ESTIMATES, NOT A QUOTE
 - Version history is an upper bound: the part actually freed depends on the version limit applied
@@ -70,8 +72,7 @@ adds a 'without owner or active admin' line when its governance controls were co
 PERMISSIONS
 The same app-only connection as Get-SPOSiteReport: an Entra app registration with a certificate and the
 SharePoint Sites.FullControl.All application permission.
-IncludeExchange additionally needs the Microsoft
-Graph application permission Reports.Read.All.
+No Microsoft Graph permission is needed.
 
 MULTI-GEO
 Only the geo of the admin center used is covered.
@@ -91,11 +92,11 @@ site (Sites).
 ### EXAMPLE 2
 
 ```powershell
-Get-SPOStorageReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificateThumbprint $thumb -PricePerGBMonth 0.18 -Currency EUR -IncludeExchange -ExportToHtml
+Get-SPOStorageReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificateThumbprint $thumb -PricePerGBMonth $pricePerGB -Currency EUR -ExportToHtml
 ```
 
-Generates the HTML summary with the yearly gain estimate at 0.18 EUR per GB per month, Exchange included
-in the volume picture.
+Generates the HTML summary with the yearly gain estimate, $pricePerGB holding the monthly price of 1 GB of
+extra storage taken from your Microsoft agreement.
 
 ### EXAMPLE 3
 
@@ -308,7 +309,7 @@ HelpMessage: ''
 
 (Optional) Exports the results to an Excel file: a SharePoint-Storage worksheet (overview and
 reclaimable items) and a SharePoint-StorageSites worksheet (one row per site).
-Cannot be combined with ExportToHtml.
+Can be combined with ExportToHtml.
 
 ```yaml
 Type: System.Management.Automation.SwitchParameter
@@ -331,30 +332,7 @@ HelpMessage: ''
 
 (Optional) Exports the summary as a single self-contained HTML file (tiles, volume per service,
 reclaimable items, largest reclaimable sites) and opens it.
-Cannot be combined with ExportToExcel.
-
-```yaml
-Type: System.Management.Automation.SwitchParameter
-DefaultValue: False
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: (All)
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
-### -IncludeExchange
-
-(Optional) Adds the Exchange Online mailbox volume, read from the Microsoft 365 mailbox usage report
-(getMailboxUsageDetail).
-Requires the Microsoft Graph application permission Reports.Read.All.
+Can be combined with ExportToExcel.
 
 ```yaml
 Type: System.Management.Automation.SwitchParameter
@@ -375,8 +353,11 @@ HelpMessage: ''
 
 ### -PricePerGBMonth
 
-(Optional) Price of 1 GB of extra SharePoint storage per month, as in your Microsoft agreement (the
-'Office 365 Extra File Storage' add-on).
+(Optional) Price of 1 GB of extra SharePoint storage per month, as in your Microsoft agreement: the
+'Office 365 Extra File Storage' line of the invoice, or its price in the Microsoft 365 admin center
+(Billing > Purchase services).
+It varies by country, agreement type (CSP, EA, MCA) and discounts, so no
+default is assumed.
 When omitted, volumes are reported without any gain estimate.
 
 ```yaml

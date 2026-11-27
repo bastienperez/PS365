@@ -4,7 +4,7 @@ document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Get-NestedGroup
 Locale: en-US
 Module Name: PS365
-ms.date: 11/03/2026
+ms.date: 11/27/2026
 sidebarTitle: Get-NestedGroup
 title: Get-NestedGroup
 ---
@@ -83,6 +83,7 @@ HelpMessage: ''
 
 When specified, exports the results to an Excel file in the user's profile directory.
 Requires the ImportExcel module.
+Can be combined with ExportToHtml.
 
 ```yaml
 Type: System.Management.Automation.SwitchParameter
@@ -104,6 +105,7 @@ HelpMessage: ''
 ### -ExportToHtml
 
 When specified, exports the results to an interactive HTML graph file in the user's profile directory.
+Can be combined with ExportToExcel.
 The graph is rendered in the browser using D3.js (loaded from CDN).
 Nodes are color-coded by group type.
 Clicking a node zooms in and reveals its parent and child groups.

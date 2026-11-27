@@ -167,8 +167,7 @@ OneDrive sites are not
   evaluated, and a site where one admin could not be looked up is not flagged.
 A control whose switches were not used is reported as NotCollected (with the switch it needs), never as
 zero affected.
-IncludeAllDetails turns on everything the summary needs, except IncludeSiteAdminsActivity
-(SPO-OWNER-01) which has to be added explicitly.
+IncludeAllDetails turns on everything the summary needs.
 
 ## EXAMPLES
 
@@ -298,11 +297,21 @@ opens it automatically.
 ### EXAMPLE 14
 
 ```powershell
-Get-SPOSiteReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificateThumbprint $thumb -ExcludeOneDrive -IncludeAllDetails -IncludeSiteAdminsActivity -InactiveDaysThreshold 180 -ExportToExcel
+Get-SPOSiteReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificateThumbprint $thumb -ExcludeOneDrive -IncludeAllDetails -InactiveDaysThreshold 180 -PricePerGBMonth $pricePerGB -ExportToExcel
 ```
 
-Full report plus the activity check of the site collection administrators (no sign-in for 180 days =
-inactive), so every control of the findings summary is evaluated, SPO-OWNER-01 included.
+Slowest and most complete run: every collection, every control of the findings summary (an admin without
+sign-in for 180 days counts as inactive) and the storage summary, with the yearly gain computed from
+$pricePerGB, the monthly price of 1 GB of extra storage taken from your Microsoft agreement.
+
+### EXAMPLE 15
+
+```powershell
+Get-SPOSiteReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificateThumbprint $thumb -ExcludeOneDrive -IncludeSiteMembers -IncludeSiteVisitors -M365GroupsDetails -ExportToHtml
+```
+
+Faster run limited to the site rights and the Microsoft 365 groups: the findings that need other
+collections are reported as not collected.
 
 ## PARAMETERS
 
@@ -594,7 +603,7 @@ HelpMessage: ''
 (Optional) If specified, exports the results to an Excel file in the user's profile directory.
 Besides the SharePoint-SiteReport worksheet, the file holds a SharePoint-Findings worksheet (one row per
 control, see FINDINGS SUMMARY) and a SharePoint-FindingsSites worksheet (one row per flagged site).
-Cannot be combined with ExportToHtml: only one export format is produced per call.
+Can be combined with ExportToHtml: both files are then produced by the same run.
 
 ```yaml
 Type: System.Management.Automation.SwitchParameter
@@ -627,7 +636,7 @@ A findings summary table (see FINDINGS SUMMARY)
 sits above the sites, each flagged site carries the codes of its findings as badges, and the search box
 also matches those codes (type SPO-SHARE-01 to list the sites it flags).
 The file opens automatically once written.
-Cannot be combined with ExportToExcel: only one export format is produced per call.
+Can be combined with ExportToExcel: both files are then produced by the same run.
 
 ```yaml
 Type: System.Management.Automation.SwitchParameter
@@ -671,13 +680,28 @@ HelpMessage: ''
 
 ### -IncludeAllDetails
 
-(Optional) Shorthand that turns on IncludeSiteAdmins, IncludeSiteMembers, IncludeSiteVisitors,
-IncludeSharingLinks, IncludeEveryoneAccess, RegionalSettingsDetails and M365GroupsDetails all at once, so you don't have to remember and list
-each one individually.
-Does NOT affect ExcludeOneDrive/OnlyOneDrive: those are mutually exclusive
-site filters, not detail enrichment, and are left untouched.
-Individual switches passed alongside
-IncludeAllDetails have no additional effect (everything is already on).
+(Optional) Turns on every collection at once: IncludeSiteAdmins, IncludeSiteMembers, IncludeSiteVisitors,
+IncludeSharingLinks, IncludeSharingLinksDetails, IncludeEveryoneAccess, IncludeSiteAdminsActivity,
+RegionalSettingsDetails, M365GroupsDetails and, with an export, IncludeStorageSummary.
+
+THIS IS THE SLOWEST MODE.
+It includes the expensive collections: the file-level drill-down of the sharing
+links (IncludeSharingLinksDetails, the slowest part), the Microsoft 365 group and Teams layer, the
+libraries with unique permissions of every site and one Microsoft Graph lookup per distinct admin.
+On a
+large tenant, expect a run of several hours; a notice listing the slow parts is printed at the start.
+For a faster run, pass only the individual switches you need.
+
+It also uses every Microsoft Graph application permission of the report (Group.Read.All, User.Read.All,
+AuditLog.Read.All or Reports.Read.All) on top of SharePoint Sites.FullControl.All.
+A missing permission
+does not stop the run: the part that needs it is skipped with a warning, and its findings are reported
+as not collected.
+
+Does NOT affect ExcludeOneDrive/OnlyOneDrive: those are mutually exclusive site filters, not detail
+enrichment, and are left untouched.
+Individual switches passed alongside IncludeAllDetails have no
+additional effect (everything is already on).
 
 ```yaml
 Type: System.Management.Automation.SwitchParameter
@@ -786,8 +810,7 @@ The work is delegated to Get-SPOSharingLinkReport, which can also be called on i
 Only the sites whose counts came back non-zero are visited, so the pass is naturally limited to the
 sites that actually have something to show.
 It still opens one connection per site and resolves every
-shared item, which is why IncludeAllDetails does NOT turn this switch on - it has to be asked for
-explicitly.
+shared item, which makes it the slowest part of IncludeAllDetails.
 
 No Microsoft Graph permission is involved: the drill-down runs in the Graph-free mode of
 Get-SPOSharingLinkReport, where the shared-with list comes from the members of the SharingLinks group
@@ -887,7 +910,6 @@ An admin absent
 from the report (often an unlicensed account) gets no verdict.
 When neither source is usable, an enabled
 admin is considered active.
-Not part of IncludeAllDetails, because of those extra permissions.
 
 ```yaml
 Type: System.Management.Automation.SwitchParameter
@@ -965,8 +987,6 @@ When the no owner (EID-GROUP-13) or no active admin (SPO-OWNER-01) controls were
 sites without owner or active admin' line is added.
 Requires ExportToExcel or ExportToHtml, and is
 skipped with SiteUrl or OnlyOneDrive (the quota usage needs every SharePoint site).
-Exchange is not part
-of it: use Get-SPOStorageReport -IncludeExchange.
 
 ```yaml
 Type: System.Management.Automation.SwitchParameter
