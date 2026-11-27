@@ -143,6 +143,11 @@
     On a Multi-Geo tenant, supplying AdminUrl explicitly restricts the whole report to that one geo: the
     automatic loop over every geo (see MULTI-GEO TENANTS above) only runs when AdminUrl is omitted and
     derived automatically from Tenant.
+    An AdminUrl given as the root site (https://contoso.sharepoint.com), the OneDrive host (-my) or with a path is
+    turned into the admin center URL with a warning: the tenant-level data is only readable there.
+    A renamed SharePoint domain is detected: when the admin URL answers 'not a tenant administration site', the
+    real root site is read from Microsoft Graph (sites/root, application permission Sites.Read.All) and the
+    report switches to its admin center, with a warning giving the -AdminUrl to pass next time.
 
     .PARAMETER SiteUrl
     (Optional) Restricts the report to a single site collection URL. When omitted, every site of the tenant
@@ -1547,40 +1552,35 @@ function Get-SPOSiteReport {
     # the derivation below overwrites $AdminUrl, so the site enumeration knows not to loop over every geo.
     $adminUrlWasExplicit = [bool]$AdminUrl
 
-    # Derive the admin center URL from the tenant name when not provided
-    if (-not $AdminUrl) {
-        $tenantName = $Tenant.Split('.')[0]
-        $AdminUrl = "https://$tenantName-admin.sharepoint.com"
-    }
+    # Admin center URL: derived from the tenant name when not provided, normalized when given as the root site,
+    # the OneDrive host or with a path (the tenant-level cmdlets fail against anything but the admin center)
+    $AdminUrl = Resolve-SPOAdminUrl -AdminUrl $AdminUrl -Tenant $Tenant
 
-    # The first PnP call of a session also loads the PnP.PowerShell module, which alone can take a while:
-    # the elapsed time is printed so a slow start is not mistaken for a hang
-    Write-Host -ForegroundColor Cyan "Connecting to SharePoint admin center: $AdminUrl (loads PnP.PowerShell on first use)..."
-    $stepStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
-
+    # Connection and tenant settings in one step: Connect-SPOAdminCenter also detects a renamed SharePoint
+    # domain (the derived admin URL then answers as a redirect site) and switches to the real admin center
     try {
-        $adminConnection = Connect-PnPOnline -Url $AdminUrl @pnpAuthParams -ReturnConnection -ErrorAction Stop
+        $adminCenter = Connect-SPOAdminCenter -AdminUrl $AdminUrl -PnpAuthParams $pnpAuthParams
     }
     catch {
         Write-Warning "Unable to connect to the SharePoint admin center: $_"
         return
     }
 
-    Write-Host -ForegroundColor Cyan "Connected in $([int]$stepStopwatch.Elapsed.TotalSeconds) s. Reading the tenant settings..."
+    $adminConnection = $adminCenter.Connection
+    $AdminUrl = $adminCenter.AdminUrl
 
     # Tenant-wide version history policy, read once: it is the default applied to new sites and to every
     # site that inherits it, so it feeds the VersionPolicyEffective and VersionPolicyTenantDefault columns.
     # A failed read (limited app permissions) leaves them empty rather than aborting the report.
     $tenantVersionPolicyLabel = $null
-    $tenantVersionPolicy = $null
+    $tenantVersionPolicy = $adminCenter.TenantSettings
 
-    try {
-        $tenantVersionPolicy = Get-PnPTenant -Connection $adminConnection -ErrorAction Stop
+    if ($tenantVersionPolicy) {
         $tenantVersionPolicyLabel = Get-SPOVersionPolicyLabel -AutoTrim $tenantVersionPolicy.EnableAutoExpirationVersionTrim -MajorVersionLimit $tenantVersionPolicy.MajorVersionLimit -ExpireVersionsAfterDays $tenantVersionPolicy.ExpireVersionsAfterDays
         Write-Host -ForegroundColor Cyan "Tenant version history policy (default for new sites): $tenantVersionPolicyLabel"
     }
-    catch {
-        Write-Warning "Unable to read the tenant version history policy: $($_.Exception.Message.Trim()). The VersionPolicyEffective and VersionPolicyTenantDefault columns will be empty."
+    else {
+        Write-Warning "Unable to read the tenant version history policy: $($adminCenter.TenantError). The VersionPolicyEffective and VersionPolicyTenantDefault columns will be empty."
     }
 
     # Get-PnPTenantSite -Detailed is a single call that can last several minutes on a large tenant

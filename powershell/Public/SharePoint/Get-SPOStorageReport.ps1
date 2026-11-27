@@ -64,6 +64,11 @@ function Get-SPOStorageReport {
     .PARAMETER AdminUrl
     (Optional) URL of the SharePoint admin center. Derived from Tenant when omitted; provide it when Tenant
     is a vanity domain, or to target a specific Multi-Geo location.
+    An AdminUrl given as the root site (https://contoso.sharepoint.com), the OneDrive host (-my) or with a path is
+    turned into the admin center URL with a warning: the tenant-level data is only readable there.
+    A renamed SharePoint domain is detected: when the admin URL answers 'not a tenant administration site', the
+    real root site is read from Microsoft Graph (sites/root, application permission Sites.Read.All) and the
+    report switches to its admin center, with a warning giving the -AdminUrl to pass next time.
 
     .PARAMETER DormantDays
     (Optional) Number of days without any content change after which a SharePoint site is considered
@@ -187,37 +192,33 @@ function Get-SPOStorageReport {
         $pnpAuthParams.Add('CertificateBase64Encoded', $CertificateBase64Encoded)
     }
 
-    if (-not $AdminUrl) {
-        $tenantName = $Tenant.Split('.')[0]
-        $AdminUrl = "https://$tenantName-admin.sharepoint.com"
-    }
+    # Admin center URL: derived from the tenant name when not provided, normalized when given as the root site,
+    # the OneDrive host or with a path (the tenant-level cmdlets fail against anything but the admin center)
+    $AdminUrl = Resolve-SPOAdminUrl -AdminUrl $AdminUrl -Tenant $Tenant
 
-    # The first PnP call of a session also loads the PnP.PowerShell module, which alone can take a while:
-    # the elapsed time is printed so a slow start is not mistaken for a hang
-    Write-Host -ForegroundColor Cyan "Connecting to SharePoint admin center: $AdminUrl (loads PnP.PowerShell on first use)..."
-    $stepStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
-
+    # Connection and tenant settings in one step: Connect-SPOAdminCenter also detects a renamed SharePoint
+    # domain (the derived admin URL then answers as a redirect site) and switches to the real admin center
     try {
-        $adminConnection = Connect-PnPOnline -Url $AdminUrl @pnpAuthParams -ReturnConnection -ErrorAction Stop
+        $adminCenter = Connect-SPOAdminCenter -AdminUrl $AdminUrl -PnpAuthParams $pnpAuthParams
     }
     catch {
         Write-Warning "Unable to connect to the SharePoint admin center: $_"
         return
     }
 
-    Write-Host -ForegroundColor Cyan "Connected in $([int]$stepStopwatch.Elapsed.TotalSeconds) s. Reading the tenant storage quota..."
+    $adminConnection = $adminCenter.Connection
+    $AdminUrl = $adminCenter.AdminUrl
 
     # StorageQuota is returned in MB. A failed read leaves the quota empty (percentage 'n/a') instead of
     # aborting: the volumes and the reclaimable items do not depend on it
     $tenantQuotaGB = $null
-    try {
-        $tenantSettings = Get-PnPTenant -Connection $adminConnection -ErrorAction Stop
-        if ($tenantSettings.StorageQuota -gt 0) {
-            $tenantQuotaGB = [double]$tenantSettings.StorageQuota / 1024
+    if ($adminCenter.TenantSettings) {
+        if ($adminCenter.TenantSettings.StorageQuota -gt 0) {
+            $tenantQuotaGB = [double]$adminCenter.TenantSettings.StorageQuota / 1024
         }
     }
-    catch {
-        Write-Warning "Unable to read the tenant storage quota: $($_.Exception.Message.Trim()). The quota percentage will be empty."
+    else {
+        Write-Warning "Unable to read the tenant storage quota: $($adminCenter.TenantError). The quota percentage will be empty."
     }
 
     Write-Host -ForegroundColor Cyan 'Retrieving SharePoint Online and OneDrive sites (one call, can take several minutes on a large tenant)...'
