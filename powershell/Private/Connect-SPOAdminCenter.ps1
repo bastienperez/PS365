@@ -15,7 +15,9 @@ function Connect-SPOAdminCenter {
     connection succeeds, but every tenant-level cmdlet then fails with 'Current site is not a tenant
     administration site'. On that exact error, the real root site is read from Microsoft Graph
     (GET /v1.0/sites/root, on the same app-only connection), the admin URL is rebuilt from its host, a
-    warning gives the URL to pass as -AdminUrl next time, and the connection is redone there.
+    warning gives the URL to pass as -AdminUrl next time, and the connection is redone there. When the
+    PnP.PowerShell version offers Get-PnPTenantRenameStatus, the warning also gives the rename status and its
+    requested and scheduled dates.
 
     That Graph call only happens on this failure, so a tenant whose name matches needs no Graph permission. It
     needs the Microsoft Graph application permission Sites.Read.All (or Sites.FullControl.All); without it, a
@@ -94,15 +96,32 @@ function Connect-SPOAdminCenter {
         return $result
     }
 
-    Write-Warning "The SharePoint domain of this tenant is not the one derived from its name (renamed SharePoint domain): the root site is $rootWebUrl. Using the admin center $detectedAdminUrl. Pass -AdminUrl '$detectedAdminUrl' next time to skip this detection."
-
     try {
         $connection = Connect-PnPOnline -Url $detectedAdminUrl @PnpAuthParams -ReturnConnection -ErrorAction Stop
     }
     catch {
-        Write-Warning "Unable to connect to the detected admin center $($detectedAdminUrl): $($_.Exception.Message)"
+        Write-Warning "The SharePoint domain of this tenant is not the one derived from its name (renamed SharePoint domain): the root site is $rootWebUrl, but its admin center $detectedAdminUrl cannot be reached: $($_.Exception.Message)"
         return $result
     }
+
+    # When the rename went through Start-SPOTenantRename / Start-PnPTenantRename, its status and dates say when
+    # it happened. Get-PnPTenantRenameStatus only exists in recent PnP.PowerShell versions: skipped otherwise,
+    # and a failed read only drops the dates from the warning
+    $renameText = ''
+    if (Get-Command -Name Get-PnPTenantRenameStatus -ErrorAction SilentlyContinue) {
+        try {
+            $renameStatus = Get-PnPTenantRenameStatus -Connection $connection -ErrorAction Stop | Select-Object -First 1 -Property Status, RequestedAt, ScheduledAt
+            if ($renameStatus) {
+                $formatDate = { param($Value) if ($Value) { ([datetime]$Value).ToString('yyyy-MM-dd HH:mm') } else { 'n/a' } }
+                $renameText = " Rename status: $($renameStatus.Status), requested on $(& $formatDate $renameStatus.RequestedAt), scheduled on $(& $formatDate $renameStatus.ScheduledAt)."
+            }
+        }
+        catch {
+            Write-Verbose "Unable to read the tenant rename status: $($_.Exception.Message)"
+        }
+    }
+
+    Write-Warning "The SharePoint domain of this tenant is not the one derived from its name (renamed SharePoint domain): the root site is $rootWebUrl.$renameText Using the admin center $detectedAdminUrl. Pass -AdminUrl '$detectedAdminUrl' next time to skip this detection."
 
     $result.Connection = $connection
     $result.AdminUrl = $detectedAdminUrl
