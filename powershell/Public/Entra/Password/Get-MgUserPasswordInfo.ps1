@@ -229,8 +229,11 @@ function Get-MgUserPasswordInfo {
         if ($ExportToExcel.IsPresent) {
             $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
             $ExcelFilePath = "$($env:userprofile)\$now-MgDomainPasswordPolicies_Report.xlsx"
-            Write-Host -ForegroundColor Cyan "Exporting domain password policies to Excel file: $ExcelFilePath"
+            Write-Host -ForegroundColor Cyan 'Exporting domain password policies to Excel...'
             $domainPasswordPolicies | Export-Excel -Path $ExcelFilePath -AutoSize -AutoFilter -WorksheetName 'Entra-DomainPasswordPolicies' -TableStyle Light9
+            Add-PS365ExcelAboutSheet -Path $ExcelFilePath
+            Write-Host -ForegroundColor Green 'Excel report exported to:'
+            Write-Host -ForegroundColor White "  $ExcelFilePath"
 
             return
         }
@@ -419,8 +422,11 @@ function Get-MgUserPasswordInfo {
     if ($ExportToExcel.IsPresent) {
         $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
         $ExcelFilePath = "$($env:userprofile)\$now-MgUserPasswordInfo_Report.xlsx"
-        Write-Host -ForegroundColor Cyan "Exporting password information to Excel file: $ExcelFilePath"
+        Write-Host -ForegroundColor Cyan 'Exporting password information to Excel...'
         $passwordsInfoArray | Export-Excel -Path $ExcelFilePath -AutoSize -AutoFilter -WorksheetName 'Entra-PasswordInfo' -TableStyle Light9
+        Add-PS365ExcelAboutSheet -Path $ExcelFilePath
+        Write-Host -ForegroundColor Green 'Excel report exported to:'
+        Write-Host -ForegroundColor White "  $ExcelFilePath"
     }
     else {
         return $passwordsInfoArray

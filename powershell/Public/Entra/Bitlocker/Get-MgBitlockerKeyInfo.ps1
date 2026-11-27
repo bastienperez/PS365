@@ -628,7 +628,7 @@ function Get-MgBitlockerKeyInfo {
         try {
             $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
             $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\${now}_BitLockerKeys_Report.xlsx"
-            Write-Host -ForegroundColor Cyan "Exporting BitLocker keys report to Excel file: $excelFilePath"
+            Write-Host -ForegroundColor Cyan 'Exporting BitLocker keys report to Excel...'
             
             if ($PSBoundParameters['IncludeDeviceInfo']) {
                 Write-Verbose 'Exporting comprehensive device report to Excel...'
@@ -647,7 +647,11 @@ function Get-MgBitlockerKeyInfo {
                 Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'BitLocker-Keys' -TableStyle Light9
             }
             
-            Write-Host "Report successfully exported to: $excelFilePath" -ForegroundColor Green
+            # Private helper: absent when the script is deployed standalone as an Azure Automation runbook
+            
+            if (Get-Command -Name Add-PS365ExcelAboutSheet -ErrorAction SilentlyContinue) { Add-PS365ExcelAboutSheet -Path $excelFilePath }
+            Write-Host -ForegroundColor Green 'Excel report exported to:'
+            Write-Host -ForegroundColor White "  $excelFilePath"
             
             if ($PSBoundParameters['ShowKeyInPlainText']) {
                 Write-Warning 'SECURITY ALERT: The Excel file contains BitLocker recovery keys in PLAIN TEXT!'

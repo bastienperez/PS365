@@ -191,9 +191,11 @@ function Get-MgUserIdentitySummary {
         $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
         $exportDirectory = if ($ExportPath) { $ExportPath } else { $env:userprofile }
         $excelFilePath = Join-Path -Path $exportDirectory -ChildPath "$now-MgUserIdentitySummary.xlsx"
-        Write-Host -ForegroundColor Cyan "Exporting identity summary to Excel file: $excelFilePath"
+        Write-Host -ForegroundColor Cyan 'Exporting identity summary to Excel...'
         $summaryArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'Entra-IdentitySummary' -TableStyle Light9
-        Write-Host -ForegroundColor Green 'Export completed successfully!'
+        Add-PS365ExcelAboutSheet -Path $excelFilePath
+        Write-Host -ForegroundColor Green 'Excel report exported to:'
+        Write-Host -ForegroundColor White "  $excelFilePath"
     }
     else {
         return $summaryArray

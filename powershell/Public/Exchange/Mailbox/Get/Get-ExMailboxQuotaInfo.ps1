@@ -520,9 +520,11 @@ function Get-ExMailboxQuotaInfo {
             $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
             $exportDirectory = if ($ExportPath) { $ExportPath } else { $env:userprofile }
             $excelFilePath = Join-Path -Path $exportDirectory -ChildPath "$now-ExMailboxQuotaInfo.xlsx"
-            Write-Host -ForegroundColor Cyan "Exporting the report to Excel file: $excelFilePath"
+            Write-Host -ForegroundColor Cyan 'Exporting the report to Excel...'
             $entitlementArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'Ex-QuotaInfo' -TableStyle Light9
-            Write-Host -ForegroundColor Green 'Export completed successfully!'
+            Add-PS365ExcelAboutSheet -Path $excelFilePath
+            Write-Host -ForegroundColor Green 'Excel report exported to:'
+            Write-Host -ForegroundColor White "  $excelFilePath"
         }
         else {
             return $entitlementArray

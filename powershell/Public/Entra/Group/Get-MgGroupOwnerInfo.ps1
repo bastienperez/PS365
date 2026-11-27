@@ -187,8 +187,11 @@ function Get-MgGroupOwnerInfo {
     if ($ExportToExcel.IsPresent) {
         $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
         $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-MgGroupOwnerInfo_Report.xlsx"
-        Write-Host -ForegroundColor Cyan "Exporting to Excel file: $excelFilePath"
+        Write-Host -ForegroundColor Cyan 'Exporting to Excel...'
         $results | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'Entra-GroupOwners' -TableStyle Light9
+        Add-PS365ExcelAboutSheet -Path $excelFilePath
+        Write-Host -ForegroundColor Green 'Excel report exported to:'
+        Write-Host -ForegroundColor White "  $excelFilePath"
     }
 
     return $results

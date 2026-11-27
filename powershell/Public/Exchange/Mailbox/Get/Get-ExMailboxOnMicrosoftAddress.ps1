@@ -195,9 +195,11 @@ function Get-ExMailboxOnMicrosoftAddress {
         if ($ExportToExcel.IsPresent) {
             $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
             $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-ExMailboxOnMicrosoftAddress.xlsx"
-            Write-Host -ForegroundColor Cyan "Exporting to Excel file: $excelFilePath"
+            Write-Host -ForegroundColor Cyan 'Exporting to Excel...'
             $results | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'ExMailboxOnMicrosoftAddress' -TableStyle Light9
-            Write-Host -ForegroundColor Green 'Export completed successfully!'
+            Add-PS365ExcelAboutSheet -Path $excelFilePath
+            Write-Host -ForegroundColor Green 'Excel report exported to:'
+            Write-Host -ForegroundColor White "  $excelFilePath"
         }
         else {
             return $results

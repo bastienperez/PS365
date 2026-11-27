@@ -4,7 +4,7 @@ document type: cmdlet
 HelpUri: https://ps365.clidsys.com/docs/commands/Get-SPOSiteReport
 Locale: en-US
 Module Name: PS365
-ms.date: 11/03/2026
+ms.date: 11/27/2026
 sidebarTitle: Get-SPOSiteReport
 title: Get-SPOSiteReport
 ---
@@ -22,11 +22,13 @@ Get-SPOSiteReport [-ClientId] <string> [-Tenant] <string>
  [[-CertificateThumbprint] <string>] [[-CertificatePath] <string>]
  [[-CertificatePassword] <securestring>] [[-CertificateBase64Encoded] <string>]
  [[-AdminUrl] <string>] [[-SiteUrl] <string>] [[-ExcludeGeo] <string[]>]
- [[-ThrottleLimit] <int>] [[-ExcelTemplatePath] <string>]
- [[-ExportPath] <string>] [-ExcludeOneDrive] [-OnlyOneDrive]
- [-IncludeAllDetails] [-IncludeSiteAdmins] [-IncludeSiteMembers]
+ [[-DormantDays] <int>] [[-PricePerGBMonth] <double>] [[-Currency] <string>]
+ [[-InactiveDaysThreshold] <int>] [[-ThrottleLimit] <int>]
+ [[-ExcelTemplatePath] <string>] [[-ExportPath] <string>] [-ExcludeOneDrive]
+ [-OnlyOneDrive] [-IncludeAllDetails] [-IncludeSiteAdmins] [-IncludeSiteMembers]
  [-IncludeSiteVisitors] [-IncludeSharingLinks] [-IncludeSharingLinksDetails]
- [-RegionalSettingsDetails] [-M365GroupsDetails] [-ExportToExcel]
+ [-IncludeEveryoneAccess] [-RegionalSettingsDetails] [-M365GroupsDetails]
+ [-IncludeStorageSummary] [-IncludeSiteAdminsActivity] [-ExportToExcel]
  [-ExportToHtml] [-MultiGeoStats]
 ```
 
@@ -139,6 +141,34 @@ This is deliberate - an empty SiteAdmins column would read as "this site has no
 administrator", where the truth is "this was not collected".
 A column that is present but empty therefore
 always means the data really is empty (or could not be read, see the Status counters at the end of a run).
+
+FINDINGS SUMMARY
+ExportToExcel and ExportToHtml add a findings summary computed from the collected columns only (no extra
+call): each control counts the sites or Microsoft 365 groups it flags and lists them with a short detail.
+- EID-GROUP-08 Public Microsoft 365 groups (M365GroupsDetails).
+- SPO-SHARE-04 / SPO-SHARE-05 Private Microsoft 365 groups whose site grants access to 'Everyone except external
+  users' / 'Everyone' (M365GroupsDetails, IncludeEveryoneAccess).
+- SPO-SHARE-01 / SPO-SHARE-02 Sites granting access to 'Everyone except external users' / 'Everyone'
+  (IncludeEveryoneAccess): on the site itself, directly or through any SharePoint group, and on the
+  libraries/lists with unique permissions; folders and files are not inspected.
+Without
+  IncludeEveryoneAccess, SPO-SHARE-01, 02, 04 and 05 are still evaluated from IncludeSiteMembers plus
+  IncludeSiteVisitors, limited to the associated Owners/Members/Visitors groups, and flagged as partial.
+- EID-GROUP-11 Sites with guests ('#EXT#' identities in the site rights, plus the Microsoft 365 group guests
+  when M365GroupsDetails is used) (IncludeSiteMembers).
+- SPO-SHARE-03 Sites holding anonymous 'Anyone with the link' links (IncludeSharingLinks).
+Flexible links are
+  not counted: their scope is only known through Get-SPOSharingLinkReport -IncludeGraphDetails.
+- EID-GROUP-13 / EID-GROUP-14 / EID-GROUP-15 Microsoft 365 groups without owner, with external owners only, with external
+  users only (M365GroupsDetails).
+- SPO-OWNER-01 Sites without an active administrator: every site collection administrator is disabled, deleted
+  or has not signed in for InactiveDaysThreshold days (IncludeSiteAdminsActivity).
+OneDrive sites are not
+  evaluated, and a site where one admin could not be looked up is not flagged.
+A control whose switches were not used is reported as NotCollected (with the switch it needs), never as
+zero affected.
+IncludeAllDetails turns on everything the summary needs, except IncludeSiteAdminsActivity
+(SPO-OWNER-01) which has to be added explicitly.
 
 ## EXAMPLES
 
@@ -264,6 +294,15 @@ Get-SPOSiteReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -Certifi
 Generates a single self-contained HTML file with a collapsible rights tree per site (Admins, Owners,
 Members, Visitors, with identities inherited from a nested Microsoft 365 group shown separately), and
 opens it automatically.
+
+### EXAMPLE 14
+
+```powershell
+Get-SPOSiteReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificateThumbprint $thumb -ExcludeOneDrive -IncludeAllDetails -IncludeSiteAdminsActivity -InactiveDaysThreshold 180 -ExportToExcel
+```
+
+Full report plus the activity check of the site collection administrators (no sign-in for 180 days =
+inactive), so every control of the findings summary is evaluated, SPO-OWNER-01 included.
 
 ## PARAMETERS
 
@@ -403,6 +442,51 @@ AcceptedValues: []
 HelpMessage: ''
 ```
 
+### -Currency
+
+(Optional) Currency label of PricePerGBMonth.
+Default is EUR.
+
+```yaml
+Type: System.String
+DefaultValue: EUR
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 11
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -DormantDays
+
+(Optional) Number of days without any content change after which a SharePoint site is considered
+dormant by IncludeStorageSummary.
+Default is 730 (2 years).
+
+```yaml
+Type: System.Int32
+DefaultValue: 730
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 9
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
 ### -ExcelTemplatePath
 
 (Optional) Path to an existing .xlsx file used as a template for the Excel export.
@@ -419,7 +503,7 @@ SupportsWildcards: false
 Aliases: []
 ParameterSets:
 - Name: (All)
-  Position: 10
+  Position: 14
   IsRequired: false
   ValueFromPipeline: false
   ValueFromPipelineByPropertyName: false
@@ -495,7 +579,7 @@ SupportsWildcards: false
 Aliases: []
 ParameterSets:
 - Name: (All)
-  Position: 11
+  Position: 15
   IsRequired: false
   ValueFromPipeline: false
   ValueFromPipelineByPropertyName: false
@@ -508,6 +592,8 @@ HelpMessage: ''
 ### -ExportToExcel
 
 (Optional) If specified, exports the results to an Excel file in the user's profile directory.
+Besides the SharePoint-SiteReport worksheet, the file holds a SharePoint-Findings worksheet (one row per
+control, see FINDINGS SUMMARY) and a SharePoint-FindingsSites worksheet (one row per flagged site).
 Cannot be combined with ExportToHtml: only one export format is produced per call.
 
 ```yaml
@@ -537,6 +623,9 @@ resolved through the claim model above, with identities inherited from a nested 
 shown under their own collapsible sub-node (name and role of that group).
 A search box filters sites
 by title or URL, useful when the tenant has many sites.
+A findings summary table (see FINDINGS SUMMARY)
+sits above the sites, each flagged site carries the codes of its findings as badges, and the search box
+also matches those codes (type SPO-SHARE-01 to list the sites it flags).
 The file opens automatically once written.
 Cannot be combined with ExportToExcel: only one export format is produced per call.
 
@@ -557,15 +646,71 @@ AcceptedValues: []
 HelpMessage: ''
 ```
 
+### -InactiveDaysThreshold
+
+(Optional) Number of days without sign-in after which an admin is considered inactive.
+Default is 90.
+Used by IncludeSiteAdminsActivity only.
+
+```yaml
+Type: System.Int32
+DefaultValue: 90
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 12
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
 ### -IncludeAllDetails
 
 (Optional) Shorthand that turns on IncludeSiteAdmins, IncludeSiteMembers, IncludeSiteVisitors,
-IncludeSharingLinks, RegionalSettingsDetails and M365GroupsDetails all at once, so you don't have to remember and list
+IncludeSharingLinks, IncludeEveryoneAccess, RegionalSettingsDetails and M365GroupsDetails all at once, so you don't have to remember and list
 each one individually.
 Does NOT affect ExcludeOneDrive/OnlyOneDrive: those are mutually exclusive
 site filters, not detail enrichment, and are left untouched.
 Individual switches passed alongside
 IncludeAllDetails have no additional effect (everything is already on).
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -IncludeEveryoneAccess
+
+(Optional) Lists where the tenant-wide claims 'Everyone' and 'Everyone except external users' are granted
+a real permission (anything beyond 'Limited Access'): on the site itself, directly or through any
+SharePoint group holding permissions (not only the associated Owners/Members/Visitors ones), and on every
+non hidden library or list whose permission inheritance is broken.
+Adds two columns: EveryoneAccess (for
+example "Everyone except external users on library 'Finance' (Read, via group 'Finance readers')") and
+ListsWithUniquePermissionsCount.
+Costs two REST calls per site plus one per list with unique permissions,
+on the site connection already opened.
+Folders, files and subsites are not inspected: SharePoint cannot
+filter items on unique permissions, so it would mean walking every item.
+Sharing link groups are left
+out, they are counted by IncludeSharingLinks.
 
 ```yaml
 Type: System.Management.Automation.SwitchParameter
@@ -715,6 +860,52 @@ AcceptedValues: []
 HelpMessage: ''
 ```
 
+### -IncludeSiteAdminsActivity
+
+(Optional) Checks whether the site collection administrators are still active, and turns on
+IncludeSiteAdmins.
+Every distinct admin account (group claims expanded to their users) is looked up once
+in Microsoft Graph through the PnP app-only connection, reading accountEnabled and signInActivity.
+An
+admin is active when the account is enabled and has signed in within InactiveDaysThreshold days; a
+disabled, deleted or never signed in account is not.
+Adds three columns: SiteAdminsActiveCount,
+SiteAdminsNotActive (each non active admin with the reason) and SiteAdminsActivityStatus ('OK',
+'PARTIAL: ...' when a lookup failed, 'NoAdminCollected', 'NoUserAdmin' or 'NotApplicable (OneDrive)').
+
+Requires the Microsoft Graph application permissions User.Read.All and AuditLog.Read.All on the app
+registration, and an Entra ID P1 license for signInActivity.
+Without AuditLog.Read.All or the license, the
+function warns once and falls back to the Microsoft 365 active users report (getOffice365ActiveUserDetail,
+last 180 days, one download for the whole run): the last activity date across Exchange, OneDrive,
+SharePoint, Teams...
+replaces the last sign-in.
+That fallback needs the Reports.Read.All application
+permission (no license), and the report concealment setting turned off ('Display concealed user, group,
+and site names in all reports'), otherwise user names are hashed and cannot be matched.
+An admin absent
+from the report (often an unlicensed account) gets no verdict.
+When neither source is usable, an enabled
+admin is considered active.
+Not part of IncludeAllDetails, because of those extra permissions.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
 ### -IncludeSiteMembers
 
 (Optional) Adds the site Owners and Members groups of each site (Get-PnPGroup -AssociatedOwnerGroup /
@@ -763,10 +954,41 @@ AcceptedValues: []
 HelpMessage: ''
 ```
 
+### -IncludeStorageSummary
+
+(Optional) Adds the storage summary of Get-SPOStorageReport to the Excel export (SharePoint-Storage
+worksheet) and to the HTML export (section under the findings): tenant quota usage, volume per service,
+reclaimable volume (version history and dormant sites, without double counting) and, with
+PricePerGBMonth, the estimated yearly gain.
+Computed from the columns already collected, no extra call.
+When the no owner (EID-GROUP-13) or no active admin (SPO-OWNER-01) controls were evaluated, a 'dormant
+sites without owner or active admin' line is added.
+Requires ExportToExcel or ExportToHtml, and is
+skipped with SiteUrl or OnlyOneDrive (the quota usage needs every SharePoint site).
+Exchange is not part
+of it: use Get-SPOStorageReport -IncludeExchange.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
 ### -M365GroupsDetails
 
-(Optional) Adds the Microsoft 365 group and Microsoft Teams details of the group-connected sites, served
-entirely through the PnP app-only connection (see the app-only requirement note above).
+(Optional) Adds the Microsoft 365 group and Microsoft Teams details of the group-connected sites (including
+M365GroupVisibility: Public, Private or HiddenMembership), served entirely through the PnP app-only connection (see the app-only requirement note above).
 No prior
 Exchange Online or Microsoft Teams session is needed.
 This switch significantly increases the execution time on large tenants.
@@ -836,6 +1058,29 @@ Aliases: []
 ParameterSets:
 - Name: (All)
   Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -PricePerGBMonth
+
+(Optional) Price of 1 GB of extra SharePoint storage per month, used by IncludeStorageSummary to estimate
+the yearly gain.
+When omitted, volumes are reported without any gain.
+
+```yaml
+Type: System.Nullable`1[System.Double]
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 10
   IsRequired: false
   ValueFromPipeline: false
   ValueFromPipelineByPropertyName: false
@@ -926,7 +1171,7 @@ SupportsWildcards: false
 Aliases: []
 ParameterSets:
 - Name: (All)
-  Position: 9
+  Position: 13
   IsRequired: false
   ValueFromPipeline: false
   ValueFromPipelineByPropertyName: false

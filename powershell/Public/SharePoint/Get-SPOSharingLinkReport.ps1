@@ -293,6 +293,14 @@ function Get-SPOSharingLinkReport {
 
         Write-Host -ForegroundColor Cyan "Scanning $($siteUrlsList.Count) site(s) for sharing links with $ThrottleLimit concurrent connection(s)..."
 
+        # Each site yields exactly one result object as soon as it completes: counting them downstream gives
+        # a live counter. One console line every 10 % only: Write-Progress is not used, it slows a long loop
+        # down noticeably
+        $sitesDone = 0
+        $sitesTotal = [math]::Max(1, $siteUrlsList.Count)
+        $sitesStep = [math]::Max(1, [math]::Ceiling($sitesTotal / 10))
+        $scanStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+
         $rawResults = $siteUrlsList | ForEach-Object -ThrottleLimit $ThrottleLimit -Parallel {
             $auth = $using:pnpAuthParams
             $useGraph = $using:IncludeGraphDetails
@@ -489,6 +497,13 @@ function Get-SPOSharingLinkReport {
                 Links   = $siteLinks
                 Status  = $status
             }
+        } | ForEach-Object {
+            $sitesDone++
+            if ($sitesDone % $sitesStep -eq 0 -and $sitesDone -lt $sitesTotal) {
+                $remaining = [timespan]::FromSeconds(($scanStopwatch.Elapsed.TotalSeconds / $sitesDone) * ($sitesTotal - $sitesDone))
+                Write-Host -ForegroundColor Cyan "  Sharing links: $sitesDone / $sitesTotal site(s) ($([int]($sitesDone / $sitesTotal * 100)) %), about $($remaining.ToString('hh\:mm\:ss')) remaining"
+            }
+            $_
         }
 
         $sharingLinksArray = [System.Collections.Generic.List[PSCustomObject]]::new()
@@ -625,9 +640,11 @@ function Get-SPOSharingLinkReport {
             $exportDirectory = if ($ExportPath) { $ExportPath } else { $env:userprofile }
             $excelFilePath = Join-Path -Path $exportDirectory -ChildPath "$now-SPOSharingLinkReport.xlsx"
 
-            Write-Host -ForegroundColor Cyan "Exporting to Excel file: $excelFilePath"
+            Write-Host -ForegroundColor Cyan 'Exporting the sharing links to Excel...'
             $sharingLinksArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'SPO-SharingLinks' -TableStyle Light9
-            Write-Host -ForegroundColor Green 'Export completed successfully!'
+            Add-PS365ExcelAboutSheet -Path $excelFilePath
+            Write-Host -ForegroundColor Green 'Excel report exported to:'
+            Write-Host -ForegroundColor White "  $excelFilePath"
         }
         else {
             return $sharingLinksArray

@@ -553,9 +553,11 @@ function Get-MgApplicationAssignment {
     if ($ExportToExcel.IsPresent) {
         $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
         $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-MgApplicationAssignment.xlsx"
-        Write-Host -ForegroundColor Cyan "Exporting application assignments to Excel file: $excelFilePath"
+        Write-Host -ForegroundColor Cyan 'Exporting application assignments to Excel...'
         $applicationAssignmentsArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'EntraApplicationAssignments' -TableStyle Light9
-        Write-Host -ForegroundColor Green 'Export completed successfully!'
+        Add-PS365ExcelAboutSheet -Path $excelFilePath
+        Write-Host -ForegroundColor Green 'Excel report exported to:'
+        Write-Host -ForegroundColor White "  $excelFilePath"
     }
     else {
         return $applicationAssignmentsArray

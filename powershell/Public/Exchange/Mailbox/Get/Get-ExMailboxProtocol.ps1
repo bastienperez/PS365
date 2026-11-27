@@ -118,9 +118,11 @@ function Get-ExMailboxProtocol {
         if ($ExportToExcel.IsPresent) {
             $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
             $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-ExMailboxProtocol.xlsx"
-            Write-Host -ForegroundColor Cyan "Exporting mailbox protocols to Excel file: $excelFilePath"
+            Write-Host -ForegroundColor Cyan 'Exporting mailbox protocols to Excel...'
             $exoCasMailboxesArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'ExchangeMailboxProtocols' -TableStyle Light9
-            Write-Host -ForegroundColor Green 'Export completed successfully!'
+            Add-PS365ExcelAboutSheet -Path $excelFilePath
+            Write-Host -ForegroundColor Green 'Excel report exported to:'
+            Write-Host -ForegroundColor White "  $excelFilePath"
         }
         else {
             return $exoCasMailboxesArray

@@ -123,9 +123,11 @@ function Get-MgApplicationExpiringCertAndKey {
         if ($ExportToExcel.IsPresent) {
             $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
             $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-ExpiringCredentials_$($DaysUntilExpiry)days.xlsx"
-            Write-Host -ForegroundColor Cyan "Exporting expiring credentials to Excel file: $excelFilePath"
+            Write-Host -ForegroundColor Cyan 'Exporting expiring credentials to Excel...'
             $expiringCredentialsArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'ExpiringCredentials' -TableStyle Light9
-            Write-Host -ForegroundColor Green 'Export completed successfully!'
+            Add-PS365ExcelAboutSheet -Path $excelFilePath
+            Write-Host -ForegroundColor Green 'Excel report exported to:'
+            Write-Host -ForegroundColor White "  $excelFilePath"
         }
         else {
             return $expiringCredentialsArray

@@ -1,0 +1,435 @@
+---
+description: >-
+  Builds a FinOps view of the SharePoint Online storage: quota usage, volume per service, reclaimable
+
+  volume and estimated yearly gain.
+document type: cmdlet
+HelpUri: https://ps365.clidsys.com/docs/commands/Get-SPOStorageReport
+Locale: en-US
+Module Name: PS365
+ms.date: 11/27/2026
+sidebarTitle: Get-SPOStorageReport
+title: Get-SPOStorageReport
+---
+
+# Get-SPOStorageReport
+
+## SYNOPSIS
+
+Builds a FinOps view of the SharePoint Online storage: quota usage, volume per service, reclaimable
+volume and estimated yearly gain.
+
+## SYNTAX
+
+```powershell
+Get-SPOStorageReport [-ClientId] <string> [-Tenant] <string>
+ [[-CertificateThumbprint] <string>] [[-CertificatePath] <string>]
+ [[-CertificatePassword] <securestring>] [[-CertificateBase64Encoded] <string>]
+ [[-AdminUrl] <string>] [[-DormantDays] <int>] [[-PricePerGBMonth] <double>]
+ [[-Currency] <string>] [[-ExportPath] <string>] [-IncludeExchange]
+ [-ExportToExcel] [-ExportToHtml]
+```
+
+
+## DESCRIPTION
+
+Get-SPOStorageReport answers "how full is the tenant storage quota, and how much could be freed":
+- the tenant SharePoint storage quota and the share of it used by the SharePoint sites;
+- the volume per service: SharePoint, OneDrive and, with IncludeExchange, Exchange Online;
+- the reclaimable volume, without double counting: version history (upper bound) and dormant sites
+  (no content change for DormantDays, current content only);
+- with PricePerGBMonth, the estimated yearly gain of freeing that volume.
+
+Everything comes from tenant-level data (Get-PnPTenant and Get-PnPTenantSite -Detailed): no connection
+to each site, so the report stays fast even on a large tenant.
+
+ONLY SHAREPOINT COUNTS AGAINST THE QUOTA
+The tenant storage quota (1 TB plus 10 GB per licensed user, plus purchased extra storage) is consumed by
+the SharePoint sites only.
+OneDrive has its own per-user storage and Exchange its own per-mailbox quota:
+they are reported for the volume picture, never added to the quota percentage nor to the reclaimable
+volume.
+Freeing OneDrive or Exchange space does not lower the SharePoint storage bill.
+
+ESTIMATES, NOT A QUOTE
+- Version history is an upper bound: the part actually freed depends on the version limit applied
+  (count limit or automatic expiration).
+Microsoft's version expiration report job
+  (New-SPOSiteFileVersionExpirationReportJob) simulates a given limit site by site when an exact
+  figure is needed.
+- Dormant is decided per site, on LastContentModifiedDate.
+Old files inside an active site are not
+  detected: that would mean walking every file of every library.
+- The gain is VolumeGB x PricePerGBMonth x 12.
+It is a real saving only while the tenant buys extra
+  storage; below the quota, it is the purchase avoided.
+
+Get-SPOSiteReport -IncludeStorageSummary adds the same summary to its own Excel and HTML exports, and
+adds a 'without owner or active admin' line when its governance controls were collected.
+
+PERMISSIONS
+The same app-only connection as Get-SPOSiteReport: an Entra app registration with a certificate and the
+SharePoint Sites.FullControl.All application permission.
+IncludeExchange additionally needs the Microsoft
+Graph application permission Reports.Read.All.
+
+MULTI-GEO
+Only the geo of the admin center used is covered.
+Pass AdminUrl to target another geo.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Get-SPOStorageReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificateThumbprint $thumb
+```
+
+Returns the storage summary object: quota, volume per service, reclaimable items (Items) and one row per
+site (Sites).
+
+### EXAMPLE 2
+
+```powershell
+Get-SPOStorageReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificateThumbprint $thumb -PricePerGBMonth 0.18 -Currency EUR -IncludeExchange -ExportToHtml
+```
+
+Generates the HTML summary with the yearly gain estimate at 0.18 EUR per GB per month, Exchange included
+in the volume picture.
+
+### EXAMPLE 3
+
+```powershell
+Get-SPOStorageReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificateThumbprint $thumb -DormantDays 365 -ExportToExcel
+```
+
+Exports the summary and the per-site detail to Excel, with sites unchanged for one year counted as dormant.
+
+## PARAMETERS
+
+### -AdminUrl
+
+(Optional) URL of the SharePoint admin center.
+Derived from Tenant when omitted; provide it when Tenant
+is a vanity domain, or to target a specific Multi-Geo location.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 6
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -CertificateBase64Encoded
+
+Base64-encoded certificate (with its private key) passed directly to Connect-PnPOnline.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 5
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -CertificatePassword
+
+(Optional) SecureString password protecting the .pfx file passed to CertificatePath.
+
+```yaml
+Type: System.Security.SecureString
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 4
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -CertificatePath
+
+Path to a local .pfx certificate file.
+Use CertificatePassword when the file is protected.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 3
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -CertificateThumbprint
+
+Thumbprint of the certificate located in the current user's Windows certificate store.
+Provide exactly one of CertificateThumbprint, CertificatePath or CertificateBase64Encoded.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 2
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ClientId
+
+(Mandatory) Application (client) ID of the Entra app registration used for the app-only connection.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Currency
+
+(Optional) Currency label of PricePerGBMonth.
+Default is EUR.
+
+```yaml
+Type: System.String
+DefaultValue: EUR
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 9
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -DormantDays
+
+(Optional) Number of days without any content change after which a SharePoint site is considered
+dormant.
+Default is 730 (2 years).
+
+```yaml
+Type: System.Int32
+DefaultValue: 730
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 7
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ExportPath
+
+(Optional) Output directory for the Excel or HTML export.
+Defaults to the user profile.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 10
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ExportToExcel
+
+(Optional) Exports the results to an Excel file: a SharePoint-Storage worksheet (overview and
+reclaimable items) and a SharePoint-StorageSites worksheet (one row per site).
+Cannot be combined with ExportToHtml.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ExportToHtml
+
+(Optional) Exports the summary as a single self-contained HTML file (tiles, volume per service,
+reclaimable items, largest reclaimable sites) and opens it.
+Cannot be combined with ExportToExcel.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -IncludeExchange
+
+(Optional) Adds the Exchange Online mailbox volume, read from the Microsoft 365 mailbox usage report
+(getMailboxUsageDetail).
+Requires the Microsoft Graph application permission Reports.Read.All.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -PricePerGBMonth
+
+(Optional) Price of 1 GB of extra SharePoint storage per month, as in your Microsoft agreement (the
+'Office 365 Extra File Storage' add-on).
+When omitted, volumes are reported without any gain estimate.
+
+```yaml
+Type: System.Nullable`1[System.Double]
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 8
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Tenant
+
+(Mandatory) Tenant domain name for the PnP connection, for example contoso.onmicrosoft.com.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 1
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+## NOTES
+
+## RELATED LINKS
+
+- [https://ps365.clidsys.com/docs/commands/Get-SPOStorageReport](https://ps365.clidsys.com/docs/commands/Get-SPOStorageReport)

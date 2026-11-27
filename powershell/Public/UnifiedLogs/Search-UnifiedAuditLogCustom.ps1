@@ -1477,6 +1477,7 @@ function Invoke-SearchUnifiedAuditLogCustomHelperGUI {
                     ClearSheet    = $true
                 }
                 $results | Export-Excel @excelSplat
+                Add-PS365ExcelAboutSheet -Path $excelPath -ReportName 'Unified Audit Log search'
 
                 $dedupMessage = if ($duplicatesRemoved -gt 0) { "`n($duplicatesRemoved duplicate row(s) removed)" } else { '' }
                 $answer = [System.Windows.MessageBox]::Show("$finalCount row(s) exported to:`n$excelPath$dedupMessage`n`nOpen the file now?", 'Export complete', 'YesNo', 'Information')

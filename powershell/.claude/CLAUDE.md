@@ -121,15 +121,20 @@ Every `Get-*` function must offer `-ExportToExcel`. The pattern is:
 if ($ExportToExcel.IsPresent) {
     $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
     $excelFilePath = "$($env:userprofile)\$now-<FunctionSuffix>.xlsx"
-    Write-Host -ForegroundColor Cyan "Exporting to Excel file: $excelFilePath"
-    $array | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName '<WorksheetName>'
-    Write-Host -ForegroundColor Green 'Export completed successfully!'
+    Write-Host -ForegroundColor Cyan 'Exporting <what> to Excel...'
+    $array | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName '<WorksheetName>' -TableStyle Light9
+    Add-PS365ExcelAboutSheet -Path $excelFilePath
+    Write-Host -ForegroundColor Green 'Excel report exported to:'
+    Write-Host -ForegroundColor White "  $excelFilePath"
 }
 else {
     return $array
 }
 ```
 
+- Console messages: the progress line (Cyan) carries no path; the completion line is the label in Green, then the path alone on the next line in White, indented by two spaces, so it stands out and copies in one go. Same layout for every export format: `'HTML report exported to:'`, `'CSV report exported to:'`, `'JSON file exported to:'`. Never `'Export completed successfully!'` nor a path inline in a Green or Cyan message.
+- Branding (PS365 by Clidsys): every Excel export calls the private helper `Add-PS365ExcelAboutSheet -Path <file>` right after its last `Export-Excel` (adds an 'About' worksheet with the logo and links, sets the file properties). In a function that can run standalone as an Azure Automation runbook, guard it: `if (Get-Command -Name Add-PS365ExcelAboutSheet -ErrorAction SilentlyContinue) { ... }`. Every interactive HTML report builds its top bar, page heading, footer, favicon and base CSS from `Get-PS365HtmlBranding -Title '<Report title>' -Subtitle '...' -ActionsHtml '...'` (placeholders `PS365_BRAND_FAVICON`, `PS365_BRAND_CSS`, `PS365_BRAND_HEADER`, `PS365_BRAND_PAGEHEAD`, `PS365_BRAND_FOOTER`). The design is the 365Ops one (`365ops/docs/design/Results.dc.html`): white top bar, large page title, white cards (12px corners) on a #F4F5F7 page, Plus Jakarta Sans (embedded, SIL OFL, `Private/Assets/fonts`), `.btn`/`.btn-primary`, `.pill-*`, `.st`/`.dot`, `table.ps365-table`, Clidsys orange for the primary button and the links. Reuse these classes rather than new colors. Placeholder names must never be a prefix of another one (String.Replace is literal). Email reports cannot use it (Outlook ignores SVG and most CSS): they carry an inline-styled table band and a footer line with the same links. Logo files: `Private/Assets/PS365-logo.svg` (HTML) and `PS365-logo.png` (Excel).
+- A function offering both `-ExportToExcel` and `-ExportToHtml` must accept both in the same call (two independent `if` blocks, not `if`/`elseif`), and returns the objects only when no export is requested.
 - File lands in `$env:userprofile` (not `$env:temp`).
 - Filename format: `yyyy-MM-dd_HHmmss-<FunctionSuffix>.xlsx`.
 - `WorksheetName` mirrors the function suffix (e.g. `ExMailboxMaxSize`).

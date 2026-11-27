@@ -203,9 +203,11 @@ function Get-MgSlaCreditEstimate {
         if ($ExportToExcel.IsPresent) {
             $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
             $excelFilePath = "$($env:userprofile)\$now-MgSlaIncidents.xlsx"
-            Write-Host -ForegroundColor Cyan "Exporting to Excel file: $excelFilePath"
+            Write-Host -ForegroundColor Cyan 'Exporting to Excel...'
             $candidates | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -TableStyle Light9 -WorksheetName 'MgSlaIncidents'
-            Write-Host -ForegroundColor Green 'Export completed successfully!'
+            Add-PS365ExcelAboutSheet -Path $excelFilePath
+            Write-Host -ForegroundColor Green 'Excel report exported to:'
+            Write-Host -ForegroundColor White "  $excelFilePath"
             return
         }
         return $candidates
@@ -686,13 +688,15 @@ function Get-MgSlaCreditEstimate {
     if ($ExportToExcel.IsPresent) {
         $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
         $excelFilePath = "$($env:userprofile)\$now-MgSlaCreditEstimate.xlsx"
-        Write-Host -ForegroundColor Cyan "Exporting to Excel file: $excelFilePath"
+        Write-Host -ForegroundColor Cyan 'Exporting to Excel...'
         $estimate | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -TableStyle Light9 -WorksheetName 'MgSlaCreditEstimate' -TableName 'SlaCreditEstimate'
         if ($usersPerCountry.Count -gt 0) {
             $usersPerCountry | Sort-Object Service, @{ Expression = 'Users'; Descending = $true } |
             Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -TableStyle Light9 -WorksheetName 'MgSlaUsersPerCountry' -TableName 'SlaUsersPerCountry'
         }
-        Write-Host -ForegroundColor Green 'Export completed successfully!'
+        Add-PS365ExcelAboutSheet -Path $excelFilePath
+        Write-Host -ForegroundColor Green 'Excel report exported to:'
+        Write-Host -ForegroundColor White "  $excelFilePath"
     }
     else {
         return $estimate

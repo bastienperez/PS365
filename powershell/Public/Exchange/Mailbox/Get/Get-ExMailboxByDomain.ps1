@@ -58,8 +58,11 @@ function Get-ExMailboxByDomain {
         if ($ExportToExcel.IsPresent) {
             $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
             $ExcelFilePath = "$($env:userprofile)\$now-MailboxesByDomain_Report.xlsx"
-            Write-Host -ForegroundColor Cyan "Exporting mailboxes information to Excel file: $ExcelFilePath"
+            Write-Host -ForegroundColor Cyan 'Exporting mailboxes information to Excel...'
             $mailboxesArray | Select-Object PrimarySmtpAddress, DisplayName, RecipientTypeDetails, WhenCreated, WhenChanged | Export-Excel -Path $ExcelFilePath -AutoSize -AutoFilter -WorksheetName 'MailboxesByDomain' -TableStyle Light9
+            Add-PS365ExcelAboutSheet -Path $ExcelFilePath
+            Write-Host -ForegroundColor Green 'Excel report exported to:'
+            Write-Host -ForegroundColor White "  $ExcelFilePath"
         }
         else {
             return $mailboxesArray

@@ -202,9 +202,11 @@ function Get-ExMailboxPermission {
                 $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
                 $filenameSuffix = if ($UserPermission) { "User-$($UserPermission -replace '[<>:"/\\|?*]', '_')" } elseif ($ByDomain) { "Domain-$($ByDomain -replace '[<>:"/\\|?*]', '_')" } elseif ($Identity) { $Identity -replace '[<>:"/\\|?*]', '_' } else { 'AllMailboxes' }
                 $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-ExMailboxPermissions-$filenameSuffix.xlsx"
-                Write-Host -ForegroundColor Cyan "Exporting mailbox permissions to Excel file: $excelFilePath"
+                Write-Host -ForegroundColor Cyan 'Exporting mailbox permissions to Excel...'
                 $allPermissions | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'ExchangeMailboxPermissions' -TableStyle Light9
-                Write-Host -ForegroundColor Green 'Export completed successfully!'
+                Add-PS365ExcelAboutSheet -Path $excelFilePath
+                Write-Host -ForegroundColor Green 'Excel report exported to:'
+                Write-Host -ForegroundColor White "  $excelFilePath"
             }
             else {
                 Write-Host "`n=== PERMISSIONS SUMMARY ===" -ForegroundColor Yellow

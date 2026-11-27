@@ -293,7 +293,7 @@ function Get-MgDynamicAdminUnit {
         $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
         $exportDirectory = if ($ExportPath) { $ExportPath } elseif ($env:USERPROFILE) { $env:USERPROFILE } else { $HOME }
         $excelFilePath = Join-Path -Path $exportDirectory -ChildPath "$now-DynamicAdminUnits.xlsx"
-        Write-Host -ForegroundColor Cyan "Exporting dynamic administrative units to Excel file: $excelFilePath"
+        Write-Host -ForegroundColor Cyan 'Exporting dynamic administrative units to Excel...'
 
         # Excel hard limit: 32,767 characters per cell. Also strip illegal XML control chars.
         $maxCellLength = 32700
@@ -319,7 +319,9 @@ function Get-MgDynamicAdminUnit {
             & $sanitizeForExcel $memberReportArray
             $memberReportArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'Members' -TableStyle Light9
         }
-        Write-Host -ForegroundColor Green 'Export completed successfully!'
+        Add-PS365ExcelAboutSheet -Path $excelFilePath
+        Write-Host -ForegroundColor Green 'Excel report exported to:'
+        Write-Host -ForegroundColor White "  $excelFilePath"
     }
     elseif ($MemberReport.IsPresent) {
         Write-Verbose "Returning $($memberReportArray.Count) member rows"

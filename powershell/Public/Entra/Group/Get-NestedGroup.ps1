@@ -10,10 +10,11 @@
 
     .PARAMETER ExportToExcel
     When specified, exports the results to an Excel file in the user's profile directory.
-    Requires the ImportExcel module.
+    Requires the ImportExcel module. Can be combined with ExportToHtml.
 
     .PARAMETER ExportToHtml
     When specified, exports the results to an interactive HTML graph file in the user's profile directory.
+    Can be combined with ExportToExcel.
     The graph is rendered in the browser using D3.js (loaded from CDN).
     Nodes are color-coded by group type. Clicking a node zooms in and reveals its parent and child groups.
     The graph is frozen after stabilisation: individual nodes can be dragged without affecting the others.
@@ -182,11 +183,15 @@ function Get-NestedGroup {
         $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
         $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-NestedGroups.xlsx"
         Write-Verbose "Excel file path: $excelFilePath"
-        Write-Host -ForegroundColor Cyan "Exporting nested groups to Excel file: $excelFilePath"
+        Write-Host -ForegroundColor Cyan 'Exporting nested groups to Excel...'
         $dependencies | Sort-Object ParentGroup, MemberGroup | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'NestedGroups' -TableStyle Light9
-        Write-Host -ForegroundColor Green 'Export completed successfully!'
+        Add-PS365ExcelAboutSheet -Path $excelFilePath
+        Write-Host -ForegroundColor Green 'Excel report exported to:'
+        Write-Host -ForegroundColor White "  $excelFilePath"
     }
-    elseif ($ExportToHtml.IsPresent) {
+
+    # Not an elseif: both exports can be produced by the same run
+    if ($ExportToHtml.IsPresent) {
         Write-Verbose 'Preparing HTML graph export...'
         $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
         $htmlFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-NestedGroups.html"
@@ -233,34 +238,18 @@ function Get-NestedGroup {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Nested Groups - PS365</title>
+  PS365_BRAND_FAVICON
   <script>PS365_D3_LIB</script>
   <style>
-    :root {
-      --bg: #f4f6f9; --canvas: #ffffff; --surface: #ffffff; --surface2: #f0f2f5;
-      --border: #dfe3e8; --text: #1e2a3a; --muted: #6b7a8d; --sub: #8995a5;
-      --accent: #2563eb; --accent-light: #dbeafe; --accent2: #7c3aed;
-      --radius: 8px; --shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
-    }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: "Segoe UI", system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-
-    /* ── HEADER ── */
-    header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 24px; height: 56px; display: flex; align-items: center; gap: 18px; flex-shrink: 0; box-shadow: var(--shadow); z-index: 10; }
-    .brand { display: flex; align-items: center; gap: 11px; flex-shrink: 0; }
-    .brand-icon { width: 32px; height: 32px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; color: #fff; }
-    .brand-title { font-size: 15px; font-weight: 650; color: var(--text); }
-    .brand-sub { font-size: 11px; color: var(--sub); }
-    .sep { width: 1px; height: 28px; background: var(--border); flex-shrink: 0; }
-    .chip { background: var(--accent-light); border: 1px solid #bfdbfe; border-radius: 20px; padding: 3px 12px; font-size: 11.5px; color: var(--accent); font-weight: 600; white-space: nowrap; flex-shrink: 0; }
-    .chip.muted { background: var(--surface2); border-color: var(--border); color: var(--muted); font-weight: 400; }
+PS365_BRAND_CSS
+    /* Shared PS365 design (tokens, header, chips, buttons, footer) comes from Get-PS365HtmlBranding above.
+       This page is a full-height graph: the header is not sticky and the footer is a thin bar at the bottom */
+    :root { --canvas: #ffffff; }
+    body { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+    header.ps365-header { position: static; flex-shrink: 0; }
+    footer.ps365-footer { max-width: none; margin: 0; padding: 6px 24px; background: var(--surface); flex-shrink: 0; }
     .search-wrap { position: relative; flex: 0 0 210px; }
-    .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 13px; pointer-events: none; }
-    #search { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; color: var(--text); padding: 6px 12px 6px 30px; font-size: 12.5px; outline: none; transition: border-color .2s, box-shadow .2s; }
-    #search:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,.12); }
-    #search::placeholder { color: var(--sub); }
     .toolbar { display: flex; gap: 6px; }
-    .btn { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 5px 14px; border-radius: var(--radius); font-size: 12px; font-family: inherit; cursor: pointer; transition: background .15s, border-color .15s, box-shadow .15s; white-space: nowrap; }
-    .btn:hover { background: var(--surface2); border-color: #c4cad2; box-shadow: var(--shadow); }
 
     /* ── FILTER BAR ── */
     .filter-bar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 6px 24px; display: flex; align-items: center; gap: 8px; flex-shrink: 0; flex-wrap: wrap; }
@@ -299,12 +288,8 @@ function Get-NestedGroup {
 </head>
 <body>
 
-<header>
-  <div class="brand">
-      <div class="brand-title">Nested Group Dependencies</div>
-      <div class="brand-sub">From <a href="https://ps365.clidsys.com" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;text-underline-offset:2px">PS365</a></div>
-    </div>
-  </div>
+<header class="ps365-header">
+  PS365_BRAND_HEADER
   <div class="sep"></div>
   <span class="chip">PS365_STATS_TEXT</span>
   <span class="chip muted">PS365_GENERATED_DATE</span>
@@ -350,6 +335,8 @@ function Get-NestedGroup {
     </div>
   </div>
 </div>
+
+PS365_BRAND_FOOTER
 
 <script>
   var nodesData = PS365_NODES_JSON;
@@ -609,7 +596,13 @@ function Get-NestedGroup {
         $d3Content = Get-Content -Path $d3LibPath -Raw
 
         # Use .NET String.Replace (literal, no regex) to safely inject JSON data and metadata
+        # Branding first: the D3 library and the JSON data are large and never contain these placeholders
+        $branding = Get-PS365HtmlBranding -Title 'Nested Group Dependencies'
         $html = $htmlTemplate
+        $html = $html.Replace('PS365_BRAND_CSS',      $branding.Css)
+        $html = $html.Replace('PS365_BRAND_FAVICON',  $branding.HeadHtml)
+        $html = $html.Replace('PS365_BRAND_HEADER',   $branding.HeaderBrandHtml)
+        $html = $html.Replace('PS365_BRAND_FOOTER',   $branding.FooterHtml)
         $html = $html.Replace('PS365_D3_LIB',         $d3Content)
         $html = $html.Replace('PS365_NODES_JSON',     $nodesJson)
         $html = $html.Replace('PS365_EDGES_JSON',     $edgesJson)
@@ -618,10 +611,12 @@ function Get-NestedGroup {
 
         Write-Verbose "HTML graph file path: $htmlFilePath"
         $html | Out-File -FilePath $htmlFilePath -Encoding UTF8
-        Write-Host -ForegroundColor Green "HTML graph exported to: $htmlFilePath"
+        Write-Host -ForegroundColor Green 'HTML graph exported to:'
+        Write-Host -ForegroundColor White "  $htmlFilePath"
         Invoke-Item -Path $htmlFilePath
     }
-    else {
+
+    if (-not ($ExportToExcel.IsPresent -or $ExportToHtml.IsPresent)) {
         Write-Verbose "Returning $($dependencies.Count) nested group dependencies"
         return $dependencies
     }

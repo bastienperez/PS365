@@ -368,7 +368,7 @@ function Get-MgCustomSecurityAttributeInfo {
     if ($ExportToExcel.IsPresent) {
         $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
         $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-MgCustomSecurityAttributeInfo.xlsx"
-        Write-Host -ForegroundColor Cyan "Exporting custom security attribute report to Excel file: $excelFilePath"
+        Write-Host -ForegroundColor Cyan 'Exporting custom security attribute report to Excel...'
 
         # One worksheet per entity type, plus a consolidated 'All' sheet. Skipped in
         # -UnusedOnly mode, where the assignments are not what the caller asked for.
@@ -385,7 +385,9 @@ function Get-MgCustomSecurityAttributeInfo {
             $unusedArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'Entra-CustomSecAttr-Unused' -TableStyle Light9
         }
 
-        Write-Host -ForegroundColor Green 'Export completed successfully!'
+        Add-PS365ExcelAboutSheet -Path $excelFilePath
+        Write-Host -ForegroundColor Green 'Excel report exported to:'
+        Write-Host -ForegroundColor White "  $excelFilePath"
     }
     elseif ($UnusedOnly.IsPresent) {
         return $unusedArray

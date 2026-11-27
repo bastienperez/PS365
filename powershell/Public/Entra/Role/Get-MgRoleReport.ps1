@@ -382,13 +382,29 @@ function Get-MgRoleReport {
 
         if ($object.PrincipalType -eq 'group') {
             # need to get ID for the group members request
-            $group = Invoke-MgGraphPagedRequest -Uri "/v1.0/groups/$($object.Principal)?`$select=id,onPremisesSyncEnabled"
-            $object | Add-Member -MemberType NoteProperty -Name 'OnPremisesSyncEnabled' -Value $([bool]($group.onPremisesSyncEnabled -eq $true))
+            # A group the role assignment names may not be readable as a group (deleted since, or hidden):
+            # the assignment stays in the report, flagged, and its members are not expanded.
+            $group = $null
+            try {
+                $group = Invoke-MgGraphPagedRequest -Uri "/v1.0/groups/$($object.Principal)?`$select=id,onPremisesSyncEnabled" -ErrorAction Stop
+            }
+            catch {
+                Write-Warning "Group $($object.Principal) ($($object.PrincipalDisplayName)) holds the role $($object.AssignedRole) but cannot be read: $($_.Exception.Message)"
+            }
+            $object | Add-Member -MemberType NoteProperty -Name 'OnPremisesSyncEnabled' -Value $(if ($group) { [bool]($group.onPremisesSyncEnabled -eq $true) } else { $null })
+            if (-not $group -or -not $group.Id) {
+                $object.Recommendations = 'The group holding this role cannot be read (deleted or hidden): check the role assignment in the Entra admin center'
+                continue
+            }
 
-            #$group = (Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/groups/$($object.Principal)" -OutputType PSObject)
-
-            $groupMembers = Invoke-MgGraphPagedRequest -Uri "/v1.0/groups/$($group.Id)/members?`$select=id,displayName,userPrincipalName"
-            #$groupMembers = (Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/groups/$($group.Id)/members" -OutputType PSObject).Value
+            $groupMembers = @()
+            try {
+                $groupMembers = @(Invoke-MgGraphPagedRequest -Uri "/v1.0/groups/$($group.Id)/members?`$select=id,displayName,userPrincipalName" -ErrorAction Stop)
+            }
+            catch {
+                Write-Warning "Members of group $($group.Id) ($($object.PrincipalDisplayName)) cannot be read: $($_.Exception.Message)"
+                $object.Recommendations = 'The members of the group holding this role cannot be read: check them in the Entra admin center'
+            }
 
             foreach ($member in $groupMembers) {
                 $typeMapping = @{
@@ -645,9 +661,12 @@ function Get-MgRoleReport {
     if ($ExportToExcel.IsPresent) {
         $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
         $excelFileName = "$($env:userprofile)\$now-MgRoleReport.xlsx"
-        Write-Verbose "Exporting report to Excel file: $excelFileName"
+        Write-Host -ForegroundColor Cyan 'Exporting the role report to Excel...'
 
         $rolesMembersArray | Export-Excel -Path $excelFileName -AutoSize -AutoFilter -Title 'Microsoft Entra ID Role Report' -WorksheetName 'Role Report' -TableName 'MgRoleReport' -FreezeTopRow -TableStyle Light9
+        Add-PS365ExcelAboutSheet -Path $excelFileName
+        Write-Host -ForegroundColor Green 'Excel report exported to:'
+        Write-Host -ForegroundColor White "  $excelFileName"
     }
     else {
         return $rolesMembersArray

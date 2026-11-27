@@ -136,9 +136,11 @@ function Get-EmptyGroup {
         $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
         $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-EmptyGroups.xlsx"
         Write-Verbose "Excel file path: $excelFilePath"
-        Write-Host -ForegroundColor Cyan "Exporting empty groups to Excel file: $excelFilePath"
+        Write-Host -ForegroundColor Cyan 'Exporting empty groups to Excel...'
         $emptyGroups | Sort-Object DisplayName | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'EmptyGroups' -TableStyle Light9
-        Write-Host -ForegroundColor Green 'Export completed successfully!'
+        Add-PS365ExcelAboutSheet -Path $excelFilePath
+        Write-Host -ForegroundColor Green 'Excel report exported to:'
+        Write-Host -ForegroundColor White "  $excelFilePath"
     }
     else {
         Write-Verbose "Returning $($emptyGroups.Count) empty groups"

@@ -434,11 +434,13 @@ function Get-MgExtensionAttributeInfo {
     if ($ExportToExcel.IsPresent) {
         $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
         $excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-MgExtensionAttributeInfo.xlsx"
-        Write-Host -ForegroundColor Cyan "Exporting extension attribute inventory to Excel file: $excelFilePath"
+        Write-Host -ForegroundColor Cyan 'Exporting extension attribute inventory to Excel...'
 
         $resultsArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'Entra-ExtensionAttributes' -TableStyle Light9
 
-        Write-Host -ForegroundColor Green 'Export completed successfully!'
+        Add-PS365ExcelAboutSheet -Path $excelFilePath
+        Write-Host -ForegroundColor Green 'Excel report exported to:'
+        Write-Host -ForegroundColor White "  $excelFilePath"
     }
     else {
         return $resultsArray

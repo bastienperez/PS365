@@ -91,6 +91,29 @@
     administrator", where the truth is "this was not collected". A column that is present but empty therefore
     always means the data really is empty (or could not be read, see the Status counters at the end of a run).
 
+    FINDINGS SUMMARY
+    ExportToExcel and ExportToHtml add a findings summary computed from the collected columns only (no extra
+    call): each control counts the sites or Microsoft 365 groups it flags and lists them with a short detail.
+    - EID-GROUP-08 Public Microsoft 365 groups (M365GroupsDetails).
+    - SPO-SHARE-04 / SPO-SHARE-05 Private Microsoft 365 groups whose site grants access to 'Everyone except external
+      users' / 'Everyone' (M365GroupsDetails, IncludeEveryoneAccess).
+    - SPO-SHARE-01 / SPO-SHARE-02 Sites granting access to 'Everyone except external users' / 'Everyone'
+      (IncludeEveryoneAccess): on the site itself, directly or through any SharePoint group, and on the
+      libraries/lists with unique permissions; folders and files are not inspected. Without
+      IncludeEveryoneAccess, SPO-SHARE-01, 02, 04 and 05 are still evaluated from IncludeSiteMembers plus
+      IncludeSiteVisitors, limited to the associated Owners/Members/Visitors groups, and flagged as partial.
+    - EID-GROUP-11 Sites with guests ('#EXT#' identities in the site rights, plus the Microsoft 365 group guests
+      when M365GroupsDetails is used) (IncludeSiteMembers).
+    - SPO-SHARE-03 Sites holding anonymous 'Anyone with the link' links (IncludeSharingLinks). Flexible links are
+      not counted: their scope is only known through Get-SPOSharingLinkReport -IncludeGraphDetails.
+    - EID-GROUP-13 / EID-GROUP-14 / EID-GROUP-15 Microsoft 365 groups without owner, with external owners only, with external
+      users only (M365GroupsDetails).
+    - SPO-OWNER-01 Sites without an active administrator: every site collection administrator is disabled, deleted
+      or has not signed in for InactiveDaysThreshold days (IncludeSiteAdminsActivity). OneDrive sites are not
+      evaluated, and a site where one admin could not be looked up is not flagged.
+    A control whose switches were not used is reported as NotCollected (with the switch it needs), never as
+    zero affected. IncludeAllDetails turns on everything the summary needs.
+
     .PARAMETER ClientId
     (Mandatory) Application (client) ID of the Entra app registration used for the app-only connection.
 
@@ -143,11 +166,24 @@
     SiteUrl or an explicit AdminUrl already restrict the report to a single geo.
 
     .PARAMETER IncludeAllDetails
-    (Optional) Shorthand that turns on IncludeSiteAdmins, IncludeSiteMembers, IncludeSiteVisitors,
-    IncludeSharingLinks, RegionalSettingsDetails and M365GroupsDetails all at once, so you don't have to remember and list
-    each one individually. Does NOT affect ExcludeOneDrive/OnlyOneDrive: those are mutually exclusive
-    site filters, not detail enrichment, and are left untouched. Individual switches passed alongside
-    IncludeAllDetails have no additional effect (everything is already on).
+    (Optional) Turns on every collection at once: IncludeSiteAdmins, IncludeSiteMembers, IncludeSiteVisitors,
+    IncludeSharingLinks, IncludeSharingLinksDetails, IncludeEveryoneAccess, IncludeSiteAdminsActivity,
+    RegionalSettingsDetails, M365GroupsDetails and, with an export, IncludeStorageSummary.
+
+    THIS IS THE SLOWEST MODE. It includes the expensive collections: the file-level drill-down of the sharing
+    links (IncludeSharingLinksDetails, the slowest part), the Microsoft 365 group and Teams layer, the
+    libraries with unique permissions of every site and one Microsoft Graph lookup per distinct admin. On a
+    large tenant, expect a run of several hours; a notice listing the slow parts is printed at the start.
+    For a faster run, pass only the individual switches you need.
+
+    It also uses every Microsoft Graph application permission of the report (Group.Read.All, User.Read.All,
+    AuditLog.Read.All or Reports.Read.All) on top of SharePoint Sites.FullControl.All. A missing permission
+    does not stop the run: the part that needs it is skipped with a warning, and its findings are reported
+    as not collected.
+
+    Does NOT affect ExcludeOneDrive/OnlyOneDrive: those are mutually exclusive site filters, not detail
+    enrichment, and are left untouched. Individual switches passed alongside IncludeAllDetails have no
+    additional effect (everything is already on).
 
     .PARAMETER IncludeSiteAdmins
     (Optional) Adds the full list of site collection administrators of each site, resolved with
@@ -206,8 +242,7 @@
 
     Only the sites whose counts came back non-zero are visited, so the pass is naturally limited to the
     sites that actually have something to show. It still opens one connection per site and resolves every
-    shared item, which is why IncludeAllDetails does NOT turn this switch on - it has to be asked for
-    explicitly.
+    shared item, which makes it the slowest part of IncludeAllDetails.
 
     No Microsoft Graph permission is involved: the drill-down runs in the Graph-free mode of
     Get-SPOSharingLinkReport, where the shared-with list comes from the members of the SharingLinks group
@@ -222,22 +257,78 @@
     dropped from the main worksheet - a cell cannot hold a collection - and the links are written to their
     own SharePoint-SharingLinks worksheet, one link per row.
 
+    .PARAMETER IncludeEveryoneAccess
+    (Optional) Lists where the tenant-wide claims 'Everyone' and 'Everyone except external users' are granted
+    a real permission (anything beyond 'Limited Access'): on the site itself, directly or through any
+    SharePoint group holding permissions (not only the associated Owners/Members/Visitors ones), and on every
+    non hidden library or list whose permission inheritance is broken. Adds two columns: EveryoneAccess (for
+    example "Everyone except external users on library 'Finance' (Read, via group 'Finance readers')") and
+    ListsWithUniquePermissionsCount. Costs two REST calls per site plus one per list with unique permissions,
+    on the site connection already opened. Folders, files and subsites are not inspected: SharePoint cannot
+    filter items on unique permissions, so it would mean walking every item. Sharing link groups are left
+    out, they are counted by IncludeSharingLinks.
+
     .PARAMETER RegionalSettingsDetails
     (Optional) Adds the regional settings of each site (time zone, hour format, locale), read with Get-PnPWeb.
     This switch significantly increases the execution time on large tenants.
 
     .PARAMETER M365GroupsDetails
-    (Optional) Adds the Microsoft 365 group and Microsoft Teams details of the group-connected sites, served
-    entirely through the PnP app-only connection (see the app-only requirement note above). No prior
+    (Optional) Adds the Microsoft 365 group and Microsoft Teams details of the group-connected sites (including
+    M365GroupVisibility: Public, Private or HiddenMembership), served entirely through the PnP app-only connection (see the app-only requirement note above). No prior
     Exchange Online or Microsoft Teams session is needed.
     This switch significantly increases the execution time on large tenants.
+
+    .PARAMETER IncludeSiteAdminsActivity
+    (Optional) Checks whether the site collection administrators are still active, and turns on
+    IncludeSiteAdmins. Every distinct admin account (group claims expanded to their users) is looked up once
+    in Microsoft Graph through the PnP app-only connection, reading accountEnabled and signInActivity. An
+    admin is active when the account is enabled and has signed in within InactiveDaysThreshold days; a
+    disabled, deleted or never signed in account is not. Adds three columns: SiteAdminsActiveCount,
+    SiteAdminsNotActive (each non active admin with the reason) and SiteAdminsActivityStatus ('OK',
+    'PARTIAL: ...' when a lookup failed, 'NoAdminCollected', 'NoUserAdmin' or 'NotApplicable (OneDrive)').
+
+    Requires the Microsoft Graph application permissions User.Read.All and AuditLog.Read.All on the app
+    registration, and an Entra ID P1 license for signInActivity. Without AuditLog.Read.All or the license, the
+    function warns once and falls back to the Microsoft 365 active users report (getOffice365ActiveUserDetail,
+    last 180 days, one download for the whole run): the last activity date across Exchange, OneDrive,
+    SharePoint, Teams... replaces the last sign-in. That fallback needs the Reports.Read.All application
+    permission (no license), and the report concealment setting turned off ('Display concealed user, group,
+    and site names in all reports'), otherwise user names are hashed and cannot be matched. An admin absent
+    from the report (often an unlicensed account) gets no verdict. When neither source is usable, an enabled
+    admin is considered active.
+
+    .PARAMETER InactiveDaysThreshold
+    (Optional) Number of days without sign-in after which an admin is considered inactive. Default is 90.
+    Used by IncludeSiteAdminsActivity only.
+
+    .PARAMETER IncludeStorageSummary
+    (Optional) Adds the storage summary of Get-SPOStorageReport to the Excel export (SharePoint-Storage
+    worksheet) and to the HTML export (section under the findings): tenant quota usage, volume per service,
+    reclaimable volume (version history and dormant sites, without double counting) and, with
+    PricePerGBMonth, the estimated yearly gain. Computed from the columns already collected, no extra call.
+    When the no owner (EID-GROUP-13) or no active admin (SPO-OWNER-01) controls were evaluated, a 'dormant
+    sites without owner or active admin' line is added. Requires ExportToExcel or ExportToHtml, and is
+    skipped with SiteUrl or OnlyOneDrive (the quota usage needs every SharePoint site).
+
+    .PARAMETER DormantDays
+    (Optional) Number of days without any content change after which a SharePoint site is considered
+    dormant by IncludeStorageSummary. Default is 730 (2 years).
+
+    .PARAMETER PricePerGBMonth
+    (Optional) Price of 1 GB of extra SharePoint storage per month, used by IncludeStorageSummary to estimate
+    the yearly gain. When omitted, volumes are reported without any gain.
+
+    .PARAMETER Currency
+    (Optional) Currency label of PricePerGBMonth. Default is EUR.
 
     .PARAMETER ThrottleLimit
     (Optional) Maximum number of sites processed concurrently by the parallel site-level collection. Default is 8.
 
     .PARAMETER ExportToExcel
     (Optional) If specified, exports the results to an Excel file in the user's profile directory.
-    Cannot be combined with ExportToHtml: only one export format is produced per call.
+    Besides the SharePoint-SiteReport worksheet, the file holds a SharePoint-Findings worksheet (one row per
+    control, see FINDINGS SUMMARY) and a SharePoint-FindingsSites worksheet (one row per flagged site).
+    Can be combined with ExportToHtml: both files are then produced by the same run.
 
     .PARAMETER ExcelTemplatePath
     (Optional) Path to an existing .xlsx file used as a template for the Excel export. The template is
@@ -254,8 +345,10 @@
     tree: Site Collection Admins / Owners / Members / Visitors, each showing the individual users
     resolved through the claim model above, with identities inherited from a nested Microsoft 365 group
     shown under their own collapsible sub-node (name and role of that group). A search box filters sites
-    by title or URL, useful when the tenant has many sites. The file opens automatically once written.
-    Cannot be combined with ExportToExcel: only one export format is produced per call.
+    by title or URL, useful when the tenant has many sites. A findings summary table (see FINDINGS SUMMARY)
+    sits above the sites, each flagged site carries the codes of its findings as badges, and the search box
+    also matches those codes (type SPO-SHARE-01 to list the sites it flags). The file opens automatically once written.
+    Can be combined with ExportToExcel: both files are then produced by the same run.
 
     .PARAMETER MultiGeoStats
     (Optional) Skips every detailed collection (site collection admins, Owners/Members/Visitors, regional
@@ -351,6 +444,19 @@
     Members, Visitors, with identities inherited from a nested Microsoft 365 group shown separately), and
     opens it automatically.
 
+    .EXAMPLE
+    Get-SPOSiteReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificateThumbprint $thumb -ExcludeOneDrive -IncludeAllDetails -InactiveDaysThreshold 180 -PricePerGBMonth $pricePerGB -ExportToExcel
+
+    Slowest and most complete run: every collection, every control of the findings summary (an admin without
+    sign-in for 180 days counts as inactive) and the storage summary, with the yearly gain computed from
+    $pricePerGB, the monthly price of 1 GB of extra storage taken from your Microsoft agreement.
+
+    .EXAMPLE
+    Get-SPOSiteReport -ClientId $clientId -Tenant 'contoso.onmicrosoft.com' -CertificateThumbprint $thumb -ExcludeOneDrive -IncludeSiteMembers -IncludeSiteVisitors -M365GroupsDetails -ExportToHtml
+
+    Faster run limited to the site rights and the Microsoft 365 groups: the findings that need other
+    collections are reported as not collected.
+
     .LINK
     https://ps365.clidsys.com/docs/commands/Get-SPOSiteReport
 #>
@@ -428,10 +534,35 @@ function Get-SPOSiteReport {
         [switch]$IncludeSharingLinksDetails,
 
         [Parameter(Mandatory = $false)]
+        [switch]$IncludeEveryoneAccess,
+
+        [Parameter(Mandatory = $false)]
         [switch]$RegionalSettingsDetails,
 
         [Parameter(Mandatory = $false)]
         [switch]$M365GroupsDetails,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$IncludeStorageSummary,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateRange(30, 3650)]
+        [int]$DormantDays = 730,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateRange(0, 1000)]
+        [Nullable[double]]$PricePerGBMonth,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [string]$Currency = 'EUR',
+
+        [Parameter(Mandatory = $false)]
+        [switch]$IncludeSiteAdminsActivity,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateRange(1, 3650)]
+        [int]$InactiveDaysThreshold = 90,
 
         [Parameter(Mandatory = $false)]
         [ValidateRange(1, 32)]
@@ -988,6 +1119,352 @@ function Get-SPOSiteReport {
         return $sb.ToString()
     }
 
+    # Evaluates the findings summary of the Excel and HTML exports (see FINDINGS SUMMARY in the help). Every
+    # control is computed from the columns already present on the site objects: no extra call is made. A
+    # control whose input columns were not collected is reported as 'NotCollected' with the switch it needs,
+    # never as zero affected - same reasoning as the optional columns being absent rather than empty.
+    function Get-SPOSiteFinding {
+        [CmdletBinding()]
+        param (
+            [Parameter(Mandatory = $true)]
+            [AllowEmptyCollection()]
+            [object[]]$Sites,
+
+            [Parameter(Mandatory = $true)]
+            [hashtable]$CollectedSwitches
+        )
+
+        $controls = @(
+            [PSCustomObject]@{ Category = 'Internal oversharing'; Code = 'EID-GROUP-08'; Control = 'Public Microsoft 365 groups'; Unit = 'group(s)'; Required = @('M365GroupsDetails'); Explanation = 'A public Microsoft 365 group is open to every employee, who can join it on their own and read its site content.' }
+            [PSCustomObject]@{ Category = 'Internal oversharing'; Code = 'SPO-SHARE-04'; Control = 'Private Microsoft 365 groups with a site open to all internal users'; Unit = 'group(s)'; Required = @('M365GroupsDetails', 'IncludeEveryoneAccess'); Fallback = @('M365GroupsDetails', 'IncludeSiteMembers', 'IncludeSiteVisitors'); Explanation = "The group is private, but its site grants access to 'Everyone except external users'. The owners believe the space is closed; it is not." }
+            [PSCustomObject]@{ Category = 'Internal oversharing'; Code = 'SPO-SHARE-05'; Control = 'Private Microsoft 365 groups with a site open to Everyone'; Unit = 'group(s)'; Required = @('M365GroupsDetails', 'IncludeEveryoneAccess'); Fallback = @('M365GroupsDetails', 'IncludeSiteMembers', 'IncludeSiteVisitors'); Explanation = "The group is private, but its site grants access to 'Everyone', guests included." }
+            [PSCustomObject]@{ Category = 'Internal oversharing'; Code = 'SPO-SHARE-01'; Control = 'Sites open to all internal users'; Unit = 'site(s)'; Required = @('IncludeEveryoneAccess'); Fallback = @('IncludeSiteMembers', 'IncludeSiteVisitors'); Explanation = "The site grants access to 'Everyone except external users': every employee can read it, whatever their need." }
+            [PSCustomObject]@{ Category = 'Internal oversharing'; Code = 'SPO-SHARE-02'; Control = 'Sites open to Everyone'; Unit = 'site(s)'; Required = @('IncludeEveryoneAccess'); Fallback = @('IncludeSiteMembers', 'IncludeSiteVisitors'); Explanation = "The site grants access to 'Everyone', guests included." }
+            [PSCustomObject]@{ Category = 'External exposure'; Code = 'EID-GROUP-11'; Control = 'Sites and Microsoft 365 groups with guests'; Unit = 'site(s)'; Required = @('IncludeSiteMembers'); Explanation = 'Guest accounts have access to the site, through its SharePoint groups or its Microsoft 365 group.' }
+            [PSCustomObject]@{ Category = 'External exposure'; Code = 'SPO-SHARE-03'; Control = 'Anonymous sharing links'; Unit = 'site(s)'; Required = @('IncludeSharingLinks'); Explanation = "An 'Anyone with the link' link requires no authentication: whoever holds the link reaches the content. Flexible links are not counted here, their scope is only known through Get-SPOSharingLinkReport -IncludeGraphDetails." }
+            [PSCustomObject]@{ Category = 'Governance'; Code = 'EID-GROUP-13'; Control = 'Microsoft 365 groups without owner'; Unit = 'group(s)'; Required = @('M365GroupsDetails'); Explanation = 'Nobody is accountable for the group: its access cannot be reviewed or approved.' }
+            [PSCustomObject]@{ Category = 'Governance'; Code = 'EID-GROUP-14'; Control = 'Microsoft 365 groups with external owners only'; Unit = 'group(s)'; Required = @('M365GroupsDetails'); Explanation = 'Every owner is a guest: the organization no longer controls the access to its own group.' }
+            [PSCustomObject]@{ Category = 'Governance'; Code = 'EID-GROUP-15'; Control = 'Microsoft 365 groups with external users only'; Unit = 'group(s)'; Required = @('M365GroupsDetails'); Explanation = 'The group only contains guests: no employee follows what is shared in it.' }
+            [PSCustomObject]@{ Category = 'Governance'; Code = 'SPO-OWNER-01'; Control = 'Sites without an active administrator'; Unit = 'site(s)'; Required = @('IncludeSiteAdminsActivity'); Explanation = 'No site collection administrator is still active (disabled, deleted or no recent sign-in): nobody manages the site access anymore. OneDrive sites are not evaluated.' }
+        )
+
+        $details = [System.Collections.Generic.List[PSCustomObject]]::new()
+        $itemsByCode = @{ 'SPO-SHARE-03' = 0 }
+
+        $roleLabels = [ordered]@{
+            SiteAdminsResolved   = 'Admins'
+            SiteOwnersResolved   = 'Owners'
+            SiteMembersResolved  = 'Members'
+            SiteVisitorsResolved = 'Visitors'
+        }
+
+        foreach ($site in $Sites) {
+            $siteFindings = [ordered]@{}
+            $isGroup = $site.Type -eq 'M365 Group'
+            $visibility = $site.M365GroupVisibility
+
+            # Where the 'everyone' claims are granted. With IncludeEveryoneAccess, the EveryoneAccess column
+            # already covers every permission of the site (associated groups included) and of the libraries
+            # with unique permissions, so only the site collection admins are added from the role columns;
+            # without it, the associated groups of the role columns are the only source.
+            # The same pass collects the guests (the module's '#EXT#' convention), deduplicated once their
+            # provenance annotation is stripped.
+            $internalWhere = [System.Collections.Generic.List[string]]::new()
+            $everyoneWhere = [System.Collections.Generic.List[string]]::new()
+            $siteGuests = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+            $everyoneAccessCollected = $null -ne $site.EveryoneAccess
+
+            foreach ($column in $roleLabels.Keys) {
+                $value = $site.$column
+                if ([string]::IsNullOrEmpty($value)) {
+                    continue
+                }
+
+                $useForEveryone = -not $everyoneAccessCollected -or $column -eq 'SiteAdminsResolved'
+                $whereLabel = "$($roleLabels[$column]) group"
+                if ($column -eq 'SiteAdminsResolved') {
+                    $whereLabel = 'site collection admins'
+                }
+
+                foreach ($segment in ($value -split '\|')) {
+                    if ($segment -eq 'Everyone except external users') {
+                        if ($useForEveryone -and -not $internalWhere.Contains($whereLabel)) { $internalWhere.Add($whereLabel) }
+                    }
+                    elseif ($segment -eq 'Everyone') {
+                        if ($useForEveryone -and -not $everyoneWhere.Contains($whereLabel)) { $everyoneWhere.Add($whereLabel) }
+                    }
+                    elseif ($segment -match '#EXT#') {
+                        $null = $siteGuests.Add(($segment -replace " \(via M365 group '.*' (Owners|Members)\)$", ''))
+                    }
+                }
+            }
+
+            if ($everyoneAccessCollected) {
+                foreach ($grant in ("$($site.EveryoneAccess)" -split '\|' | Where-Object { $_ })) {
+                    if ($grant -like 'Everyone except external users on *') {
+                        $internalWhere.Add($grant.Substring('Everyone except external users on '.Length))
+                    }
+                    elseif ($grant -like 'Everyone on *') {
+                        $everyoneWhere.Add($grant.Substring('Everyone on '.Length))
+                    }
+                }
+            }
+
+            # $null means "could not be read" (the warning was already written), '' means "read, nobody".
+            # Assigned outside an if expression: an empty array returned by an if statement collapses to $null
+            $groupOwnersRead = $null -ne $site.M365GroupOwners
+            $groupOwners = @("$($site.M365GroupOwners)" -split '\|' | Where-Object { $_ })
+            $groupOwnersAllExternal = $groupOwners.Count -gt 0 -and @($groupOwners | Where-Object { $_ -notmatch '#EXT#' }).Count -eq 0
+
+            if ($isGroup -and $visibility -eq 'Public') {
+                $siteFindings['EID-GROUP-08'] = 'Visibility: Public'
+            }
+
+            if ($isGroup -and $visibility -and $visibility -ne 'Public') {
+                if ($internalWhere.Count -gt 0) {
+                    $siteFindings['SPO-SHARE-04'] = "Visibility: $visibility - 'Everyone except external users' on $($internalWhere -join '; ')"
+                }
+                if ($everyoneWhere.Count -gt 0) {
+                    $siteFindings['SPO-SHARE-05'] = "Visibility: $visibility - 'Everyone' on $($everyoneWhere -join '; ')"
+                }
+            }
+
+            if ($internalWhere.Count -gt 0) {
+                $siteFindings['SPO-SHARE-01'] = "'Everyone except external users' on $($internalWhere -join '; ')"
+            }
+
+            if ($everyoneWhere.Count -gt 0) {
+                $siteFindings['SPO-SHARE-02'] = "'Everyone' on $($everyoneWhere -join '; ')"
+            }
+
+            $groupGuestsCount = if ($null -ne $site.M365GroupGuestsCount) { [int]$site.M365GroupGuestsCount } else { 0 }
+            if ($siteGuests.Count -gt 0 -or $groupGuestsCount -gt 0) {
+                $guestParts = [System.Collections.Generic.List[string]]::new()
+                if ($siteGuests.Count -gt 0) { $guestParts.Add("$($siteGuests.Count) guest(s) in the site rights") }
+                if ($groupGuestsCount -gt 0) { $guestParts.Add("$groupGuestsCount guest(s) in the Microsoft 365 group") }
+                $siteFindings['EID-GROUP-11'] = $guestParts -join ', '
+            }
+
+            if ($site.SharingLinksAnyoneCount -gt 0) {
+                $siteFindings['SPO-SHARE-03'] = "$($site.SharingLinksAnyoneCount) anonymous link(s)"
+                $itemsByCode['SPO-SHARE-03'] += [int]$site.SharingLinksAnyoneCount
+            }
+
+            if ($isGroup -and $groupOwnersRead -and $groupOwners.Count -eq 0) {
+                $siteFindings['EID-GROUP-13'] = 'No owner'
+            }
+
+            if ($isGroup -and $groupOwnersAllExternal) {
+                $siteFindings['EID-GROUP-14'] = "Owners: $($groupOwners -join ', ')"
+            }
+
+            if ($isGroup -and $groupGuestsCount -gt 0 -and $site.M365GroupMembersCount -eq 0 -and $groupOwnersRead -and ($groupOwners.Count -eq 0 -or $groupOwnersAllExternal)) {
+                $siteFindings['EID-GROUP-15'] = "$groupGuestsCount guest(s), no internal member or owner"
+            }
+
+            # Only a complete check ('OK') gives a verdict: a site with a failed lookup is not flagged on a guess
+            if ($site.SiteAdminsActivityStatus -eq 'OK' -and $site.SiteAdminsActiveCount -eq 0) {
+                $siteFindings['SPO-OWNER-01'] = "$($site.SiteAdminsNotActive -replace '\|', ', ')"
+            }
+
+            foreach ($code in $siteFindings.Keys) {
+                $detail = [PSCustomObject][ordered]@{
+                    Code    = $code
+                    Control = ($controls | Where-Object { $_.Code -eq $code }).Control
+                    SPTitle = $site.SPTitle
+                    Url     = $site.Url
+                    Detail  = $siteFindings[$code]
+                }
+                $details.Add($detail)
+            }
+        }
+
+        $summary = [System.Collections.Generic.List[PSCustomObject]]::new()
+
+        foreach ($control in $controls) {
+            # Required gives the full coverage. Some controls also accept a smaller Fallback set, evaluated
+            # with a narrower scope: the status says so and names the switch that would complete it
+            $missingSwitches = @($control.Required | Where-Object { -not $CollectedSwitches[$_] })
+            # Not assigned from an if expression: an empty array returned by an if statement collapses to $null
+            $hasFallback = $control.PSObject.Properties.Name -contains 'Fallback'
+            $missingFallback = @($control.Fallback | Where-Object { $_ -and -not $CollectedSwitches[$_] })
+            $isEvaluated = $missingSwitches.Count -eq 0 -or ($hasFallback -and $missingFallback.Count -eq 0)
+
+            $status = if ($missingSwitches.Count -eq 0) {
+                'Evaluated'
+            }
+            elseif ($isEvaluated) {
+                "Evaluated (partial, associated groups only: add -$($missingSwitches -join ', -'))"
+            }
+            else {
+                "NotCollected (requires -$($missingSwitches -join ', -'))"
+            }
+
+            $summaryRow = [PSCustomObject][ordered]@{
+                Category      = $control.Category
+                Code          = $control.Code
+                Control       = $control.Control
+                Status        = $status
+                AffectedCount = if ($isEvaluated) { @($details | Where-Object { $_.Code -eq $control.Code }).Count } else { $null }
+                AffectedUnit  = $control.Unit
+                ItemsCount    = if ($isEvaluated -and $itemsByCode.ContainsKey($control.Code)) { $itemsByCode[$control.Code] } else { $null }
+                ItemsUnit     = if ($itemsByCode.ContainsKey($control.Code)) { 'anonymous link(s)' } else { $null }
+                Explanation   = $control.Explanation
+            }
+            $summary.Add($summaryRow)
+        }
+
+        # Details of a control that is not fully collected would be a partial, misleading list: dropped
+        $evaluatedCodes = @($summary | Where-Object { $_.Status -like 'Evaluated*' }).Code
+        $evaluatedDetails = [System.Collections.Generic.List[PSCustomObject]]::new()
+        foreach ($detail in $details) {
+            if ($evaluatedCodes -contains $detail.Code) {
+                $evaluatedDetails.Add($detail)
+            }
+        }
+
+        return [PSCustomObject]@{
+            Summary = $summary
+            Details = $evaluatedDetails
+        }
+    }
+
+    # Invoke-PnPGraphMethod with a retry on transient errors (throttling, service unavailable, timeout), with
+    # an exponential backoff (2, 4, 8 seconds). Any other error, or a transient one that persists, is thrown
+    # back to the caller unchanged, so a permission or not found error is never retried.
+    function Invoke-SPOGraphWithRetry {
+        [CmdletBinding()]
+        param (
+            [Parameter(Mandatory = $true)]
+            [string]$Url,
+
+            [Parameter(Mandatory = $true)]
+            $Connection,
+
+            [Parameter(Mandatory = $false)]
+            [switch]$Raw,
+
+            [Parameter(Mandatory = $false)]
+            [ValidateRange(1, 10)]
+            [int]$MaxAttempts = 4
+        )
+
+        for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
+            try {
+                return (Invoke-PnPGraphMethod -Url $Url -Raw:$Raw -Connection $Connection -ErrorAction Stop)
+            }
+            catch {
+                $isTransient = $_.Exception.Message -match '429|TooManyRequests|Too many requests|throttl|503|ServiceUnavailable|504|GatewayTimeout|timed out|timeout'
+                if (-not $isTransient -or $attempt -eq $MaxAttempts) {
+                    throw
+                }
+
+                $delaySeconds = [math]::Pow(2, $attempt)
+                Write-Verbose "Transient Graph error on $Url (attempt $attempt/$MaxAttempts), retrying in $delaySeconds s: $($_.Exception.Message)"
+                Start-Sleep -Seconds $delaySeconds
+            }
+        }
+    }
+
+    # Fallback of IncludeSiteAdminsActivity when signInActivity cannot be read (AuditLog.Read.All missing or no
+    # Entra ID P1): the Microsoft 365 active users report gives, per user, the last activity date of each
+    # service (Exchange, OneDrive, SharePoint, Teams...). Downloaded once for the whole run (one CSV over the
+    # last 180 days, the longest period available) and cached in ReportState. Needs the Microsoft Graph
+    # application permission Reports.Read.All, and no license. When that report cannot be used either, the
+    # admin is judged on the enabled/disabled state alone.
+    function Get-SPOUsageActivityState {
+        [CmdletBinding()]
+        param (
+            [Parameter(Mandatory = $true)]
+            [string]$UserPrincipalName,
+
+            [Parameter(Mandatory = $true)]
+            $Connection,
+
+            [Parameter(Mandatory = $true)]
+            [hashtable]$ReportState,
+
+            [Parameter(Mandatory = $true)]
+            [datetime]$InactiveSince,
+
+            [Parameter(Mandatory = $true)]
+            [int]$InactiveDaysThreshold
+        )
+
+        if ($ReportState.Status -eq 'NotLoaded') {
+            # Marked first: a failed download is not retried for every admin
+            $ReportState.Status = 'Unavailable'
+
+            try {
+                $csvContent = Invoke-SPOGraphWithRetry -Url "v1.0/reports/getOffice365ActiveUserDetail(period='D180')" -Raw -Connection $Connection
+                if ($csvContent -is [byte[]]) {
+                    $csvContent = [System.Text.Encoding]::UTF8.GetString($csvContent)
+                }
+                $reportRows = @("$csvContent".TrimStart([char]0xFEFF) | ConvertFrom-Csv)
+            }
+            catch {
+                Write-Warning "The Microsoft 365 usage report cannot be read either (Microsoft Graph application permission Reports.Read.All missing?): an enabled admin is considered active. Detail: $($_.Exception.Message)"
+                $reportRows = $null
+            }
+
+            if ($null -ne $reportRows) {
+                $upnColumn = 'User Principal Name'
+
+                if ($reportRows.Count -eq 0 -or -not ($reportRows[0].PSObject.Properties.Name -contains $upnColumn)) {
+                    Write-Warning 'The Microsoft 365 usage report came back empty or in an unexpected format: an enabled admin is considered active.'
+                }
+                elseif (@($reportRows | Where-Object { $_.$upnColumn -match '@' }).Count -eq 0) {
+                    # Report concealment (tenant default since 2021) replaces every UPN with a hash
+                    Write-Warning "The Microsoft 365 usage report hides user names, so it cannot be matched to the admins: an enabled admin is considered active. Turn off 'Display concealed user, group, and site names in all reports' (Microsoft 365 admin center > Settings > Org settings > Reports) to use it."
+                }
+                else {
+                    $dateColumns = @($reportRows[0].PSObject.Properties.Name | Where-Object { $_ -match 'Last Activity Date$' })
+                    $lastActivityByUpn = @{}
+
+                    foreach ($reportRow in $reportRows) {
+                        $lastActivity = $null
+                        foreach ($dateColumn in $dateColumns) {
+                            $parsedDate = [datetime]::MinValue
+                            if ($reportRow.$dateColumn -and [datetime]::TryParseExact("$($reportRow.$dateColumn)", 'yyyy-MM-dd', [System.Globalization.CultureInfo]::InvariantCulture, [System.Globalization.DateTimeStyles]'AdjustToUniversal, AssumeUniversal', [ref]$parsedDate)) {
+                                if ($null -eq $lastActivity -or $parsedDate -gt $lastActivity) {
+                                    $lastActivity = $parsedDate
+                                }
+                            }
+                        }
+                        $lastActivityByUpn[$reportRow.$upnColumn.ToLowerInvariant()] = $lastActivity
+                    }
+
+                    $ReportState.LastActivityByUpn = $lastActivityByUpn
+                    $ReportState.Status = 'Loaded'
+                    Write-Host -ForegroundColor Cyan "Microsoft 365 usage report loaded: $($lastActivityByUpn.Count) user(s), last 180 days."
+
+                    if ($InactiveDaysThreshold -gt 180) {
+                        Write-Warning "The usage report only covers the last 180 days: an admin with no activity in that window is reported inactive, even though InactiveDaysThreshold is $InactiveDaysThreshold."
+                    }
+                }
+            }
+        }
+
+        if ($ReportState.Status -ne 'Loaded') {
+            return [PSCustomObject]@{ State = 'Active'; Label = 'Enabled, activity not available' }
+        }
+
+        $upnKey = $UserPrincipalName.ToLowerInvariant()
+        if (-not $ReportState.LastActivityByUpn.ContainsKey($upnKey)) {
+            # Typically an unlicensed account: no verdict rather than a guess
+            return [PSCustomObject]@{ State = 'Unknown'; Label = 'Not in the usage report' }
+        }
+
+        $lastActivity = $ReportState.LastActivityByUpn[$upnKey]
+        if ($null -eq $lastActivity) {
+            return [PSCustomObject]@{ State = 'Inactive'; Label = 'No Microsoft 365 activity in the last 180 days' }
+        }
+        if ($lastActivity -lt $InactiveSince) {
+            return [PSCustomObject]@{ State = 'Inactive'; Label = "Last Microsoft 365 activity $($lastActivity.ToString('yyyy-MM-dd'))" }
+        }
+        return [PSCustomObject]@{ State = 'Active'; Label = "Last Microsoft 365 activity $($lastActivity.ToString('yyyy-MM-dd'))" }
+    }
+
     if ($ExcludeOneDrive.IsPresent -and $OnlyOneDrive.IsPresent) {
         Write-Warning 'ExcludeOneDrive and OnlyOneDrive cannot be used together. Choose one of them.'
         return
@@ -996,6 +1473,9 @@ function Get-SPOSiteReport {
     # IncludeAllDetails turns on every detail switch below, so callers don't have to remember each one.
     # It does NOT touch ExcludeOneDrive/OnlyOneDrive: those are mutually exclusive site filters, not
     # detail enrichment, and forcing either one on would silently change which sites are even returned.
+    # Explicit request only: when it comes from IncludeAllDetails, a run without export must not warn about it
+    $storageSummaryRequested = $IncludeStorageSummary.IsPresent
+
     if ($IncludeAllDetails.IsPresent) {
         $IncludeSiteAdmins = [switch]$true
         $IncludeSiteMembers = [switch]$true
@@ -1003,14 +1483,34 @@ function Get-SPOSiteReport {
         $IncludeSharingLinks = [switch]$true
         $RegionalSettingsDetails = [switch]$true
         $M365GroupsDetails = [switch]$true
+        $IncludeEveryoneAccess = [switch]$true
+        $IncludeSharingLinksDetails = [switch]$true
+        $IncludeSiteAdminsActivity = [switch]$true
+        $IncludeStorageSummary = [switch]$true
+
+        # Everything is on, the slow collections included: say it upfront, with the permissions they need,
+        # so a long run or a warning about a missing permission later on is not a surprise
+        Write-Host -ForegroundColor Yellow 'IncludeAllDetails turns on every collection, the slow ones included. Expect a long run on a large tenant:'
+        Write-Host -ForegroundColor Yellow '  - per site: admins, Owners/Members/Visitors, Everyone access (libraries with unique permissions), sharing links, regional settings'
+        Write-Host -ForegroundColor Yellow '  - IncludeSharingLinksDetails: every shared file of every site holding a link (the slowest part)'
+        Write-Host -ForegroundColor Yellow '  - M365GroupsDetails: Microsoft 365 group and Teams layer of each group-connected site'
+        Write-Host -ForegroundColor Yellow '  - IncludeSiteAdminsActivity: one Microsoft Graph lookup per distinct admin'
+        Write-Host -ForegroundColor Yellow '  Microsoft Graph application permissions used on top of SharePoint Sites.FullControl.All: Group.Read.All, User.Read.All, AuditLog.Read.All (or Reports.Read.All). A missing one only skips its part, with a warning.'
+        Write-Host -ForegroundColor Yellow '  For a faster run, use the individual switches instead.'
     }
 
     # IncludeSharingLinksDetails is the drill-down of IncludeSharingLinks and needs its counts to know which
-    # sites are worth visiting, so it turns the cheap switch on. It is deliberately NOT part of
-    # IncludeAllDetails: unlike every other detail switch, its cost is driven by Microsoft Graph calls per
-    # shared item, which is a different order of magnitude and has to be asked for explicitly.
+    # sites are worth visiting, so it turns the cheap switch on. Its cost is driven by the number of shared
+    # items, a different order of magnitude: the IncludeAllDetails notice above calls it out as the slowest part.
     if ($IncludeSharingLinksDetails.IsPresent) {
         $IncludeSharingLinks = [switch]$true
+    }
+
+    # IncludeSiteAdminsActivity checks the accounts listed by IncludeSiteAdmins, so it turns that switch on.
+    # It needs extra Microsoft Graph application permissions (User.Read.All, AuditLog.Read.All or
+    # Reports.Read.All); without them it only warns and leaves SPO-OWNER-01 not evaluated.
+    if ($IncludeSiteAdminsActivity.IsPresent) {
+        $IncludeSiteAdmins = [switch]$true
     }
 
     # Exactly one certificate method is required for the app-only connection
@@ -1053,7 +1553,10 @@ function Get-SPOSiteReport {
         $AdminUrl = "https://$tenantName-admin.sharepoint.com"
     }
 
-    Write-Host -ForegroundColor Cyan "Connecting to SharePoint admin center: $AdminUrl"
+    # The first PnP call of a session also loads the PnP.PowerShell module, which alone can take a while:
+    # the elapsed time is printed so a slow start is not mistaken for a hang
+    Write-Host -ForegroundColor Cyan "Connecting to SharePoint admin center: $AdminUrl (loads PnP.PowerShell on first use)..."
+    $stepStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 
     try {
         $adminConnection = Connect-PnPOnline -Url $AdminUrl @pnpAuthParams -ReturnConnection -ErrorAction Stop
@@ -1062,6 +1565,8 @@ function Get-SPOSiteReport {
         Write-Warning "Unable to connect to the SharePoint admin center: $_"
         return
     }
+
+    Write-Host -ForegroundColor Cyan "Connected in $([int]$stepStopwatch.Elapsed.TotalSeconds) s. Reading the tenant settings..."
 
     # Tenant-wide version history policy, read once: it is the default applied to new sites and to every
     # site that inherits it, so it feeds the VersionPolicyEffective and VersionPolicyTenantDefault columns.
@@ -1078,7 +1583,8 @@ function Get-SPOSiteReport {
         Write-Warning "Unable to read the tenant version history policy: $($_.Exception.Message.Trim()). The VersionPolicyEffective and VersionPolicyTenantDefault columns will be empty."
     }
 
-    Write-Host -ForegroundColor Cyan 'Retrieving SharePoint Online sites...'
+    # Get-PnPTenantSite -Detailed is a single call that can last several minutes on a large tenant
+    Write-Host -ForegroundColor Cyan 'Retrieving SharePoint Online sites (one call, can take several minutes on a large tenant)...'
 
     # Geo name -> admin center URL / is-default-geo, used later by MultiGeoStats to report each geo's admin
     # URL and default flag without tagging every single site with them (both are properties of the geo,
@@ -1263,9 +1769,11 @@ function Get-SPOSiteReport {
                 Write-Host -ForegroundColor Cyan "Using Excel template: $ExcelTemplatePath"
             }
 
-            Write-Host -ForegroundColor Cyan "Exporting Multi-Geo stats to Excel file: $excelFilePath"
+            Write-Host -ForegroundColor Cyan 'Exporting Multi-Geo stats to Excel...'
             $statsArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'SharePoint-MultiGeoStats' -TableStyle Light9
-            Write-Host -ForegroundColor Green 'Export completed successfully!'
+            Add-PS365ExcelAboutSheet -Path $excelFilePath
+            Write-Host -ForegroundColor Green 'Excel report exported to:'
+            Write-Host -ForegroundColor White "  $excelFilePath"
         }
         else {
             return $statsArray
@@ -1362,10 +1870,18 @@ function Get-SPOSiteReport {
     # do not share mutable state with each other, so a cache of Graph lookups written concurrently by several
     # runspaces is not trivial to get right. It is deferred to the sequential merge loop below instead.
     $perSiteLookup = @{}
-    $needPerSite = $IncludeSiteAdmins.IsPresent -or $IncludeSiteMembers.IsPresent -or $IncludeSiteVisitors.IsPresent -or $IncludeSharingLinks.IsPresent -or $RegionalSettingsDetails.IsPresent
+    $needPerSite = $IncludeSiteAdmins.IsPresent -or $IncludeSiteMembers.IsPresent -or $IncludeSiteVisitors.IsPresent -or $IncludeSharingLinks.IsPresent -or $RegionalSettingsDetails.IsPresent -or $IncludeEveryoneAccess.IsPresent
 
     if ($needPerSite) {
         Write-Host -ForegroundColor Cyan "Collecting site-level data with $ThrottleLimit concurrent connection(s)..."
+
+        # Progress of the parallel pass: results stream out of ForEach-Object -Parallel as each site
+        # completes, so counting them downstream gives a live counter. One console line every 10 % only:
+        # Write-Progress is not used, it slows a long loop down noticeably
+        $perSiteDone = 0
+        $perSiteTotal = [math]::Max(1, $spoSites.Count)
+        $perSiteStep = [math]::Max(1, [math]::Ceiling($perSiteTotal / 10))
+        $perSiteStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 
         $perSiteResults = $spoSites | ForEach-Object -ThrottleLimit $ThrottleLimit -Parallel {
             $auth = $using:pnpAuthParams
@@ -1374,6 +1890,7 @@ function Get-SPOSiteReport {
             $doVisitors = $using:IncludeSiteVisitors
             $doSharingLinks = $using:IncludeSharingLinks
             $doRegional = $using:RegionalSettingsDetails
+            $doEveryoneAccess = $using:IncludeEveryoneAccess
             $site = $_
 
             $result = [ordered]@{
@@ -1392,6 +1909,8 @@ function Get-SPOSiteReport {
                 TimeZoneString       = $null
                 HourFormat           = $null
                 RegionalLocaleId     = $null
+                EveryoneAccessGrants = $null
+                ListsWithUniquePermissionsCount = $null
                 Status                = 'OK'
             }
 
@@ -1506,6 +2025,94 @@ function Get-SPOSiteReport {
                 }
             }
 
+            if ($doEveryoneAccess) {
+                # Where the tenant-wide claims ('Everyone', 'Everyone except external users') are granted:
+                # on the site itself (directly or through ANY SharePoint group holding permissions, not only
+                # the three associated ones) and on every library/list whose inheritance is broken. One REST
+                # call for the site, one for the list inventory, one per list with unique permissions.
+                # Folders and files are not inspected: SharePoint cannot filter items on unique permissions,
+                # so it would mean walking every item of every library.
+                try {
+                    $everyoneGrants = [System.Collections.Generic.List[string]]::new()
+
+                    $getRestRows = {
+                        param($Response)
+                        if ($null -ne $Response.value) { return @($Response.value) }
+                        if ($null -ne $Response.d.results) { return @($Response.d.results) }
+                        return @()
+                    }
+
+                    $addEveryoneGrants = {
+                        param($RoleAssignments, [string]$ScopeLabel)
+
+                        foreach ($roleAssignment in $RoleAssignments) {
+                            # 'Limited Access' is granted automatically by SharePoint when something below
+                            # is shared: it opens nothing by itself, so it is not reported
+                            $roleNames = @($roleAssignment.RoleDefinitionBindings | Where-Object { $_.Name -notmatch 'Limited Access' } | ForEach-Object { $_.Name })
+                            if ($roleNames.Count -eq 0) {
+                                continue
+                            }
+
+                            $member = $roleAssignment.Member
+                            # Sharing link groups are counted by IncludeSharingLinks, not here
+                            if ("$($member.LoginName)" -like 'SharingLinks.*' -or "$($member.Title)" -like 'SharingLinks.*') {
+                                continue
+                            }
+
+                            $candidates = [System.Collections.Generic.List[PSCustomObject]]::new()
+                            $candidates.Add([PSCustomObject]@{ LoginName = "$($member.LoginName)"; ViaGroup = $null })
+                            # Users of a SharePoint group: a plain array in the nometadata JSON format, wrapped in
+                            # .results in the verbose one. Tested on the property itself, not with '$null -ne',
+                            # which is true for any array (member enumeration of a missing property included)
+                            $groupUsers = @($member.Users)
+                            if ($null -ne $member.Users -and $member.Users.PSObject.Properties.Name -contains 'results') {
+                                $groupUsers = @($member.Users.results)
+                            }
+                            foreach ($groupUser in $groupUsers) {
+                                if ($groupUser.LoginName) {
+                                    $candidates.Add([PSCustomObject]@{ LoginName = "$($groupUser.LoginName)"; ViaGroup = "$($member.Title)" })
+                                }
+                            }
+
+                            foreach ($candidate in $candidates) {
+                                $principalLabel = if ($candidate.LoginName -eq 'c:0(.s|true') { 'Everyone' }
+                                elseif ($candidate.LoginName -like '*spo-grid-all-users*') { 'Everyone except external users' }
+                                else { $null }
+
+                                if ($principalLabel) {
+                                    $grantDetail = $roleNames -join ', '
+                                    if ($candidate.ViaGroup) {
+                                        $grantDetail += ", via group '$($candidate.ViaGroup)'"
+                                    }
+                                    $everyoneGrants.Add("$principalLabel on $ScopeLabel ($grantDetail)")
+                                }
+                            }
+                        }
+                    }
+
+                    $roleAssignmentsQuery = 'roleassignments?$expand=Member/Users,RoleDefinitionBindings'
+                    $webRoleAssignments = Invoke-PnPSPRestMethod -Url "/_api/web/$roleAssignmentsQuery" -Connection $siteConnection -ErrorAction Stop
+                    & $addEveryoneGrants (& $getRestRows $webRoleAssignments) 'site'
+
+                    $listsResponse = Invoke-PnPSPRestMethod -Url '/_api/web/lists?$select=Id,Title,Hidden,BaseType,HasUniqueRoleAssignments&$top=5000' -Connection $siteConnection -ErrorAction Stop
+                    # Hidden lists are system plumbing (catalogs, internal lists): not where content is shared
+                    $uniqueLists = @(& $getRestRows $listsResponse | Where-Object { $_.HasUniqueRoleAssignments -and -not $_.Hidden })
+                    $result.ListsWithUniquePermissionsCount = $uniqueLists.Count
+
+                    foreach ($uniqueList in $uniqueLists) {
+                        # BaseType 1 = document library, anything else is reported as a list
+                        $listKind = if ("$($uniqueList.BaseType)" -in @('1', 'DocumentLibrary')) { 'library' } else { 'list' }
+                        $listRoleAssignments = Invoke-PnPSPRestMethod -Url "/_api/web/lists(guid'$($uniqueList.Id)')/$roleAssignmentsQuery" -Connection $siteConnection -ErrorAction Stop
+                        & $addEveryoneGrants (& $getRestRows $listRoleAssignments) "$listKind '$($uniqueList.Title)'"
+                    }
+
+                    $result.EveryoneAccessGrants = @($everyoneGrants | Select-Object -Unique)
+                }
+                catch {
+                    $partialErrors.Add("EveryoneAccess: $($_.Exception.Message)")
+                }
+            }
+
             if ($partialErrors.Count -gt 0) {
                 $result.Status = "PARTIAL: $($partialErrors -join ' | ')"
             }
@@ -1516,7 +2123,16 @@ function Get-SPOSiteReport {
             $siteConnection = $null
 
             [PSCustomObject]$result
+        } | ForEach-Object {
+            $perSiteDone++
+            if ($perSiteDone % $perSiteStep -eq 0 -and $perSiteDone -lt $perSiteTotal) {
+                $remaining = [timespan]::FromSeconds(($perSiteStopwatch.Elapsed.TotalSeconds / $perSiteDone) * ($perSiteTotal - $perSiteDone))
+                Write-Host -ForegroundColor Cyan "  Site-level data: $perSiteDone / $perSiteTotal site(s) ($([int]($perSiteDone / $perSiteTotal * 100)) %), about $($remaining.ToString('hh\:mm\:ss')) remaining"
+            }
+            $_
         }
+
+        Write-Host -ForegroundColor Cyan "Site-level data collected for $perSiteDone site(s) in $($perSiteStopwatch.Elapsed.ToString('hh\:mm\:ss'))."
 
         foreach ($perSite in $perSiteResults) {
             $perSiteLookup[$perSite.Url] = $perSite
@@ -1537,14 +2153,28 @@ function Get-SPOSiteReport {
     $groupClaimOwnersCache = @{}
     $groupClaimMembersCache = @{}
 
+    # Progress of the merge pass: it resolves the group claims and reads the Microsoft 365 group and Teams
+    # layer through Graph, site after site, which can take a while on a large tenant. One line every 10 %
+    $mergeIndex = 0
+    $mergeTotal = [math]::Max(1, $spoSites.Count)
+    $mergeStep = [math]::Max(1, [math]::Ceiling($mergeTotal / 10))
+    $mergeStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+    Write-Host -ForegroundColor Cyan 'Resolving rights and Microsoft 365 groups...'
+
     foreach ($spoSite in $spoSites) {
         Write-Verbose "Get details for SharePoint site $($spoSite.Url)"
+
+        $mergeIndex++
+        if ($mergeIndex % $mergeStep -eq 0 -and $mergeIndex -lt $mergeTotal) {
+            $remaining = [timespan]::FromSeconds(($mergeStopwatch.Elapsed.TotalSeconds / $mergeIndex) * ($mergeTotal - $mergeIndex))
+            Write-Host -ForegroundColor Cyan "  Rights and groups: $mergeIndex / $mergeTotal site(s) ($([int]($mergeIndex / $mergeTotal * 100)) %), about $($remaining.ToString('hh\:mm\:ss')) remaining"
+        }
 
         # Init variables for each site to avoid leaking values from the previous iteration
         $siteType = $null
         $team = $channelCount = $teamOwners = $teamMembersCount = $teamGuestsCount = $null
         $m365GroupOwnersResolved = $m365GroupMembersCount = $m365GroupGuestsCount = $null
-        $primarySmtpAddress = $whenCreatedUTC = $null
+        $primarySmtpAddress = $whenCreatedUTC = $m365GroupVisibility = $null
         $siteAdmins = $siteAdminsRaw = $siteAdminsResolved = $null
         $siteOwnersLoginNames = $siteOwnersRaw = $siteOwnersResolved = $null
         $siteMembersLoginNames = $siteMembersRaw = $siteMembersResolved = $null
@@ -1552,6 +2182,7 @@ function Get-SPOSiteReport {
         $sharingLinksAnyoneCount = $sharingLinksCompanyCount = $sharingLinksFlexibleCount = $null
         $sharingLinksOtherCount = $sharingLinksTotalCount = $null
         $timezoneId = $timezoneString = $hourFormat = $localeId = $localeIdString = $null
+        $everyoneAccess = $listsWithUniquePermissionsCount = $null
 
         # Get-PnPTenantSite exposes GroupId as a System.Guid (not a wrapper with a .Guid property)
         $groupId = if ($spoSite.GroupId) { $spoSite.GroupId.ToString() } else { $null }
@@ -1596,6 +2227,10 @@ function Get-SPOSiteReport {
             $sharingLinksTotalCount = $perSite.SharingLinksTotalCount
             $timezoneId = $perSite.TimeZoneId
             $hourFormat = $perSite.HourFormat
+            # Empty string (not $null) when collected and nothing found: keeps "collected, none" apart from
+            # "could not be read" for the findings summary
+            $everyoneAccess = if ($null -ne $perSite.EveryoneAccessGrants) { @($perSite.EveryoneAccessGrants) -join '|' } else { $null }
+            $listsWithUniquePermissionsCount = $perSite.ListsWithUniquePermissionsCount
             $localeId = $perSite.RegionalLocaleId
 
             if ($perSite.TimeZoneString) {
@@ -1647,6 +2282,8 @@ function Get-SPOSiteReport {
                 if ($null -ne $m365Group) {
                     $siteType = 'M365 Group'
                     $primarySmtpAddress = $m365Group.Mail
+                    # 'Public', 'Private' or 'HiddenMembership': already part of the group object, no extra call
+                    $m365GroupVisibility = "$($m365Group.Visibility)"
                     # Property name for the creation date is not guaranteed identical across PnP versions
                     $whenCreatedUTC = if ($m365Group.CreatedDateTime) { $m365Group.CreatedDateTime } else { $m365Group.WhenCreated }
 
@@ -1747,6 +2384,11 @@ function Get-SPOSiteReport {
             $properties['SiteVisitorsResolved'] = $siteVisitorsResolved
         }
 
+        if ($IncludeEveryoneAccess.IsPresent) {
+            $properties['EveryoneAccess'] = $everyoneAccess
+            $properties['ListsWithUniquePermissionsCount'] = $listsWithUniquePermissionsCount
+        }
+
         $properties['SharingCapability'] = $spoSite.SharingCapability
         $properties['SharingAllowedDomain'] = $spoSite.SharingAllowedDomainList -join '|'
         $properties['SharingBlockedDomain'] = $spoSite.SharingBlockedDomainList -join '|'
@@ -1815,6 +2457,7 @@ function Get-SPOSiteReport {
             $properties['PrimarySmtpAddress'] = $primarySmtpAddress
             $properties['Type'] = $siteType
             $properties['M365WhenCreatedUTC'] = $whenCreatedUTC
+            $properties['M365GroupVisibility'] = $m365GroupVisibility
             $properties['M365GroupOwners'] = $m365GroupOwnersResolved
             $properties['M365GroupMembersCount'] = $m365GroupMembersCount
             $properties['M365GroupGuestsCount'] = $m365GroupGuestsCount
@@ -1827,6 +2470,151 @@ function Get-SPOSiteReport {
         }
 
         $spoSitesInfosArray.Add([PSCustomObject]$properties)
+    }
+
+    # Site admins activity: every distinct admin account is looked up once for the whole run (cached) through
+    # Microsoft Graph, over the PnP app-only connection already open - no Microsoft Graph PowerShell session.
+    # Done after the merge loop because it reads the resolved admins (group claims expanded to their users).
+    if ($IncludeSiteAdminsActivity.IsPresent) {
+        Write-Host -ForegroundColor Cyan "Checking the activity of the site collection administrators (inactive = no sign-in for $InactiveDaysThreshold days)..."
+
+        $adminActivityCache = @{}
+        $signInActivityAvailable = $true
+        # Fallback source, downloaded only if signInActivity turns out to be unreadable
+        $usageReportState = @{ Status = 'NotLoaded'; LastActivityByUpn = $null }
+        $activityLookupErrorCount = 0
+        $inactiveSince = (Get-Date).ToUniversalTime().AddDays(-$InactiveDaysThreshold)
+        $activityIndex = 0
+        $activityTotal = [math]::Max(1, $spoSitesInfosArray.Count)
+        $activityStep = [math]::Max(1, [math]::Ceiling($activityTotal / 10))
+
+        foreach ($siteInfo in $spoSitesInfosArray) {
+            $activityIndex++
+            if ($activityIndex % $activityStep -eq 0 -and $activityIndex -lt $activityTotal) {
+                Write-Host -ForegroundColor Cyan "  Admin activity: $activityIndex / $activityTotal site(s) ($([int]($activityIndex / $activityTotal * 100)) %), $($adminActivityCache.Count) distinct admin(s) checked"
+            }
+
+            $activeCount = $null
+            $notActiveList = [System.Collections.Generic.List[string]]::new()
+            $siteLookupErrors = 0
+
+            # Only accounts with a UPN can be looked up: well-known claims ('Everyone...'), unresolved group
+            # claims and app principals (<appId>@<tenantId>) are not users and are left out
+            $adminIdentities = @(
+                "$($siteInfo.SiteAdminsResolved)" -split '\|' |
+                    ForEach-Object { $_ -replace " \(via M365 group '.*' (Owners|Members)\)$", '' } |
+                    Where-Object { $_ -match '@' -and $_ -notmatch '^[0-9a-fA-F-]{36}@[0-9a-fA-F-]{36}$' } |
+                    Select-Object -Unique
+            )
+
+            if ($siteInfo.Template -like 'SPSPERS*') {
+                # OneDrive admins are not reliably readable (see IncludeSiteAdmins): no verdict on them
+                $activityStatus = 'NotApplicable (OneDrive)'
+            }
+            elseif ([string]::IsNullOrEmpty($siteInfo.SiteAdminsResolved)) {
+                $activityStatus = 'NoAdminCollected'
+            }
+            elseif ($adminIdentities.Count -eq 0) {
+                $activityStatus = 'NoUserAdmin'
+            }
+            else {
+                $activeCount = 0
+
+                foreach ($adminIdentity in $adminIdentities) {
+                    if (-not $adminActivityCache.ContainsKey($adminIdentity)) {
+                        $accountState = $null
+                        $selectSets = if ($signInActivityAvailable) { @('accountEnabled,signInActivity', 'accountEnabled') } else { @('accountEnabled') }
+
+                        foreach ($selectSet in $selectSets) {
+                            try {
+                                $graphUser = Invoke-SPOGraphWithRetry -Url "v1.0/users/$([System.Uri]::EscapeDataString($adminIdentity))?`$select=$selectSet" -Connection $adminConnection
+
+                                if ($selectSet -eq 'accountEnabled' -and $signInActivityAvailable) {
+                                    # signInActivity refused but the user itself is readable: AuditLog.Read.All is
+                                    # missing or the tenant has no Entra ID P1. Switch the rest of the run to the
+                                    # enabled/disabled check only, and say so once
+                                    $signInActivityAvailable = $false
+                                    Write-Warning 'The sign-in activity of the site admins cannot be read (Microsoft Graph application permission AuditLog.Read.All missing, or no Entra ID P1 license): falling back to the last activity dates of the Microsoft 365 usage report (Reports.Read.All).'
+                                }
+
+                                $lastSignIn = $null
+                                if ($graphUser.signInActivity) {
+                                    foreach ($dateProperty in 'lastSuccessfulSignInDateTime', 'lastSignInDateTime', 'lastNonInteractiveSignInDateTime') {
+                                        $rawDate = $graphUser.signInActivity.$dateProperty
+                                        if (-not $rawDate) {
+                                            continue
+                                        }
+                                        $parsedDate = if ($rawDate -is [datetime]) { $rawDate.ToUniversalTime() } else { [datetime]::Parse("$rawDate", [System.Globalization.CultureInfo]::InvariantCulture, [System.Globalization.DateTimeStyles]'AdjustToUniversal, AssumeUniversal') }
+                                        if ($null -eq $lastSignIn -or $parsedDate -gt $lastSignIn) {
+                                            $lastSignIn = $parsedDate
+                                        }
+                                    }
+                                }
+
+                                $accountState = if ($graphUser.accountEnabled -eq $false) {
+                                    [PSCustomObject]@{ State = 'Disabled'; Label = 'Disabled' }
+                                }
+                                elseif ($selectSet -eq 'accountEnabled') {
+                                    Get-SPOUsageActivityState -UserPrincipalName $adminIdentity -Connection $adminConnection -ReportState $usageReportState -InactiveSince $inactiveSince -InactiveDaysThreshold $InactiveDaysThreshold
+                                }
+                                elseif ($null -eq $lastSignIn) {
+                                    [PSCustomObject]@{ State = 'Inactive'; Label = 'Never signed in' }
+                                }
+                                elseif ($lastSignIn -lt $inactiveSince) {
+                                    [PSCustomObject]@{ State = 'Inactive'; Label = "Last sign-in $($lastSignIn.ToString('yyyy-MM-dd'))" }
+                                }
+                                else {
+                                    [PSCustomObject]@{ State = 'Active'; Label = "Last sign-in $($lastSignIn.ToString('yyyy-MM-dd'))" }
+                                }
+                                break
+                            }
+                            catch {
+                                $errorMessage = $_.Exception.Message
+                                if ($errorMessage -match 'Request_ResourceNotFound|ResourceNotFound|NotFound|404|does not exist') {
+                                    # Deleted or renamed account: it cannot administer anything anymore
+                                    $accountState = [PSCustomObject]@{ State = 'Inactive'; Label = 'Account not found' }
+                                    break
+                                }
+                                Write-Verbose "Activity lookup failed for $adminIdentity ($selectSet): $errorMessage"
+
+                                # Only a permission/licence refusal justifies the fallback without signInActivity:
+                                # a transient error (throttling, timeout) must not downgrade the rest of the run
+                                if ($selectSet -ne 'accountEnabled' -and $errorMessage -notmatch 'Forbidden|403|Authorization|Premium|AuditLog|signInActivity') {
+                                    break
+                                }
+                            }
+                        }
+
+                        if ($null -eq $accountState) {
+                            $accountState = [PSCustomObject]@{ State = 'Unknown'; Label = 'Lookup failed' }
+                        }
+                        $adminActivityCache[$adminIdentity] = $accountState
+                    }
+
+                    $cachedState = $adminActivityCache[$adminIdentity]
+                    switch ($cachedState.State) {
+                        'Active' { $activeCount++ }
+                        'Unknown' { $siteLookupErrors++; $notActiveList.Add("$adminIdentity ($($cachedState.Label))") }
+                        default { $notActiveList.Add("$adminIdentity ($($cachedState.Label))") }
+                    }
+                }
+
+                $activityStatus = if ($siteLookupErrors -gt 0) { "PARTIAL: $siteLookupErrors lookup(s) failed" } else { 'OK' }
+                if ($siteLookupErrors -gt 0) {
+                    $activityLookupErrorCount++
+                }
+            }
+
+            $siteInfo | Add-Member -NotePropertyName 'SiteAdminsActiveCount' -NotePropertyValue $activeCount -Force
+            $siteInfo | Add-Member -NotePropertyName 'SiteAdminsNotActive' -NotePropertyValue ($(if ($notActiveList.Count -gt 0) { $notActiveList -join '|' } else { $null })) -Force
+            $siteInfo | Add-Member -NotePropertyName 'SiteAdminsActivityStatus' -NotePropertyValue $activityStatus -Force
+        }
+
+        Write-Host -ForegroundColor Cyan "Site admins checked: $($adminActivityCache.Count) distinct account(s)."
+
+        if ($activityLookupErrorCount -gt 0) {
+            Write-Host -ForegroundColor Yellow "The activity of some admins could not be determined on $activityLookupErrorCount site(s) (SiteAdminsActivityStatus = PARTIAL, see SiteAdminsNotActive): 'Lookup failed' usually means the app registration lacks the Microsoft Graph application permission User.Read.All, 'Not in the usage report' an account absent from the Microsoft 365 usage report (often unlicensed). Run with -Verbose for details."
+        }
     }
 
     # Disconnect-PnPOnline cannot target a specific connection; releasing the variable disposes it
@@ -1905,6 +2693,67 @@ function Get-SPOSiteReport {
     Write-Host -ForegroundColor Yellow "  Why: that tenant setting silently makes an account a secondary site collection administrator on every OneDrive, but it is not exposed by any supported cmdlet or API (Get-SPOTenant / Graph / PnP), so this report cannot read it."
     Write-Host -ForegroundColor Yellow '  On top of that, an app-only connection is not granted access to OneDrive sites it is not explicitly admin of, so SiteAdmins/SiteAdminsResolved are expected to be incomplete or empty for those sites. The admin center page above is the only reliable source.'
 
+    $findings = $null
+    if ($ExportToExcel.IsPresent -or $ExportToHtml.IsPresent) {
+        $collectedSwitches = @{
+            M365GroupsDetails         = $M365GroupsDetails.IsPresent
+            IncludeSiteMembers        = $IncludeSiteMembers.IsPresent
+            IncludeSiteVisitors       = $IncludeSiteVisitors.IsPresent
+            IncludeSharingLinks       = $IncludeSharingLinks.IsPresent
+            IncludeSiteAdminsActivity = $IncludeSiteAdminsActivity.IsPresent
+            IncludeEveryoneAccess     = $IncludeEveryoneAccess.IsPresent
+        }
+        $findings = Get-SPOSiteFinding -Sites @($spoSitesInfosArray) -CollectedSwitches $collectedSwitches
+    }
+
+    # Storage summary (same computation as Get-SPOStorageReport), from the columns already collected. Its
+    # quota percentage only makes sense over every SharePoint site of the tenant, hence the scope checks.
+    $storageSummary = $null
+    if ($IncludeStorageSummary.IsPresent) {
+        if (-not ($ExportToExcel.IsPresent -or $ExportToHtml.IsPresent)) {
+            if ($storageSummaryRequested) {
+                Write-Warning 'IncludeStorageSummary only adds a section to the Excel and HTML exports: use it with ExportToExcel or ExportToHtml, or call Get-SPOStorageReport to get the summary as an object.'
+            }
+        }
+        elseif ($SiteUrl -or $OnlyOneDrive.IsPresent) {
+            if ($storageSummaryRequested) {
+                Write-Warning 'IncludeStorageSummary is skipped with SiteUrl or OnlyOneDrive: the quota usage needs every SharePoint site of the tenant.'
+            }
+        }
+        else {
+            # A site is orphaned when it is flagged by 'no owner' or 'no active admin', provided at least one
+            # of those two controls was evaluated; otherwise the information is unknown ($null)
+            $orphanCodes = @('EID-GROUP-13', 'SPO-OWNER-01')
+            $orphanEvaluated = @($findings.Summary | Where-Object { $orphanCodes -contains $_.Code -and $_.Status -like 'Evaluated*' }).Count -gt 0
+            $orphanUrls = @($findings.Details | Where-Object { $orphanCodes -contains $_.Code } | ForEach-Object { $_.Url })
+
+            $storageSites = foreach ($siteInfo in $spoSitesInfosArray) {
+                [PSCustomObject]@{
+                    Title               = $siteInfo.SPTitle
+                    Url                 = $siteInfo.Url
+                    Template            = $siteInfo.Template
+                    UsedGB              = $siteInfo.StorageUsedGB
+                    VersionGB           = $siteInfo.VersionSizeGB
+                    LastContentModified = $siteInfo.LastContentModifiedDate
+                    IsOrphan            = if ($orphanEvaluated) { $orphanUrls -contains $siteInfo.Url } else { $null }
+                }
+            }
+
+            # $tenantVersionPolicy is the Get-PnPTenant object read at the start; StorageQuota is in MB
+            $tenantQuotaGB = if ($tenantVersionPolicy -and $tenantVersionPolicy.StorageQuota -gt 0) { [double]$tenantVersionPolicy.StorageQuota / 1024 } else { $null }
+
+            $storageSummaryParams = @{
+                Sites             = @($storageSites)
+                TenantQuotaGB     = $tenantQuotaGB
+                OneDriveCollected = -not $ExcludeOneDrive.IsPresent
+                DormantDays       = $DormantDays
+                PricePerGBMonth   = $PricePerGBMonth
+                Currency          = $Currency
+            }
+            $storageSummary = Get-SPOStorageSummary @storageSummaryParams
+        }
+    }
+
     if ($ExportToExcel.IsPresent) {
         $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
         $exportDirectory = if ($ExportPath) { $ExportPath } else { $env:userprofile }
@@ -1923,7 +2772,7 @@ function Get-SPOSiteReport {
             Write-Host -ForegroundColor Cyan "Using Excel template: $ExcelTemplatePath"
         }
 
-        Write-Host -ForegroundColor Cyan "Exporting SharePoint sites to Excel file: $excelFilePath"
+        Write-Host -ForegroundColor Cyan 'Exporting SharePoint sites to Excel...'
 
         # SharingLinksDetails holds a collection, which a spreadsheet cell cannot represent (it would render
         # as the type name). It is dropped from the main worksheet and written to its own sheet below, where
@@ -1942,27 +2791,126 @@ function Get-SPOSiteReport {
             $sharingLinksDetailsArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'SharePoint-SharingLinks' -TableStyle Light9
         }
 
-        Write-Host -ForegroundColor Green 'Export completed successfully!'
+        $findings.Summary | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'SharePoint-Findings' -TableStyle Light9
+
+        if ($findings.Details.Count -gt 0) {
+            $findings.Details | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'SharePoint-FindingsSites' -TableStyle Light9
+        }
+
+        if ($null -ne $storageSummary) {
+            ConvertTo-SPOStorageSummaryRow -Summary $storageSummary | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'SharePoint-Storage' -TableStyle Light9
+        }
+
+        Add-PS365ExcelAboutSheet -Path $excelFilePath
+        Write-Host -ForegroundColor Green 'Excel report exported to:'
+        Write-Host -ForegroundColor White "  $excelFilePath"
     }
-    elseif ($ExportToHtml.IsPresent) {
+
+    # Not an elseif: both exports can be produced by the same run, which avoids collecting everything twice
+    if ($ExportToHtml.IsPresent) {
         Write-Verbose 'Preparing HTML report export...'
         $now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
         $exportDirectory = if ($ExportPath) { $ExportPath } else { $env:userprofile }
         $htmlFilePath = Join-Path -Path $exportDirectory -ChildPath "$now-SPOSiteReport.html"
         $generatedDate = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
         $siteCount = $spoSitesInfosArray.Count
+        $statsText = "$siteCount site$(if ($siteCount -ne 1) { 's' })"
+
+        # Branding first: the copy buttons of the sections below come from it
+        $branding = Get-PS365HtmlBranding -Title 'SharePoint Site Report' -Subtitle "Generated on $generatedDate - $statsText" -ActionsHtml '<button class="btn" type="button" onclick="expandAll()">Expand all</button><button class="btn" type="button" onclick="collapseAll()">Collapse all</button>'
+        $copyButtonHtml = $branding.CopyButtonHtml
 
         # Every site is rendered server-side into a static, collapsible <details> tree: no client-side
         # data model or JSON payload is needed (unlike a force-directed graph), so the JS below is only
         # a thin layer for expand/collapse-all and the search filter.
         $sitesHtmlBuilder = [System.Text.StringBuilder]::new()
 
-        foreach ($site in $spoSitesInfosArray) {
-            $searchText = (ConvertTo-SPOHtmlEncoded ("$($site.SPTitle) $($site.Url)").ToLowerInvariant())
-            $typeBadge = if ($M365GroupsDetails.IsPresent -and $site.Type) { "<span class='badge-type'>$(ConvertTo-SPOHtmlEncoded $site.Type)</span>" } else { '' }
+        # Findings summary table, grouped by category, with the affected sites of each control in a
+        # collapsible list. Not collected controls stay visible (greyed) so the reader knows they were
+        # not evaluated rather than reading them as clean.
+        $findingCodesBySite = @{}
+        foreach ($detail in $findings.Details) {
+            if (-not $findingCodesBySite.ContainsKey($detail.Url)) {
+                $findingCodesBySite[$detail.Url] = [System.Collections.Generic.List[string]]::new()
+            }
+            $findingCodesBySite[$detail.Url].Add($detail.Code)
+        }
 
-            $null = $sitesHtmlBuilder.Append("<details class='site-block' data-search='$searchText'>")
-            $null = $sitesHtmlBuilder.Append("<summary><span class='site-title'>$(ConvertTo-SPOHtmlEncoded $site.SPTitle)</span><span class='site-url'>$(ConvertTo-SPOHtmlEncoded $site.Url)</span>$typeBadge</summary>")
+        # 365Ops layout: a summary card (how many controls need attention, stacked bar, legend), then the
+        # controls in a table card. Flagged controls come first, then the clear ones, then the controls not
+        # collected, which stay visible so the reader knows they were not evaluated rather than clean.
+        $evaluatedRows = @($findings.Summary | Where-Object { $_.Status -like 'Evaluated*' })
+        $flaggedRows = @($evaluatedRows | Where-Object { $_.AffectedCount -gt 0 })
+        $clearRows = @($evaluatedRows | Where-Object { $_.AffectedCount -eq 0 })
+        $notCollectedRows = @($findings.Summary | Where-Object { $_.Status -notlike 'Evaluated*' })
+
+        $findingsHtmlBuilder = [System.Text.StringBuilder]::new()
+        $headline = if ($flaggedRows.Count -eq 1) { '1 control needs attention' } else { "$($flaggedRows.Count) controls need attention" }
+        $null = $findingsHtmlBuilder.Append("<section class='findings' data-copy-root><div class='section-head'><h2>Findings</h2>$copyButtonHtml</div><div class='card summary-card'>")
+        $null = $findingsHtmlBuilder.Append("<div class='summary-head'><div class='summary-title'>$headline</div><div class='summary-of'>of $($evaluatedRows.Count) evaluated</div></div>")
+        $null = $findingsHtmlBuilder.Append("<div class='stack-bar no-copy' role='img' aria-label='$($flaggedRows.Count) flagged, $($clearRows.Count) clear, $($notCollectedRows.Count) not collected'>")
+        foreach ($segment in @(@{ Count = $flaggedRows.Count; Color = 'var(--flag)' }, @{ Count = $clearRows.Count; Color = 'var(--ok)' }, @{ Count = $notCollectedRows.Count; Color = 'var(--skip)' })) {
+            if ($segment.Count -gt 0) {
+                $null = $findingsHtmlBuilder.Append("<div style='flex:$($segment.Count);background:$($segment.Color)'></div>")
+            }
+        }
+        $null = $findingsHtmlBuilder.Append('</div>')
+        $null = $findingsHtmlBuilder.Append("<div class='legend'><span class='st'><span class='dot' style='background:var(--flag)'></span>Flagged $($flaggedRows.Count)</span><span class='st'><span class='dot' style='background:var(--ok)'></span>Clear $($clearRows.Count)</span><span class='st'><span class='dot' style='background:var(--skip)'></span>Not collected $($notCollectedRows.Count)</span></div>")
+        $null = $findingsHtmlBuilder.Append('</div>')
+
+        $null = $findingsHtmlBuilder.Append("<div class='card table-card'><div class='table-scroll'><table class='ps365-table'><thead><tr><th style='width:52%'>Control</th><th>Affected</th><th>Category</th><th>Status</th></tr></thead><tbody>")
+
+        foreach ($row in @($flaggedRows) + @($clearRows) + @($notCollectedRows)) {
+            $isEvaluated = $row.Status -like 'Evaluated*'
+            $controlCell = "<div class='ctl-name'>$(ConvertTo-SPOHtmlEncoded $row.Control)</div><div class='id'>$($row.Code) - $(ConvertTo-SPOHtmlEncoded $row.Explanation)</div>"
+
+            if (-not $isEvaluated) {
+                $affectedCell = "<span class='pill pill-low'>-</span>"
+                $statusCell = "<span class='st'><span class='dot' style='background:var(--skip)'></span>Not collected</span><div class='id'>$(ConvertTo-SPOHtmlEncoded ($row.Status -replace '^NotCollected ', ''))</div>"
+            }
+            else {
+                $pillClass = if ($row.AffectedCount -gt 0) { 'pill pill-high' } else { 'pill pill-low' }
+                $affectedCell = "<span class='$pillClass'>$($row.AffectedCount) $(ConvertTo-SPOHtmlEncoded $row.AffectedUnit)</span>"
+                if ($null -ne $row.ItemsCount) {
+                    $affectedCell += "<div class='id'>$($row.ItemsCount) $(ConvertTo-SPOHtmlEncoded $row.ItemsUnit)</div>"
+                }
+
+                $statusCell = if ($row.AffectedCount -gt 0) { "<span class='st' style='color:var(--flag)'><span class='dot' style='background:var(--flag)'></span>Flagged</span>" } else { "<span class='st' style='color:var(--ok)'><span class='dot' style='background:var(--ok)'></span>Clear</span>" }
+                if ($row.Status -ne 'Evaluated') {
+                    $statusCell += "<div class='id'>$(ConvertTo-SPOHtmlEncoded ($row.Status -replace '^Evaluated ', ''))</div>"
+                }
+
+                $rowDetails = @($findings.Details | Where-Object { $_.Code -eq $row.Code })
+                if ($rowDetails.Count -gt 0) {
+                    # 'site(s)' / 'group(s)' turned into a proper singular or plural for the toggle label
+                    $unitWord = if ($rowDetails.Count -eq 1) { $row.AffectedUnit -replace '\(s\)$', '' } else { $row.AffectedUnit -replace '\(s\)$', 's' }
+                    $controlCell += "<details class='affected-list'><summary>View $($rowDetails.Count) $(ConvertTo-SPOHtmlEncoded $unitWord)</summary><table class='aff-table'><tbody>"
+                    foreach ($rowDetail in $rowDetails) {
+                        # A site without title (a OneDrive root, for example) is named by its URL
+                        $affectedName = if ([string]::IsNullOrWhiteSpace($rowDetail.SPTitle)) { $rowDetail.Url } else { $rowDetail.SPTitle }
+                        $affectedUrlLine = if ([string]::IsNullOrWhiteSpace($rowDetail.SPTitle)) { '' } else { "<div class='aff-url'>$(ConvertTo-SPOHtmlEncoded $rowDetail.Url)</div>" }
+                        $controlCell += "<tr><td><div class='aff-title'>$(ConvertTo-SPOHtmlEncoded $affectedName)</div>$affectedUrlLine<div class='aff-detail'>$(ConvertTo-SPOHtmlEncoded $rowDetail.Detail)</div></td></tr>"
+                    }
+                    $controlCell += '</tbody></table></details>'
+                }
+            }
+
+            $rowClass = if ($isEvaluated) { '' } else { " class='muted-row'" }
+            $null = $findingsHtmlBuilder.Append("<tr$rowClass><td>$controlCell</td><td>$affectedCell</td><td>$(ConvertTo-SPOHtmlEncoded $row.Category)</td><td>$statusCell</td></tr>")
+        }
+
+        $null = $findingsHtmlBuilder.Append('</tbody></table></div></div></section>')
+
+        foreach ($site in $spoSitesInfosArray) {
+            $siteFindingCodes = if ($findingCodesBySite.ContainsKey($site.Url)) { @($findingCodesBySite[$site.Url]) } else { @() }
+            # Finding codes are part of the search text, so typing 'SPO-SHARE-01' lists the sites it flags
+            $searchText = (ConvertTo-SPOHtmlEncoded ("$($site.SPTitle) $($site.Url) $($siteFindingCodes -join ' ')").ToLowerInvariant())
+            $typeBadge = if ($M365GroupsDetails.IsPresent -and $site.Type) { "<span class='pill pill-low'>$(ConvertTo-SPOHtmlEncoded $site.Type)</span>" } else { '' }
+            $findingBadges = ($siteFindingCodes | ForEach-Object { "<span class='pill pill-high'>$_</span>" }) -join ''
+
+            $null = $sitesHtmlBuilder.Append("<details class='site-block' data-copy-root data-search='$searchText'>")
+            $siteName = if ([string]::IsNullOrWhiteSpace($site.SPTitle)) { '(no title)' } else { $site.SPTitle }
+            $null = $sitesHtmlBuilder.Append("<summary><span class='site-title'>$(ConvertTo-SPOHtmlEncoded $siteName)</span> <span class='site-url'>$(ConvertTo-SPOHtmlEncoded $site.Url)</span><span class='site-badges'>$findingBadges$typeBadge</span>$copyButtonHtml</summary>")
             $null = $sitesHtmlBuilder.Append("<div class='site-body'>")
             $null = $sitesHtmlBuilder.Append("<div class='site-meta'>Template: $(ConvertTo-SPOHtmlEncoded $site.Template) - Storage: $($site.StorageUsedGB) / $($site.StorageLimitGB) GB - Sharing: $(ConvertTo-SPOHtmlEncoded $site.SharingCapability)</div>")
 
@@ -1989,7 +2937,6 @@ function Get-SPOSiteReport {
             $null = $sitesHtmlBuilder.Append('</div></details>')
         }
 
-        $statsText = "$siteCount site$(if ($siteCount -ne 1) { 's' })"
 
         # Single-quoted here-string: no PS variable expansion inside HTML/JS.
         # Placeholders are replaced via .NET String.Replace() (literal, not regex), same pattern as
@@ -2001,57 +2948,71 @@ function Get-SPOSiteReport {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SharePoint Site Report - PS365</title>
+  PS365_BRAND_FAVICON
   <style>
-    :root {
-      --bg: #f4f6f9; --surface: #ffffff; --surface2: #f0f2f5;
-      --border: #dfe3e8; --text: #1e2a3a; --muted: #6b7a8d; --sub: #8995a5;
-      --accent: #2563eb; --accent-light: #dbeafe; --accent2: #7c3aed;
-      --radius: 8px; --shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
-      --admins: #dc2626; --owners: #d97706; --members: #16a34a; --visitors: #64748b;
-    }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: "Segoe UI", system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); }
+PS365_BRAND_CSS
+    /* Shared PS365 design (365Ops look: tokens, top bar, page heading, cards, buttons, pills, tables,
+       footer) comes from Get-PS365HtmlBranding above. Below: what is specific to this report */
 
-    header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 24px; height: 56px; display: flex; align-items: center; gap: 18px; box-shadow: var(--shadow); position: sticky; top: 0; z-index: 10; }
-    .brand-title { font-size: 15px; font-weight: 650; color: var(--text); }
-    .brand-sub { font-size: 11px; color: var(--sub); }
-    .sep { width: 1px; height: 28px; background: var(--border); }
-    .chip { background: var(--accent-light); border: 1px solid #bfdbfe; border-radius: 20px; padding: 3px 12px; font-size: 11.5px; color: var(--accent); font-weight: 600; white-space: nowrap; }
-    .chip.muted { background: var(--surface2); border-color: var(--border); color: var(--muted); font-weight: 400; }
-    .search-wrap { position: relative; flex: 0 0 260px; margin-left: auto; }
-    #search { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; color: var(--text); padding: 6px 12px; font-size: 12.5px; outline: none; }
-    #search:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,.12); }
-    .toolbar { display: flex; gap: 6px; }
-    .btn { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 5px 14px; border-radius: var(--radius); font-size: 12px; font-family: inherit; cursor: pointer; }
-    .btn:hover { background: var(--surface2); border-color: #c4cad2; box-shadow: var(--shadow); }
+    /* Findings: summary card then the controls table card */
+    .summary-card { padding: 20px; margin-bottom: 16px; }
+    .summary-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 24px; margin-bottom: 14px; }
+    .summary-title { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
+    .summary-of { color: var(--muted); }
+    .stack-bar { display: flex; height: 10px; border-radius: 5px; overflow: hidden; gap: 2px; background: var(--divider); }
+    .legend { display: flex; flex-wrap: wrap; gap: 8px 24px; margin-top: 12px; font-size: 13px; color: #3D4350; }
+    .legend .st { font-weight: 500; }
+    .table-card { overflow: hidden; }
+    .table-scroll { overflow-x: auto; }
+    .ctl-name { font-weight: 600; }
+    .ps365-table tr.muted-row .ctl-name { color: var(--muted); }
+    /* Affected items of a control: a discreet toggle, then a compact table in a light panel */
+    details.affected-list { margin-top: 8px; }
+    details.affected-list > summary { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; list-style: none; color: var(--accent); font-size: 12.5px; font-weight: 600; padding: 3px 10px 3px 8px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface); }
+    details.affected-list > summary::-webkit-details-marker { display: none; }
+    details.affected-list > summary::before { content: ""; width: 6px; height: 6px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(-45deg); transition: transform .15s; margin-right: 2px; }
+    details.affected-list[open] > summary::before { transform: rotate(45deg); }
+    details.affected-list > summary:hover { background: var(--surface2); }
+    table.aff-table { width: 100%; margin-top: 8px; border-collapse: separate; border-spacing: 0; background: var(--surface2); border: 1px solid var(--divider); border-radius: 8px; overflow: hidden; }
+    .aff-table td { padding: 8px 12px; border-bottom: 1px solid var(--divider); vertical-align: top; font-size: 13px; }
+    .aff-table tr:last-child td { border-bottom: none; }
+    .aff-title { font-weight: 600; overflow-wrap: anywhere; }
+    .aff-url { color: var(--sub); font-size: 12px; font-family: var(--mono); overflow-wrap: anywhere; }
+    .aff-detail { color: var(--muted); margin-top: 2px; }
 
-    main { max-width: 1100px; margin: 20px auto 60px; padding: 0 24px; }
-
-    details.site-block { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 10px; box-shadow: var(--shadow); }
-    details.site-block > summary { padding: 14px 18px; cursor: pointer; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; list-style: none; }
+    /* Sites: one card, a toolbar with the search, then one collapsible row per site */
+    .sites-card { overflow: hidden; }
+    .sites-card .card-toolbar .search { flex: 1 1 240px; max-width: 360px; }
+    .sites-card .card-toolbar .count { color: var(--sub); font-size: 13px; margin-left: auto; }
+    details.site-block { border-bottom: 1px solid var(--divider); }
+    details.site-block:last-of-type { border-bottom: none; }
+    details.site-block > summary { padding: 12px 16px; cursor: pointer; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; list-style: none; }
+    details.site-block > summary:hover { background: var(--surface2); }
     details.site-block > summary::-webkit-details-marker { display: none; }
     details.site-block > summary::before { content: "\25B8"; color: var(--sub); font-size: 11px; transition: transform .15s; flex-shrink: 0; }
     details.site-block[open] > summary::before { transform: rotate(90deg); }
-    .site-title { font-weight: 650; font-size: 13.5px; }
-    .site-url { color: var(--sub); font-size: 11.5px; font-family: "Cascadia Code","Consolas",monospace; }
-    .badge-type { background: var(--accent-light); color: var(--accent); border-radius: 6px; padding: 2px 9px; font-size: 10.5px; font-weight: 600; margin-left: auto; }
-    .site-body { padding: 0 18px 16px 34px; border-top: 1px solid var(--border); }
-    .site-meta { font-size: 11.5px; color: var(--muted); padding: 12px 0; }
+    .site-title { font-weight: 600; }
+    .site-url { color: var(--sub); font-size: 12px; font-family: var(--mono); }
+    .site-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-left: auto; }
+    details.site-block > summary .btn-copy { margin-left: 4px; }
+    .findings .section-head, section .section-head { margin-top: 4px; }
+    .site-body { padding: 4px 16px 16px 38px; background: var(--surface2); border-top: 1px solid var(--divider); }
+    .site-meta { font-size: 12.5px; color: var(--muted); padding: 10px 0; }
 
-    details.role-block { margin: 8px 0; }
+    details.role-block { margin: 6px 0; }
     details.role-block > summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 8px; padding: 4px 0; }
     details.role-block > summary::-webkit-details-marker { display: none; }
     details.role-block > summary::before { content: "\25B8"; color: var(--sub); font-size: 10px; transition: transform .15s; }
     details.role-block[open] > summary::before { transform: rotate(90deg); }
-    .badge-role { border-radius: 6px; padding: 3px 10px; font-size: 11px; font-weight: 700; color: #fff; }
+    .badge-role { border-radius: 5px; padding: 2px 8px; font-size: 12px; font-weight: 600; color: #fff; }
     .badge-role.admins { background: var(--admins); }
     .badge-role.owners { background: var(--owners); }
     .badge-role.members { background: var(--members); }
     .badge-role.visitors { background: var(--visitors); }
-    .count { color: var(--sub); font-size: 11px; }
+    .count { color: var(--sub); font-size: 12px; }
 
-    ul.identity-list { list-style: none; margin: 4px 0 4px 20px; padding-left: 16px; border-left: 1px dashed var(--border); }
-    li.user-item { font-size: 12.5px; padding: 3px 0; color: var(--text); }
+    ul.identity-list { list-style: none; margin: 4px 0 4px 20px; padding-left: 14px; border-left: 2px solid var(--divider); }
+    li.user-item { font-size: 13px; padding: 2px 0; color: var(--text); }
     li.user-item.unresolved { color: var(--admins); font-style: italic; }
 
     details.group-block { margin: 2px 0; }
@@ -2059,40 +3020,48 @@ function Get-SPOSiteReport {
     details.group-block > summary::-webkit-details-marker { display: none; }
     details.group-block > summary::before { content: "\25B8"; color: var(--sub); font-size: 9px; transition: transform .15s; }
     details.group-block[open] > summary::before { transform: rotate(90deg); }
-    .badge-group { background: var(--accent-light); color: var(--accent); border-radius: 6px; padding: 2px 9px; font-size: 11px; font-weight: 600; }
+    .badge-group { background: var(--accent-light); color: #92400E; border-radius: 5px; padding: 2px 8px; font-size: 12px; font-weight: 600; }
 
-    .m365-info { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
-    .m365-row { display: flex; gap: 10px; font-size: 12px; padding: 3px 0; }
-    .m365-lbl { color: var(--sub); min-width: 150px; flex-shrink: 0; }
+    .m365-info { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--divider); }
+    .m365-row { display: flex; gap: 10px; font-size: 13px; padding: 3px 0; }
+    .m365-lbl { color: var(--sub); min-width: 160px; flex-shrink: 0; }
     .m365-val { color: var(--text); }
 
-    .empty-state { text-align: center; color: var(--sub); padding: 60px 0; font-size: 13px; }
+    .empty-state { text-align: center; color: var(--sub); padding: 40px 0; }
   </style>
 </head>
 <body>
 
-<header>
-  <div>
-    <div class="brand-title">SharePoint Site Report</div>
-    <div class="brand-sub">From <a href="https://ps365.clidsys.com" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;text-underline-offset:2px">PS365</a></div>
-  </div>
-  <div class="sep"></div>
+<header class="ps365-header">
+  PS365_BRAND_HEADER
+  <div class="spacer"></div>
   <span class="chip">PS365_STATS_TEXT</span>
   <span class="chip muted">PS365_GENERATED_DATE</span>
-  <div class="toolbar">
-    <button class="btn" onclick="expandAll()">Expand all</button>
-    <button class="btn" onclick="collapseAll()">Collapse all</button>
-  </div>
-  <div class="search-wrap">
-    <input id="search" type="text" placeholder="Search by site title or URL..." autocomplete="off" />
-  </div>
 </header>
 
-<main id="sites">
-PS365_SITES_HTML
-</main>
-<div class="empty-state" id="empty-state" style="display:none">No site matches your search.</div>
+<div class="ps365-page">
+PS365_BRAND_PAGEHEAD
 
+PS365_FINDINGS_HTML
+
+<section data-copy-root>
+  <div class="section-head"><h2>Sites</h2>PS365_COPY_BUTTON</div>
+  <div class="card sites-card">
+    <div class="card-toolbar">
+      <input id="search" class="search" type="search" placeholder="Find a site by title, URL or finding code" autocomplete="off" aria-label="Find a site" />
+      <span class="count no-copy" id="site-count">PS365_STATS_TEXT</span>
+    </div>
+    <div id="sites">
+PS365_SITES_HTML
+    </div>
+    <div class="empty-state" id="empty-state" style="display:none">No site matches your search.</div>
+  </div>
+</section>
+</div>
+
+PS365_BRAND_FOOTER
+
+PS365_BRAND_SCRIPT
 <script>
   function expandAll() {
     document.querySelectorAll('#sites details').forEach(function (d) { d.open = true; });
@@ -2113,6 +3082,7 @@ PS365_SITES_HTML
         if (term) { block.open = true; }
       }
     });
+    document.getElementById('site-count').textContent = term ? visibleCount + ' of ' + blocks.length + ' sites' : blocks.length + (blocks.length === 1 ? ' site' : ' sites');
     document.getElementById('empty-state').style.display = visibleCount === 0 ? 'block' : 'none';
   });
 </script>
@@ -2121,16 +3091,27 @@ PS365_SITES_HTML
 '@
 
         $html = $htmlTemplate
+        $html = $html.Replace('PS365_BRAND_CSS', $branding.Css)
+        $html = $html.Replace('PS365_BRAND_FAVICON', $branding.HeadHtml)
+        $html = $html.Replace('PS365_BRAND_HEADER', $branding.HeaderBrandHtml)
+        $html = $html.Replace('PS365_BRAND_FOOTER', $branding.FooterHtml)
+        $html = $html.Replace('PS365_BRAND_PAGEHEAD', $branding.PageHeadHtml)
+        $html = $html.Replace('PS365_BRAND_SCRIPT', $branding.ScriptHtml)
+        $html = $html.Replace('PS365_COPY_BUTTON', $copyButtonHtml)
+        $storageHtml = if ($null -ne $storageSummary) { ConvertTo-SPOStorageSummaryHtml -Summary $storageSummary -CopyButtonHtml $copyButtonHtml } else { '' }
+        $html = $html.Replace('PS365_FINDINGS_HTML', $findingsHtmlBuilder.ToString() + $storageHtml)
         $html = $html.Replace('PS365_SITES_HTML', $sitesHtmlBuilder.ToString())
         $html = $html.Replace('PS365_GENERATED_DATE', $generatedDate)
         $html = $html.Replace('PS365_STATS_TEXT', $statsText)
 
         Write-Verbose "HTML report file path: $htmlFilePath"
         $html | Out-File -FilePath $htmlFilePath -Encoding UTF8
-        Write-Host -ForegroundColor Green "HTML report exported to: $htmlFilePath"
+        Write-Host -ForegroundColor Green 'HTML report exported to:'
+        Write-Host -ForegroundColor White "  $htmlFilePath"
         Invoke-Item -Path $htmlFilePath
     }
-    else {
+
+    if (-not ($ExportToExcel.IsPresent -or $ExportToHtml.IsPresent)) {
         return $spoSitesInfosArray
     }
 }

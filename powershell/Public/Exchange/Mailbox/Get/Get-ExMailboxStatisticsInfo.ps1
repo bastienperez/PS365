@@ -193,9 +193,11 @@ function Get-ExMailboxStatisticsInfo {
 		if ($ExportToExcel.IsPresent) {
 			$now = Get-Date -Format 'yyyy-MM-dd_HHmmss'
 			$excelFilePath = "$(if ($ExportPath) { $ExportPath } else { $env:userprofile })\$now-ExMailboxStatisticsInfo.xlsx"
-			Write-Host -ForegroundColor Cyan "Exporting to Excel file: $excelFilePath"
+			Write-Host -ForegroundColor Cyan 'Exporting to Excel...'
 			$resultsArray | Export-Excel -Path $excelFilePath -AutoSize -AutoFilter -WorksheetName 'ExMailboxStatisticsInfo' -TableStyle Light9
-			Write-Host -ForegroundColor Green 'Export completed successfully!'
+			Add-PS365ExcelAboutSheet -Path $excelFilePath
+			Write-Host -ForegroundColor Green 'Excel report exported to:'
+			Write-Host -ForegroundColor White "  $excelFilePath"
 		}
 		else {
 			return $resultsArray

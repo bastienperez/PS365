@@ -337,11 +337,15 @@ function Get-EntraIDHybridJoinComputerInfo {
         }
 
         # Export each section to a separate worksheet
-        Write-Host -ForegroundColor Cyan "Exporting dynamic groups to Excel file: $excelFilePath"
+        Write-Host -ForegroundColor Cyan 'Exporting the hybrid join computer information to Excel...'
 
         foreach ($sheetName in $workbook.Keys) {
             Write-Verbose "Exporting $sheetName to Excel..."
-            $workbook[$sheetName] | Export-Excel -Path $excelFilePath -WorksheetName $sheetName -AutoSize -TableStyle Medium9
+            $workbook[$sheetName] | Export-Excel -Path $excelFilePath -WorksheetName $sheetName -AutoSize -TableStyle Light9
         }
+
+        Add-PS365ExcelAboutSheet -Path $excelFilePath
+        Write-Host -ForegroundColor Green 'Excel report exported to:'
+        Write-Host -ForegroundColor White "  $excelFilePath"
     }
 }
