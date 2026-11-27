@@ -75,6 +75,16 @@
     geo locations entirely (for example one that is too noisy for the report at hand) - MultiGeoStats
     reflects the same exclusion automatically, since it aggregates the sites this enumeration already produced.
 
+    ACTIVE SITES COLUMNS
+    The columns of the CSV export of the Active sites page of the SharePoint admin center are in every report:
+    SiteCreatedDate, CreatedBy, CreatedFrom (named with GetSPOSiteCreationSources: Microsoft Teams, SharePoint
+    start page, API...), LastActivityDate, FilesCount, FilesViewedOrEdited, PageViews, PagesVisited,
+    ChannelSitesCount and IBMode come from the hidden list that page reads
+    (DO_NOT_DELETE_SPLIST_TENANTADMIN_AGGREGATED_SITECOLLECTIONS, read once with the admin connection),
+    HubSiteName from Get-PnPHubSite, StorageUsedPercent is StorageUsedGB against StorageLimitGB and
+    CustomScripts (Allowed or Blocked) is DenyAddAndCustomizePages. The list covers the main geo only: on a
+    Multi-Geo tenant those columns stay empty for the sites of a satellite geo.
+
     Optional switches enrich the report:
     - IncludeSiteAdmins adds the full list of site collection administrators of each site (raw and resolved).
     - IncludeSiteMembers adds the site Owners and Members, resolved through the model described above.
@@ -1864,6 +1874,62 @@ function Get-SPOSiteReport {
         }
     }
 
+    # The Active sites page of the SharePoint admin center and its CSV export read a hidden list of the admin
+    # site, DO_NOT_DELETE_SPLIST_TENANTADMIN_AGGREGATED_SITECOLLECTIONS: one item per site with what
+    # Get-PnPTenantSite does not return (creation date and creator, last activity, file and page counts,
+    # channel sites, how the site was created, information barriers mode). Read once with the admin
+    # connection and indexed by URL; a failed read leaves those columns empty rather than aborting the report.
+    # The main geo only: the list of a satellite geo lives on that geo's admin site.
+    $activeSitesLookup = @{}
+    $activeSitesFields = @('SiteUrl', 'TimeCreated', 'CreatedBy', 'LastActivityOn', 'NumOfFiles', 'FileViewedOrEdited', 'PageViews', 'PagesVisited', 'ChannelSitesCount', 'SiteCreationSource', 'IBMode', 'TimeDeleted')
+    try {
+        $activeSitesItems = Get-PnPListItem -List 'DO_NOT_DELETE_SPLIST_TENANTADMIN_AGGREGATED_SITECOLLECTIONS' -Fields $activeSitesFields -PageSize 5000 -Connection $adminConnection -ErrorAction Stop
+        foreach ($activeSitesItem in $activeSitesItems) {
+            $activeSitesValues = $activeSitesItem.FieldValues
+            if ($activeSitesValues['TimeDeleted']) {
+                continue
+            }
+            $activeSitesUrl = "$($activeSitesValues['SiteUrl'])".TrimEnd('/').ToLowerInvariant()
+            if ($activeSitesUrl) {
+                $activeSitesLookup[$activeSitesUrl] = $activeSitesValues
+            }
+        }
+        Write-Host -ForegroundColor Cyan "Active sites list of the admin center: $($activeSitesLookup.Count) site(s)"
+    }
+    catch {
+        Write-Warning "Unable to read the Active sites list of the SharePoint admin center: $($_.Exception.Message.Trim()). The SiteCreatedDate, CreatedBy, LastActivityDate, FilesCount, FilesViewedOrEdited, PageViews, PagesVisited, ChannelSitesCount, CreatedFrom and IBMode columns will be empty."
+    }
+
+    # How a site was created: SiteCreationSource is an id that the admin center names with
+    # GetSPOSiteCreationSources (Microsoft Teams, SharePoint start page, API...), read like the Active sites page
+    $creationSourceById = @{}
+    try {
+        $creationSources = Invoke-PnPSPRestMethod -Method Get -Url '/_api/SPO.Tenant/GetSPOSiteCreationSources' -Connection $adminConnection -ErrorAction Stop
+        foreach ($creationSource in @($creationSources.value)) {
+            if ($creationSource.Id) {
+                $creationSourceById["$($creationSource.Id)".ToLowerInvariant()] = $creationSource.DisplayName
+            }
+        }
+    }
+    catch {
+        Write-Verbose "Unable to read the site creation sources: $($_.Exception.Message)"
+    }
+
+    # Hub sites, by id: the HubSiteName column names the hub a site is associated with (HubSiteId)
+    $hubNameById = @{}
+    try {
+        foreach ($hubSite in @(Get-PnPHubSite -Connection $adminConnection -ErrorAction Stop)) {
+            foreach ($hubKey in @($hubSite.ID, $hubSite.SiteId)) {
+                if ($hubKey -and "$hubKey" -ne [guid]::Empty.ToString()) {
+                    $hubNameById["$hubKey".ToLowerInvariant()] = $hubSite.Title
+                }
+            }
+        }
+    }
+    catch {
+        Write-Warning "Unable to read the hub sites: $($_.Exception.Message.Trim()). The HubSiteName column will be empty."
+    }
+
     # Site-level data (admins, Owners/Members/Visitors groups, regional settings) requires one PnP connection
     # per site. Collect it in parallel and index it by URL, so the main loop below just merges the results.
     # Claim resolution (federateddirectoryclaimprovider) is intentionally NOT done here: parallel runspaces
@@ -2426,6 +2492,30 @@ function Get-SPOSiteReport {
         $properties['ExternalUserExpirationInDays'] = $spoSite.ExternalUserExpirationInDays
         $properties['OverrideTenantExternalUserExpirationPolicy'] = $spoSite.OverrideTenantExternalUserExpirationPolicy
         $properties['IsHubSite'] = $spoSite.IsHubSite
+
+        # The columns of the admin center's Active sites export (his ask of 2026-11-27), from the list read
+        # above and Get-PnPTenantSite. Empty when the list was not read or does not hold the site.
+        $activeSite = $activeSitesLookup["$($spoSite.Url)".TrimEnd('/').ToLowerInvariant()]
+        $hubSiteKey = if ($spoSite.HubSiteId -and "$($spoSite.HubSiteId)" -ne [guid]::Empty.ToString()) { "$($spoSite.HubSiteId)".ToLowerInvariant() } else { $null }
+        $properties['HubSiteName'] = if ($hubSiteKey -and -not $spoSite.IsHubSite) { $hubNameById[$hubSiteKey] } else { $null }
+        $properties['StorageUsedPercent'] = if (-not $spoSite.TenantDataError -and $spoSite.StorageQuota -gt 0) { [math]::Round(($storageUsed / $spoSite.StorageQuota) * 100, 2) } else { $null }
+        $properties['SiteCreatedDate'] = if ($activeSite) { $activeSite['TimeCreated'] } else { $null }
+        $properties['CreatedBy'] = if ($activeSite) { $activeSite['CreatedBy'] } else { $null }
+        $creationSourceId = if ($activeSite -and $activeSite['SiteCreationSource']) { "$($activeSite['SiteCreationSource'])".Trim('{', '}').ToLowerInvariant() } else { $null }
+        $properties['CreatedFrom'] = if ($creationSourceId) { if ($creationSourceById[$creationSourceId]) { $creationSourceById[$creationSourceId] } else { $creationSourceId } } else { $null }
+        $properties['LastActivityDate'] = if ($activeSite) { $activeSite['LastActivityOn'] } else { $null }
+        $properties['FilesCount'] = if ($activeSite) { $activeSite['NumOfFiles'] } else { $null }
+        $properties['FilesViewedOrEdited'] = if ($activeSite) { $activeSite['FileViewedOrEdited'] } else { $null }
+        $properties['PageViews'] = if ($activeSite) { $activeSite['PageViews'] } else { $null }
+        $properties['PagesVisited'] = if ($activeSite) { $activeSite['PagesVisited'] } else { $null }
+        $properties['ChannelSitesCount'] = if ($activeSite) { $activeSite['ChannelSitesCount'] } else { $null }
+        $properties['IBMode'] = if ($activeSite) { $activeSite['IBMode'] } else { $null }
+        # DenyAddAndCustomizePages Enabled means custom scripts are blocked (the export's IsCustomScriptsEnabled)
+        $properties['CustomScripts'] = switch ("$($spoSite.DenyAddAndCustomizePages)") {
+            'Enabled' { 'Blocked' }
+            'Disabled' { 'Allowed' }
+            default { $null }
+        }
 
         # Version history: the site's own settings, the tenant default, and what really applies. A site that
         # inherits the tenant policy follows the tenant value, otherwise its own values win. Empty (not
