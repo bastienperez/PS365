@@ -113,6 +113,11 @@ Exports the summary and the per-site detail to Excel, with sites unchanged for o
 (Optional) URL of the SharePoint admin center.
 Derived from Tenant when omitted; provide it when Tenant
 is a vanity domain, or to target a specific Multi-Geo location.
+An AdminUrl given as the root site (https://contoso.sharepoint.com), the OneDrive host (-my) or with a path is
+turned into the admin center URL with a warning: the tenant-level data is only readable there.
+A renamed SharePoint domain is detected: when the admin URL answers 'not a tenant administration site', the
+real root site is read from Microsoft Graph (sites/root, application permission Sites.Read.All) and the
+report switches to its admin center, with a warning giving the -AdminUrl to pass next time.
 
 ```yaml
 Type: System.String
