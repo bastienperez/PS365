@@ -1803,6 +1803,10 @@ function Get-SPOSiteReport {
     # distinct group GUID actually encountered in a claim, whether or not M365GroupsDetails is used.
     $groupNameCache = @{}
 
+    # $false when the Microsoft 365 groups could not be read at all: the group findings are then reported as not
+    # collected instead of 'clear', and the report goes on without the group columns
+    $m365GroupsAvailable = $M365GroupsDetails.IsPresent
+
     if ($M365GroupsDetails.IsPresent) {
         # Only the sites carrying a GroupId can have a Microsoft 365 group behind them. Computing that list
         # first avoids two pointless situations: enumerating every group of the tenant to enrich a handful
@@ -1813,64 +1817,142 @@ function Get-SPOSiteReport {
                 $_.GroupId -and $_.GroupId.ToString() -ne '00000000-0000-0000-0000-000000000000'
             })
 
+        # Groups are matched to their site through the GroupId of Get-PnPTenantSite, never through
+        # -IncludeSiteUrl: that switch makes PnP resolve the site of every group, and one group whose site
+        # cannot be resolved (provisioning failed, renamed SharePoint domain) throws 'Object reference not set
+        # to an instance of an object' for the whole call.
+        $groupsById = @{}
+
+        # Owners attached as an Owners property, the way -IncludeOwners does, when the group came without them
+        $addGroupOwners = {
+            param($Group, [string]$GroupId)
+            try {
+                $groupOwners = @(Get-PnPMicrosoft365GroupOwner -Identity $GroupId -Connection $adminConnection -ErrorAction Stop)
+                $Group | Add-Member -NotePropertyName 'Owners' -NotePropertyValue $groupOwners -Force
+            }
+            catch {
+                # $null Owners: read as 'unknown' downstream, never as 'no owner'
+                $Group | Add-Member -NotePropertyName 'Owners' -NotePropertyValue $null -Force
+                $Group | Add-Member -NotePropertyName 'OwnersUnreadable' -NotePropertyValue $true -Force
+                Write-Verbose "Unable to read the owners of the Microsoft 365 group $($GroupId): $($_.Exception.Message)"
+            }
+        }
+
+        $isPermissionError = {
+            param([string]$Message)
+            return $Message -match 'Forbidden|403|Authorization_RequestDenied|Insufficient privileges|Unauthorized|401'
+        }
+
         # Below this many group-connected sites, one targeted lookup per site beats enumerating the whole
-        # tenant: -IncludeSiteUrl and -IncludeOwners make the tenant-wide call expensive on its own, and a
-        # tenant holds orders of magnitude more groups than a narrow run needs.
+        # tenant: -IncludeOwners makes the tenant-wide call expensive on its own, and a tenant holds orders of
+        # magnitude more groups than a narrow run needs.
         $targetedLookupThreshold = 25
 
         if ($groupConnectedSites.Count -eq 0) {
             Write-Host -ForegroundColor Cyan 'No group-connected site in scope: skipping the Microsoft 365 groups retrieval.'
         }
-        elseif ($groupConnectedSites.Count -le $targetedLookupThreshold) {
-            Write-Host -ForegroundColor Cyan "Retrieving the Microsoft 365 group of $($groupConnectedSites.Count) group-connected site(s)..."
+        else {
+            $tenantWideError = $null
 
-            foreach ($groupConnectedSite in $groupConnectedSites) {
-                $siteGroupId = $groupConnectedSite.GroupId.ToString()
+            if ($groupConnectedSites.Count -gt $targetedLookupThreshold) {
+                Write-Host -ForegroundColor Cyan 'Retrieving Microsoft 365 groups...'
 
+                # With owners first; if that fails, without owners (fetched below per group in scope)
+                $allM365Groups = $null
+                $ownersIncluded = $true
                 try {
-                    $m365Group = Get-PnPMicrosoft365Group -Identity $siteGroupId -IncludeSiteUrl -IncludeOwners -Connection $adminConnection -ErrorAction Stop
+                    $allM365Groups = @(Get-PnPMicrosoft365Group -IncludeOwners -Connection $adminConnection -ErrorAction Stop)
                 }
                 catch {
-                    Write-Warning "Unable to retrieve the Microsoft 365 group $siteGroupId of $($groupConnectedSite.Url): $_"
-                    continue
+                    Write-Verbose "Tenant-wide group read with owners failed, retrying without owners: $($_.Exception.Message)"
+                    $ownersIncluded = $false
+                    try {
+                        $allM365Groups = @(Get-PnPMicrosoft365Group -Connection $adminConnection -ErrorAction Stop)
+                    }
+                    catch {
+                        $tenantWideError = $_.Exception.Message.Trim()
+                        Write-Verbose "Tenant-wide group read failed, falling back to one lookup per site: $tenantWideError"
+                    }
                 }
 
-                # Keyed on the site URL the caller actually asked for, not on the group's own SiteUrl: the
-                # merge loop below looks the group up by site URL, and this path already knows the mapping.
-                $m365GroupsLookup[$groupConnectedSite.Url] = $m365Group
+                if ($null -ne $allM365Groups) {
+                    foreach ($m365Group in $allM365Groups) {
+                        # Property name defensively checked (Id vs GroupId) - not guaranteed identical across PnP versions
+                        $m365GroupId = if ($m365Group.Id) { $m365Group.Id.ToString() } elseif ($m365Group.GroupId) { $m365Group.GroupId.ToString() } else { $null }
+                        if ($m365GroupId) {
+                            $groupsById[$m365GroupId.ToLowerInvariant()] = $m365Group
+                            if ($m365Group.DisplayName) {
+                                $groupNameCache[$m365GroupId] = $m365Group.DisplayName
+                            }
+                        }
+                    }
 
-                if ($m365Group.DisplayName) {
-                    $groupNameCache[$siteGroupId] = $m365Group.DisplayName
-                }
-            }
-
-            Write-Host -ForegroundColor Cyan "Microsoft 365 groups count: $($m365GroupsLookup.Count)"
-        }
-        else {
-            Write-Host -ForegroundColor Cyan 'Retrieving Microsoft 365 groups...'
-
-            try {
-                $allM365Groups = Get-PnPMicrosoft365Group -IncludeSiteUrl -IncludeOwners -Connection $adminConnection -ErrorAction Stop
-            }
-            catch {
-                Write-Warning "Unable to retrieve the Microsoft 365 groups: $_"
-                Write-Warning 'M365GroupsDetails requires the Microsoft Graph application permission Group.ReadWrite.All (or Group.Read.All) on the certificate used for the PnP connection.'
-                return
-            }
-
-            foreach ($m365Group in $allM365Groups) {
-                if ($m365Group.SiteUrl) {
-                    $m365GroupsLookup[$m365Group.SiteUrl] = $m365Group
-                }
-
-                # Property name defensively checked (Id vs GroupId) - not guaranteed identical across PnP versions
-                $m365GroupId = if ($m365Group.Id) { $m365Group.Id.ToString() } elseif ($m365Group.GroupId) { $m365Group.GroupId.ToString() } else { $null }
-                if ($m365GroupId -and $m365Group.DisplayName) {
-                    $groupNameCache[$m365GroupId] = $m365Group.DisplayName
+                    if (-not $ownersIncluded) {
+                        Write-Host -ForegroundColor Cyan "Reading the owners of $($groupConnectedSites.Count) Microsoft 365 group(s) one by one..."
+                        foreach ($groupConnectedSite in $groupConnectedSites) {
+                            $siteGroupKey = $groupConnectedSite.GroupId.ToString().ToLowerInvariant()
+                            if ($groupsById.ContainsKey($siteGroupKey)) {
+                                & $addGroupOwners $groupsById[$siteGroupKey] $siteGroupKey
+                            }
+                        }
+                    }
                 }
             }
 
-            Write-Host -ForegroundColor Cyan "Microsoft 365 groups count: $($m365GroupsLookup.Count)"
+            # Targeted lookups: the normal path for a narrow run, and the fallback when the tenant-wide read failed
+            if ($groupConnectedSites.Count -le $targetedLookupThreshold -or $tenantWideError) {
+                Write-Host -ForegroundColor Cyan "Retrieving the Microsoft 365 group of $($groupConnectedSites.Count) group-connected site(s)..."
+                $targetedErrors = 0
+
+                foreach ($groupConnectedSite in $groupConnectedSites) {
+                    $siteGroupId = $groupConnectedSite.GroupId.ToString()
+                    $m365Group = $null
+
+                    try {
+                        $m365Group = Get-PnPMicrosoft365Group -Identity $siteGroupId -IncludeOwners -Connection $adminConnection -ErrorAction Stop
+                    }
+                    catch {
+                        try {
+                            $m365Group = Get-PnPMicrosoft365Group -Identity $siteGroupId -Connection $adminConnection -ErrorAction Stop
+                            & $addGroupOwners $m365Group $siteGroupId
+                        }
+                        catch {
+                            $targetedErrors++
+                            $lastTargetedError = $_.Exception.Message.Trim()
+                            Write-Verbose "Unable to retrieve the Microsoft 365 group $siteGroupId of $($groupConnectedSite.Url): $lastTargetedError"
+                            continue
+                        }
+                    }
+
+                    $groupsById[$siteGroupId.ToLowerInvariant()] = $m365Group
+                    if ($m365Group.DisplayName) {
+                        $groupNameCache[$siteGroupId] = $m365Group.DisplayName
+                    }
+                }
+
+                if ($targetedErrors -gt 0) {
+                    Write-Warning "The Microsoft 365 group of $targetedErrors site(s) could not be read (last error: $lastTargetedError). Run with -Verbose for each site."
+                    if (& $isPermissionError $lastTargetedError) {
+                        Write-Warning 'M365GroupsDetails requires the Microsoft Graph application permission Group.Read.All (or Group.ReadWrite.All) on the certificate used for the PnP connection, with admin consent.'
+                    }
+                }
+            }
+
+            # Site URL -> group, through the GroupId each site already carries
+            foreach ($groupConnectedSite in $groupConnectedSites) {
+                $siteGroupKey = $groupConnectedSite.GroupId.ToString().ToLowerInvariant()
+                if ($groupsById.ContainsKey($siteGroupKey)) {
+                    $m365GroupsLookup[$groupConnectedSite.Url] = $groupsById[$siteGroupKey]
+                }
+            }
+
+            Write-Host -ForegroundColor Cyan "Microsoft 365 groups matched to their site: $($m365GroupsLookup.Count) of $($groupConnectedSites.Count)"
+
+            if ($m365GroupsLookup.Count -eq 0) {
+                # Nothing could be read: the report goes on, the group findings say 'not collected'
+                $m365GroupsAvailable = $false
+                Write-Warning 'No Microsoft 365 group could be read: the Microsoft 365 group columns stay empty and the group findings are reported as not collected.'
+            }
         }
     }
 
@@ -2388,7 +2470,14 @@ function Get-SPOSiteReport {
                         # PnP.PowerShell 3.2.0 - a parameter cannot be found error), so members and guests
                         # are split client-side on the '#EXT#' UPN pattern, the module's own documented
                         # guest-detection convention (see CLAUDE.md "User Filtering Patterns").
-                        $m365GroupOwnersResolved = (@($m365Group.Owners) | ForEach-Object { Get-SPOUserIdentifier -UserObject $_ } | Where-Object { $_ }) -join '|'
+                        # Owners that could not be read stay $null ('unknown'), never '' ('no owner'): an
+                        # empty string would flag the group in EID-GROUP-13 on a read failure
+                        $m365GroupOwnersResolved = if ($m365Group.PSObject.Properties.Name -contains 'OwnersUnreadable') {
+                            $null
+                        }
+                        else {
+                            (@($m365Group.Owners) | ForEach-Object { Get-SPOUserIdentifier -UserObject $_ } | Where-Object { $_ }) -join '|'
+                        }
 
                         try {
                             $allGroupMembers = Get-PnPMicrosoft365GroupMember -Identity $groupId -Connection $adminConnection -ErrorAction Stop
@@ -2786,7 +2875,7 @@ function Get-SPOSiteReport {
     $findings = $null
     if ($ExportToExcel.IsPresent -or $ExportToHtml.IsPresent) {
         $collectedSwitches = @{
-            M365GroupsDetails         = $M365GroupsDetails.IsPresent
+            M365GroupsDetails         = $m365GroupsAvailable
             IncludeSiteMembers        = $IncludeSiteMembers.IsPresent
             IncludeSiteVisitors       = $IncludeSiteVisitors.IsPresent
             IncludeSharingLinks       = $IncludeSharingLinks.IsPresent
